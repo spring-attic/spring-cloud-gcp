@@ -112,6 +112,7 @@ public class AfterLoadEvent extends ApplicationEvent {
 		}
 		AfterLoadEvent that = (AfterLoadEvent) o;
 		return Objects.equals(getRetrievedEntities(), that.getRetrievedEntities())
+				&& Objects.equals(getQuery(), that.getQuery())
 				&& Objects.equals(getSpannerQueryOptions(), that.getSpannerQueryOptions())
 				&& Objects.equals(getSpannerReadOptions(), that.getSpannerReadOptions())
 				&& Objects.equals(getKeySet(), that.getKeySet());
