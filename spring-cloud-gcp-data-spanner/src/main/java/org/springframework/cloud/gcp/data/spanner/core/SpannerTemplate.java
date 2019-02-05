@@ -56,6 +56,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterLoadEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
@@ -170,10 +171,12 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
+		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options), entityClass,
 				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
+		maybeEmitEvent(new AfterLoadEvent(entities, null, options, null, keys));
+		return entities;
 	}
 
 	@Override
@@ -185,15 +188,16 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
 			}
 		}
+		maybeEmitEvent(new AfterLoadEvent(result, statement, null, options, null));
 		return result;
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
-		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
-				options != null && options.isAllowPartialRead());
+		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
+		maybeEmitEvent(new AfterLoadEvent(entitites, statement, null, options, null));
+		return entitites;
 	}
 
 	@Override
@@ -495,6 +499,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		});
 	}
 
+	private <T> List<T> queryAndResolveChildren(Class<T> entityClass, Statement statement,
+			SpannerQueryOptions options) {
+		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
+				(options != null) ? options.getIncludeProperties() : null,
+				options != null && options.isAllowPartialRead());
+	}
+
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
 			Class<T> entityClass, Set<String> includeProperties,
 			boolean allowMissingColumns) {
@@ -525,7 +536,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
 					accessor.setProperty(spannerPersistentProperty,
-							query(childType,
+							queryAndResolveChildren(childType,
 									SpannerStatementQueryExecutor.getChildrenRowsQuery(
 											this.spannerSchemaUtils.getKey(entity),
 											childPersistentEntity),
