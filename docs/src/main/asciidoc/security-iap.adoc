@@ -25,7 +25,7 @@ Otherwise, the application will fail to start with `No qualifying bean of type '
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
 
-Starter Maven coordinates, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
+Starter Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

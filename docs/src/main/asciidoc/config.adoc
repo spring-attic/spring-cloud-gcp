@@ -7,7 +7,7 @@ It enables the use of the Google Runtime Configuration API as a source for Sprin
 
 NOTE: The Google Cloud Runtime Configuration service is in beta status.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

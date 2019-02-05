@@ -4,7 +4,7 @@ Spring Cloud GCP provides an abstraction layer to publish to and subscribe from 
 
 A Spring Boot starter is provided to auto-configure the various required Pub/Sub components.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

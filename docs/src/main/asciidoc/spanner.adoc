@@ -5,7 +5,7 @@
 http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
 
-Maven coordinates for this module only, using Spring Cloud GCP BOM:
+Maven coordinates for this module only, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

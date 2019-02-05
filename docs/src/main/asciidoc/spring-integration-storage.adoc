@@ -8,7 +8,7 @@ The Spring Integration Channel Adapters for Google Cloud Storage are included in
 
 To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the `spring-integration-file` dependency, since it isn't pulled transitively.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----
