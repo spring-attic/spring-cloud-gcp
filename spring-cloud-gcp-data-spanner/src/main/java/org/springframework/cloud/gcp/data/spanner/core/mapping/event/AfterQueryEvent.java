@@ -50,14 +50,6 @@ public class AfterQueryEvent extends LoadEvent {
 	}
 
 	/**
-	 * Returns the entities that were loaded.
-	 * @return the entities that were read from Cloud Spanner.
-	 */
-	public Iterable getRetrievedEntities() {
-		return (Iterable) getSource();
-	}
-
-	/**
 	 * Get the read query that was run.
 	 * @return the query statement.
 	 */

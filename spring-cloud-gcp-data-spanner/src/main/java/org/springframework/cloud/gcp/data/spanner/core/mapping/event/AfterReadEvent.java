@@ -21,14 +21,13 @@ import java.util.Objects;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * This event read operation on Cloud Spanner.
  *
  * @author Chengyuan Zhao
  */
-public class AfterReadEvent extends ApplicationEvent {
+public class AfterReadEvent extends LoadEvent {
 
 	private final SpannerReadOptions spannerReadOptions;
 
@@ -47,14 +46,6 @@ public class AfterReadEvent extends ApplicationEvent {
 		super(source);
 		this.spannerReadOptions = spannerReadOptions;
 		this.keySet = keySet;
-	}
-
-	/**
-	 * Returns the entities that were loaded.
-	 * @return the entities that were read from Cloud Spanner.
-	 */
-	public Iterable getRetrievedEntities() {
-		return (Iterable) getSource();
 	}
 
 	/**
