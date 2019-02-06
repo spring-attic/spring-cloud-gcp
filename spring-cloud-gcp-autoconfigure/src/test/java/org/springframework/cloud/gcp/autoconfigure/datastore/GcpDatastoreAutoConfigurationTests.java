@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreOptions;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -44,7 +46,18 @@ public class GcpDatastoreAutoConfigurationTests {
 					DatastoreRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
-					"spring.cloud.gcp.datastore.namespace-id=testNamespace");
+					"spring.cloud.gcp.datastore.namespace=testNamespace",
+					"spring.cloud.gcp.datastore.emulator-host=localhost:8081");
+
+	@Test
+	public void testDatastoreOptionsCorrectlySet() {
+		this.contextRunner.run((context) -> {
+			DatastoreOptions datastoreOptions = context.getBean(Datastore.class).getOptions();
+			assertThat(datastoreOptions.getProjectId()).isEqualTo("test-project");
+			assertThat(datastoreOptions.getNamespace()).isEqualTo("testNamespace");
+			assertThat(datastoreOptions.getHost()).isEqualTo("localhost:8081");
+		});
+	}
 
 	@Test
 	public void testDatastoreOperationsCreated() {
