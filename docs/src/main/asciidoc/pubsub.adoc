@@ -134,7 +134,8 @@ h|pullAndConvert | Works the same as the `pull` method and, additionally, conver
 There are two ways to acknowledge messages.
 
 . To acknowledge multiple messages at once, you can use the `PubSubTemplate.ack()` method.
-You can also use the `PubSubTemplate.nack()` for negatively acknowledging messages. Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually, but they *require* the collection of messages to be from the same project.
+You can also use the `PubSubTemplate.nack()` for negatively acknowledging messages.
+Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually, but they *require* the collection of messages to be from the same project.
 
 . To acknowledge messages individually you can use the `ack()` or `nack()` method on each of them (to acknowledge or negatively acknowledge, correspondingly).
 
