@@ -55,6 +55,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterReadEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
@@ -124,7 +126,7 @@ public class SpannerTemplateTests {
 	@Test
 	public void executeDmlTest() {
 		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
-		verifyEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
+		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
 				() -> this.spannerTemplate.executeDmlStatement(DML),
 				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML)));
 	}
@@ -245,7 +247,31 @@ public class SpannerTemplateTests {
 	@Test
 	public void findSingleKeyNullTest() {
 		when(this.readContext.read(any(), any(), any())).thenReturn(null);
-		assertThat(this.spannerTemplate.read(TestEntity.class, Key.of("key"))).isNull();
+		Key key = Key.of("key");
+		KeySet keys = KeySet.newBuilder().addKey(key).build();
+		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keys, null),
+				() -> assertThat(this.spannerTemplate.read(TestEntity.class, key)).isNull(), x -> {
+				});
+	}
+
+	@Test
+	public void queryTest() {
+		when(this.readContext.read(any(), any(), any())).thenReturn(null);
+		Statement query = Statement.of("test");
+		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
+				() -> assertThat(this.spannerTemplate.query(TestEntity.class, query, null)).isEmpty(), x -> {
+				});
+	}
+
+	@Test
+	public void queryFuncTest() {
+		ResultSet resultSet = mock(ResultSet.class);
+		when(resultSet.next()).thenReturn(false);
+		Statement query = Statement.of("test");
+		when(this.readContext.executeQuery(eq(query))).thenReturn(resultSet);
+		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
+				() -> assertThat(this.spannerTemplate.query(x -> null, query, null)).isEmpty(), x -> {
+				});
 	}
 
 	@Test
@@ -272,11 +298,14 @@ public class SpannerTemplateTests {
 		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
-		this.spannerTemplate.read(TestEntity.class, keySet, options);
-		verify(this.objectMapper, times(1)).mapToList(same(results),
-				eq(TestEntity.class), isNull(), eq(false));
-		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
-				any(), same(readOption));
+
+		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keySet, options),
+				() -> this.spannerTemplate.read(TestEntity.class, keySet, options), x -> {
+					verify(this.objectMapper, times(1)).mapToList(same(results),
+							eq(TestEntity.class), isNull(), eq(false));
+					verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
+							any(), same(readOption));
+				});
 	}
 
 	@Test
@@ -312,7 +341,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.insert(entity))
 				.thenReturn(mutations);
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.insert(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -328,7 +357,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.insert(same(entity)))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.insertAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -342,7 +371,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(entity, null))
 				.thenReturn(mutations);
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.update(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -358,7 +387,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.updateAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -375,7 +404,7 @@ public class SpannerTemplateTests {
 				eq(cols)))
 						.thenReturn(mutations);
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -391,7 +420,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(same(entity), eq(cols)))
 				.thenReturn(mutations);
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, cols), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -406,7 +435,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), isNull()))
 				.thenReturn(mutations);
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.upsert(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -422,7 +451,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.upsertAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -439,7 +468,7 @@ public class SpannerTemplateTests {
 				eq(cols)))
 						.thenReturn(Collections.singletonList(mutation));
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -455,7 +484,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), eq(cols)))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, cols), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -470,7 +499,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.delete(eq(TestEntity.class), same(key)))
 				.thenReturn(mutation);
 
-		verifyEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
+		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
 				new AfterDeleteEvent(mutations, null, keys, TestEntity.class),
 				() -> this.spannerTemplate.delete(TestEntity.class, key), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(Collections.singletonList(mutation))));
@@ -483,7 +512,7 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
 
-		verifyEvents(new BeforeDeleteEvent(mutations, Collections.singletonList(entity), null, null),
+		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, Collections.singletonList(entity), null, null),
 				new AfterDeleteEvent(mutations, Collections.singletonList(entity), null, null),
 				() -> this.spannerTemplate.delete(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(Collections.singletonList(mutation))));
@@ -497,7 +526,7 @@ public class SpannerTemplateTests {
 		List<Mutation> mutations = Arrays.asList(mutation, mutation, mutation);
 		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
 
-		verifyEvents(new BeforeDeleteEvent(mutations, entities, null, null),
+		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, entities, null, null),
 				new AfterDeleteEvent(mutations, entities, null, null),
 				() -> this.spannerTemplate.deleteAll(Arrays.asList(entity, entity, entity)),
 				x -> x.verify(this.databaseClient, times(1))
@@ -513,7 +542,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.delete(eq(TestEntity.class), same(keys)))
 				.thenReturn(mutation);
 
-		verifyEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
+		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
 				new AfterDeleteEvent(mutations, null, keys, TestEntity.class),
 				() -> this.spannerTemplate.delete(TestEntity.class, keys), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(Collections.singletonList(mutation))));
@@ -592,22 +621,28 @@ public class SpannerTemplateTests {
 		when(this.objectMapper.mapToList(any(), eq(GrandChildEntity.class), any(),
 				eq(false))).thenReturn(Arrays.asList(gc));
 
-		ParentEntity resultWithoutChildren = this.spannerTemplate
-				.readAll(ParentEntity.class,
-						new SpannerReadOptions()
-								.setIncludeProperties(Collections.singleton("id")))
-				.get(0);
-		assertThat(resultWithoutChildren.childEntities).isNull();
+		// Verify that only a single event containing only the parent p is published.
+		// the recursive resolution of children should NOT give events since there is only one
+		// user-call.
+		verifyAfterEvents(new AfterReadEvent(Collections.singletonList(p), KeySet.all(), null), () -> {
+			ParentEntity resultWithoutChildren = this.spannerTemplate
+					.readAll(ParentEntity.class,
+							new SpannerReadOptions()
+									.setIncludeProperties(Collections.singleton("id")))
+					.get(0);
+			assertThat(resultWithoutChildren.childEntities).isNull();
 
-		ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
-		assertThat(result.childEntities).hasSize(1);
-		assertThat(result.childEntities.get(0)).isSameAs(c);
-		assertThat(result.childEntities.get(0).childEntities).hasSize(1);
-		assertThat(result.childEntities.get(0).childEntities.get(0)).isSameAs(gc);
+			ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
+			assertThat(result.childEntities).hasSize(1);
+			assertThat(result.childEntities.get(0)).isSameAs(c);
+			assertThat(result.childEntities.get(0).childEntities).hasSize(1);
+			assertThat(result.childEntities.get(0).childEntities.get(0)).isSameAs(gc);
+		}, x -> {
+		});
 	}
 
 	private void verifyEvents(ApplicationEvent expectedBefore,
-			ApplicationEvent expectedAfter, Runnable saveOperation, Consumer<InOrder> verifyOperation) {
+			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
 		ApplicationEventPublisher mockPublisher = mock(ApplicationEventPublisher.class);
 		ApplicationEventPublisher mockBeforePublisher = mock(ApplicationEventPublisher.class);
 		ApplicationEventPublisher mockAfterPublisher = mock(ApplicationEventPublisher.class);
@@ -616,10 +651,10 @@ public class SpannerTemplateTests {
 
 		doAnswer((invocationOnMock) -> {
 			ApplicationEvent event = invocationOnMock.getArgument(0);
-			if (event.getClass().equals(expectedBefore.getClass())) {
+			if (expectedBefore != null && event.getClass().equals(expectedBefore.getClass())) {
 				mockBeforePublisher.publishEvent(event);
 			}
-			else if (event.getClass().equals(expectedAfter.getClass())) {
+			else if (expectedAfter != null && event.getClass().equals(expectedAfter.getClass())) {
 				mockAfterPublisher.publishEvent(event);
 			}
 			return null;
@@ -627,11 +662,24 @@ public class SpannerTemplateTests {
 
 		this.spannerTemplate.setApplicationEventPublisher(mockPublisher);
 
-		saveOperation.run();
-
-		inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(expectedBefore));
+		operation.run();
+		if (expectedBefore != null) {
+			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(expectedBefore));
+		}
 		verifyOperation.accept(inOrder);
-		inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
+		if (expectedAfter != null) {
+			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
+		}
+	}
+
+	private void verifyBeforeAndAfterEvents(ApplicationEvent expectedBefore,
+			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
+		verifyEvents(expectedBefore, expectedAfter, operation, verifyOperation);
+	}
+
+	private void verifyAfterEvents(
+			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
+		verifyEvents(null, expectedAfter, operation, verifyOperation);
 	}
 
 	@Table(name = "custom_test_table")

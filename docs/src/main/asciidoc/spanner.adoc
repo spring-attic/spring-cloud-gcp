@@ -1260,6 +1260,8 @@ Spring Data Cloud Spanner publishes events extending the Spring Framework's `App
 [options="header"]
 |===
 | Type| Description | Contents
+| `AfterReadEvent`|Published immediately after entities are read by key from Cloud Spanner by `SpannerTemplate`| The entities loaded. The read options and key-set originally specified for the load operation.
+| `AfterQueryEvent`|Published immediately after entities are read by query from Cloud Spanner by `SpannerTemplate`| The entities loaded. The query options and query statement originally specified for the load operation.
 | `BeforeExecuteDmlEvent`|Published immediately before DML statements are executed by `SpannerTemplate`| The DML statement to execute.
 | `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
 | `BeforeSaveEvent`|Published immediately before upsert/update/insert operations are executed by `SpannerTemplate`| The mutations to be sent to Cloud Spanner, the entities to be saved, and optionally the properties in those entities to save.
