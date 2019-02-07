@@ -58,14 +58,26 @@ public class SpannerTemplateAuditingTests {
 	private static final List<Mutation> UPSERT_MUTATION = Arrays
 			.asList(Mutation.newInsertOrUpdateBuilder("custom_test_table").build());
 
+	private static final DateTime LONG_AGO = DateTime.parse("2000-01-01");
+
 	@Autowired
 	SpannerTemplate spannerTemplate;
 
 	@Test
-	public void testModifiedProperties() {
+	public void testModifiedNullProperties() {
 		TestEntity testEntity = new TestEntity();
 		testEntity.id = "a";
 		// intentionally leaving the other two audit properties untouched.
+
+		this.spannerTemplate.upsert(testEntity);
+	}
+
+	@Test
+	public void testModifiedPrevProperties() {
+		TestEntity testEntity = new TestEntity();
+		testEntity.id = "a";
+		testEntity.lastTouched = LONG_AGO;
+		testEntity.lastUser = "person";
 
 		this.spannerTemplate.upsert(testEntity);
 	}
@@ -91,6 +103,7 @@ public class SpannerTemplateAuditingTests {
 					.thenAnswer(invocation -> {
 						TestEntity testEntity = invocation.getArgument(0);
 						assertThat(testEntity.lastTouched).isNotNull();
+						assertThat(testEntity.lastTouched).isGreaterThan(LONG_AGO);
 						assertThat(testEntity.lastUser).isEqualTo("test_user");
 						return UPSERT_MUTATION;
 					});
