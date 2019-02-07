@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging;
+package org.springframework.cloud.gcp.logging;
 
 import java.util.Arrays;
 import java.util.HashSet;

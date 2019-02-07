@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging;
+package org.springframework.cloud.gcp.logging;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

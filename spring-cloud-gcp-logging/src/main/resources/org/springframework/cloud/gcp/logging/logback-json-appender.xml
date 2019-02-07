@@ -7,7 +7,7 @@ Stackdriver json-log format provided for import.
 
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.springframework.cloud.gcp.autoconfigure.logging.StackdriverJsonLayout">
+            <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
                 <projectId>${projectId}</projectId>
 
                 <!--<includeTraceId>true</includeTraceId>-->

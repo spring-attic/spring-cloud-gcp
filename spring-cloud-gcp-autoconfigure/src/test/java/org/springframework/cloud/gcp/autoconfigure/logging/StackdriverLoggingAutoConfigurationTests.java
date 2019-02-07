@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.runner.ReactiveWebApplicationContex
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
+import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -41,12 +42,11 @@ import static org.mockito.Mockito.mock;
  */
 public class StackdriverLoggingAutoConfigurationTests {
 
-	private WebApplicationContextRunner contextRunner =
-			new WebApplicationContextRunner()
-					.withConfiguration(
-							AutoConfigurations.of(
-									StackdriverLoggingAutoConfiguration.class,
-									GcpContextAutoConfiguration.class));
+	private WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
+			.withConfiguration(
+					AutoConfigurations.of(
+							StackdriverLoggingAutoConfiguration.class,
+							GcpContextAutoConfiguration.class));
 
 	@Test
 	public void testDisabledConfiguration() {
@@ -75,7 +75,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 						GcpContextAutoConfiguration.class))
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-						.isEqualTo(0));
+								.isEqualTo(0));
 	}
 
 	@Test
