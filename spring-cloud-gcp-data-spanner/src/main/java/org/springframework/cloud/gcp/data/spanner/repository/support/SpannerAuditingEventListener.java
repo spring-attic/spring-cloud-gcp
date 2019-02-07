@@ -41,6 +41,6 @@ public class SpannerAuditingEventListener implements ApplicationListener<BeforeS
 
 	@Override
 	public void onApplicationEvent(BeforeSaveEvent event) {
-		event.getTargetEntities().forEach(x -> this.handler.markModified(x));
+		event.getTargetEntities().forEach(this.handler::markModified);
 	}
 }
