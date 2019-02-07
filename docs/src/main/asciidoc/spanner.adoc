@@ -1307,6 +1307,24 @@ public class Config {
 }
 ----
 
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModofiedBy` and can be of any type.
+One alternative is to use Spring Security's `User` type:
+
+[source,java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public Optional<User> getCurrentAuditor() {
+
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
+  }
+}
+----
+
 You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableSpannerAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
 
 === Sample
