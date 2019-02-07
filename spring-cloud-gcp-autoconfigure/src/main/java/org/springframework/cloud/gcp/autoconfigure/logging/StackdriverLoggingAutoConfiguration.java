@@ -43,7 +43,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author Chengyuan Zhao
  */
 @Configuration
-@ConditionalOnClass({ HandlerInterceptorAdapter.class, LoggingAppender.class })
+@ConditionalOnClass({ HandlerInterceptorAdapter.class, LoggingAppender.class, TraceIdExtractor.class })
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.SleuthProperties")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @ConditionalOnWebApplication(type = Type.SERVLET)
