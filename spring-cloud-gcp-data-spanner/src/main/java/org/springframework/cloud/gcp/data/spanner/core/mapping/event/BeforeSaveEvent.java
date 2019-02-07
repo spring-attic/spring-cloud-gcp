@@ -16,10 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping.event;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
-
-import com.google.cloud.spanner.Mutation;
 
 /**
  * An event that is published just before a save operation is sent to Cloud Spanner.
@@ -29,14 +27,14 @@ import com.google.cloud.spanner.Mutation;
 public class BeforeSaveEvent extends SaveEvent {
 
 	/**
-	 * Constructor.
+	 * Constructor. {@code BeforeSaveEvent} does not hold mutations because this event gives
+	 * the opportunity to modify the entities from which mutations are ultimately generated.
 	 *
-	 * @param source the mutations for the event initially occurred. (never {@code null})
 	 * @param targetEntities the target entities that need to be mutated. This may be
 	 *     {@code null} depending on the original request.
 	 * @param includeProperties the set of properties to include in the save operation.
 	 */
-	public BeforeSaveEvent(List<Mutation> source, Iterable targetEntities, Set<String> includeProperties) {
-		super(source, targetEntities, includeProperties);
+	public BeforeSaveEvent(Iterable targetEntities, Set<String> includeProperties) {
+		super(Collections.emptyList(), targetEntities, includeProperties);
 	}
 }
