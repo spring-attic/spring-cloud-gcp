@@ -36,6 +36,12 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.DATASTORE.getUrl());
 
+	/**
+	 * The host and port of the local running emulator. If provided, this will setup the
+	 * client to connect against a running pub/sub emulator.
+	 */
+	private String emulatorHost;
+
 	private String projectId;
 
 	private String namespace;
@@ -61,4 +67,11 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 		this.namespace = namespace;
 	}
 
+	public String getEmulatorHost() {
+		return emulatorHost;
+	}
+
+	public void setEmulatorHost(String emulatorHost) {
+		this.emulatorHost = emulatorHost;
+	}
 }

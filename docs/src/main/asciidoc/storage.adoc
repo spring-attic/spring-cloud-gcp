@@ -5,7 +5,7 @@ Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----
