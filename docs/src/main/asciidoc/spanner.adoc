@@ -414,10 +414,10 @@ On read, all of the interleaved child rows are also all read.
 List<Album> albums;
 ----
 
-Lazily fetched interleaved properties are retrieved upon the first interaction with the property.
+Lazily-fetched interleaved properties are retrieved upon the first interaction with the property.
 If a property marked for lazy fetching is never retrieved, then it is also skipped when saving the parent entity.
 
-If used inside a transaction, subsequent operations on lazy properties use the same transaction context as that of the original parent entity.
+If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.
 
 
 ==== Supported Types
