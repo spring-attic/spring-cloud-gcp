@@ -4,11 +4,11 @@ This section describes how to get up to speed with Spring Cloud GCP libraries.
 
 === Setting up Dependencies
 
-The Spring Cloud GCP libraries are made available through Maven Central.
+All Spring Cloud GCP artifacts are made available through Maven Central.
 The following resources are provided to help you setup the libraries for your project:
 
 - Maven Bill of Materials for dependency management
-- Starter Dependencies for adding Spring Cloud GCP libraries to your project
+- Starter Dependencies for depending on Spring Cloud GCP modules
 
 You may also consult our https://github.com/spring-cloud/spring-cloud-gcp[Github project] to examine the code or build directly from source.
 
@@ -114,6 +114,10 @@ Most of the autoconfiguration code is only enabled if the required dependency is
 
 === Learning Spring Cloud GCP
 
+There are a variety of resources to help you learn how to use Spring Cloud GCP libraries.
+
+==== Sample Applications
+
 The easiest way to learn how to use Spring Cloud GCP is to consult the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[sample applications on Github].
 Spring Cloud GCP provides sample applications which demonstrate how to use every integration in the library.
 The table below highlights several samples of the most commonly used integrations in Spring Cloud GCP.
@@ -149,10 +153,14 @@ The table below highlights several samples of the most commonly used integration
 | https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[spring-cloud-gcp-security-iap-sample]
 |===
 
+Each sample application demonstrates how to use Spring Cloud GCP libraries in context and how to setup the dependencies for the project.
+The applications are fully functional and can be deployed to Google Cloud Platform as well.
+If you are interested, you may consult guides for https://codelabs.developers.google.com/codelabs/cloud-app-engine-springboot/index.html[deploying an application to AppEngine] and https://codelabs.developers.google.com/codelabs/cloud-springboot-kubernetes/index.html[to Google Kubernetes Engine].
+
 ==== Codelabs
 
 For a more hands-on approach, there are several guides and codelabs to help you get up to speed.
-These guides provides step-by-step instructions for building an application using Spring Cloud GCP.
+These guides provide step-by-step instructions for building an application using Spring Cloud GCP.
 
 Some examples include:
 
