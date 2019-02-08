@@ -541,7 +541,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
 
-					Supplier<List> childPropertyFunc = () -> queryAndResolveChildren(childType,
+					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
 									childPersistentEntity),
@@ -549,8 +549,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 					accessor.setProperty(spannerPersistentProperty,
 							spannerPersistentProperty.isLazyInterleaved()
-									? ConversionUtils.wrapSimpleLazyProxy(childPropertyFunc, List.class)
-									: childPropertyFunc.get());
+									? ConversionUtils.wrapSimpleLazyProxy(getChildrenEntitiesFunc, List.class)
+									: getChildrenEntitiesFunc.get());
 				});
 	}
 
