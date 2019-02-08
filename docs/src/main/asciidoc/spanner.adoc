@@ -415,7 +415,7 @@ List<Album> albums;
 ----
 
 Lazily fetched interleaved properties are retrieved upon the first interaction with the property.
-If a lazy property is never retrieved, then it is also skipped when saving the parent entity.
+If a property marked for lazy fetching is never retrieved, then it is also skipped when saving the parent entity.
 
 If used inside a transaction, subsequent operations on lazy properties use the same transaction context as that of the original parent entity.
 
