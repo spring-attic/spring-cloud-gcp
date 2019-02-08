@@ -66,7 +66,7 @@ public final class ConversionUtils {
 				new SimpleLazyDynamicInvocationHandler<>(supplierFunc));
 	}
 
-	public static boolean isUnevaluatedLazyProxy(Object object) {
+	public static boolean ignoreForWriteLazyProxy(Object object) {
 		if (Proxy.isProxyClass(object.getClass())
 				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
 			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy

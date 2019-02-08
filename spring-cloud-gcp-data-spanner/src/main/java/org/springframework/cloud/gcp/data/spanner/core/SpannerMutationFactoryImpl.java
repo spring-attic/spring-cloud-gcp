@@ -141,7 +141,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 				Iterable kids = (Iterable) persistentEntity.getPropertyAccessor(object)
 						.getProperty(spannerPersistentProperty);
 
-				if (kids != null && !ConversionUtils.isUnevaluatedLazyProxy(kids)) {
+				if (kids != null && !ConversionUtils.ignoreForWriteLazyProxy(kids)) {
 					for (Object child : kids) {
 						verifyChildHasParentId(persistentEntity, object,
 								this.spannerMappingContext.getPersistentEntity(
