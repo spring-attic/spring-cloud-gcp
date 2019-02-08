@@ -4,7 +4,7 @@ Spring Cloud GCP provides a https://cloud.spring.io/spring-cloud-stream/[Spring 
 
 The provided binder relies on the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub/src/main/java/org/springframework/cloud/gcp/pubsub/integration[Spring Integration Channel Adapters for Google Cloud Pub/Sub].
 
-Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

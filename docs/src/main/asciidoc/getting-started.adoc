@@ -1,16 +1,16 @@
 == Getting Started
 
-
+This section describes how to get up to speed with Spring Cloud GCP libraries.
 
 === Setting up Dependencies
 
 The Spring Cloud GCP libraries are made available through Maven Central.
 The following resources are provided to help you setup the libraries for your project:
 
-1. Maven Bill of Materials for dependency management
-2. Starter Dependencies for adding Spring Cloud GCP libraries to your project
+- Maven Bill of Materials for dependency management
+- Starter Dependencies for adding Spring Cloud GCP libraries to your project
 
-You may also consult our https://github.com/spring-cloud/spring-cloud-gcp[Github project] to examine the code directly or build from source.
+You may also consult our https://github.com/spring-cloud/spring-cloud-gcp[Github project] to examine the code or build directly from source.
 
 ==== Bill of Materials
 
@@ -43,49 +43,67 @@ For simplicity, the Gradle dependency snippets in the remainder of this document
 
 Spring Cloud GCP offers https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters[starter dependencies] through Maven to easily depend on different modules of the library.
 Each starter contains all the dependencies and transitive dependencies needed to begin using their corresponding Spring Cloud GCP module.
-For example, if you wanted to write an app with Spring and Cloud Pub/Sub, you would only need to include the `spring-cloud-gcp-starter-pubsub` dependency in your project.
+For example, if you wish to write a Spring application with Cloud Pub/Sub, you would include the `spring-cloud-gcp-starter-pubsub` dependency in your project.
 
 A summary of these artifacts are provided below.
 
 |===
-| Spring Cloud GCP Starter | Maven Artifact
+| Spring Cloud GCP Starter | Description | Maven Artifact Name
 
-| link:config.adoc[Config]
-| https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-config[org.springframework.cloud:spring-cloud-gcp-starter-config]
+| Core
+| Configure authentication and Google project settings conveniently
+| <<core.adoc#spring-cloud-gcp-core, org.springframework.cloud:spring-cloud-gcp-starter>>
 
-| link:spanner.adoc[Cloud Spanner]
-| https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-data-spanner[org.springframework.cloud:spring-cloud-gcp-starter-data-spanner]
+| Cloud Spanner
+| Provides integrations with Google Cloud Spanner
+| <<spanner.adoc#_spring_data_cloud_spanner, org.springframework.cloud:spring-cloud-gcp-starter-data-spanner>>
 
-|Cloud Datastore
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-data-datastore[org.springframework.cloud:spring-cloud-gcp-starter-data-datastore]
+| Cloud Datastore
+| Provides integrations with Google Cloud Datastore
+| <<datastore.adoc#_spring_data_cloud_datastore, org.springframework.cloud:spring-cloud-gcp-starter-data-datastore>>
 
-|Cloud Pub/Sub
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-pubsub[org.springframework.cloud:spring-cloud-gcp-starter-pubsub]
+| Cloud Pub/Sub
+| Provides integrations with Google Cloud Pub/Sub
+| <<pubsub.adoc#_google_cloud_pubsub, org.springframework.cloud:spring-cloud-gcp-starter-pubsub>>
 
-|Logging
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-logging[org.springframework.cloud:spring-cloud-gcp-starter-logging]
+| Logging
+| Enables Stackdriver Logging
+| <<logging.adoc#_stackdriver_logging, org.springframework.cloud:spring-cloud-gcp-starter-logging>>
 
-|SQL - MySql
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-sql-mysql[org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql]
+| SQL - MySQL
+| Cloud SQL integrations with MySQL
+| <<sql.adoc#_spring_jdbc, org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql>>
 
-|SQL - PostgreSQL
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-sql-postgresql[org.springframework.cloud:spring-cloud-gcp-starter-sql-postgresql]
+| SQL - PostgreSQL
+| Cloud SQL integrations with PostgreSQL
+| <<sql.adoc#_spring_jdbc, org.springframework.cloud:spring-cloud-gcp-starter-sql-postgresql>>
 
-|Trace
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-trace[org.springframework.cloud:spring-cloud-gcp-starter-trace]
+| Storage
+| Provides integrations with Google Cloud Storage and Spring Resource
+| <<storage.adoc#_spring_resources, org.springframework.cloud:spring-cloud-gcp-starter-storage>>
 
-|Vision
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-vision[org.springframework.cloud:spring-cloud-gcp-starter-vision]
+| Config
+| Enables usage of Google Runtime Configuration API as a Spring Cloud Config server
+| <<config.adoc#_spring_cloud_config, org.springframework.cloud:spring-cloud-gcp-starter-config>>
 
-|Security - IAP
-|https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-gcp-starter-security-iap[org.springframework.cloud:spring-cloud-gcp-starter-security-iap]
+| Trace
+| Enables instrumentation with Google Stackdriver Tracing
+| <<trace.adoc#_spring_cloud_sleuth, org.springframework.cloud:spring-cloud-gcp-starter-trace>>
+
+| Vision
+| Provides integrations with Google Cloud Vision
+| <<vision.adoc#_google_cloud_vision, org.springframework.cloud:spring-cloud-gcp-starter-vision>>
+
+| Security - IAP
+| Provides a security layer over applications deployed to Google Cloud
+| <<security-iap.adoc#_cloud_identity_aware_proxy_iap_authentication, org.springframework.cloud:spring-cloud-gcp-starter-security-iap>>
 
 |===
 
 ==== Spring Initializr
 
 http://start.spring.io/[Spring Initializr] is a tool which generates the scaffolding code for a new Spring Boot project.
-It also handles generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.
+It handles the work of generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.
 
 Spring Initializr offers three modules from Spring Cloud GCP that you can use to generate your project.
 
@@ -133,14 +151,14 @@ The table below highlights several samples of the most commonly used integration
 
 ==== Codelabs
 
-Another way to learn how to use Spring Cloud GCP is through codelabs.
-There are many tutorials and exercises
+For a more hands-on approach, there are several guides and codelabs to help you get up to speed.
+These guides provides step-by-step instructions for building an application using Spring Cloud GCP.
 
-=== Code Challenges
+Some examples include:
 
-In a code challenge, you perform a task step by step, using one integration.
-There are a number of challenges available in the https://codelabs.developers.google.com/spring[Google Developers Codelabs] page.
+- https://codelabs.developers.google.com/codelabs/cloud-app-engine-springboot/index.html[Deploy a Spring Boot app to App Engine]
+- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-kotlin/index.html[Build a Kotlin Spring Boot app with Cloud SQL and Cloud Pub/Sub]
+- https://codelabs.developers.google.com/codelabs/cloud-spring-datastore/index.html[Build a Spring Boot application with Datastore]
+- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[Messaging with Spring Integration and Cloud Pub/Sub]
 
-=== Getting Started Guides
-
-A Spring Getting Started guide on messaging with Spring Integration Channel Adapters for Google Cloud Pub/Sub is available from https://spring.io/guides/gs/messaging-gcp-pubsub/[Spring Guides].
+The full collection of Spring codelabs can be found on the https://codelabs.developers.google.com/spring[Google Developer Codelabs page].
