@@ -67,13 +67,13 @@ public final class ConversionUtils {
 	}
 
 	public static boolean isUnevaluatedLazyProxy(Object object) {
-		if (!Proxy.isProxyClass(object.getClass()) ||
-				!(Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
-			return false;
+		if (Proxy.isProxyClass(object.getClass())
+				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
+			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
+					.getInvocationHandler(object);
+			return !handler.isEvaluated();
 		}
-		SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
-				.getInvocationHandler(object);
-		return !handler.isEvaluated();
+		return false;
 	}
 
 	private static final class SimpleLazyDynamicInvocationHandler<T> implements InvocationHandler {
