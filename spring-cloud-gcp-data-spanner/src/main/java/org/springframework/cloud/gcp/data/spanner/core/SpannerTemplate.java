@@ -50,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
@@ -539,12 +540,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
+
+					Supplier<List> childPropertyFunc = () -> queryAndResolveChildren(childType,
+							SpannerStatementQueryExecutor.getChildrenRowsQuery(
+									this.spannerSchemaUtils.getKey(entity),
+									childPersistentEntity),
+							null);
+
 					accessor.setProperty(spannerPersistentProperty,
-							queryAndResolveChildren(childType,
-									SpannerStatementQueryExecutor.getChildrenRowsQuery(
-											this.spannerSchemaUtils.getKey(entity),
-											childPersistentEntity),
-									null));
+							spannerPersistentProperty.isLazyInterleaved()
+									? ConversionUtils.wrapSimpleLazyProxy(childPropertyFunc, List.class)
+									: childPropertyFunc.get());
 				});
 	}
 
