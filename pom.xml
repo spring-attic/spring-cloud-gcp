@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -334,6 +334,80 @@
 						</executions>
 					</plugin>
 				</plugins>
+			</build>
+		</profile>
+		<!-- Error prone; plugin is recommended but only works with Java 9 and newer.
+		Remove the two profiles and pull the pluginManagement contents up into the main config when the project moves off Java 8. -->
+		<profile>
+			<id>errorprone_java_9_and_up</id>
+			<activation>
+				<jdk>[9,)</jdk>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<version>3.8.0</version>
+							<configuration>
+								<source>${maven.compiler.source}</source>
+								<target>${maven.compiler.target}</target>
+								<compilerArgs>
+									<arg>-XDcompilePolicy=simple</arg>
+									<arg>-Xplugin:ErrorProne</arg>
+								</compilerArgs>
+								<annotationProcessorPaths>
+									<path>
+										<groupId>com.google.errorprone</groupId>
+										<artifactId>error_prone_core</artifactId>
+										<version>2.3.2</version>
+									</path>
+								</annotationProcessorPaths>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+		<profile>
+			<id>errorprone_java8</id>
+			<activation>
+				<jdk>1.8</jdk>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<configuration>
+								<compilerId>javac-with-errorprone</compilerId>
+								<forceJavacCompilerUse>true</forceJavacCompilerUse>
+								<compilerArgs>
+									<!-- Enable all warnings -->
+									<compilerArg>-Xlint:all</compilerArg>
+									<!-- Disable options warning because we will have differences between the compiler and source code level-->
+									<compilerArg>-Xlint:-options</compilerArg>
+									<!-- Disable serialversionuid warnings -->
+									<compilerArg>-Xlint:-serial</compilerArg>
+									<!--compilerArg>-Werror</compilerArg-->
+								</compilerArgs>
+							</configuration>
+							<dependencies>
+								<dependency>
+									<groupId>org.codehaus.plexus</groupId>
+									<artifactId>plexus-compiler-javac-errorprone</artifactId>
+									<version>2.8.4</version>
+								</dependency>
+								<dependency>
+									<groupId>com.google.errorprone</groupId>
+									<artifactId>error_prone_core</artifactId>
+									<version>2.3.1</version>
+								</dependency>
+							</dependencies>
+						</plugin>
+					</plugins>
+				</pluginManagement>
 			</build>
 		</profile>
 	</profiles>
