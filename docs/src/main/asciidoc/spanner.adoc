@@ -1271,6 +1271,62 @@ Spring Data Cloud Spanner publishes events extending the Spring Framework's `App
 |===
 
 
+=== Auditing
+
+Spring Data Cloud Spanner supports the `@LastModifiedDate` and `@LastModifiedBy` auditing annotations for properties:
+
+[source,java]
+----
+@Table
+public class SimpleEntity {
+    @PrimaryKey
+    String id;
+
+    @LastModifiedBy
+    String lastUser;
+
+    @LastModifiedDate
+    DateTime lastTouched;
+}
+----
+
+Upon insert, update, or save, these properties will be set automatically by the framework before mutations are generated and saved to Cloud Spanner.
+
+To take advantage of these features, add the `@EnableSpannerAuditing` annotation to your configuration class and provide a bean for an `AuditorAware<A>` implementation where the type `A` is the desired property type annotated by `@LastModifiedBy`:
+
+[source,java]
+----
+@Configuration
+@EnableSpannerAuditing
+public class Config {
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of("YOUR_USERNAME_HERE");
+    }
+}
+----
+
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModofiedBy` and can be of any type.
+One alternative is to use Spring Security's `User` type:
+
+[source,java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public Optional<User> getCurrentAuditor() {
+
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
+  }
+}
+----
+
+You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableSpannerAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
+
 === Sample
 
 

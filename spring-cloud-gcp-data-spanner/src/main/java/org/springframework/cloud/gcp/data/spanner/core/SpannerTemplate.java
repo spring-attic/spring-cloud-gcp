@@ -228,23 +228,23 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void insert(Object object) {
-		applySaveMutations(this.mutationFactory.insert(object), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.insert(object), Collections.singletonList(object), null);
 	}
 
 
 	@Override
 	public void insertAll(Iterable objects) {
-		applySaveMutations(getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
 	}
 
 	@Override
 	public void update(Object object) {
-		applySaveMutations(this.mutationFactory.update(object, null), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.update(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void updateAll(Iterable objects) {
-		applySaveMutations(getMutationsForMultipleObjects(objects,
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
 				(x) -> this.mutationFactory.update(x, null)), objects, null);
 	}
 
@@ -252,41 +252,44 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public void update(Object object, String... includeProperties) {
 		Set<String> incl = (includeProperties.length == 0) ? null
 				: new HashSet<>(Arrays.asList(includeProperties));
-		applySaveMutations(this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
+		applySaveMutations(() -> this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void update(Object object, Set<String> includeProperties) {
-		applySaveMutations(this.mutationFactory.update(object, includeProperties), Collections.singletonList(object),
+		applySaveMutations(() -> this.mutationFactory.update(object, includeProperties),
+				Collections.singletonList(object),
 				includeProperties);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applySaveMutations(this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void upsertAll(Iterable objects) {
-		applySaveMutations(getMutationsForMultipleObjects(objects,
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
 				(x) -> this.mutationFactory.upsert(x, null)), objects, null);
 	}
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
 		Set<String> incl = (includeProperties.length == 0) ? null : new HashSet<>(Arrays.asList(includeProperties));
-		applySaveMutations(this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
+		applySaveMutations(() -> this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void upsert(Object object, Set<String> includeProperties) {
-		applySaveMutations(this.mutationFactory.upsert(object, includeProperties), Collections.singletonList(object),
+		applySaveMutations(() -> this.mutationFactory.upsert(object, includeProperties),
+				Collections.singletonList(object),
 				includeProperties);
 	}
 
-	private void applySaveMutations(List<Mutation> mutations, Iterable entities,
+	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier, Iterable entities,
 			Set<String> includeProperties) {
-		maybeEmitEvent(new BeforeSaveEvent(mutations, entities, includeProperties));
+		maybeEmitEvent(new BeforeSaveEvent(entities, includeProperties));
+		List<Mutation> mutations = mutationsSupplier.get();
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterSaveEvent(mutations, entities, includeProperties));
 	}

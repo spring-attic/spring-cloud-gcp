@@ -341,7 +341,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.insert(entity))
 				.thenReturn(mutations);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.insert(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -357,7 +357,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.insert(same(entity)))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.insertAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -371,7 +371,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(entity, null))
 				.thenReturn(mutations);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.update(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -387,7 +387,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.updateAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -404,7 +404,7 @@ public class SpannerTemplateTests {
 				eq(cols)))
 						.thenReturn(mutations);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -420,7 +420,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.update(same(entity), eq(cols)))
 				.thenReturn(mutations);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, cols), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -435,7 +435,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), isNull()))
 				.thenReturn(mutations);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.upsert(entity), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -451,7 +451,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, entities, null),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.upsertAll(entities), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -468,7 +468,7 @@ public class SpannerTemplateTests {
 				eq(cols)))
 						.thenReturn(Collections.singletonList(mutation));
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
@@ -484,7 +484,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.upsert(same(entity), eq(cols)))
 				.thenReturn(Collections.singletonList(mutation));
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(mutations, Collections.singletonList(entity), cols),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, cols), x -> x.verify(this.databaseClient, times(1))
 						.write(eq(mutations)));
