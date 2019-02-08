@@ -84,9 +84,8 @@ public class WebController {
 
 	@GetMapping("/pull")
 	public RedirectView pull(@RequestParam("subscription1") String subscriptionName) {
-		//tag::pull10[]
+
 		Collection<AcknowledgeablePubsubMessage> messages = this.pubSubTemplate.pull(subscriptionName, 10, true);
-		//end::pull10[]
 
 		if (messages.isEmpty()) {
 			return buildStatusView("No messages available for retrieval.");
@@ -94,10 +93,8 @@ public class WebController {
 
 		RedirectView returnView;
 		try {
-			//tag::ack[]
 			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(messages);
 			ackFuture.get();
-			//end::ack[]
 			returnView = buildStatusView(String.format("Pulled and acked %s message(s)", messages.size()));
 		}
 		catch (Exception ex) {
@@ -138,13 +135,12 @@ public class WebController {
 
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
-		//tag::subscription[]
 		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
 			LOGGER.info("Message received from " + subscriptionName + " subscription: "
 					+ message.getPubsubMessage().getData().toStringUtf8());
 			message.ack();
 		});
-		//end::subscription[]
+
 		this.allSubscribers.add(subscriber);
 		return buildStatusView("Subscribed.");
 	}
