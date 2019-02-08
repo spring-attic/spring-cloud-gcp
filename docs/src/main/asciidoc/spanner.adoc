@@ -404,6 +404,22 @@ A table may have multiple child tables.
 On updating or inserting an object to Cloud Spanner, all of its referenced children objects are also updated or inserted in the same request, respectively.
 On read, all of the interleaved child rows are also all read.
 
+===== Lazy Fetch
+
+`@Interleaved` properties are retrieved eagerly by default, but can be fetched lazily for performance in both read and write:
+
+[source,java]
+----
+@Interleaved(lazy = true)
+List<Album> albums;
+----
+
+Lazily-fetched interleaved properties are retrieved upon the first interaction with the property.
+If a property marked for lazy fetching is never retrieved, then it is also skipped when saving the parent entity.
+
+If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.
+
+
 ==== Supported Types
 
 Spring Data Cloud Spanner natively supports the following types for regular fields but also utilizes custom converters (detailed in following sections) and dozens of pre-defined Spring Data custom converters to handle other common Java types.

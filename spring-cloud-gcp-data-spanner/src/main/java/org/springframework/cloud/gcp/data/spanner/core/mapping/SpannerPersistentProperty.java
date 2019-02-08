@@ -107,4 +107,10 @@ public interface SpannerPersistentProperty
 	 * @return the user-specified column item type.
 	 */
 	Code getAnnotatedColumnItemType();
+
+	/**
+	 * Return whether this property is a lazily-fetched interleaved property.
+	 * @return {@code true} if the property is lazily-fetched. {@code false} otherwise.
+	 */
+	boolean isLazyInterleaved();
 }
