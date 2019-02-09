@@ -41,7 +41,8 @@ public class GcpDatastoreAutoConfigurationTests {
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
 					GcpContextAutoConfiguration.class, DatastoreTransactionManagerAutoConfiguration.class,
-					DatastoreRepositoriesAutoConfiguration.class))
+					DatastoreRepositoriesAutoConfiguration.class,
+					TestRepository.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace-id=testNamespace");

@@ -15,7 +15,9 @@
  */
 
 
-package org.springframework.cloud.gcp.data.datastore.health;
+package org.springframework.cloud.gcp.autoconfigure.datastore.health;
+
+import com.google.cloud.datastore.Datastore;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
@@ -35,19 +37,17 @@ import org.springframework.context.annotation.Configuration;
  * @author Srinivasa Meenavalli
  */
 @Configuration
-@ConditionalOnClass({DatastoreRepositoryFactory.class, DatastoreTemplate.class})
-@ConditionalOnBean({DatastoreRepositoryFactory.class, DatastoreTemplate.class})
-class DatastoreHealthIndicatorConfiguration extends CompositeHealthIndicatorConfiguration<DatastoreHealthIndicator, DatastoreTemplate>	{
+@ConditionalOnClass({DatastoreRepositoryFactory.class, DatastoreTemplate.class, Datastore.class})
+@ConditionalOnBean({DatastoreRepositoryFactory.class, DatastoreTemplate.class, Datastore.class})
+class DatastoreHealthIndicatorConfiguration extends CompositeHealthIndicatorConfiguration<DatastoreHealthIndicator, Datastore>	{
 	@Autowired
-	DatastoreTemplate datastoreTemplate;
-
-	DatastoreHealthIndicatorConfiguration(DatastoreTemplate datastoreTemplate) {
-		this.datastoreTemplate = datastoreTemplate;
+	Datastore datastore;
+	DatastoreHealthIndicatorConfiguration(final Datastore datastore) {
+		this.datastore = datastore;
 	}
-
 	@Bean
 	@ConditionalOnMissingBean(name = "datastoreHealthIndicator")
 	public HealthIndicator datastoreHealthIndicator() {
-		return createHealthIndicator(this.datastoreTemplate);
+		return createHealthIndicator(this.datastore);
 	}
 }

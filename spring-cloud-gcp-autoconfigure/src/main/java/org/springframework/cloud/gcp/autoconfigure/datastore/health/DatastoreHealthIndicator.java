@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.health;
+package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
-import java.util.UUID;
+
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Query;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.repository.support.SimpleDatastoreRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -39,41 +39,29 @@ public class DatastoreHealthIndicator extends AbstractHealthIndicator {
 
 	private static final Status DATASTORE_HEALTH = new Status("DATASTORE_HEALTH");
 
-	private final SimpleDatastoreRepository<HealthCheckEntity, String> simpleDatastoreRepository;
+	private Datastore datastore;
 
 	/**
 	 * DatastoreHealthIndicator constructor.
 	 *
-	 * @param datastoreTemplate DatastoreTemplate
+	 * @param datastore Datastore
 	 */
-	public DatastoreHealthIndicator(DatastoreTemplate datastoreTemplate) {
+	public DatastoreHealthIndicator(final Datastore datastore) {
 		super("Datastore health check failed");
-		Assert.notNull(datastoreTemplate, "DatastoreTemplate must not be null");
-		this.simpleDatastoreRepository = new SimpleDatastoreRepository<>(datastoreTemplate,	HealthCheckEntity.class);
+		this.datastore = datastore;
+		Assert.notNull(datastore, "Datastore must not be null");
 	}
 
 	@Override
 	protected void doHealthCheck(Health.Builder builder) throws Exception {
-		String id = UUID.randomUUID().toString();
 		try {
-			HealthCheckEntity entity = new HealthCheckEntity(id, "Data store Health Check");
-			simpleDatastoreRepository.save(entity);
-			long count = simpleDatastoreRepository.count();
-			Assert.isTrue(count == 1, "Data store health check validated");
+			datastore.run(Query.newKeyQueryBuilder().setKind("__Stat_Total__").build());
 			builder.status(DATASTORE_HEALTH);
-			if (count > 0) {
-				builder.up();
-			}
-			else {
-				builder.down();
-			}
+			builder.up();
 		}
 		catch (Exception ex) {
 			builder.down();
 			throw ex;
-		}
-		finally {
-			simpleDatastoreRepository.deleteById(id);
 		}
 	}
 }
