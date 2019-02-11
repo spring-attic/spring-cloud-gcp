@@ -11,7 +11,7 @@
 
 	<artifactId>spring-cloud-gcp-docs</artifactId>
     <packaging>pom</packaging>
-    <name>Spring Cloud GCP Documentation</name>
+	<name>Spring Cloud GCP Documentation</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
