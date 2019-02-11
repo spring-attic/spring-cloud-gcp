@@ -63,7 +63,7 @@ Subscribe to a subscription with a message handler:
 include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]
 ----
 ===== Subscribe methods
-`PubsubTemplate` provides the following subscribe methods:
+`PubSubTemplate` provides the following subscribe methods:
 
 [cols="20,80"]
 |===
