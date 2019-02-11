@@ -50,6 +50,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
@@ -66,7 +67,7 @@ public class PubSubTemplateDocumentationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-//			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
