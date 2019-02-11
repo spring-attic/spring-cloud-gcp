@@ -347,14 +347,3 @@ After this amount of time has elapsed (counting from the first element added), t
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching.|No | false
 |===
-
-=== Details
-`PubSubTemplate` depends on a `PublisherFactory` and a `SubscriberFactory`.
-The `PublisherFactory` provides a Google Cloud Java Client for Pub/Sub `Publisher`.
-The `SubscriberFactory` provides the `Subscriber` for asynchronous message pulling, as well as a `SubscriberStub` for synchronous pulling.
-The Spring Boot starter for GCP Pub/Sub auto-configures a `PublisherFactory` and `SubscriberFactory` with default settings and uses the `GcpProjectIdProvider` and `CredentialsProvider` auto-configured by the Spring Boot GCP starter.
-
-The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub, `DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource utilization.
-
-The `PubSubOperations` interface is actually a combination of `PubSubPublisherOperations` and `PubSubSubscriberOperations` with the corresponding `PubSubPublisherTemplate` and `PubSubSubscriberTemplate` implementations, which can be used individually or via the composite `PubSubTemplate`.
-This document refers to `PubSubTemplate`, but the same applies to `PubSubPublisherTemplate` and `PubSubSubscriberTemplate`, depending on whether we're talking about publishing or subscribing.
