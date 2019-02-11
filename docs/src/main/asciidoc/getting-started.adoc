@@ -43,7 +43,9 @@ For simplicity, the Gradle dependency snippets in the remainder of this document
 
 Spring Cloud GCP offers https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters[starter dependencies] through Maven to easily depend on different modules of the library.
 Each starter contains all the dependencies and transitive dependencies needed to begin using their corresponding Spring Cloud GCP module.
+
 For example, if you wish to write a Spring application with Cloud Pub/Sub, you would include the `spring-cloud-gcp-starter-pubsub` dependency in your project.
+You do *not* need to include the underlying `spring-cloud-gcp-pubsub` dependency, because the `starter` dependency includes it.
 
 A summary of these artifacts are provided below.
 
@@ -51,7 +53,7 @@ A summary of these artifacts are provided below.
 | Spring Cloud GCP Starter | Description | Maven Artifact Name
 
 | Core
-| Configure authentication and Google project settings conveniently
+| Automatically configure authentication and Google project settings
 | <<core.adoc#spring-cloud-gcp-core, org.springframework.cloud:spring-cloud-gcp-starter>>
 
 | Cloud Spanner
