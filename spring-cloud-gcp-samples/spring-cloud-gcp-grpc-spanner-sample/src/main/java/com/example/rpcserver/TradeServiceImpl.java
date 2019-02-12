@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.example.rpc;
+package com.example.rpcserver;
 
+import com.example.TradeRepository;
 import com.example.model.Trade;
 import com.example.service.ListTradesRequest;
 import com.example.service.ListTradesResponse;
@@ -23,16 +24,30 @@ import com.example.service.TradeServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import org.lognet.springboot.grpc.GRpcService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 @GRpcService
 public class TradeServiceImpl extends TradeServiceGrpc.TradeServiceImplBase {
+
+	@Autowired
+	private TradeRepository tradeRepository;
 
 	@Override
 	public void listTrades(ListTradesRequest request, StreamObserver<ListTradesResponse> responseObserver) {
 
-		ListTradesResponse response = ListTradesResponse.newBuilder()
-				.addTrade(Trade.newBuilder().setSymbol("ABC").setShares(10).setPrice(3.14))
-				.build();
-		responseObserver.onNext(response);
+		ListTradesResponse.Builder responseBuilder = ListTradesResponse.newBuilder();
+		tradeRepository.findAll().forEach(tradeEntity -> {
+			responseBuilder.addTrade(
+					Trade.newBuilder()
+						.setAction(tradeEntity.getAction())
+						.setPrice(tradeEntity.getPrice())
+						.setShares(tradeEntity.getShares())
+						.setTradeId(tradeEntity.getTradeId())
+						.setSymbol(tradeEntity.getSymbol())
+			);
+		});
+
+		responseObserver.onNext(responseBuilder.build());
 		responseObserver.onCompleted();
 	}
 }

@@ -30,7 +30,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  * @author Mike Eltsufin
  */
 @Table(name = "trades")
-public class Trade {
+public class TradeEntity {
 
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trade_id")
@@ -50,12 +50,12 @@ public class Trade {
 
 	private List<Double> curve;
 
-	public Trade() {
+	public TradeEntity() {
 	}
 
-	public Trade(String tradeId, String action, Double price, Double shares,
-			String symbol, String traderId,
-			List<Double> curve) {
+	public TradeEntity(String tradeId, String action, Double price, Double shares,
+					String symbol, String traderId,
+					List<Double> curve) {
 		this.tradeId = tradeId;
 		this.action = action;
 		this.price = price;
@@ -123,7 +123,7 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "Trade{" +
+		return "TradeEntity{" +
 				"tradeId=" + this.tradeId +
 				", traderId='" + this.traderId + '\'' +
 				", action='" + this.action + '\'' +
