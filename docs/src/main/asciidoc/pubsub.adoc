@@ -25,22 +25,15 @@ dependencies {
 
 This starter is also available from https://start.spring.io[Spring Initializr] through the `GCP Messaging` entry.
 
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[sample application] is available.
 
 === Pub/Sub Operations & Template
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without depending on any Google Cloud Pub/Sub API semantics.
 It provides the common set of operations needed to interact with Google Cloud Pub/Sub.
 `PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub] to interact with Google Cloud Pub/Sub.
-
-`PubSubTemplate` depends on a `PublisherFactory` and a `SubscriberFactory`.
-The `PublisherFactory` provides a Google Cloud Java Client for Pub/Sub `Publisher`.
-The `SubscriberFactory` provides the `Subscriber` for asynchronous message pulling, as well as a `SubscriberStub` for synchronous pulling.
-The Spring Boot starter for GCP Pub/Sub auto-configures a `PublisherFactory` and `SubscriberFactory` with default settings and uses the `GcpProjectIdProvider` and `CredentialsProvider` auto-configured by the Spring Boot GCP starter.
-
-The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub, `DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource utilization.
-
-The `PubSubOperations` interface is actually a combination of `PubSubPublisherOperations` and `PubSubSubscriberOperations` with the corresponding `PubSubPublisherTemplate` and `PubSubSubscriberTemplate` implementations, which can be used individually or via the composite `PubSubTemplate`.
-The rest of the documentation refers to `PubSubTemplate`, but the same applies to `PubSubPublisherTemplate` and `PubSubSubscriberTemplate`, depending on whether we're talking about publishing or subscribing.
 
 ==== Publishing to a topic
 
@@ -49,69 +42,113 @@ The `publish()` method takes in a topic name to post the message to, a payload o
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
-[source,java]
+[source,java,indent=0]
 ----
-public void publishMessage() {
-    this.pubSubTemplate.publish("topic", "your message payload", Collections.singletonMap("key1", "val1"));
-}
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=publish]
 ----
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
-
-===== JSON support
-
-For serialization and deserialization of POJOs using Jackson JSON, configure a `JacksonPubSubMessageConverter` bean, and the Spring Boot starter for GCP Pub/Sub will automatically wire it into the `PubSubTemplate`.
-
-[source,java]
-----
-// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
-// You will have to configure your own instance if you are unable to depend
-// on the ObjectMapper provided by Spring Boot starters.
-@Bean
-public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
-    return new JacksonPubSubMessageConverter(objectMapper);
-}
-----
-
-Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
-Other implementations of the `PubSubMessageConverter` can also be configured in the same manner.
-
-Please refer to our link:../spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
 
 ==== Subscribing to a subscription
 
 Google Cloud Pub/Sub allows many subscriptions to be associated to the same topic.
 `PubSubTemplate` allows you to listen to subscriptions via the `subscribe()` method.
-It relies on a `SubscriberFactory` object, whose only task is to generate Google Cloud Pub/Sub
-`Subscriber` objects.
 When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub
-asynchronously, at a certain interval.
+asynchronously and passed to a user provided message handler.
 
-The Spring Boot starter for Google Cloud Pub/Sub auto-configures a `SubscriberFactory`.
+===== Example
+Subscribe to a subscription with a message handler:
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]
+----
+===== Subscribe methods
+`PubSubTemplate` provides the following subscribe methods:
 
-If Pub/Sub message payload conversion is desired, you can use the `subscribeAndConvert()` method, which will use the converter configured in the template.
+[cols="20,80"]
+|===
+h|subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) | asynchronously pulls messages and passes them to `messageConsumer`
+h|subscribeAndConvert(String subscription,
+ 			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer,
+ 			Class<T> payloadType) | same as `pull`, but converts message payload to `payloadType` using the converter configured in the template
+|===
+
 
 ==== Pulling messages from a subscription
 
 Google Cloud Pub/Sub supports synchronous pulling of messages from a subscription.
-This is different from subscribing to a subscription, in the sense that subscribing is an asynchronous task which polls the subscription on a set interval.
+This is different from subscribing to a subscription, in the sense that subscribing is an asynchronous task.
 
-The `pullNext()` method allows for a single message to be pulled and automatically acknowledged from a subscription.
-The `pull()` method pulls a number of messages from a subscription, allowing for the retry settings to be configured.
-Any messages received by `pull()` are not automatically acknowledged.
-Instead, since they are of the kind `AcknowledgeablePubsubMessage`, you can acknowledge them by calling the `ack()` method, or negatively acknowledge them by calling the `nack()` method.
-The `pullAndAck()` method does the same as the `pull()` method and, additionally, acknowledges all received messages.
+===== Example
+Pull up to 10 messages:
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=pull]
+----
 
-The `pullAndConvert()` method does the same as the `pull()` method and, additionally, converts the Pub/Sub binary payload to an object of the desired type, using the converter configured in the template.
+===== Pull methods
 
-To acknowledge multiple messages received from `pull()` or `pullAndConvert()` at once, you can use the `PubSubTemplate.ack()` method.
+`PubsubTemplate` provides the following pull methods:
+[cols="20,80"]
+|===
+h|pull(String subscription, Integer maxMessages,
+       			Boolean returnImmediately) | Pulls a number of messages from a subscription, allowing for the retry settings to be configured.
+       			Any messages received by `pull()` are not automatically acknowledged. See <<Acknowledging messages>>.
+
+       			If `returnImmediately` is `true`, the system will respond immediately even if it there are no messages available to return in the `Pull` response. Otherwise, the system may wait (for a bounded amount of time) until at least one message is available, rather than returning no messages.
+h|pullAndAck | Works the same as the `pull` method and, additionally, acknowledges all received messages.
+
+h|pullNext | Allows for a single message to be pulled and automatically acknowledged from a subscription.
+
+h|pullAndConvert | Works the same as the `pull` method and, additionally, converts the Pub/Sub binary payload to an object of the desired type, using the converter configured in the template.
+|===
+
+===== Acknowledging messages
+
+There are two ways to acknowledge messages.
+
+. To acknowledge multiple messages at once, you can use the `PubSubTemplate.ack()` method.
 You can also use the `PubSubTemplate.nack()` for negatively acknowledging messages.
-
 Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually, but they *require* the collection of messages to be from the same project.
 
-All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages as well as `PubSubSubscriberTemplate` are implemented asynchronously, returning a `ListenableFuture<Void>` to be able to process the asynchronous execution.
+. To acknowledge messages individually you can use the `ack()` or `nack()` method on each of them (to acknowledge or negatively acknowledge, correspondingly).
 
-`PubSubTemplate` uses a special subscriber generated by its `SubscriberFactory` to synchronously pull messages.
+NOTE: All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages as well as `PubSubSubscriberTemplate` are implemented asynchronously, returning a `ListenableFuture<Void>` to be able to process the asynchronous execution.
+
+==== JSON support
+
+For serialization and deserialization of POJOs using Jackson JSON, configure a `PubSubMessageConverter` bean, and the Spring Boot starter for GCP Pub/Sub will automatically wire it into the `PubSubTemplate`.
+
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_bean]
+----
+
+NOTE: Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
+Other implementations of the `PubSubMessageConverter` can also be configured in the same manner.
+
+Assuming you have the following class defined:
+
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_convertible_class]
+----
+
+You can serialize objects to JSON on publish automatically:
+
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_publish]
+----
+
+And thatt's how you convert messages to objects on pull:
+[source,java,indent=0]
+----
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_pull]
+----
+
+
+Please refer to our https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
 
 === Pub/Sub management
 
@@ -169,16 +206,9 @@ public List<Topic> listTopics
 
 Here is an example of how to list every Google Cloud Pub/Sub topic name in a project:
 
-[source,java]
+[source,java,indent=0]
 ----
-public List<String> listTopics() {
-    return pubSubAdmin
-        .listTopics()
-        .stream()
-        .map(Topic::getNameAsTopicName)
-        .map(TopicName::getTopic)
-        .collect(Collectors.toList());
-}
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_topics]
 ----
 
 ==== Creating a subscription
@@ -247,16 +277,9 @@ public List<Subscription> listSubscriptions()
 
 Here is an example of how to list every subscription name in a project:
 
-[source,java]
+[source,java,indent=0]
 ----
-public List<String> listSubscriptions() {
-    return pubSubAdmin
-        .listSubscriptions()
-        .stream()
-        .map(Subscription::getNameAsSubscriptionName)
-        .map(SubscriptionName::getSubscription)
-        .collect(Collectors.toList());
-}
+include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_subscriptions]
 ----
 
 [#pubsub-configuration]
@@ -324,7 +347,3 @@ After this amount of time has elapsed (counting from the first element added), t
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching.|No | false
 |===
-
-=== Sample
-
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[sample application] is available.
