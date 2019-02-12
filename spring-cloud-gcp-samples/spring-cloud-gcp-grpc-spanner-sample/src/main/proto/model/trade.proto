@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package com.example.model;
+
+message Trade {
+    string trade_id = 1;
+    string trader_id = 2;
+    string action = 3;
+    double price = 4;
+    double shares = 5;
+    string symbol = 6;
+}

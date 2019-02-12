@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package com.example.service;
+
+import "model/trade.proto";
+
+service TradeService {
+    rpc listTrades (ListTradesRequest) returns (ListTradesResponse);
+}
+
+message ListTradesRequest {
+
+}
+
+message ListTradesResponse {
+    repeated com.example.model.Trade trade = 1;
+}
