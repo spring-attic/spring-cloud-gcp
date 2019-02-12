@@ -18,13 +18,20 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.datastore.Datastore;
+import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicator;
+import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorConfiguration;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.annotation.Bean;
 
@@ -35,17 +42,27 @@ import static org.mockito.Mockito.mock;
  * Tests for Datastore auto-config.
  *
  * @author Chengyuan Zhao
+ * @author Raghavan N S
+ * @author Srinivasa Meenavalli
  */
 public class GcpDatastoreAutoConfigurationTests {
 
+	private DatastoreHealthIndicator datastoreHealthIndicator;
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class, DatastoreTransactionManagerAutoConfiguration.class,
+					GcpContextAutoConfiguration.class,
+					DatastoreTransactionManagerAutoConfiguration.class,
 					DatastoreRepositoriesAutoConfiguration.class,
-					TestRepository.class))
+					DatastoreHealthIndicatorAutoConfiguration.class,
+					DatastoreHealthIndicatorConfiguration.class,
+					DatastoreHealthIndicator.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace-id=testNamespace");
+	@Before
+	public void setUp() {
+		datastoreHealthIndicator = new DatastoreHealthIndicator(mock(Datastore.class));
+	}
 
 	@Test
 	public void testDatastoreOperationsCreated() {
@@ -65,6 +82,28 @@ public class GcpDatastoreAutoConfigurationTests {
 			assertThat(transactionManager).isNotNull();
 			assertThat(transactionManager)
 					.isInstanceOf(DatastoreTransactionManager.class);
+		});
+	}
+
+	@Test
+	public void testDatastoreTemplateCreated() {
+		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreTemplate.class)).isNotNull());
+	}
+
+	@Test
+	public void testDatastoreCreated() {
+		this.contextRunner.run((context) -> assertThat(context.getBean(Datastore.class)).isNotNull());
+	}
+
+	@Test
+	public void testDatastoreHealthIndicatorCreated() {
+		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreHealthIndicator.class)).isNotNull());
+	}
+
+	@Test
+	public void testDatastoreHealthIndicator() {
+		this.contextRunner.run((context) -> {
+			assertThat(datastoreHealthIndicator.health().getStatus().getCode()).isEqualTo(Status.UP.toString());
 		});
 	}
 

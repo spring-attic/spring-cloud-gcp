@@ -219,13 +219,13 @@
             <artifactId>spring-security-config</artifactId>
             <optional>true</optional>
         </dependency>
-
+		
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-resource-server</artifactId>
             <optional>true</optional>
         </dependency>
-        
+				
 		<!-- Actuator -->
 		<dependency>
 	  		<groupId>org.springframework.boot</groupId>

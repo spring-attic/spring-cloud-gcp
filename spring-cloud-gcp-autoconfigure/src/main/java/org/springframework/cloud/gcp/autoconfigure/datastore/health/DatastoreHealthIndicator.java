@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 /**
- * Simple implementation of a {@link HealthIndicator} returning status information for Google cloud
- * data store.
+ * Simple implementation of a {@link HealthIndicator} returning status information for Google
+ * Cloud Datastore.
  *
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
