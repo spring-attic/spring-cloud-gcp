@@ -62,7 +62,7 @@ public class Trade {
 
 	private List<Instant> executionTimes;
 
-	@Interleaved(lazy = true)
+	@Interleaved
 	private List<SubTrade> subTrades;
 
 	public static Trade aTrade() {
