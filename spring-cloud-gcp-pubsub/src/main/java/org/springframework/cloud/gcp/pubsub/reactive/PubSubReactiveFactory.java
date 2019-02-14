@@ -16,16 +16,19 @@
 
 package org.springframework.cloud.gcp.pubsub.reactive;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
-import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
-
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
+
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 
 /**
  * Creates a Flux populated by using Pub/Sub Synchronous Pull.
@@ -33,18 +36,20 @@ import java.util.concurrent.Executors;
  * @author Elena Felder
  * @since 1.2
  */
-public class FluxSubscriber {
+public final class PubSubReactiveFactory {
 
-	private static final Log LOGGER = LogFactory.getLog(FluxSubscriber.class);
+	private static final Log LOGGER = LogFactory.getLog(PubSubReactiveFactory.class);
 
-	public static <T> Flux<ConvertedAcknowledgeablePubsubMessage<T>> createPolledFlux(
-			PubSubSubscriberOperations subscriberOperations, Class<T> targetType) {
+	private PubSubReactiveFactory() { }
+
+	public static <T> Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
+			String subscriptionName, PubSubSubscriberOperations subscriberOperations, Class<T> targetType) {
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 
 		return Flux.create(sink -> {
 			sink.onRequest((numRequested) -> {
 				// request must be non-blocking.
-				executorService.submit(new PubSubPullTask<T>(numRequested, sink, subscriberOperations, targetType));
+				executorService.submit(new PubSubPullTask(subscriptionName, numRequested, sink, subscriberOperations));
 			});
 
 			sink.onDispose(() -> {
@@ -53,17 +58,17 @@ public class FluxSubscriber {
 		});
 	}
 
-	private static class PubSubPullTask<T> implements Runnable {
+	private static class PubSubPullTask implements Runnable {
 		private int demand;
 		private FluxSink sink;
 		private PubSubSubscriberOperations subscriberOperations;
-		private Class<T> targetType;
+		private String subscriptionName;
 
-		public PubSubPullTask(long demand, FluxSink<ConvertedAcknowledgeablePubsubMessage<T>> sink, PubSubSubscriberOperations subscriberOperations, Class<T> targetType) {
+		PubSubPullTask(String subscriptionName, long demand, FluxSink<AcknowledgeablePubsubMessage> sink, PubSubSubscriberOperations subscriberOperations) {
+			this.subscriptionName = subscriptionName;
 			this.demand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
 			this.sink = sink;
 			this.subscriberOperations = subscriberOperations;
-			this.targetType = targetType;
 		}
 
 		@Override
@@ -74,15 +79,13 @@ public class FluxSubscriber {
 				int numToRequest = remainingDemand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) remainingDemand;
 
 				LOGGER.info("  Current remaining demand: " + remainingDemand);
-				List<ConvertedAcknowledgeablePubsubMessage<T>> messages
-						= this.subscriberOperations.pullAndConvert("reactiveSubscription",
-						numToRequest,
-						false,
-						targetType);
+				List<AcknowledgeablePubsubMessage> messages
+						= this.subscriberOperations.pull(this.subscriptionName, numToRequest, false);
 
 				int numReceived = messages.size();
 				messages.forEach(m -> {
-					LOGGER.info("Sending message to subscriber: " + m.getPayload());
+					LOGGER.info("Sending message to subscriber: "
+							+ new String(m.getPubsubMessage().getData().toByteArray(), Charset.defaultCharset()));
 					sink.next(m);
 				});
 				remainingDemand -= numReceived;

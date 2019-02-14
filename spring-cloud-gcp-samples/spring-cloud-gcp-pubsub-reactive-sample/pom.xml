@@ -28,6 +28,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--is this needed for this sample? or just flux? -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>

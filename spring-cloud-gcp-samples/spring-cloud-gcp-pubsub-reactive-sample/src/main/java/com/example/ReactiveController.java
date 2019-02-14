@@ -16,12 +16,15 @@
 
 package com.example;
 
+import java.nio.charset.Charset;
+
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.reactive.FluxSubscriber;
-import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.reactive.PubSubReactiveFactory;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +41,13 @@ public class ReactiveController {
 
 	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<? super String> getMessages() {
-		Flux<ConvertedAcknowledgeablePubsubMessage<String>> flux
-				= FluxSubscriber.createPolledFlux(this.template, String.class);
+		Publisher<AcknowledgeablePubsubMessage> flux
+				= PubSubReactiveFactory.createPolledPublisher("reactiveSubscription", this.template, String.class);
 
-		return flux
+		return Flux.from(flux)
 				.doOnNext(message -> message.ack())
-				.map(message -> message.getPayload());
+				.map(message -> new String(
+						message.getPubsubMessage().getData().toByteArray(),
+						Charset.defaultCharset()));
 	}
 }
