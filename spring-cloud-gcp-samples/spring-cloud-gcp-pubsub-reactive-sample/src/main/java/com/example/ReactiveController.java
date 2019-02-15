@@ -42,7 +42,7 @@ public class ReactiveController {
 	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<? super String> getMessages() {
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= PubSubReactiveFactory.createPolledPublisher("reactiveSubscription", this.template, String.class);
+				= PubSubReactiveFactory.createPolledPublisher("reactiveSubscription", this.template);
 
 		return Flux.from(flux)
 				.doOnNext(message -> message.ack())

@@ -43,7 +43,7 @@ public final class PubSubReactiveFactory {
 	private PubSubReactiveFactory() { }
 
 	public static <T> Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
-			String subscriptionName, PubSubSubscriberOperations subscriberOperations, Class<T> targetType) {
+			String subscriptionName, PubSubSubscriberOperations subscriberOperations) {
 
 		return Flux.<List<AcknowledgeablePubsubMessage>>create(sink -> {
 
