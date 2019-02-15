@@ -347,7 +347,7 @@ public class PubSubSubscriberTemplateTests {
 	public void testPull_AndManualMultiSubscriptionAck()
 			throws InterruptedException, ExecutionException, TimeoutException {
 		ExecutorService mockExecutor = Mockito.mock(ExecutorService.class);
-		this.pubSubSubscriberTemplate.setAckExecutor(mockExecutor);
+		this.pubSubSubscriberTemplate.setCallbackExecutor(mockExecutor);
 
 		List<AcknowledgeablePubsubMessage> result1 = this.pubSubSubscriberTemplate.pull(
 				"sub1", 1, true);

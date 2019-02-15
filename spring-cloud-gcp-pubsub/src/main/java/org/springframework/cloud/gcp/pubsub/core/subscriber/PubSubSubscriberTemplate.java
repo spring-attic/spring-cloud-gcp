@@ -82,9 +82,9 @@ public class PubSubSubscriberTemplate
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
-	private final ExecutorService defaultAckExecutor = Executors.newSingleThreadExecutor();
+	private final ExecutorService defaultCallbackExecutor = Executors.newSingleThreadExecutor();
 
-	private Executor ackExecutor = this.defaultAckExecutor;
+	private Executor callbackExecutor = this.defaultCallbackExecutor;
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor.
@@ -109,9 +109,9 @@ public class PubSubSubscriberTemplate
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
 
-	public void setAckExecutor(Executor ackExecutor) {
-		Assert.notNull(ackExecutor, "ackExecutor can't be null.");
-		this.ackExecutor = ackExecutor;
+	public void setCallbackExecutor(Executor callbackExecutor) {
+		Assert.notNull(callbackExecutor, "callbackExecutor can't be null.");
+		this.callbackExecutor = callbackExecutor;
 	}
 
 	@Override
@@ -170,19 +170,19 @@ public class PubSubSubscriberTemplate
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
-		return pullResponse.getReceivedMessagesList().stream()
-						.map((message) -> new PulledAcknowledgeablePubsubMessage(
-								ProjectSubscriptionName.of(
-										this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
-								message.getMessage(),
-								message.getAckId()))
-						.collect(Collectors.toList());
+		return extractAcknowledgeableMessages(pullRequest, pullResponse);
 	}
 
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(
 			String subscription, Integer maxMessages, Boolean returnImmediately) {
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
+				returnImmediately));
+	}
+
+	@Override
+	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages, Boolean returnImmediately) {
+		return pullAsync(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
 	}
 
@@ -282,7 +282,7 @@ public class PubSubSubscriberTemplate
 	 */
 	@Override
 	public void destroy() {
-		this.defaultAckExecutor.shutdown();
+		this.defaultCallbackExecutor.shutdown();
 	}
 
 	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
@@ -357,8 +357,45 @@ public class PubSubSubscriberTemplate
 						settableListenableFuture.set(null);
 					}
 				}
-			}, this.ackExecutor);
+			}, this.callbackExecutor);
 		});
+
+		return settableListenableFuture;
+	}
+
+	private List<AcknowledgeablePubsubMessage> extractAcknowledgeableMessages(PullRequest pullRequest, PullResponse pullResponse) {
+		return pullResponse.getReceivedMessagesList().stream()
+				.map((message) -> new PulledAcknowledgeablePubsubMessage(
+						ProjectSubscriptionName.of(
+								this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
+						message.getMessage(),
+						message.getAckId()))
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Pulls messages synchronously, on demand, using the pull request in argument.
+	 *
+	 * @param pullRequest pull request containing the subscription name
+	 * @return the list of {@link AcknowledgeablePubsubMessage} containing the ack ID, subscription
+	 * and acknowledger
+	 */
+	private ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(PullRequest pullRequest) {
+		Assert.notNull(pullRequest, "The pull request can't be null.");
+
+		SettableListenableFuture<List<AcknowledgeablePubsubMessage>> settableListenableFuture = new SettableListenableFuture<>();
+		ApiFuture<PullResponse> responseFuture = this.subscriberStub.pullCallable().futureCall(pullRequest);
+		ApiFutures.addCallback(responseFuture, new ApiFutureCallback<PullResponse>() {
+			@Override
+			public void onFailure(Throwable throwable) {
+				settableListenableFuture.setException(throwable);
+			}
+
+			@Override
+			public void onSuccess(PullResponse pullResponse) {
+				settableListenableFuture.set(extractAcknowledgeableMessages(pullRequest, pullResponse));
+			}
+		}, this.callbackExecutor);
 
 		return settableListenableFuture;
 	}

@@ -16,11 +16,10 @@
 
 package org.springframework.cloud.gcp.pubsub.reactive;
 
-import java.nio.charset.Charset;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.function.Function;
 
+import com.google.api.gax.rpc.DeadlineExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
@@ -34,6 +33,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
  * Creates a Flux populated by using Pub/Sub Synchronous Pull.
  *
  * @author Elena Felder
+ *
  * @since 1.2
  */
 public final class PubSubReactiveFactory {
@@ -44,55 +44,41 @@ public final class PubSubReactiveFactory {
 
 	public static <T> Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
 			String subscriptionName, PubSubSubscriberOperations subscriberOperations, Class<T> targetType) {
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-		return Flux.create(sink -> {
+		return Flux.<List<AcknowledgeablePubsubMessage>>create(sink -> {
+
 			sink.onRequest((numRequested) -> {
-				// request must be non-blocking.
-				executorService.submit(new PubSubPullTask(subscriptionName, numRequested, sink, subscriberOperations));
+				int demand = numRequested > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) numRequested;
+				produceMessages(subscriptionName, demand, sink, subscriberOperations);
 			});
 
-			sink.onDispose(() -> {
-				executorService.shutdown();
-			});
-		});
+		}).flatMapIterable(Function.identity());
 	}
 
-	private static class PubSubPullTask implements Runnable {
-		private int demand;
-		private FluxSink sink;
-		private PubSubSubscriberOperations subscriberOperations;
-		private String subscriptionName;
+	private static void produceMessages(String subscriptionName, int demand, FluxSink<List<AcknowledgeablePubsubMessage>> sink, PubSubSubscriberOperations subscriberOperations) {
 
-		PubSubPullTask(String subscriptionName, long demand, FluxSink<AcknowledgeablePubsubMessage> sink, PubSubSubscriberOperations subscriberOperations) {
-			this.subscriptionName = subscriptionName;
-			this.demand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
-			this.sink = sink;
-			this.subscriberOperations = subscriberOperations;
-		}
+		subscriberOperations.pullAsync(subscriptionName, demand, false).addCallback(
+				acknowledgeablePubsubMessages -> {
 
-		@Override
-		public void run() {
-			long remainingDemand = demand;
+					sink.next(acknowledgeablePubsubMessages);
 
-			while (remainingDemand > 0) {
-				int numToRequest = remainingDemand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) remainingDemand;
+					int remainingDemand = demand - acknowledgeablePubsubMessages.size();
 
-				LOGGER.info("  Current remaining demand: " + remainingDemand);
-				List<AcknowledgeablePubsubMessage> messages
-						= this.subscriberOperations.pull(this.subscriptionName, numToRequest, false);
+					if (remainingDemand > 0) {
+						// Ensure requested messages get fulfilled eventually.
+						produceMessages(subscriptionName, remainingDemand, sink, subscriberOperations);
+					}
 
-				int numReceived = messages.size();
-				messages.forEach(m -> {
-					LOGGER.info("Sending message to subscriber: "
-							+ new String(m.getPubsubMessage().getData().toByteArray(), Charset.defaultCharset()));
-					sink.next(m);
-				});
-				remainingDemand -= numReceived;
-				LOGGER.info("Got " + numReceived + " messages; remaining demand = " + remainingDemand);
-
-			}
-		}
+				}, throwable -> {
+					if (throwable instanceof DeadlineExceededException)  {
+						LOGGER.warn("Pub/Sub deadline exceeded; retrying.");
+						produceMessages(subscriptionName, demand, sink, subscriberOperations);
+					}
+					else {
+						sink.error(throwable);
+					}
+				}
+		);
 	}
 
 }
