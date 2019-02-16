@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
-import com.google.api.gax.longrunning.OperationSnapshot;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.AsyncAnnotateFileRequest;
-import com.google.cloud.vision.v1.AsyncAnnotateFileResponse;
 import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Feature.Type;
@@ -34,10 +34,9 @@ import com.google.cloud.vision.v1.OutputConfig;
 import com.google.longrunning.OperationsClient;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 public class DocumentOcrTemplate {
 
@@ -53,7 +52,7 @@ public class DocumentOcrTemplate {
 		this.storage = storage;
 	}
 
-	public ListenableFuture<DocumentOcrResult> runOcr(String gcsSourcePath, String jsonOutputFileNamePrefix)
+	public ListenableFuture<Void> runOcr(String gcsSourcePath, String jsonOutputFileNamePrefix)
 			throws IOException {
 
 		// GCS input configuration for the document
@@ -90,15 +89,28 @@ public class DocumentOcrTemplate {
 		OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> result =
 				imageAnnotatorClient.asyncBatchAnnotateFilesAsync(Collections.singletonList(request));
 
-
-		return null;
+		return convertGrpcFuture(result);
 	}
 
-	private OperationMetadata getOperationMetadata(OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> result)
-			throws ExecutionException, InterruptedException {
+	private static ListenableFuture<Void> convertGrpcFuture(
+			OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> grpcFuture) {
 
-		OperationMetadata x = result.getMetadata().get();
-		return x;
+		SettableListenableFuture<Void> result = new SettableListenableFuture<>();
+
+		ApiFutures.addCallback(grpcFuture, new ApiFutureCallback<AsyncBatchAnnotateFilesResponse>() {
+			@Override
+			public void onFailure(Throwable throwable) {
+				result.setException(throwable);
+			}
+
+			@Override
+			public void onSuccess(
+					AsyncBatchAnnotateFilesResponse asyncBatchAnnotateFilesResponse) {
+				result.set(null);
+			}
+		}, Runnable::run);
+
+		return result;
 	}
 
 	private String getContentType(String gcsSourcePath) throws IOException {
