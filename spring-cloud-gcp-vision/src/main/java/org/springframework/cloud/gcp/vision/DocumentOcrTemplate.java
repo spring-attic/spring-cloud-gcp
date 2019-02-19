@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.vision;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.AsyncAnnotateFileRequest;
 import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
@@ -34,11 +35,25 @@ import com.google.cloud.vision.v1.OutputConfig;
 import com.google.longrunning.OperationsClient;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.SettableListenableFuture;
 
 public class DocumentOcrTemplate {
+
+	private static final Set<String> SUPPORTED_FILE_FORMATS =
+			Stream.of("application/pdf", "image/tiff").collect(Collectors.toSet());
+
+	private static final String GCS_URI_FORMAT = "gs://%s/%s";
+
+	private static final Pattern JSON_OUTPUT_PAGE_PATTERN = Pattern.compile("(\\d+)-to-\\d+.json");
 
 	private final ImageAnnotatorClient imageAnnotatorClient;
 	private final OperationsClient operationsClient;
@@ -52,7 +67,19 @@ public class DocumentOcrTemplate {
 		this.storage = storage;
 	}
 
-	public ListenableFuture<Void> runOcr(String gcsSourcePath, String jsonOutputFileNamePrefix)
+	public ListenableFuture<Void> runOcrInBucket(String inputBucket, String outputBucket) {
+		Spliterator<Blob> blobSpliterator = this.storage.list(inputBucket).getValues().spliterator();
+
+		List<Blob> blobsToProcess = StreamSupport.stream(blobSpliterator, false)
+				.filter(blob -> SUPPORTED_FILE_FORMATS.contains(blob.getContentType()))
+				.collect(Collectors.toList());
+
+		ListenableFuture<Void> lf;
+
+
+	}
+
+	CompletableFuture<Void> runOcr(String gcsSourcePath, String jsonOutputPathPrefix)
 			throws IOException {
 
 		// GCS input configuration for the document
@@ -68,7 +95,7 @@ public class DocumentOcrTemplate {
 
 		// GCS configuration for the JSON output file.
 		GcsDestination gcsDestination = GcsDestination.newBuilder()
-				.setUri(jsonOutputFileNamePrefix)
+				.setUri(jsonOutputPathPrefix)
 				.build();
 
 		OutputConfig outputConfig = OutputConfig.newBuilder()
@@ -89,24 +116,41 @@ public class DocumentOcrTemplate {
 		OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> result =
 				imageAnnotatorClient.asyncBatchAnnotateFilesAsync(Collections.singletonList(request));
 
-		return convertGrpcFuture(result);
+		return convertToCompletableFuture(result);
 	}
 
-	private static ListenableFuture<Void> convertGrpcFuture(
+	// DocumentOcrResult getDocumentOcrResult(String jsonOutputPathPrefix) {
+	// 	GoogleStorageResource jsonLocation = new GoogleStorageResource(
+	// 			this.storage, jsonOutputPathPrefix, false);
+	//
+	// 	String bucket = jsonLocation.getBucketName();
+	// 	String prefix = jsonLocation.getBlobName();
+	//
+	// 	Spliterator<Blob> pageSpliterator =
+	// 			this.storage.list(bucket, BlobListOption.prefix(prefix)).getValues().spliterator();
+	//
+	// 	List<Blob> documentPages = StreamSupport.stream(pageSpliterator, false)
+	// 			.filter(blob -> !blob.getName().matches(JSON_OUTPUT_PAGE_PATTERN))
+	// 			.sorted(Comparator.comparingInt)
+	//
+	//
+	// 	return null;
+	// }
+
+	private static CompletableFuture<Void> convertToCompletableFuture(
 			OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> grpcFuture) {
 
-		SettableListenableFuture<Void> result = new SettableListenableFuture<>();
-
+		CompletableFuture<Void> result = new CompletableFuture<>();
 		ApiFutures.addCallback(grpcFuture, new ApiFutureCallback<AsyncBatchAnnotateFilesResponse>() {
 			@Override
 			public void onFailure(Throwable throwable) {
-				result.setException(throwable);
+				result.completeExceptionally(throwable);
 			}
 
 			@Override
 			public void onSuccess(
 					AsyncBatchAnnotateFilesResponse asyncBatchAnnotateFilesResponse) {
-				result.set(null);
+				result.complete(null);
 			}
 		}, Runnable::run);
 

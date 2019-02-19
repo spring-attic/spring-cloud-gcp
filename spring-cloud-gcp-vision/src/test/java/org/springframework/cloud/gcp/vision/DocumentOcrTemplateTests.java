@@ -18,7 +18,11 @@ package org.springframework.cloud.gcp.vision;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.BlobListOption;
+import com.google.cloud.storage.Storage.BucketListOption;
 import com.google.cloud.storage.StorageOptions;
 import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
@@ -27,6 +31,7 @@ import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,22 +45,35 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.concurrent.ListenableFuture;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DocumentOcrTemplateTestsConfiguration.class })
 public class DocumentOcrTemplateTests {
 
 	@Autowired
+	public Storage storage;
+
+	@Autowired
 	public DocumentOcrTemplate documentOcrTemplate;
 
 	@Test
-	public void testDocumentOcr() throws IOException {
-		OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> response =
-				documentOcrTemplate.runOcr(
-						"gs://my-pdfs-bucket-888/testpdf.pdf",
-						"gs://my-pdfs-bucket-888/blah/testpdf");
+	public void testDocumentOcr() throws IOException, ExecutionException, InterruptedException {
+		// ListenableFuture<Void> response =
+		// 		documentOcrTemplate.runOcr(
+		// 				"gs://my-pdfs-bucket-888/testpdf.pdf",
+		// 				"gs://my-pdfs-bucket-888/blah/testpdf");
+		//
+		// response.addCallback(
+		// 		(result) -> System.out.println("Yay, I am done."),
+		// 		(throwable) -> System.out.println("I failed: " + throwable));
 
-		System.out.println(response);
+		// response.get();
+
+		Page<Blob> blobs = storage.list("my-pdfs-bucket-888");
+
+		blobs.getValues().forEach(b -> System.out.println(b.getName()));
+		blobs.getValues().forEach(b -> System.out.println(b.getContentType()));
 	}
 
 	@Configuration

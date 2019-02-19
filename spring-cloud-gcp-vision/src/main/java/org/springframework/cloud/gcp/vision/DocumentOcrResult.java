@@ -16,14 +16,53 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.vision.v1.AnnotateFileResponse;
+import com.google.cloud.vision.v1.TextAnnotation;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 public class DocumentOcrResult {
 
-	public final String outputFilenamePrefix;
+	private final Storage storageClient;
 
-	public final int pageCount;
+	private final List<Blob> pageBlobs;
 
-	public DocumentOcrResult(String outputFilenamePrefix, int pageCount) {
-		this.outputFilenamePrefix = outputFilenamePrefix;
-		this.pageCount = pageCount;
+	public DocumentOcrResult(List<Blob> pages, Storage storageClient) {
+		this.pageBlobs = pages;
+		this.storageClient = storageClient;
+	}
+
+	public int getPageCount() {
+		return this.pageBlobs.size();
+	}
+
+	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
+		Blob pageBlob = this.pageBlobs.get(pageNumber);
+		return parseJsonBlob(pageBlob);
+	}
+
+	public List<TextAnnotation> getAllPages() throws InvalidProtocolBufferException {
+		ArrayList<TextAnnotation> textAnnotationPages = new ArrayList<>();
+		
+		for (Blob blob : this.pageBlobs) {
+			TextAnnotation textAnnotation = parseJsonBlob(blob);
+			textAnnotationPages.add(textAnnotation);
+		}
+
+		return textAnnotationPages;
+	}
+
+	private static TextAnnotation parseJsonBlob(Blob blob) throws InvalidProtocolBufferException {
+		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
+		String jsonContent = new String(blob.getContent());
+		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
+
+		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
+
+		return annotateFileResponse.getResponses(0).getFullTextAnnotation();
 	}
 }
