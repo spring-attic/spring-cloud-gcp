@@ -68,6 +68,7 @@ public class Trade {
 	/**
 	 * Partial constructor. Intentionally tests a field that is left null sometimes.
 	 * @param symbol the symbol.
+	 * @param executionTimes the list of execution times.
 	 */
 	public Trade(String symbol, List<Instant> executionTimes) {
 		this.symbol = symbol;
