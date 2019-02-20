@@ -36,7 +36,7 @@ public class DeleteEvent extends ApplicationEvent {
 
 	private final Iterable targetEntities;
 
-    /**
+	/**
 	 * Constructor.
 	 *
 	 * @param keysToDelete The keys that are deleted in this operation (never {@code null}).
@@ -60,7 +60,7 @@ public class DeleteEvent extends ApplicationEvent {
 	 */
 	public Key[] getKeys() {
 		return (Key[]) getSource();
-    }
+	}
 
 	/**
 	 * Get the target entity type deleted.
