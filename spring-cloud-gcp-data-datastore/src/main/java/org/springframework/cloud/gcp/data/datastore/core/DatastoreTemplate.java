@@ -58,6 +58,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -168,32 +170,36 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> void deleteById(Object id, Class<T> entityClass) {
-		getDatastoreReadWriter().delete(getKeyFromId(id, entityClass));
+		performDelete(new Key[] { getKeyFromId(id, entityClass) }, Collections.singletonList(id), null, entityClass);
 	}
 
 	@Override
 	public <T> void deleteAllById(Iterable<?> ids, Class<T> entityClass) {
-		List<Key> keys = getKeysFromIds(ids, entityClass);
-		getDatastoreReadWriter().delete(keys.toArray(new Key[keys.size()]));
+		performDelete(getKeysFromIds(ids, entityClass).toArray(new Key[0]), ids, null, entityClass);
 	}
 
 	@Override
 	public <T> void delete(T entity) {
-		getDatastoreReadWriter().delete(getKey(entity, false));
+		performDelete(new Key[] { getKey(entity, false) }, null, Collections.singletonList(entity), entity.getClass());
 	}
 
 	@Override
 	public <T> void deleteAll(Iterable<T> entities) {
-		getDatastoreReadWriter()
-				.delete(StreamSupport.stream(entities.spliterator(), false)
-				.map((x) -> getKey(x, false)).toArray(Key[]::new));
+		performDelete(StreamSupport.stream(entities.spliterator(), false)
+				.map((x) -> getKey(x, false)).toArray(Key[]::new), null, entities, null);
 	}
 
 	@Override
 	public long deleteAll(Class<?> entityClass) {
 		Key[] keysToDelete = findAllKeys(entityClass);
-		getDatastoreReadWriter().delete(keysToDelete);
+		performDelete(keysToDelete, null, null, entityClass);
 		return keysToDelete.length;
+	}
+
+	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
+		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
+		getDatastoreReadWriter().delete(keys);
+		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
 	}
 
 	@Override

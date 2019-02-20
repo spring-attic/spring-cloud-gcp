@@ -16,15 +16,70 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
+import com.google.cloud.datastore.Key;
+
 import org.springframework.context.ApplicationEvent;
 
+/**
+ * An event published when Spring Data Cloud Datastore performs a delete operation.
+ *
+ * @author Chengyuan Zhao
+ */
 public class DeleteEvent extends ApplicationEvent {
+
+	private final Class targetEntityClass;
+
+	private final Iterable targetIds;
+
+	private final Iterable targetEntities;
+
     /**
-     * Create a new ApplicationEvent.
-     *
-     * @param source the object on which the event initially occurred (never {@code null})
-     */
-    public DeleteEvent(Object source) {
-        super(source);
+	 * Constructor.
+	 *
+	 * @param keysToDelete The keys that are deleted in this operation (never {@code null}).
+	 * @param targetEntityClass The target entity type deleted. This may be {@code null}
+	 *     depending on the specific delete operation.
+	 * @param targetIds The target entity ID values deleted. This may be {@code null}
+	 *     depending on the specific delete operation.
+	 * @param targetEntities The target entity objects deleted. This may be {@code null}
+	 *     depending on the specific delete operation.
+	 */
+	public DeleteEvent(Key[] keysToDelete, Class targetEntityClass, Iterable targetIds, Iterable targetEntities) {
+		super(keysToDelete);
+		this.targetEntityClass = targetEntityClass;
+		this.targetIds = targetIds;
+		this.targetEntities = targetEntities;
+	}
+
+	/**
+	 * Get the keys that were deleted in this operation.
+	 * @return the array of keys.
+	 */
+	public Key[] getKeys() {
+		return (Key[]) getSource();
     }
+
+	/**
+	 * Get the target entity type deleted.
+	 * @return This may be {@code null} depending on the specific delete operation.
+	 */
+	public Class getTargetEntityClass() {
+		return this.targetEntityClass;
+	}
+
+	/**
+	 * Get the target entity ID values deleted.
+	 * @return This may be {@code null} depending on the specific delete operation.
+	 */
+	public Iterable getTargetIds() {
+		return this.targetIds;
+	}
+
+	/**
+	 * Get thetarget entity objects deleted.
+	 * @return This may be {@code null} depending on the specific delete operation.
+	 */
+	public Iterable getTargetEntities() {
+		return this.targetEntities;
+	}
 }
