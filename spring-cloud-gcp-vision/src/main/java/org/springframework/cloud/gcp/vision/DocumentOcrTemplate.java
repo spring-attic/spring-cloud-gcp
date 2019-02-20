@@ -20,7 +20,9 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.vision.v1.AnnotateFileResponse;
 import com.google.cloud.vision.v1.AsyncAnnotateFileRequest;
 import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.Feature;
@@ -32,70 +34,76 @@ import com.google.cloud.vision.v1.InputConfig;
 
 import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.cloud.vision.v1.OutputConfig;
-import com.google.longrunning.OperationsClient;
+import com.google.cloud.vision.v1.TextAnnotation;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 public class DocumentOcrTemplate {
 
 	private static final Set<String> SUPPORTED_FILE_FORMATS =
 			Stream.of("application/pdf", "image/tiff").collect(Collectors.toSet());
 
-	private static final String GCS_URI_FORMAT = "gs://%s/%s";
+	private static final Pattern JSON_OUTPUT_PAGE_PATTERN = Pattern.compile("output-(\\d+)-to-\\d+.json");
 
-	private static final Pattern JSON_OUTPUT_PAGE_PATTERN = Pattern.compile("(\\d+)-to-\\d+.json");
+	private static final String JSON_OUTPUT_FOLDER_FORMAT = "gs://%s/ocr_results/%s/";
+	private static final String BLOB_URI_FORMAT = "gs://%s/%s";
 
 	private final ImageAnnotatorClient imageAnnotatorClient;
-	private final OperationsClient operationsClient;
 	private final Storage storage;
 
 	public DocumentOcrTemplate(
 			ImageAnnotatorClient imageAnnotatorClient,
 			Storage storage) {
 		this.imageAnnotatorClient = imageAnnotatorClient;
-		this.operationsClient = imageAnnotatorClient.getOperationsClient();
 		this.storage = storage;
 	}
 
-	public ListenableFuture<Void> runOcrInBucket(String inputBucket, String outputBucket) {
-		Spliterator<Blob> blobSpliterator = this.storage.list(inputBucket).getValues().spliterator();
-
-		List<Blob> blobsToProcess = StreamSupport.stream(blobSpliterator, false)
-				.filter(blob -> SUPPORTED_FILE_FORMATS.contains(blob.getContentType()))
-				.collect(Collectors.toList());
-
-		ListenableFuture<Void> lf;
-
-
-	}
-
-	CompletableFuture<Void> runOcr(String gcsSourcePath, String jsonOutputPathPrefix)
+	public List<DocumentOcrMetadata> runOcrForBucket(String inputBucketName, String outputBucketName)
 			throws IOException {
 
-		// GCS input configuration for the document
+		ArrayList<DocumentOcrMetadata> ocrMetadataList = new ArrayList<>();
+
+		for (Blob blob : this.storage.list(inputBucketName).getValues()) {
+			if (SUPPORTED_FILE_FORMATS.contains(blob.getContentType())) {
+				String sourcePathUri = getBlobUri(blob, inputBucketName);
+				String outputPathUri = getOutputFolderUri(blob, outputBucketName);
+
+				DocumentOcrMetadata ocrMetadata = runOcrForDocument(sourcePathUri, outputPathUri);
+				ocrMetadataList.add(ocrMetadata);
+			}
+		}
+
+		return ocrMetadataList;
+	}
+
+	public DocumentOcrMetadata runOcrForDocument(String documentUri, String jsonOutputUriPrefix)
+			throws IOException {
+
+
+
 		GcsSource gcsSource = GcsSource.newBuilder()
-				.setUri(gcsSourcePath)
+				.setUri(documentUri)
 				.build();
 
-		String contentType = getContentType(gcsSourcePath);
+		String contentType = getContentType(documentUri);
 		InputConfig inputConfig = InputConfig.newBuilder()
 				.setMimeType(contentType)
 				.setGcsSource(gcsSource)
 				.build();
 
-		// GCS configuration for the JSON output file.
 		GcsDestination gcsDestination = GcsDestination.newBuilder()
-				.setUri(jsonOutputPathPrefix)
+				.setUri(jsonOutputUriPrefix)
 				.build();
 
 		OutputConfig outputConfig = OutputConfig.newBuilder()
@@ -116,45 +124,23 @@ public class DocumentOcrTemplate {
 		OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> result =
 				imageAnnotatorClient.asyncBatchAnnotateFilesAsync(Collections.singletonList(request));
 
-		return convertToCompletableFuture(result);
+		return new DocumentOcrMetadata(documentUri, convertToSpringFuture(result));
 	}
 
-	// DocumentOcrResult getDocumentOcrResult(String jsonOutputPathPrefix) {
-	// 	GoogleStorageResource jsonLocation = new GoogleStorageResource(
-	// 			this.storage, jsonOutputPathPrefix, false);
-	//
-	// 	String bucket = jsonLocation.getBucketName();
-	// 	String prefix = jsonLocation.getBlobName();
-	//
-	// 	Spliterator<Blob> pageSpliterator =
-	// 			this.storage.list(bucket, BlobListOption.prefix(prefix)).getValues().spliterator();
-	//
-	// 	List<Blob> documentPages = StreamSupport.stream(pageSpliterator, false)
-	// 			.filter(blob -> !blob.getName().matches(JSON_OUTPUT_PAGE_PATTERN))
-	// 			.sorted(Comparator.comparingInt)
-	//
-	//
-	// 	return null;
-	// }
+	public TextAnnotation parseJsonOutput(String bucketName, String pathToFile)
+			throws InvalidProtocolBufferException {
+		Blob jsonBlob = this.storage.get(BlobId.of(bucketName, pathToFile));
+		return parseJsonBlob(jsonBlob);
+	}
 
-	private static CompletableFuture<Void> convertToCompletableFuture(
-			OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> grpcFuture) {
+	static TextAnnotation parseJsonBlob(Blob blob) throws InvalidProtocolBufferException {
+		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
+		String jsonContent = new String(blob.getContent());
+		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
 
-		CompletableFuture<Void> result = new CompletableFuture<>();
-		ApiFutures.addCallback(grpcFuture, new ApiFutureCallback<AsyncBatchAnnotateFilesResponse>() {
-			@Override
-			public void onFailure(Throwable throwable) {
-				result.completeExceptionally(throwable);
-			}
+		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
 
-			@Override
-			public void onSuccess(
-					AsyncBatchAnnotateFilesResponse asyncBatchAnnotateFilesResponse) {
-				result.complete(null);
-			}
-		}, Runnable::run);
-
-		return result;
+		return annotateFileResponse.getResponses(0).getFullTextAnnotation();
 	}
 
 	private String getContentType(String gcsSourcePath) throws IOException {
@@ -162,5 +148,34 @@ public class DocumentOcrTemplate {
 				this.storage, gcsSourcePath, false);
 
 		return googleStorageResource.getBlob().getContentType();
+	}
+
+	private static ListenableFuture<DocumentOcrResult> convertToSpringFuture(
+			OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> grpcFuture) {
+
+		SettableListenableFuture<DocumentOcrResult> result = new SettableListenableFuture<>();
+
+		ApiFutures.addCallback(grpcFuture, new ApiFutureCallback<AsyncBatchAnnotateFilesResponse>() {
+			@Override
+			public void onFailure(Throwable throwable) {
+				result.setException(throwable);
+			}
+
+			@Override
+			public void onSuccess(
+					AsyncBatchAnnotateFilesResponse asyncBatchAnnotateFilesResponse) {
+				result.set(null);
+			}
+		}, Runnable::run);
+
+		return result;
+	}
+
+	private static String getOutputFolderUri(Blob blob, String bucketName) {
+		return String.format(JSON_OUTPUT_FOLDER_FORMAT, bucketName, blob.getName());
+	}
+
+	private static String getBlobUri(Blob blob, String bucketName) {
+		return String.format(BLOB_URI_FORMAT, bucketName, blob.getName());
 	}
 }

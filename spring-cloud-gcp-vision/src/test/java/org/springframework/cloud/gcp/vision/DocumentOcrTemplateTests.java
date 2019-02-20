@@ -31,6 +31,7 @@ import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,21 +60,18 @@ public class DocumentOcrTemplateTests {
 
 	@Test
 	public void testDocumentOcr() throws IOException, ExecutionException, InterruptedException {
-		// ListenableFuture<Void> response =
-		// 		documentOcrTemplate.runOcr(
-		// 				"gs://my-pdfs-bucket-888/testpdf.pdf",
-		// 				"gs://my-pdfs-bucket-888/blah/testpdf");
-		//
-		// response.addCallback(
-		// 		(result) -> System.out.println("Yay, I am done."),
-		// 		(throwable) -> System.out.println("I failed: " + throwable));
+		DocumentOcrMetadata documentOcrMetadatas =
+				documentOcrTemplate.runOcrForDocument(
+						"gs://my-pdfs-bucket-888/testpdf.pdf", "gs://");
 
-		// response.get();
+		documentOcrMetadatas.getFuture().get();
 
-		Page<Blob> blobs = storage.list("my-pdfs-bucket-888");
+		// // Initiate a blocking wait
+		// for (DocumentOcrMetadata metadata : documentOcrMetadatas) {
+		// 	metadata.getDocumentOcrResultFuture().get();
+		// }
 
-		blobs.getValues().forEach(b -> System.out.println(b.getName()));
-		blobs.getValues().forEach(b -> System.out.println(b.getContentType()));
+		System.out.println("we are officially done.");
 	}
 
 	@Configuration
