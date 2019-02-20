@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.google.cloud.datastore.Key;
 
 import org.springframework.context.ApplicationEvent;
@@ -81,5 +84,25 @@ public class DeleteEvent extends ApplicationEvent {
 	 */
 	public Iterable getTargetEntities() {
 		return this.targetEntities;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		DeleteEvent that = (DeleteEvent) o;
+		return Arrays.equals(getKeys(), that.getKeys())
+				&& Objects.equals(getTargetEntities(), that.getTargetEntities())
+				&& Objects.equals(getTargetIds(), that.getTargetIds())
+				&& Objects.equals(getTargetEntityClass(), that.getTargetEntityClass());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(Arrays.hashCode(getKeys()), getTargetEntities(), getTargetIds(), getTargetEntityClass());
 	}
 }

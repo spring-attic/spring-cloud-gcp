@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
@@ -49,6 +50,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -58,6 +61,10 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
@@ -653,8 +660,14 @@ public class DatastoreTemplateTests {
 	public void deleteByIdTest() {
 		when(this.objectToKeyFactory.getKeyFromId(same(this.key1), any()))
 				.thenReturn(this.key1);
-		this.datastoreTemplate.deleteById(this.key1, TestEntity.class);
-		verify(this.datastore, times(1)).delete(same(this.key1));
+
+		verifyBeforeAndAfterEvents(
+				new BeforeDeleteEvent(new Key[] { this.key1 }, TestEntity.class, Collections.singletonList(this.key1),
+						null),
+				new AfterDeleteEvent(new Key[] { this.key1 }, TestEntity.class, Collections.singletonList(this.key1),
+						null),
+				() -> this.datastoreTemplate.deleteById(this.key1, TestEntity.class),
+				x -> x.verify(this.datastore, times(1)).delete(same(this.key1)));
 	}
 
 	@Test
@@ -663,21 +676,34 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromId(same(this.key2), any()))
 				.thenReturn(this.key2);
-		this.datastoreTemplate.deleteAllById(Arrays.asList(this.key1, this.key2),
-				TestEntity.class);
-		verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2));
+
+		verifyBeforeAndAfterEvents(
+				new BeforeDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class,
+						Arrays.asList(this.key1, this.key2), null),
+				new AfterDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class,
+						Arrays.asList(this.key1, this.key2), null),
+				() -> this.datastoreTemplate.deleteAllById(Arrays.asList(this.key1, this.key2),
+						TestEntity.class),
+				x -> x.verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2)));
 	}
 
 	@Test
 	public void deleteObjectTest() {
-		this.datastoreTemplate.delete(this.ob1);
-		verify(this.datastore, times(1)).delete(same(this.key1));
+		verifyBeforeAndAfterEvents(
+				new BeforeDeleteEvent(new Key[] { this.key1 }, TestEntity.class, null, Arrays.asList(this.ob1)),
+				new AfterDeleteEvent(new Key[] { this.key1 }, TestEntity.class, null, Arrays.asList(this.ob1)),
+				() -> this.datastoreTemplate.delete(this.ob1),
+				x -> x.verify(this.datastore, times(1)).delete(same(this.key1)));
 	}
 
 	@Test
 	public void deleteMultipleObjectsTest() {
-		this.datastoreTemplate.deleteAll(Arrays.asList(this.ob1, this.ob2));
-		verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2));
+		verifyBeforeAndAfterEvents(
+				new BeforeDeleteEvent(new Key[] { this.key1, this.key2 }, null, null,
+						Arrays.asList(this.ob1, this.ob2)),
+				new AfterDeleteEvent(new Key[] { this.key1, this.key2 }, null, null, Arrays.asList(this.ob1, this.ob2)),
+				() -> this.datastoreTemplate.deleteAll(Arrays.asList(this.ob1, this.ob2)),
+				x -> x.verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2)));
 	}
 
 	@Test
@@ -692,10 +718,49 @@ public class DatastoreTemplateTests {
 		when(this.datastore
 				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
 						.thenReturn(queryResults);
-		assertThat(this.datastoreTemplate.deleteAll(TestEntity.class)).isEqualTo(2);
-		verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2));
+
+		verifyBeforeAndAfterEvents(
+				new BeforeDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class, null, null),
+				new AfterDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class, null, null),
+				() -> assertThat(this.datastoreTemplate.deleteAll(TestEntity.class)).isEqualTo(2),
+				x -> x.verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2)));
 	}
 
+	private void verifyEvents(ApplicationEvent expectedBefore,
+			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
+		ApplicationEventPublisher mockPublisher = mock(ApplicationEventPublisher.class);
+		ApplicationEventPublisher mockBeforePublisher = mock(ApplicationEventPublisher.class);
+		ApplicationEventPublisher mockAfterPublisher = mock(ApplicationEventPublisher.class);
+
+		InOrder inOrder = Mockito.inOrder(mockBeforePublisher, this.datastore, mockAfterPublisher);
+
+		doAnswer((invocationOnMock) -> {
+			ApplicationEvent event = invocationOnMock.getArgument(0);
+			if (expectedBefore != null && event.getClass().equals(expectedBefore.getClass())) {
+				mockBeforePublisher.publishEvent(event);
+			}
+			else if (expectedAfter != null && event.getClass().equals(expectedAfter.getClass())) {
+				mockAfterPublisher.publishEvent(event);
+			}
+			return null;
+		}).when(mockPublisher).publishEvent(any());
+
+		this.datastoreTemplate.setApplicationEventPublisher(mockPublisher);
+
+		operation.run();
+		if (expectedBefore != null) {
+			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(expectedBefore));
+		}
+		verifyOperation.accept(inOrder);
+		if (expectedAfter != null) {
+			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
+		}
+	}
+
+	private void verifyBeforeAndAfterEvents(ApplicationEvent expectedBefore,
+			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
+		verifyEvents(expectedBefore, expectedAfter, operation, verifyOperation);
+	}
 
 	@Test
 	public void findAllTestLimitOffset() {
