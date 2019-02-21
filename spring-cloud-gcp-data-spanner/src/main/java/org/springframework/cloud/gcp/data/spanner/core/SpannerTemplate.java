@@ -447,7 +447,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				: getReadContext();
 
 		if (options == null) {
-			resultSet = getReadContext().read(tableName, keys, columns);
+			resultSet = readContext.read(tableName, keys, columns);
 		}
 		else if (options.getIndex() != null) {
 			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
