@@ -1123,7 +1123,7 @@ Spring Data Cloud Datastore publishes events extending the Spring Framework's `A
 
 [options="header"]
 |===
-| Type| Description | Contents
+| Type | Description | Contents
 | `BeforeDeleteEvent`|Published immediately before delete operations are executed by `DatastoreTemplate`| The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 | `AfterDeleteEvent`|Published immediately after delete operations are executed by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 |===
