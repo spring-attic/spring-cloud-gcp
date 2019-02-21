@@ -25,17 +25,25 @@ public class DocumentOcrMetadata {
 
 	private final String documentUri;
 
+	private final String outputFolderUri;
+
 	private final ListenableFuture<DocumentOcrResult> future;
 
 	public DocumentOcrMetadata(
 			String documentUri,
+			String outputFolderUri,
 			ListenableFuture<DocumentOcrResult> future) {
 		this.documentUri = documentUri;
+		this.outputFolderUri = outputFolderUri;
 		this.future = future;
 	}
 
 	public String getDocumentUri() {
 		return documentUri;
+	}
+
+	public String getOutputFolderUri() {
+		return outputFolderUri;
 	}
 
 	public ListenableFuture<DocumentOcrResult> getFuture() {
