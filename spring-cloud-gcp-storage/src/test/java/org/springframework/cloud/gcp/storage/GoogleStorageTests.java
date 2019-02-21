@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tess for Google Cloud Storage.
+ * Tests for Google Cloud Storage.
  *
  * @author Vinicius Carvalho
  * @author Artem Bilan
@@ -97,7 +97,6 @@ public class GoogleStorageTests {
 		this.expectedEx.expectMessage("No bucket specified in the location: gs:///");
 		new GoogleStorageResource(this.storage, "gs:///", false);
 	}
-
 
 	@Test
 	public void testValidObject() throws Exception {
