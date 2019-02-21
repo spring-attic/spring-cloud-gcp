@@ -20,32 +20,45 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Provides metadata information about the document OCR operation.
+ *
+ * @author Daniel Zou
  */
 public class DocumentOcrMetadata {
 
-	private final String documentUri;
+	private final GoogleStorageLocation document;
 
-	private final String outputFolderUri;
+	private final GoogleStorageLocation outputFolder;
 
 	private final ListenableFuture<DocumentOcrResult> future;
 
-	public DocumentOcrMetadata(
-			String documentUri,
-			String outputFolderUri,
+	DocumentOcrMetadata(
+			GoogleStorageLocation document,
+			GoogleStorageLocation outputFolder,
 			ListenableFuture<DocumentOcrResult> future) {
-		this.documentUri = documentUri;
-		this.outputFolderUri = outputFolderUri;
+		this.document = document;
+		this.outputFolder = outputFolder;
 		this.future = future;
 	}
 
-	public String getDocumentUri() {
-		return documentUri;
+	/**
+	 * Returns the Google Cloud Storage URI for the document being processed.
+	 */
+	public GoogleStorageLocation getDocumentUri() {
+		return document;
 	}
 
-	public String getOutputFolderUri() {
-		return outputFolderUri;
+	/**
+	 * Returns the Google Cloud Storage URI for the folder containing the OCR output files
+	 * for the document.
+	 */
+	public GoogleStorageLocation getOutputFolderUri() {
+		return outputFolder;
 	}
 
+	/**
+	 * Returns a {@link ListenableFuture} which allows the user to block on the operation
+	 * or register event listeners for the operation to complete.
+	 */
 	public ListenableFuture<DocumentOcrResult> getFuture() {
 		return future;
 	}

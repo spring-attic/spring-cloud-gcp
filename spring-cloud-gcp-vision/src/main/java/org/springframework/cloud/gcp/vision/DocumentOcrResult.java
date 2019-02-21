@@ -20,9 +20,13 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the parsed OCR output for a document.
+ *
+ * @author Daniel Zou
+ */
 public class DocumentOcrResult {
 
 	private final Storage storageClient;
@@ -34,23 +38,27 @@ public class DocumentOcrResult {
 		this.storageClient = storageClient;
 	}
 
+	/**
+	 * Returns the number of pages of the document.
+	 */
 	public int getPageCount() {
 		return this.pageBlobs.size();
 	}
 
+	/**
+	 * Retrieves the parsed OCR information of the page at index {@code pageNumber} of the document.
+	 * All page numbers are 0-indexed.
+	 *
+	 * <p>This returns a TextAnnotation object which is Google Cloud Vision's representation of a
+	 * page of a document. For more information on processing this object, see:
+	 * https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.TextAnnotation
+	 *
+	 * @param pageNumber the zero-indexed page number of the document
+	 * @return the {@link TextAnnotation} representing the page of the document
+	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be parsed
+	 */
 	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
 		Blob pageBlob = this.pageBlobs.get(pageNumber);
 		return DocumentOcrTemplate.parseJsonBlob(pageBlob);
-	}
-
-	public List<TextAnnotation> getAllPages() throws InvalidProtocolBufferException {
-		ArrayList<TextAnnotation> textAnnotationPages = new ArrayList<>();
-		
-		for (Blob blob : this.pageBlobs) {
-			TextAnnotation textAnnotation = DocumentOcrTemplate.parseJsonBlob(blob);
-			textAnnotationPages.add(textAnnotation);
-		}
-
-		return textAnnotationPages;
 	}
 }

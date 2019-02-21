@@ -29,9 +29,7 @@ public final class GoogleStorageLocation {
 
 	private static final String BUCKET_URI_FORMAT = "gs://%s/";
 
-	private static final String FILE_URI_FORMAT = "gs://%s/%s";
-
-	private static final String FOLDER_URI_FORMAT = "gs://%s/%s/";
+	private static final String GCS_URI_FORMAT = "gs://%s/%s";
 
 	private final String bucketName;
 
@@ -68,15 +66,15 @@ public final class GoogleStorageLocation {
 	 * Returns the path to the blob/folder relative from the bucket root. Returns the empty String
 	 * if the {@link GoogleStorageLocation} specifies a bucket itself.
 	 */
-	public String getGcsPath() {
+	public String getPath() {
 		return gcsPath;
 	}
 
 	/**
 	 * Returns the Google Storage URI string for the location.
 	 */
-	public String getUriString() {
-		return String.format(FILE_URI_FORMAT, bucketName, gcsPath);
+	public String uriString() {
+		return String.format(GCS_URI_FORMAT, bucketName, gcsPath);
 	}
 
 	/**
@@ -101,22 +99,26 @@ public final class GoogleStorageLocation {
 	/**
 	 * Returns a {@link GoogleStorageLocation} for a file within a bucket.
 	 * @param bucketName name of the GCS bucket
-	 * @param filePath path to the file within the bucket
+	 * @param pathToFile path to the file within the bucket
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
-	public static GoogleStorageLocation forFile(String bucketName, String filePath) {
-		String uri = String.format(FILE_URI_FORMAT, bucketName, filePath);
+	public static GoogleStorageLocation forFile(String bucketName, String pathToFile) {
+		String uri = String.format(GCS_URI_FORMAT, bucketName, pathToFile);
 		return new GoogleStorageLocation(uri);
 	}
 
 	/**
 	 * Returns a {@link GoogleStorageLocation} to a folder whose path is relative to the bucket.
 	 * @param bucketName name of the GCS bucket.
-	 * @param folderPath path to the folder within the bucket.
+	 * @param pathToFolder path to the folder within the bucket.
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
-	public static GoogleStorageLocation forFolder(String bucketName, String folderPath) {
-		String uri = String.format(FOLDER_URI_FORMAT, bucketName, folderPath);
+	public static GoogleStorageLocation forFolder(String bucketName, String pathToFolder) {
+		if (!pathToFolder.endsWith("/")) {
+			pathToFolder += "/";
+		}
+
+		String uri = String.format(GCS_URI_FORMAT, bucketName, pathToFolder);
 		return new GoogleStorageLocation(uri);
 	}
 
@@ -124,7 +126,7 @@ public final class GoogleStorageLocation {
 	public String toString() {
 		return "GoogleStorageLocation{" +
 				"bucketName='" + bucketName + '\'' +
-				", blobPath='" + gcsPath + '\'' +
+				", gcsPath='" + gcsPath + '\'' +
 				'}';
 	}
 

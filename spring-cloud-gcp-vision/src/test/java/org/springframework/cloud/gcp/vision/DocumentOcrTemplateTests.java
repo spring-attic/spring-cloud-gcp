@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import static org.mockito.Mockito.when;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.longrunning.OperationFuture;
 import com.google.api.gax.paging.Page;
@@ -28,93 +30,82 @@ import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 import com.google.cloud.vision.v1.OperationMetadata;
+import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.longrunning.OperationsClient;
 import com.google.longrunning.OperationsSettings;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.vision.DocumentOcrTemplateTests.DocumentOcrTemplateTestsConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { DocumentOcrTemplateTestsConfiguration.class })
 public class DocumentOcrTemplateTests {
 
-	@Autowired
-	public Storage storage;
+	private Storage storage;
 
-	@Autowired
-	public DocumentOcrTemplate documentOcrTemplate;
+	private ImageAnnotatorClient imageAnnotatorClient;
 
-	@Test
-	public void testDocumentOcr() throws IOException, ExecutionException, InterruptedException {
-		DocumentOcrMetadata documentOcrMetadatas =
-				documentOcrTemplate.runOcrForDocument(
-						"gs://my-pdfs-bucket-888/testpdf.pdf", "gs://");
+	private DocumentOcrTemplate documentOcrTemplate;
 
-		documentOcrMetadatas.getFuture().get();
-
-		// // Initiate a blocking wait
-		// for (DocumentOcrMetadata metadata : documentOcrMetadatas) {
-		// 	metadata.getDocumentOcrResultFuture().get();
-		// }
-
-		System.out.println("we are officially done.");
+	@Before
+	public void setupDocumentTemplateMocks() {
+		this.storage = Mockito.mock(Storage.class);
+		this.imageAnnotatorClient = Mockito.mock(ImageAnnotatorClient.class);
+		this.documentOcrTemplate = new DocumentOcrTemplate(imageAnnotatorClient, storage);
 	}
 
-	@Configuration
-	public static class DocumentOcrTemplateTestsConfiguration {
+	@Test
+	public void testRejectInvalidLocationInputs() {
+		assertThatThrownBy(
+				() -> documentOcrTemplate.runOcrForDocument(
+						GoogleStorageLocation.forFile("bucket", "document"),
+						GoogleStorageLocation.forFile("bucket", "otherDocument")))
+				.hasMessageContaining(
+						"The Google Storage output location provided must be a bucket or folder location.");
 
-		@Bean
-		public DocumentOcrTemplate documentOcrTemplate(
-				ImageAnnotatorClient imageAnnotatorClient,
-				Storage storage) {
-			return new DocumentOcrTemplate(imageAnnotatorClient, storage);
-		}
+		assertThatThrownBy(
+				() -> documentOcrTemplate.runOcrForDocument(
+						GoogleStorageLocation.forFolder("bucket", "folder"),
+						GoogleStorageLocation.forFolder("bucket", "folder2")))
+				.hasMessageContaining(
+						"The Google Storage document location provided must be a file.");
 
-		@Bean
-		public ImageAnnotatorClient imageAnnotatorClient(
-				CredentialsProvider credentialsProvider) throws IOException {
-			ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
-					.setCredentialsProvider(credentialsProvider)
-					.build();
-			return ImageAnnotatorClient.create(clientSettings);
-		}
+		assertThatThrownBy(
+				() -> documentOcrTemplate.parseOcrOutputFile(
+						GoogleStorageLocation.forFolder("bucket", "folder")))
+				.hasMessageContaining(
+						"Provided JSON output file is not a valid file location");
 
-		@Bean
-		public static Storage storage(
-				CredentialsProvider credentialsProvider,
-				GcpProjectIdProvider projectIdProvider) throws IOException {
-			return StorageOptions.newBuilder()
-					.setCredentials(credentialsProvider.getCredentials())
-					.setProjectId(projectIdProvider.getProjectId()).build().getService();
-		}
+		assertThatThrownBy(
+				() -> documentOcrTemplate.parseOcrOutputFileSet(
+						GoogleStorageLocation.forFile("bucket", "file")))
+				.hasMessageContaining(
+						"Provided JSON output folder is not a folder location");
+	}
 
-		@Bean
-		public GcpProjectIdProvider gcpProjectIdProvider() {
-			return new DefaultGcpProjectIdProvider();
-		}
+	@Test
+	public void testProcessDocumentsInBucket() throws IOException {
+		DocumentOcrMetadata ocrMetadata = documentOcrTemplate.runOcrForDocument(
+				GoogleStorageLocation.forFile("bucket", "folder/file.pdf"),
+				GoogleStorageLocation.forFolder("bucket", "outputFolder"));
 
-		@Bean
-		public CredentialsProvider credentialsProvider() {
-			try {
-				return new DefaultCredentialsProvider(Credentials::new);
-			}
-			catch (IOException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
+		when
+
 	}
 }
