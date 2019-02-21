@@ -36,6 +36,12 @@ public final class GoogleStorageLocation {
 
 	private final URI uri;
 
+	/**
+	 * Constructs a {@link GoogleStorageLocation} based on the provided Google Storage URI string.
+	 * The URI string is of the form: {@code gs://<BUCKET_NAME>/<PATH_TO_FILE>}
+	 *
+	 * @param gcsLocationUriString a Google Storage URI string to a bucket/folder/file.
+	 */
 	public GoogleStorageLocation(String gcsLocationUriString) {
 		try {
 			URI locationUri = new URI(gcsLocationUriString);
