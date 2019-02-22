@@ -30,11 +30,19 @@ import org.springframework.context.ApplicationEvent;
  */
 public class DeleteEvent extends ApplicationEvent {
 
-	private final Class targetEntityClass;
+	private Class targetEntityClass;
 
-	private final Iterable targetIds;
+	private Iterable targetIds;
 
-	private final Iterable targetEntities;
+	private Iterable targetEntities;
+
+	/**
+	 * Constructor that sets the keys to delete.
+	 * @param keysToDelete the keys to delete in the operation. Cannot be {@code null}.
+	 */
+	public DeleteEvent(Key[] keysToDelete) {
+		super(keysToDelete);
+	}
 
 	/**
 	 * Constructor.
@@ -48,7 +56,7 @@ public class DeleteEvent extends ApplicationEvent {
 	 *     depending on the specific delete operation.
 	 */
 	public DeleteEvent(Key[] keysToDelete, Class targetEntityClass, Iterable targetIds, Iterable targetEntities) {
-		super(keysToDelete);
+		this(keysToDelete);
 		this.targetEntityClass = targetEntityClass;
 		this.targetIds = targetIds;
 		this.targetEntities = targetEntities;
@@ -66,15 +74,39 @@ public class DeleteEvent extends ApplicationEvent {
 	 * Get the target entity type deleted.
 	 * @return This may be {@code null} depending on the specific delete operation.
 	 */
-	public Class getTargetEntityClass() {
+	public Class getTargetEntityClassIfPresent() {
 		return this.targetEntityClass;
+	}
+
+	/**
+	 * Set the target IDs used in the delete operation.
+	 * @param targetIds the target ids.
+	 */
+	public void setTargetIds(Iterable targetIds) {
+		this.targetIds = targetIds;
+	}
+
+	/**
+	 * Set the target entity class of the delete operation.
+	 * @param targetEntityClass the target entity type of the delete operation.
+	 */
+	public void setTargetEntityClass(Class targetEntityClass) {
+		this.targetEntityClass = targetEntityClass;
+	}
+
+	/**
+	 * Set the target entities to delete.
+	 * @param targetEntities the target entities.
+	 */
+	public void setTargetEntities(Iterable targetEntities) {
+		this.targetEntities = targetEntities;
 	}
 
 	/**
 	 * Get the target entity ID values deleted.
 	 * @return This may be {@code null} depending on the specific delete operation.
 	 */
-	public Iterable getTargetIds() {
+	public Iterable getTargetIdsIfPresent() {
 		return this.targetIds;
 	}
 
@@ -82,7 +114,7 @@ public class DeleteEvent extends ApplicationEvent {
 	 * Get thetarget entity objects deleted.
 	 * @return This may be {@code null} depending on the specific delete operation.
 	 */
-	public Iterable getTargetEntities() {
+	public Iterable getTargetEntitiesIfPresent() {
 		return this.targetEntities;
 	}
 
@@ -96,13 +128,14 @@ public class DeleteEvent extends ApplicationEvent {
 		}
 		DeleteEvent that = (DeleteEvent) o;
 		return Arrays.equals(getKeys(), that.getKeys())
-				&& Objects.equals(getTargetEntities(), that.getTargetEntities())
-				&& Objects.equals(getTargetIds(), that.getTargetIds())
-				&& Objects.equals(getTargetEntityClass(), that.getTargetEntityClass());
+				&& Objects.equals(getTargetEntitiesIfPresent(), that.getTargetEntitiesIfPresent())
+				&& Objects.equals(getTargetIdsIfPresent(), that.getTargetIdsIfPresent())
+				&& Objects.equals(getTargetEntityClassIfPresent(), that.getTargetEntityClassIfPresent());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(getKeys()), getTargetEntities(), getTargetIds(), getTargetEntityClass());
+		return Objects.hash(Arrays.hashCode(getKeys()), getTargetEntitiesIfPresent(), getTargetIdsIfPresent(),
+				getTargetEntityClassIfPresent());
 	}
 }
