@@ -23,8 +23,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -40,8 +38,6 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
  * @since 1.2
  */
 public final class PubSubReactiveFactory {
-
-	private static final Log LOGGER = LogFactory.getLog(PubSubReactiveFactory.class);
 
 	private ScheduledExecutorService executorService;
 
@@ -59,19 +55,9 @@ public final class PubSubReactiveFactory {
 		return Flux.<List<AcknowledgeablePubsubMessage>>create(sink -> {
 
 			PubSubReactiveSubscription reactiveSubscription = new PubSubReactiveSubscription(sink, subscriptionName, delayInMilliseconds);
+			sink.onRequest(reactiveSubscription::request);
+			sink.onCancel(reactiveSubscription::cancel);
 
-			sink.onRequest((numRequested) -> {
-				reactiveSubscription.request(numRequested);
-			});
-
-			sink.onCancel(() -> {
-				LOGGER.info("**************** CANCELLING *******************");
-				reactiveSubscription.cancel();
-			});
-
-			sink.onDispose(() -> {
-				LOGGER.info("**************** DISPOSING *******************");
-			});
 		}).flatMapIterable(Function.identity());
 	}
 
@@ -95,15 +81,12 @@ public final class PubSubReactiveFactory {
 			this.scheduledFuture = executorService.scheduleWithFixedDelay(this::pullMessages, 0, delayInMilliseconds, TimeUnit.MILLISECONDS);
 		}
 
-		public void request(long demand) {
-			long currentDemand = this.totalDemand.addAndGet(demand);
-			LOGGER.info("*** requested " + currentDemand);
+		void request(long demand) {
+			this.totalDemand.addAndGet(demand);
 		}
 
-		public void cancel() {
-			// TODO
+		void cancel() {
 			this.scheduledFuture.cancel(false);
-			LOGGER.info("*** cancelled with unfulfilled demand of " + this.totalDemand.longValue());
 		}
 
 		private void pullMessages() {
@@ -117,10 +100,9 @@ public final class PubSubReactiveFactory {
 				// pull messages if available; immediately return empty list if no messages.
 				List<AcknowledgeablePubsubMessage> messages = PubSubReactiveFactory.this.subscriberOperations.pull(this.subscriptionName, numMessagesToPull, true);
 
-				if (messages.size() > 0) {
+				if (!messages.isEmpty()) {
 					this.sink.next(messages);
-					long remainingDemand = this.totalDemand.addAndGet(-1 * messages.size());
-					LOGGER.info("*** remaining demand after sending " + messages.size() + ": " + remainingDemand);
+					this.totalDemand.addAndGet(-1L * messages.size());
 				}
 			}
 		}
