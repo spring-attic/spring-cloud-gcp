@@ -4454,6 +4454,36 @@ public interface TradeRepository extends DatastoreRepository&lt;Trade, String[]&
 <simpara>To delete trades, you can use <literal>curl -XDELETE http://&lt;server&gt;:&lt;port&gt;/trades/&lt;trader_id&gt;</literal></simpara>
 </section>
 </section>
+<section xml:id="_events_2">
+<title>Events</title>
+<simpara>Spring Data Cloud Datastore publishes events extending the Spring Framework&#8217;s <literal>ApplicationEvent</literal> to the context that can be received by <literal>ApplicationListener</literal> beans you register.</simpara>
+<informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="3">
+<colspec colname="col_1" colwidth="33.3333*"/>
+<colspec colname="col_2" colwidth="33.3333*"/>
+<colspec colname="col_3" colwidth="33.3334*"/>
+<thead>
+<row>
+<entry align="left" valign="top">Type</entry>
+<entry align="left" valign="top">Description</entry>
+<entry align="left" valign="top">Contents</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara><literal>BeforeDeleteEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately before delete operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><literal>AfterDeleteEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately after delete operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+</section>
 <section xml:id="_sample_10">
 <title>Sample</title>
 <simpara>A <link xl:href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample">Simple Spring Boot Application</link> and more advanced <link xl:href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample">Sample Spring Boot Application</link> are provided to show how to use the Spring Data Cloud Datastore starter and template.</simpara>
