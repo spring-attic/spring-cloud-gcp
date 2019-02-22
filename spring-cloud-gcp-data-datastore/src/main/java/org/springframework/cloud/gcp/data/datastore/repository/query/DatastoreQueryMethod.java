@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.projection.ProjectionFactory;
@@ -96,5 +97,14 @@ public class DatastoreQueryMethod extends QueryMethod {
 	@Nullable
 	Query getQueryAnnotation() {
 		return AnnotatedElementUtils.findMergedAnnotation(this.method, Query.class);
+	}
+
+
+	boolean isNullable() {
+		return AnnotatedElementUtils.findMergedAnnotation(this.method, Nullable.class) != null;
+	}
+
+	boolean isOptionalReturnType() {
+		return this.method.getReturnType().isAssignableFrom(Optional.class);
 	}
 }
