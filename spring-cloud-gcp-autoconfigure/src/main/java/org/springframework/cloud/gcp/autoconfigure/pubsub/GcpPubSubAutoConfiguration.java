@@ -148,7 +148,7 @@ public class GcpPubSubAutoConfiguration {
 			@Qualifier("pubSubAcknowledgementExecutor") Executor executor) {
 		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
-		pubSubSubscriberTemplate.setCallbackExecutor(executor);
+		pubSubSubscriberTemplate.setAckExecutor(executor);
 		return pubSubSubscriberTemplate;
 	}
 
