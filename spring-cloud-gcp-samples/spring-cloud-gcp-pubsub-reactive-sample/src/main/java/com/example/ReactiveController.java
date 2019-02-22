@@ -17,6 +17,7 @@
 package com.example;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -41,11 +42,16 @@ public class ReactiveController {
 
 	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<? super String> getMessages() {
+
+		// TODO: autoconfigure and inject.
+		PubSubReactiveFactory factory = new PubSubReactiveFactory(new ScheduledThreadPoolExecutor(4), this.template);
+
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= PubSubReactiveFactory.createPolledPublisher("reactiveSubscription", this.template);
+				= factory.createPolledPublisher("reactiveSubscription", 1000);
 
 		return Flux.from(flux)
-				.doOnNext(message -> message.ack())
+				.doOnNext(message -> message.ack())  // remove after merging master
+				//.limitRequest(5)	// example of finite flux, as requested by client
 				.map(message -> new String(
 						message.getPubsubMessage().getData().toByteArray(),
 						Charset.defaultCharset()));

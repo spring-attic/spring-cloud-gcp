@@ -17,9 +17,12 @@
 package org.springframework.cloud.gcp.pubsub.reactive;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import com.google.api.gax.rpc.DeadlineExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.reactivestreams.Publisher;
@@ -40,45 +43,88 @@ public final class PubSubReactiveFactory {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubReactiveFactory.class);
 
-	private PubSubReactiveFactory() { }
+	private ScheduledExecutorService executorService;
 
-	public static <T> Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
-			String subscriptionName, PubSubSubscriberOperations subscriberOperations) {
+	private PubSubSubscriberOperations subscriberOperations;
+
+	public PubSubReactiveFactory(ScheduledExecutorService executorService, PubSubSubscriberOperations subscriberOperations) {
+		this.executorService = executorService;
+		this.subscriberOperations = subscriberOperations;
+
+	}
+
+	public Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
+			String subscriptionName, int delayInMilliseconds) {
 
 		return Flux.<List<AcknowledgeablePubsubMessage>>create(sink -> {
 
+			PubSubReactiveSubscription reactiveSubscription = new PubSubReactiveSubscription(sink, subscriptionName, delayInMilliseconds);
+
 			sink.onRequest((numRequested) -> {
-				int demand = numRequested > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) numRequested;
-				produceMessages(subscriptionName, demand, sink, subscriberOperations);
+				reactiveSubscription.request(numRequested);
 			});
 
+			sink.onCancel(() -> {
+				LOGGER.info("**************** CANCELLING *******************");
+				reactiveSubscription.cancel();
+			});
+
+			sink.onDispose(() -> {
+				LOGGER.info("**************** DISPOSING *******************");
+			});
 		}).flatMapIterable(Function.identity());
 	}
 
-	private static void produceMessages(String subscriptionName, int demand, FluxSink<List<AcknowledgeablePubsubMessage>> sink, PubSubSubscriberOperations subscriberOperations) {
 
-		subscriberOperations.pullAsync(subscriptionName, demand, false).addCallback(
-				acknowledgeablePubsubMessages -> {
+	private class PubSubReactiveSubscription {
 
-					sink.next(acknowledgeablePubsubMessages);
+		private FluxSink<List<AcknowledgeablePubsubMessage>> sink;
 
-					int remainingDemand = demand - acknowledgeablePubsubMessages.size();
+		private String subscriptionName;
 
-					if (remainingDemand > 0) {
-						// Ensure requested messages get fulfilled eventually.
-						produceMessages(subscriptionName, remainingDemand, sink, subscriberOperations);
-					}
+		private ScheduledFuture<?> scheduledFuture;
 
-				}, throwable -> {
-					if (throwable instanceof DeadlineExceededException)  {
-						LOGGER.warn("Pub/Sub deadline exceeded; retrying.");
-						produceMessages(subscriptionName, demand, sink, subscriberOperations);
-					}
-					else {
-						sink.error(throwable);
-					}
+		private AtomicLong totalDemand;
+
+		PubSubReactiveSubscription(FluxSink<List<AcknowledgeablePubsubMessage>> sink, String subscriptionName, int delayInMilliseconds) {
+
+			this.sink = sink;
+			this.subscriptionName = subscriptionName;
+			this.totalDemand = new AtomicLong(0);
+
+			this.scheduledFuture = executorService.scheduleWithFixedDelay(this::pullMessages, 0, delayInMilliseconds, TimeUnit.MILLISECONDS);
+		}
+
+		public void request(long demand) {
+			long currentDemand = this.totalDemand.addAndGet(demand);
+			LOGGER.info("*** requested " + currentDemand);
+		}
+
+		public void cancel() {
+			// TODO
+			this.scheduledFuture.cancel(false);
+			LOGGER.info("*** cancelled with unfulfilled demand of " + this.totalDemand.longValue());
+		}
+
+		private void pullMessages() {
+
+			// does not really matter if there is another request coming in simultaneously, increasing totalDemand
+			// while the ternary is in progress. The next poll will request the newly added demand.
+			int numMessagesToPull = this.totalDemand.longValue() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalDemand.longValue();
+
+			// positive demand present
+			if (numMessagesToPull > 0) {
+				// pull messages if available; immediately return empty list if no messages.
+				List<AcknowledgeablePubsubMessage> messages = PubSubReactiveFactory.this.subscriberOperations.pull(this.subscriptionName, numMessagesToPull, true);
+
+				if (messages.size() > 0) {
+					this.sink.next(messages);
+					long remainingDemand = this.totalDemand.addAndGet(-1 * messages.size());
+					LOGGER.info("*** remaining demand after sending " + messages.size() + ": " + remainingDemand);
 				}
-		);
+			}
+		}
+
 	}
 
 }
