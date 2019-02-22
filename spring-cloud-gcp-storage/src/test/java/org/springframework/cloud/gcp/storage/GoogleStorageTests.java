@@ -132,6 +132,25 @@ public class GoogleStorageTests {
 	}
 
 	@Test
+	public void testSpecifyBucketCorrect() {
+		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
+				this.storage, "test-spring", null, false);
+
+		Assert.assertTrue(googleStorageResource.isBucket());
+		Assert.assertEquals("test-spring", googleStorageResource.getBucket().getName());
+		Assert.assertTrue(googleStorageResource.exists());
+	}
+
+	@Test
+	public void testSpecifyPathCorrect() {
+		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
+				this.storage, "test-spring", "images/spring.png", false);
+
+		Assert.assertTrue(googleStorageResource.isFile());
+		Assert.assertTrue(googleStorageResource.exists());
+	}
+
+	@Test
 	public void testBucketOutputStream() throws IOException {
 		this.expectedEx.expect(IllegalStateException.class);
 		this.expectedEx.expectMessage("Cannot open an output stream to a bucket: 'gs://test-spring/'");

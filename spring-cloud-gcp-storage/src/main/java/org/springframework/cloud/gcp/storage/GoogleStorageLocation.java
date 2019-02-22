@@ -26,6 +26,8 @@ import org.springframework.util.Assert;
  * Represents a Google Cloud Storage location provided by the user.
  *
  * @author Daniel Zou
+ *
+ * @since 1.2
  */
 public class GoogleStorageLocation {
 
@@ -82,12 +84,8 @@ public class GoogleStorageLocation {
 			this.bucketName = bucketName;
 			this.blobName = pathToFile;
 
-			if (pathToFile == null) {
-				this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, ""));
-			}
-			else {
-				this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
-			}
+			pathToFile = (pathToFile == null) ? "" : pathToFile;
+			this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
 		}
 		catch (URISyntaxException e) {
 			String errorMessage = String.format(

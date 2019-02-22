@@ -99,6 +99,8 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 *     if an operation that depends on its existence is triggered (e.g., getting the
 	 *     output stream of a file)
 	 * @throws IllegalArgumentException if the location is an invalid Google Storage location
+	 *
+	 * @since 1.2
 	 */
 	public GoogleStorageResource(
 			Storage storage,
