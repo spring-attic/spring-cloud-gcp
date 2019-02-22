@@ -84,11 +84,12 @@ public class GoogleStorageLocation {
 
 			if (pathToFile == null) {
 				this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, ""));
-			} else {
+			}
+			else {
 				this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
 			}
-
-		} catch (URISyntaxException e) {
+		}
+		catch (URISyntaxException e) {
 			String errorMessage = String.format(
 					"Invalid location provided. bucketName: %s, pathToFile: %s", bucketName, pathToFile);
 			throw new IllegalArgumentException(errorMessage, e);
@@ -105,6 +106,8 @@ public class GoogleStorageLocation {
 
 	/**
 	 * Returns the Google Storage bucket name.
+	 *
+	 * @return the name of the Google Storage bucket
 	 */
 	public String getBucketName() {
 		return bucketName;
