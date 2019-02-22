@@ -97,11 +97,19 @@ public class GoogleStorageLocation {
 	}
 
 	/**
-	 * Check if this resource references a bucket and not a blob.
-	 * @return if the resource is bucket
+	 * Check if the location references a bucket and not a blob.
+	 * @return if the location describes a bucket
 	 */
 	public boolean isBucket() {
 		return this.blobName == null;
+	}
+
+	/**
+	 * Returns whether this {@link GoogleStorageLocation} represents a file or not.
+	 * @return true if the location describes a file
+	 */
+	public boolean isFile() {
+		return this.blobName != null && !this.blobName.endsWith("/");
 	}
 
 	/**
