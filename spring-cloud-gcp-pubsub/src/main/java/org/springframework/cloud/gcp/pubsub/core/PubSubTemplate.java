@@ -176,11 +176,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages, Boolean returnImmediately) {
-		return this.pubSubSubscriberTemplate.pullAsync(subscription, maxMessages, returnImmediately);
-	}
-
-	@Override
 	public void afterPropertiesSet() throws Exception {
 	}
 

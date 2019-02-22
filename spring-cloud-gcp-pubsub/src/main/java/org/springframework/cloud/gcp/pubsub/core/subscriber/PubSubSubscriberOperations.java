@@ -99,16 +99,6 @@ public interface PubSubSubscriberOperations {
 	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
 
 	/**
-	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
-	 * @param subscription the subscription name
-	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
-	 * @return the list of received acknowledgeable messages
-	 */
-	ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages, Boolean returnImmediately);
-
-	/**
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription and convert them to Spring messages with
 	 * the desired payload type.
 	 * @param subscription the subscription name
