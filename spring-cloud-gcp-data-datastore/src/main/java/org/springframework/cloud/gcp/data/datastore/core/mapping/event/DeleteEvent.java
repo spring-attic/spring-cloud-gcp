@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.google.cloud.datastore.Key;
 
@@ -30,19 +31,11 @@ import org.springframework.context.ApplicationEvent;
  */
 public class DeleteEvent extends ApplicationEvent {
 
-	private Class targetEntityClass;
+	private final Optional<Class> targetEntityClass;
 
-	private Iterable targetIds;
+	private final Optional<Iterable> targetIds;
 
-	private Iterable targetEntities;
-
-	/**
-	 * Constructor that sets the keys to delete.
-	 * @param keysToDelete the keys to delete in the operation. Cannot be {@code null}.
-	 */
-	public DeleteEvent(Key[] keysToDelete) {
-		super(keysToDelete);
-	}
+	private final Optional<Iterable> targetEntities;
 
 	/**
 	 * Constructor.
@@ -56,10 +49,10 @@ public class DeleteEvent extends ApplicationEvent {
 	 *     depending on the specific delete operation.
 	 */
 	public DeleteEvent(Key[] keysToDelete, Class targetEntityClass, Iterable targetIds, Iterable targetEntities) {
-		this(keysToDelete);
-		this.targetEntityClass = targetEntityClass;
-		this.targetIds = targetIds;
-		this.targetEntities = targetEntities;
+		super(keysToDelete);
+		this.targetEntityClass = Optional.ofNullable(targetEntityClass);
+		this.targetIds = Optional.ofNullable(targetIds);
+		this.targetEntities = Optional.ofNullable(targetEntities);
 	}
 
 	/**
@@ -72,49 +65,25 @@ public class DeleteEvent extends ApplicationEvent {
 
 	/**
 	 * Get the target entity type deleted.
-	 * @return This may be {@code null} depending on the specific delete operation.
+	 * @return This may be empty depending on the specific delete operation.
 	 */
-	public Class getTargetEntityClassIfPresent() {
+	public Optional<Class> getOptionalTargetEntityClass() {
 		return this.targetEntityClass;
 	}
 
 	/**
-	 * Set the target IDs used in the delete operation.
-	 * @param targetIds the target ids.
-	 */
-	public void setTargetIds(Iterable targetIds) {
-		this.targetIds = targetIds;
-	}
-
-	/**
-	 * Set the target entity class of the delete operation.
-	 * @param targetEntityClass the target entity type of the delete operation.
-	 */
-	public void setTargetEntityClass(Class targetEntityClass) {
-		this.targetEntityClass = targetEntityClass;
-	}
-
-	/**
-	 * Set the target entities to delete.
-	 * @param targetEntities the target entities.
-	 */
-	public void setTargetEntities(Iterable targetEntities) {
-		this.targetEntities = targetEntities;
-	}
-
-	/**
 	 * Get the target entity ID values deleted.
-	 * @return This may be {@code null} depending on the specific delete operation.
+	 * @return This may be empty depending on the specific delete operation.
 	 */
-	public Iterable getTargetIdsIfPresent() {
+	public Optional<Iterable> getOptionalTargetIds() {
 		return this.targetIds;
 	}
 
 	/**
 	 * Get thetarget entity objects deleted.
-	 * @return This may be {@code null} depending on the specific delete operation.
+	 * @return This may be empty depending on the specific delete operation.
 	 */
-	public Iterable getTargetEntitiesIfPresent() {
+	public Optional<Iterable> getOptionalTargetEntities() {
 		return this.targetEntities;
 	}
 
@@ -128,14 +97,14 @@ public class DeleteEvent extends ApplicationEvent {
 		}
 		DeleteEvent that = (DeleteEvent) o;
 		return Arrays.equals(getKeys(), that.getKeys())
-				&& Objects.equals(getTargetEntitiesIfPresent(), that.getTargetEntitiesIfPresent())
-				&& Objects.equals(getTargetIdsIfPresent(), that.getTargetIdsIfPresent())
-				&& Objects.equals(getTargetEntityClassIfPresent(), that.getTargetEntityClassIfPresent());
+				&& Objects.equals(getOptionalTargetEntities(), that.getOptionalTargetEntities())
+				&& Objects.equals(getOptionalTargetIds(), that.getOptionalTargetIds())
+				&& Objects.equals(getOptionalTargetEntityClass(), that.getOptionalTargetEntityClass());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(getKeys()), getTargetEntitiesIfPresent(), getTargetIdsIfPresent(),
-				getTargetEntityClassIfPresent());
+		return Objects.hash(Arrays.hashCode(getKeys()), getOptionalTargetEntities(), getOptionalTargetIds(),
+				getOptionalTargetEntityClass());
 	}
 }
