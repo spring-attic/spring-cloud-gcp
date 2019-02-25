@@ -700,11 +700,11 @@ public class PartTreeDatastoreQueryTests {
 		queryWithMockResult(queryName, results, m, false);
 	}
 
-	private void queryWithMockResult(String queryName, List results, Method m, boolean mockOprionalNullable) {
+	private void queryWithMockResult(String queryName, List results, Method m, boolean mockOptionalNullable) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		doReturn(new DefaultParameters(m))
 				.when(this.queryMethod).getParameters();
-		if (mockOprionalNullable) {
+		if (mockOptionalNullable) {
 			DefaultRepositoryMetadata mockMetadata = mock(DefaultRepositoryMetadata.class);
 			doReturn(m.getReturnType()).when(mockMetadata).getReturnedDomainClass(m);
 			DatastoreQueryMethod datastoreQueryMethod =

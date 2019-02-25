@@ -862,7 +862,7 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
   @Nullable
   Trader getByAction(String action);
 
-  Oprional<Trader> getOneByAction(String action);
+  Optional<Trader> getOneByAction(String action);
 
   int countByAction(String action);
 
