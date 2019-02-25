@@ -4209,6 +4209,15 @@ Filtering parameters can be of types supported by your configured custom convert
 <programlisting language="java" linenumbering="unnumbered">public interface TradeRepository extends DatastoreRepository&lt;Trade, String[]&gt; {
   List&lt;Trader&gt; findByAction(String action);
 
+  //throws an exception if no results
+  Trader findOneByAction(String action);
+
+  //because of the annotation, returns null if no results
+  @Nullable
+  Trader getByAction(String action);
+
+  Optional&lt;Trader&gt; getOneByAction(String action);
+
   int countByAction(String action);
 
   boolean existsByAction(String action);

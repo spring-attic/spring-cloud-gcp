@@ -370,6 +370,15 @@ The second type parameter, <code class="literal">String</code> in this case, ref
 Filtering parameters can be of types supported by your configured custom converters.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a name="_query_methods_by_convention_2" href="#_query_methods_by_convention_2"></a>13.5.1&nbsp;Query methods by convention</h3></div></div></div><pre class="programlisting"><span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">public</span> <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">interface</span> TradeRepository <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">extends</span> DatastoreRepository&lt;Trade, String[]&gt; {
   List&lt;Trader&gt; findByAction(String action);
 
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">//throws an exception if no results</span>
+  Trader findOneByAction(String action);
+
+  <span xmlns:d="http://docbook.org/ns/docbook" class="hl-comment">//because of the annotation, returns null if no results</span>
+  <em><span class="hl-annotation" style="color: gray">@Nullable</span></em>
+  Trader getByAction(String action);
+
+  Optional&lt;Trader&gt; getOneByAction(String action);
+
   <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">int</span> countByAction(String action);
 
   <span xmlns:d="http://docbook.org/ns/docbook" class="hl-keyword">boolean</span> existsByAction(String action);
