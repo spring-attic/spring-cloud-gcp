@@ -45,17 +45,19 @@ public class DatastorePersistentEntityImplTests {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
+	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	@Test
 	public void testTableName() {
 		DatastorePersistentEntityImpl<TestEntity> entity = new DatastorePersistentEntityImpl<>(
-				ClassTypeInformation.from(TestEntity.class));
+				ClassTypeInformation.from(TestEntity.class), null);
 		assertThat(entity.kindName()).isEqualTo("custom_test_kind");
 	}
 
 	@Test
 	public void testRawTableName() {
 		DatastorePersistentEntityImpl<EntityNoCustomName> entity = new DatastorePersistentEntityImpl<>(
-				ClassTypeInformation.from(EntityNoCustomName.class));
+				ClassTypeInformation.from(EntityNoCustomName.class), null);
 
 		assertThat(entity.kindName()).isEqualTo("entityNoCustomName");
 	}
@@ -63,7 +65,7 @@ public class DatastorePersistentEntityImplTests {
 	@Test
 	public void testEmptyCustomTableName() {
 		DatastorePersistentEntityImpl<EntityEmptyCustomName> entity = new DatastorePersistentEntityImpl<>(
-				ClassTypeInformation.from(EntityEmptyCustomName.class));
+				ClassTypeInformation.from(EntityEmptyCustomName.class), null);
 
 		assertThat(entity.kindName()).isEqualTo("entityEmptyCustomName");
 	}
@@ -73,7 +75,7 @@ public class DatastorePersistentEntityImplTests {
 		this.expectedException.expect(SpelEvaluationException.class);
 		this.expectedException.expectMessage("Property or field 'kindPostfix' cannot be found on null");
 		DatastorePersistentEntityImpl<EntityWithExpression> entity = new DatastorePersistentEntityImpl<>(
-				ClassTypeInformation.from(EntityWithExpression.class));
+				ClassTypeInformation.from(EntityWithExpression.class), null);
 
 		entity.kindName();
 	}
@@ -81,7 +83,7 @@ public class DatastorePersistentEntityImplTests {
 	@Test
 	public void testExpressionResolutionFromApplicationContext() {
 		DatastorePersistentEntityImpl<EntityWithExpression> entity = new DatastorePersistentEntityImpl<>(
-				ClassTypeInformation.from(EntityWithExpression.class));
+				ClassTypeInformation.from(EntityWithExpression.class), null);
 
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		when(applicationContext.getBean("kindPostfix")).thenReturn("something");
@@ -126,7 +128,35 @@ public class DatastorePersistentEntityImplTests {
 				(SimplePropertyHandler) (property) -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
 	}
 
+	@Test
+	public void testDiscriminationMetadata() {
+		DatastorePersistentEntity base = this.datastoreMappingContext.getPersistentEntity(TestEntity.class);
+		DatastorePersistentEntity a1 = this.datastoreMappingContext.getPersistentEntity(SubA1TestEntity.class);
+		DatastorePersistentEntity a2 = this.datastoreMappingContext.getPersistentEntity(SubA2TestEntity.class);
+
+		assertThat(base.kindName()).isEqualTo("custom_test_kind");
+		assertThat(a1.kindName()).isEqualTo("custom_test_kind");
+		assertThat(a2.kindName()).isEqualTo("custom_test_kind");
+
+		assertThat(base.getDiscriminationFieldName()).isEqualTo("type_disc_col");
+		assertThat(a1.getDiscriminationFieldName()).isEqualTo("type_disc_col");
+		assertThat(a2.getDiscriminationFieldName()).isEqualTo("type_disc_col");
+
+		assertThat(base.getDiscriminationValue()).isNull();
+		assertThat(a1.getDiscriminationValue()).isEqualTo("A1");
+		assertThat(a2.getDiscriminationValue()).isEqualTo("A2");
+	}
+
+	@Test
+	public void testEntityMissingDiscriminationSuperclass() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("This class expects a discrimination field but none are designated");
+
+		this.datastoreMappingContext.getPersistentEntity(TestEntityNoSuperclass.class).kindName();
+	}
+
 	@Entity(name = "custom_test_kind")
+	@DiscriminationField(field = "type_disc_col")
 	private static class TestEntity {
 		@Id
 		String id;
@@ -136,6 +166,28 @@ public class DatastorePersistentEntityImplTests {
 
 		@Transient
 		String notMapped;
+	}
+
+	@Entity
+	@DiscriminationValue("A1")
+	private static class SubA1TestEntity extends TestEntity {
+
+		@Field(name = "type_disc_col")
+		String discValue;
+	}
+
+	@Entity
+	@DiscriminationValue("A2")
+	private static class SubA2TestEntity extends SubA1TestEntity {
+
+	}
+
+	@Entity
+	@DiscriminationValue("N/A")
+	private static class TestEntityNoSuperclass {
+		@Id
+		String id;
+
 	}
 
 	private static class EntityNoCustomName {
