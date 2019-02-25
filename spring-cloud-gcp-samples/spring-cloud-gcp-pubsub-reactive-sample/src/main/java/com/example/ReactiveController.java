@@ -17,7 +17,6 @@
 package com.example;
 
 import java.nio.charset.Charset;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -44,7 +43,7 @@ public class ReactiveController {
 	public Flux<? super String> getMessages() {
 
 		// TODO: autoconfigure and inject.
-		PubSubReactiveFactory factory = new PubSubReactiveFactory(new ScheduledThreadPoolExecutor(4), this.template);
+		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template);
 
 		Publisher<AcknowledgeablePubsubMessage> flux
 				= factory.createPolledPublisher("reactiveSubscription", 1000);

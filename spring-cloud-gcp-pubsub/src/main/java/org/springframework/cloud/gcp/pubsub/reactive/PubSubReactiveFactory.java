@@ -16,16 +16,14 @@
 
 package org.springframework.cloud.gcp.pubsub.reactive;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.FluxSink;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -39,12 +37,9 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
  */
 public final class PubSubReactiveFactory {
 
-	private ScheduledExecutorService executorService;
-
 	private PubSubSubscriberOperations subscriberOperations;
 
-	public PubSubReactiveFactory(ScheduledExecutorService executorService, PubSubSubscriberOperations subscriberOperations) {
-		this.executorService = executorService;
+	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations) {
 		this.subscriberOperations = subscriberOperations;
 
 	}
@@ -52,44 +47,31 @@ public final class PubSubReactiveFactory {
 	public Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(
 			String subscriptionName, int delayInMilliseconds) {
 
-		return Flux.<List<AcknowledgeablePubsubMessage>>create(sink -> {
+		PubSubReactiveSubscription reactiveSubscription = new PubSubReactiveSubscription(subscriptionName);
 
-			PubSubReactiveSubscription reactiveSubscription = new PubSubReactiveSubscription(sink, subscriptionName, delayInMilliseconds);
-			sink.onRequest(reactiveSubscription::request);
-			sink.onCancel(reactiveSubscription::cancel);
-
-		}).flatMapIterable(Function.identity());
+		return Flux.interval(Duration.ofMillis(delayInMilliseconds))
+				.doOnRequest(reactiveSubscription::addDemand)
+				.map(t -> reactiveSubscription.pullMessages())
+				.flatMapIterable(Function.identity());
 	}
 
 
 	private class PubSubReactiveSubscription {
 
-		private FluxSink<List<AcknowledgeablePubsubMessage>> sink;
-
 		private String subscriptionName;
-
-		private ScheduledFuture<?> scheduledFuture;
 
 		private AtomicLong totalDemand;
 
-		PubSubReactiveSubscription(FluxSink<List<AcknowledgeablePubsubMessage>> sink, String subscriptionName, int delayInMilliseconds) {
-
-			this.sink = sink;
+		PubSubReactiveSubscription(String subscriptionName) {
 			this.subscriptionName = subscriptionName;
 			this.totalDemand = new AtomicLong(0);
-
-			this.scheduledFuture = executorService.scheduleWithFixedDelay(this::pullMessages, 0, delayInMilliseconds, TimeUnit.MILLISECONDS);
 		}
 
-		void request(long demand) {
+		void addDemand(long demand) {
 			this.totalDemand.addAndGet(demand);
 		}
 
-		void cancel() {
-			this.scheduledFuture.cancel(false);
-		}
-
-		private void pullMessages() {
+		private List<AcknowledgeablePubsubMessage> pullMessages() {
 
 			// does not really matter if there is another request coming in simultaneously, increasing totalDemand
 			// while the ternary is in progress. The next poll will request the newly added demand.
@@ -99,12 +81,11 @@ public final class PubSubReactiveFactory {
 			if (numMessagesToPull > 0) {
 				// pull messages if available; immediately return empty list if no messages.
 				List<AcknowledgeablePubsubMessage> messages = PubSubReactiveFactory.this.subscriberOperations.pull(this.subscriptionName, numMessagesToPull, true);
-
-				if (!messages.isEmpty()) {
-					this.sink.next(messages);
-					this.totalDemand.addAndGet(-1L * messages.size());
-				}
+				this.totalDemand.addAndGet(-1L * messages.size());
+				return messages;
 			}
+
+			return Collections.emptyList();
 		}
 
 	}
