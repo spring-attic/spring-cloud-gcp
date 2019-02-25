@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.cloud.datastore.EntityQuery;
@@ -51,11 +52,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
+import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.DefaultParameters;
+import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -115,7 +120,7 @@ public class PartTreeDatastoreQueryTests {
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
 		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
-		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), any());
+		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), isNotNull());
 
 		return spy;
 	}
@@ -637,13 +642,97 @@ public class PartTreeDatastoreQueryTests {
 		assertThat((boolean) spyQuery.execute(params)).isFalse();
 	}
 
+	@Test
+	public void nonCollectionReturnType() throws NoSuchMethodException {
+		Trade trade = new Trade();
+		queryWithMockResult("findByAction", null,
+				getClass().getMethod("findByAction", String.class), true);
+
+		Object[] params = new Object[] { "BUY", };
+
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			EntityQuery statement = invocation.getArgument(0);
+
+			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
+					.setFilter(PropertyFilter.eq("action", "BUY"))
+					.setKind("trades")
+					.setLimit(1).build();
+
+			assertThat(statement).isEqualTo(expected);
+
+			return Collections.singletonList(trade);
+		});
+
+		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
+	}
+
+	@Test
+	public void nonCollectionReturnTypeNoResults() throws NoSuchMethodException {
+		this.expectedException.expectMessage("Expecting at least 1 result, but none found");
+
+		queryWithMockResult("findByAction", Collections.emptyList(),
+				getClass().getMethod("findByAction", String.class), true);
+
+
+		Object[] params = new Object[] { "BUY", };
+		this.partTreeDatastoreQuery.execute(params);
+	}
+
+	@Test
+	public void nonCollectionReturnTypeNoResultsNullable() throws NoSuchMethodException {
+		queryWithMockResult("findByAction", Collections.emptyList(),
+				getClass().getMethod("findByActionNullable", String.class), true);
+
+		Object[] params = new Object[] { "BUY", };
+		assertThat(this.partTreeDatastoreQuery.execute(params)).isNull();
+	}
+
+	@Test
+	public void nonCollectionReturnTypeNoResultsOptional() throws NoSuchMethodException {
+		queryWithMockResult("findByAction", Collections.emptyList(),
+				getClass().getMethod("findByActionOptional", String.class), true);
+
+		Object[] params = new Object[] { "BUY", };
+		assertThat((Optional) this.partTreeDatastoreQuery.execute(params)).isNotPresent();
+	}
+
 	private void queryWithMockResult(String queryName, List results, Method m) {
+		queryWithMockResult(queryName, results, m, false);
+	}
+
+	private void queryWithMockResult(String queryName, List results, Method m, boolean mockOptionalNullable) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		doReturn(new DefaultParameters(m))
 				.when(this.queryMethod).getParameters();
+		if (mockOptionalNullable) {
+			DefaultRepositoryMetadata mockMetadata = mock(DefaultRepositoryMetadata.class);
+			doReturn(m.getReturnType()).when(mockMetadata).getReturnedDomainClass(m);
+			DatastoreQueryMethod datastoreQueryMethod =
+					new DatastoreQueryMethod(m,
+							mockMetadata,
+							mock(SpelAwareProxyProjectionFactory.class));
+			doReturn(datastoreQueryMethod.isOptionalReturnType())
+					.when(this.queryMethod).isOptionalReturnType();
+			doReturn(datastoreQueryMethod.isNullable())
+					.when(this.queryMethod).isNullable();
+		}
+
 		this.partTreeDatastoreQuery = createQuery(false, false);
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(results);
+	}
+
+	public Trade findByAction(String action) {
+		return null;
+	}
+
+	@Nullable
+	public Trade findByActionNullable(String action) {
+		return null;
+	}
+
+	public Optional<Trade> findByActionOptional(String action) {
+		return null;
 	}
 
 	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater) {
