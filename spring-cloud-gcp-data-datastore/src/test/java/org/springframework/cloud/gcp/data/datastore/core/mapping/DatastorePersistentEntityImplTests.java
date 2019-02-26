@@ -176,18 +176,21 @@ public class DatastorePersistentEntityImplTests {
 
 	@Entity
 	@DiscriminationField(field = "colA")
+	@DiscriminationValue("a")
 	private static class DiscrimEntityA {
 
 	}
 
 	@Entity
 	@DiscriminationField(field = "colA")
+	@DiscriminationValue("c")
 	private static class DiscrimEntityC extends DiscrimEntityA {
 
 	}
 
 	@Entity
 	@DiscriminationField(field = "colB")
+	@DiscriminationValue("b")
 	private static class DiscrimEntityB extends DiscrimEntityA {
 
 	}
