@@ -17,6 +17,11 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -45,6 +50,10 @@ public class DatastoreMappingContext extends
 
 	private ApplicationContext applicationContext;
 
+	// Maps a given class to the set of other classes with which it shares the same Datastore
+	// Kind.
+	private static final Map<Class, Set<Class>> discriminationFamilies = new ConcurrentHashMap<>();
+
 	public DatastoreMappingContext() {
 
 	}
@@ -53,6 +62,48 @@ public class DatastoreMappingContext extends
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	/**
+	 * Registers in the DatastoreMappingContext that two classes are discriminated from the
+	 * same Datastore Kind.
+	 * @param classA one class.
+	 * @param classB another class.
+	 */
+	public static void addDiscriminationClassConnection(Class classA, Class classB) {
+		Set<Class> setA = getDiscriminationFamily(classA);
+		Set<Class> setB = getDiscriminationFamily(classB);
+
+		if (setA == null && setB == null) {
+			setA = new HashSet<>();
+			discriminationFamilies.put(classB, setA);
+			discriminationFamilies.put(classA, setA);
+			setA.add(classA);
+			setA.add(classB);
+		}
+		else if (setA == null) {
+			discriminationFamilies.put(classA, setB);
+			setB.add(classA);
+		}
+		else if (setB == null) {
+			discriminationFamilies.put(classB, setA);
+			setA.add(classB);
+		}
+		else {
+			setA.addAll(setB);
+			discriminationFamilies.put(classB, setA);
+		}
+	}
+
+	/**
+	 * Get the set of other classes that share the same underlying Datastore Kind.
+	 * @param aClass the class to look up.
+	 * @return a {@code Set} of other classes that share the same Kind (including the given
+	 * class). Will be {@code null} if this class is not discriminated from a set of other
+	 * classes.
+	 */
+	public static Set<Class> getDiscriminationFamily(Class aClass) {
+		return discriminationFamilies.get(aClass);
 	}
 
 	protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(

@@ -34,6 +34,7 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -93,27 +94,31 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		if (entity == null) {
 			return null;
 		}
-		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
+		DatastorePersistentEntity<R> ostensiblePersistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
-		if (persistentEntity == null) {
+		if (ostensiblePersistentEntity == null) {
 			throw new DatastoreDataException("Unable to convert Datastore Entity to " + aClass);
 		}
 
 		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
 
+		DatastorePersistentEntity persistentEntity = getDiscriminationPersistentEntity(ostensiblePersistentEntity,
+				propertyValueProvider);
+
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
-		R instance;
+		Object instance;
 		try {
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
 						// if a property is a constructor argument, it was already computed on instantiation
 						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
-							Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
+					Object value = propertyValueProvider
+							.getPropertyValue((DatastorePersistentProperty) datastorePersistentProperty);
 							accessor.setProperty(datastorePersistentProperty, value);
 						}
 					});
@@ -122,7 +127,39 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", ex);
 		}
 
-		return instance;
+		return (R) instance;
+	}
+
+	private DatastorePersistentEntity getDiscriminationPersistentEntity(DatastorePersistentEntity ostensibleEntity,
+			EntityPropertyValueProvider propertyValueProvider) {
+		if (ostensibleEntity.getDiscriminationFieldName() == null) {
+			return ostensibleEntity;
+		}
+		DatastorePersistentEntity persistentEntity = null;
+
+		Set<Class> members = DatastoreMappingContext.getDiscriminationFamily(ostensibleEntity.getType());
+
+		if (members != null) {
+			for (Class member : members) {
+				DatastorePersistentEntity memberEntity = this.mappingContext.getPersistentEntity(member);
+				if (memberEntity != null && isDiscriminationFieldMatch(memberEntity, propertyValueProvider)) {
+					if (persistentEntity != null) {
+						throw new DatastoreDataException(
+								"More than one class in an inheritance hierarchy has the same DiscriminationValue: "
+										+ persistentEntity.getType() + " and " + member);
+					}
+					persistentEntity = memberEntity;
+				}
+			}
+		}
+
+		return persistentEntity == null ? ostensibleEntity : persistentEntity;
+	}
+
+	private boolean isDiscriminationFieldMatch(DatastorePersistentEntity entity,
+			EntityPropertyValueProvider propertyValueProvider) {
+		return propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(), EmbeddedType.NOT_EMBEDDED,
+				ClassTypeInformation.from(String.class)).equals(entity.getDiscriminationValue());
 	}
 
 	@Override
