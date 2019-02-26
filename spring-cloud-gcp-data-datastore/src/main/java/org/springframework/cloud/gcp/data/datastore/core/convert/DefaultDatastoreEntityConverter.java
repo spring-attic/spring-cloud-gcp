@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.datastore.BaseEntity;
@@ -135,21 +136,13 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		if (ostensibleEntity.getDiscriminationFieldName() == null) {
 			return ostensibleEntity;
 		}
-		DatastorePersistentEntity persistentEntity = null;
 
 		Set<Class> members = DatastoreMappingContext.getDiscriminationFamily(ostensibleEntity.getType());
+		Optional<DatastorePersistentEntity> persistentEntity = members == null ? Optional.empty()
+				: members.stream().map(x -> (DatastorePersistentEntity) this.mappingContext.getPersistentEntity(x))
+						.filter(x -> x != null && isDiscriminationFieldMatch(x, propertyValueProvider)).findFirst();
 
-		if (members != null) {
-			for (Class member : members) {
-				DatastorePersistentEntity memberEntity = this.mappingContext.getPersistentEntity(member);
-				if (memberEntity != null && isDiscriminationFieldMatch(memberEntity, propertyValueProvider)) {
-					persistentEntity = memberEntity;
-					break;
-				}
-			}
-		}
-
-		return persistentEntity == null ? ostensibleEntity : persistentEntity;
+		return persistentEntity.orElse(ostensibleEntity);
 	}
 
 	private boolean isDiscriminationFieldMatch(DatastorePersistentEntity entity,
