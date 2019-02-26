@@ -855,6 +855,15 @@ Filtering parameters can be of types supported by your configured custom convert
 public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
   List<Trader> findByAction(String action);
 
+  //throws an exception if no results
+  Trader findOneByAction(String action);
+
+  //because of the annotation, returns null if no results
+  @Nullable
+  Trader getByAction(String action);
+
+  Optional<Trader> getOneByAction(String action);
+
   int countByAction(String action);
 
   boolean existsByAction(String action);

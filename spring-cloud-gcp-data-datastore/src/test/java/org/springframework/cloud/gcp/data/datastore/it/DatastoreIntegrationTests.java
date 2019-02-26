@@ -176,6 +176,10 @@ public class DatastoreIntegrationTests {
 
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
+		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
+		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
+		assertThat(this.testEntityRepository.getByColor("green")).isNull();
+		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
