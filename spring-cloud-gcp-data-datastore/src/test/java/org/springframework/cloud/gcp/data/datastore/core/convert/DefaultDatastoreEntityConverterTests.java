@@ -285,6 +285,24 @@ public class DefaultDatastoreEntityConverterTests {
 	}
 
 	@Test
+	public void writeTestSubtypes() {
+		TestDatastoreItemSubtypeA itemA = new TestDatastoreItemSubtypeA();
+		itemA.stringField = "item A";
+		itemA.intField = 10;
+
+		Entity.Builder builder = getEntityBuilder();
+		ENTITY_CONVERTER.write(itemA, builder);
+
+		Entity entity = builder.build();
+
+
+		assertThat(entity.getString("stringField")).as("validate string field")
+				.isEqualTo("item A");
+		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(10L);
+		assertThat(entity.getString("subtype")).as("validate discrimination field").isEqualTo("A");
+	}
+
+	@Test
 	public void writeNullTest() {
 		byte[] bytes = { 1, 2, 3 };
 		TestDatastoreItem item = new TestDatastoreItem();
@@ -713,6 +731,15 @@ public class DefaultDatastoreEntityConverterTests {
 		};
 	}
 
+	@DiscriminationField(field = "subtype")
+	abstract class TestDatastoreItemParentType {
+		String stringField;
+	}
+
+	@DiscriminationValue("A")
+	class TestDatastoreItemSubtypeA extends TestDatastoreItemParentType {
+		int intField;
+	}
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
 	@DiscriminationField(field = "discrimination_column")
 	@DiscriminationValue("X")
