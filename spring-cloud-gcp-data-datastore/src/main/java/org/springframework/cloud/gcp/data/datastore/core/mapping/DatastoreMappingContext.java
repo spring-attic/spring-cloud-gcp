@@ -71,28 +71,17 @@ public class DatastoreMappingContext extends
 	 * @param classB another class.
 	 */
 	public static void addDiscriminationClassConnection(Class classA, Class classB) {
-		Set<Class> setA = getDiscriminationFamily(classA);
-		Set<Class> setB = getDiscriminationFamily(classB);
+		Set<Class> setA = discriminationFamilies.computeIfAbsent(classA, DatastoreMappingContext::createSingletonSet);
+		Set<Class> setB = discriminationFamilies.computeIfAbsent(classB, DatastoreMappingContext::createSingletonSet);
 
-		if (setA == null && setB == null) {
-			setA = new HashSet<>();
-			discriminationFamilies.put(classB, setA);
-			discriminationFamilies.put(classA, setA);
-			setA.add(classA);
-			setA.add(classB);
-		}
-		else if (setA == null) {
-			discriminationFamilies.put(classA, setB);
-			setB.add(classA);
-		}
-		else if (setB == null) {
-			discriminationFamilies.put(classB, setA);
-			setA.add(classB);
-		}
-		else {
-			setA.addAll(setB);
-			discriminationFamilies.put(classB, setA);
-		}
+		setA.addAll(setB);
+		discriminationFamilies.put(classB, setA);
+	}
+
+	private static Set<Class> createSingletonSet(Class aClass) {
+			HashSet<Class> classes = new HashSet<>();
+			classes.add(aClass);
+			return classes;
 	}
 
 	/**
