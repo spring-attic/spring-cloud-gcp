@@ -252,6 +252,7 @@ public class SpannerTemplateTests {
 		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keys, null),
 				() -> assertThat(this.spannerTemplate.read(TestEntity.class, key)).isNull(), x -> {
 				});
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -261,6 +262,7 @@ public class SpannerTemplateTests {
 		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
 				() -> assertThat(this.spannerTemplate.query(TestEntity.class, query, null)).isEmpty(), x -> {
 				});
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -280,6 +282,7 @@ public class SpannerTemplateTests {
 		spyTemplate.read(TestEntity.class, Key.of("key"));
 		verify(spyTemplate, times(1)).read(eq(TestEntity.class), eq(Key.of("key")),
 				eq(null));
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -289,6 +292,7 @@ public class SpannerTemplateTests {
 				.build();
 		spyTemplate.read(TestEntity.class, keys);
 		verify(spyTemplate, times(1)).read(eq(TestEntity.class), same(keys), eq(null));
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -306,6 +310,7 @@ public class SpannerTemplateTests {
 					verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 							any(), same(readOption));
 				});
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -322,6 +327,7 @@ public class SpannerTemplateTests {
 				eq(TestEntity.class), isNull(), eq(false));
 		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
 				eq("index"), same(keySet), any(), same(readOption));
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test
@@ -331,6 +337,7 @@ public class SpannerTemplateTests {
 		spyTemplate.readAll(TestEntity.class, options);
 		verify(spyTemplate, times(1)).read(eq(TestEntity.class), eq(KeySet.all()),
 				same(options));
+		verify(this.databaseClient, times(1)).singleUse();
 	}
 
 	@Test

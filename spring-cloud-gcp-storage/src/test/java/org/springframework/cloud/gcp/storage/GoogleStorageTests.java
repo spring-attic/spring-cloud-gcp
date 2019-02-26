@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tess for Google Cloud Storage.
+ * Tests for Google Cloud Storage.
  *
  * @author Vinicius Carvalho
  * @author Artem Bilan
@@ -98,7 +98,6 @@ public class GoogleStorageTests {
 		new GoogleStorageResource(this.storage, "gs:///", false);
 	}
 
-
 	@Test
 	public void testValidObject() throws Exception {
 		Assert.assertTrue(this.remoteResource.exists());
@@ -130,6 +129,25 @@ public class GoogleStorageTests {
 	@Test
 	public void testBucketNotEndingInSlash() {
 		Assert.assertTrue(new GoogleStorageResource(this.storage, "gs://test-spring").isBucket());
+	}
+
+	@Test
+	public void testSpecifyBucketCorrect() {
+		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
+				this.storage, "test-spring", null, false);
+
+		Assert.assertTrue(googleStorageResource.isBucket());
+		Assert.assertEquals("test-spring", googleStorageResource.getBucket().getName());
+		Assert.assertTrue(googleStorageResource.exists());
+	}
+
+	@Test
+	public void testSpecifyPathCorrect() {
+		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
+				this.storage, "test-spring", "images/spring.png", false);
+
+		Assert.assertTrue(googleStorageResource.isFile());
+		Assert.assertTrue(googleStorageResource.exists());
 	}
 
 	@Test

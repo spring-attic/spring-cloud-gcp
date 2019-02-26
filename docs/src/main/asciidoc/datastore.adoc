@@ -855,6 +855,15 @@ Filtering parameters can be of types supported by your configured custom convert
 public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
   List<Trader> findByAction(String action);
 
+  //throws an exception if no results
+  Trader findOneByAction(String action);
+
+  //because of the annotation, returns null if no results
+  @Nullable
+  Trader getByAction(String action);
+
+  Optional<Trader> getOneByAction(String action);
+
   int countByAction(String action);
 
   boolean existsByAction(String action);
@@ -1117,6 +1126,16 @@ You can also write trades using `curl -XPOST -H"Content-Type: application/json" 
 
 To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`
 
+=== Events
+
+Spring Data Cloud Datastore publishes events extending the Spring Framework's `ApplicationEvent` to the context that can be received by `ApplicationListener` beans you register.
+
+[options="header"]
+|===
+| Type | Description | Contents
+| `BeforeDeleteEvent`|Published immediately before delete operations are executed by `DatastoreTemplate`| The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
+| `AfterDeleteEvent`|Published immediately after delete operations are executed by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
+|===
 
 
 === Sample

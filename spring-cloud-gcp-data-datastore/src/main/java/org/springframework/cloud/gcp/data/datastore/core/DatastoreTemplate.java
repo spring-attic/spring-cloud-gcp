@@ -58,7 +58,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
@@ -67,6 +72,7 @@ import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -80,7 +86,7 @@ import org.springframework.util.TypeUtils;
  *
  * @since 1.1
  */
-public class DatastoreTemplate implements DatastoreOperations {
+public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
 
 	private final DatastoreReaderWriter datastore;
 
@@ -89,6 +95,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	private final DatastoreMappingContext datastoreMappingContext;
 
 	private final ObjectToKeyFactory objectToKeyFactory;
+
+	private @Nullable ApplicationEventPublisher eventPublisher;
 
 	public DatastoreTemplate(DatastoreReaderWriter datastore,
 			DatastoreEntityConverter datastoreEntityConverter,
@@ -113,6 +121,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 	 */
 	public DatastoreEntityConverter getDatastoreEntityConverter() {
 		return this.datastoreEntityConverter;
+	}
+
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.eventPublisher = applicationEventPublisher;
 	}
 
 	@Override
@@ -157,32 +170,36 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> void deleteById(Object id, Class<T> entityClass) {
-		getDatastoreReadWriter().delete(getKeyFromId(id, entityClass));
+		performDelete(new Key[] { getKeyFromId(id, entityClass) }, Collections.singletonList(id), null, entityClass);
 	}
 
 	@Override
 	public <T> void deleteAllById(Iterable<?> ids, Class<T> entityClass) {
-		List<Key> keys = getKeysFromIds(ids, entityClass);
-		getDatastoreReadWriter().delete(keys.toArray(new Key[keys.size()]));
+		performDelete(getKeysFromIds(ids, entityClass).toArray(new Key[0]), ids, null, entityClass);
 	}
 
 	@Override
 	public <T> void delete(T entity) {
-		getDatastoreReadWriter().delete(getKey(entity, false));
+		performDelete(new Key[] { getKey(entity, false) }, null, Collections.singletonList(entity), entity.getClass());
 	}
 
 	@Override
 	public <T> void deleteAll(Iterable<T> entities) {
-		getDatastoreReadWriter()
-				.delete(StreamSupport.stream(entities.spliterator(), false)
-				.map((x) -> getKey(x, false)).toArray(Key[]::new));
+		performDelete(StreamSupport.stream(entities.spliterator(), false)
+				.map((x) -> getKey(x, false)).toArray(Key[]::new), null, entities, null);
 	}
 
 	@Override
 	public long deleteAll(Class<?> entityClass) {
 		Key[] keysToDelete = findAllKeys(entityClass);
-		getDatastoreReadWriter().delete(keysToDelete);
+		performDelete(keysToDelete, null, null, entityClass);
 		return keysToDelete.length;
+	}
+
+	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
+		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
+		getDatastoreReadWriter().delete(keys);
+		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
 	}
 
 	@Override
@@ -678,6 +695,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 		}
 		if (matcher.getPropertySpecifiers().hasValues()) {
 			throw new DatastoreDataException("Property matchers are not supported");
+		}
+	}
+
+	private void maybeEmitEvent(ApplicationEvent event) {
+		if (this.eventPublisher != null) {
+			this.eventPublisher.publishEvent(event);
 		}
 	}
 

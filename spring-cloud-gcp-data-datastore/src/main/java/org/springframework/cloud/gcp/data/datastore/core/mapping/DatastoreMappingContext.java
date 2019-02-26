@@ -57,7 +57,7 @@ public class DatastoreMappingContext extends
 
 	protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
 			TypeInformation<T> typeInformation) {
-		return new DatastorePersistentEntityImpl<>(typeInformation);
+		return new DatastorePersistentEntityImpl<>(typeInformation, this);
 	}
 
 	@Override
