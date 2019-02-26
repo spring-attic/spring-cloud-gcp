@@ -143,12 +143,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			for (Class member : members) {
 				DatastorePersistentEntity memberEntity = this.mappingContext.getPersistentEntity(member);
 				if (memberEntity != null && isDiscriminationFieldMatch(memberEntity, propertyValueProvider)) {
-					if (persistentEntity != null) {
-						throw new DatastoreDataException(
-								"More than one class in an inheritance hierarchy has the same DiscriminationValue: "
-										+ persistentEntity.getType() + " and " + member);
-					}
 					persistentEntity = memberEntity;
+					break;
 				}
 			}
 		}
