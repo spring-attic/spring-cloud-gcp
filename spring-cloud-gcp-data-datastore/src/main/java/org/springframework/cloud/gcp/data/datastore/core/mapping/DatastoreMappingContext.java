@@ -51,7 +51,7 @@ public class DatastoreMappingContext extends
 	private ApplicationContext applicationContext;
 
 	// Maps a given class to the set of other classes with which it shares the same Datastore
-	// Kind.
+	// Kind and that are subclasses of the given class.
 	private static final Map<Class, Set<Class>> discriminationFamilies = new ConcurrentHashMap<>();
 
 	public DatastoreMappingContext() {
@@ -67,15 +67,26 @@ public class DatastoreMappingContext extends
 	/**
 	 * Registers in the DatastoreMappingContext that two classes are discriminated from the
 	 * same Datastore Kind.
-	 * @param classA one class.
-	 * @param classB another class.
+	 * @param parentClass the superclass.
+	 * @param subClass the subclass.
 	 */
-	public static void addDiscriminationClassConnection(Class classA, Class classB) {
-		Set<Class> setA = discriminationFamilies.computeIfAbsent(classA, DatastoreMappingContext::createSingletonSet);
-		Set<Class> setB = discriminationFamilies.computeIfAbsent(classB, DatastoreMappingContext::createSingletonSet);
+	public static void addDiscriminationClassConnection(Class parentClass, Class subClass) {
+		Set<Class> setParent = discriminationFamilies.computeIfAbsent(parentClass,
+				unused -> createSingletonSet(subClass));
+		Set<Class> setSubClass = discriminationFamilies.computeIfAbsent(subClass, unused -> new HashSet<>());
+		setParent.add(subClass);
 
-		setA.addAll(setB);
-		discriminationFamilies.put(classB, setA);
+		setSubClass.forEach(x -> {
+			if (!discriminationFamilies.get(parentClass).contains(x)) {
+				addDiscriminationClassConnection(parentClass, x);
+			}
+		});
+		setSubClass.forEach(x -> {
+			Class grandParent = parentClass.getSuperclass();
+			if (!discriminationFamilies.computeIfAbsent(grandParent, unused -> new HashSet<>()).contains(x)) {
+				addDiscriminationClassConnection(grandParent, x);
+			}
+		});
 	}
 
 	private static Set<Class> createSingletonSet(Class aClass) {
@@ -85,11 +96,11 @@ public class DatastoreMappingContext extends
 	}
 
 	/**
-	 * Get the set of other classes that share the same underlying Datastore Kind.
+	 * Get the set of other classes that share the same underlying Datastore Kind and that are
+	 * subclasses of the given class.
 	 * @param aClass the class to look up.
-	 * @return a {@code Set} of other classes that share the same Kind (including the given
-	 * class). Will be {@code null} if this class is not discriminated from a set of other
-	 * classes.
+	 * @return a {@code Set} of other classes that share the same Kind that are subclasses.
+	 * Will be {@code null} if this class is not discriminated from a set of other classes.
 	 */
 	public static Set<Class> getDiscriminationFamily(Class aClass) {
 		return discriminationFamilies.get(aClass);

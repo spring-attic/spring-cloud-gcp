@@ -164,7 +164,7 @@ public class DatastorePersistentEntityImpl<T>
 						"This class and its super class both have discrimination fields but they are different fields: "
 								+ getType() + " and " + parentClass);
 			}
-			DatastoreMappingContext.addDiscriminationClassConnection(getType(), parentClass);
+			DatastoreMappingContext.addDiscriminationClassConnection(parentClass, getType());
 		}
 	}
 

@@ -151,6 +151,10 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityX)).isInstanceOf(DiscrimEntityX.class);
 		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityA)).isInstanceOf(DiscrimEntityA.class);
 		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityB)).isInstanceOf(DiscrimEntityB.class);
+
+		// Because A is NOT a superclass of X, we cannot read entityX as type X. It falls back to
+		// A.
+		assertThat(ENTITY_CONVERTER.read(DiscrimEntityA.class, entityX)).isInstanceOf(DiscrimEntityA.class);
 	}
 
 	@Test
