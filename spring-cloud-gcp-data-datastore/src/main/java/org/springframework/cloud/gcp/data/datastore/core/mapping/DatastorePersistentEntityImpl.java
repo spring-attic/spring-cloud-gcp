@@ -16,10 +16,16 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
@@ -123,6 +129,46 @@ public class DatastorePersistentEntityImpl<T>
 	}
 
 	@Override
+	public void verify() {
+		super.verify();
+		initializeSubclassEntities();
+		addEntityToDiscriminationFamily();
+		checkDiscriminationValues();
+	}
+
+	private void checkDiscriminationValues() {
+		Set<Class> otherMembers = DatastoreMappingContext.getDiscriminationFamily(getType());
+		Set<String> seenValues = new HashSet();
+		if (otherMembers != null) {
+			for (Class other : otherMembers) {
+				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getPersistentEntity(other);
+				if (seenValues.contains(persistentEntity.getDiscriminationValue())) {
+					throw new DatastoreDataException(
+							"More than one class in an inheritance hierarchy has the same DiscriminationValue: "
+									+ getType() + " and " + other);
+				}
+				seenValues.add(persistentEntity.getDiscriminationValue());
+			}
+		}
+
+	}
+
+	private void addEntityToDiscriminationFamily() {
+		Class parentClass = getType().getSuperclass();
+		DatastorePersistentEntity parentEntity = parentClass != Object.class
+				? this.datastoreMappingContext.getPersistentEntity(parentClass)
+				: null;
+		if (parentEntity != null && parentEntity.getDiscriminationFieldName() != null) {
+			if (!parentEntity.getDiscriminationFieldName().equals(getDiscriminationFieldName())) {
+				throw new DatastoreDataException(
+						"This class and its super class both have discrimination fields but they are different fields: "
+								+ getType() + " and " + parentClass);
+			}
+			DatastoreMappingContext.addDiscriminationClassConnection(getType(), parentClass);
+		}
+	}
+
+	@Override
 	public String getDiscriminationFieldName() {
 		return this.discriminationField == null ? null : this.discriminationField.field();
 	}
@@ -169,5 +215,18 @@ public class DatastorePersistentEntityImpl<T>
 		}
 		return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
 				.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity();
+	}
+
+	private void initializeSubclassEntities() {
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.addIncludeFilter(new AssignableTypeFilter(getType()));
+		for (BeanDefinition component : provider.findCandidateComponents(getType().getPackage().getName())) {
+			try {
+				this.datastoreMappingContext.getPersistentEntity(Class.forName(component.getBeanClassName()));
+			}
+			catch (ClassNotFoundException ex) {
+				throw new DatastoreDataException("Could not find expected subclass for this entity: " + getType(), ex);
+			}
+		}
 	}
 }

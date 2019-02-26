@@ -145,6 +145,25 @@ public class DatastorePersistentEntityImplTests {
 		assertThat(base.getDiscriminationValue()).isNull();
 		assertThat(a1.getDiscriminationValue()).isEqualTo("A1");
 		assertThat(a2.getDiscriminationValue()).isEqualTo("A2");
+
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(TestEntity.class))
+				.isEqualTo(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class));
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
+				.isEqualTo(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class));
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
+				.containsExactlyInAnyOrder(TestEntity.class, SubA1TestEntity.class, SubA2TestEntity.class);
+
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
+				.isNotEqualTo(this.datastoreMappingContext.getDiscriminationFamily(DiscrimEntityC.class));
+	}
+
+	@Test
+	public void testConflictingDiscriminationFieldNames() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("This class and its super class both have " +
+				"discrimination fields but they are different fields: ");
+
+		this.datastoreMappingContext.getPersistentEntity(DiscrimEntityB.class);
 	}
 
 	@Test
@@ -153,6 +172,27 @@ public class DatastorePersistentEntityImplTests {
 		this.expectedException.expectMessage("This class expects a discrimination field but none are designated");
 
 		this.datastoreMappingContext.getPersistentEntity(TestEntityNoSuperclass.class).kindName();
+	}
+
+	@Entity
+	@DiscriminationField(field = "colA")
+	@DiscriminationValue("a")
+	private static class DiscrimEntityA {
+
+	}
+
+	@Entity
+	@DiscriminationField(field = "colA")
+	@DiscriminationValue("c")
+	private static class DiscrimEntityC extends DiscrimEntityA {
+
+	}
+
+	@Entity
+	@DiscriminationField(field = "colB")
+	@DiscriminationValue("b")
+	private static class DiscrimEntityB extends DiscrimEntityA {
+
 	}
 
 	@Entity(name = "custom_test_kind")
