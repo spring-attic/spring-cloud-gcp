@@ -103,7 +103,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
 
-		DatastorePersistentEntity persistentEntity = getDiscriminationPersistentEntity(ostensiblePersistentEntity,
+		DatastorePersistentEntity<?> persistentEntity = getDiscriminationPersistentEntity(ostensiblePersistentEntity,
 				propertyValueProvider);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
@@ -118,7 +118,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 						// if a property is a constructor argument, it was already computed on instantiation
 						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 					Object value = propertyValueProvider
-							.getPropertyValue((DatastorePersistentProperty) datastorePersistentProperty);
+							.getPropertyValue(datastorePersistentProperty);
 							accessor.setProperty(datastorePersistentProperty, value);
 						}
 					});
