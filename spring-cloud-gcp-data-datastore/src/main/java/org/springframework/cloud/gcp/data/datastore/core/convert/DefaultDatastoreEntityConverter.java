@@ -129,6 +129,12 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	@SuppressWarnings("unchecked")
 	public void write(Object source, BaseEntity.Builder sink) {
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
+
+		String discriminationFieldName = persistentEntity.getDiscriminationFieldName();
+		String discriminationValue = persistentEntity.getDiscriminationValue();
+		if (discriminationValue != null || discriminationFieldName != null) {
+			sink.set(discriminationFieldName, discriminationValue);
+		}
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
 				(DatastorePersistentProperty persistentProperty) -> {

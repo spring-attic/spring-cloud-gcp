@@ -47,6 +47,8 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreIt
 import org.springframework.cloud.gcp.data.datastore.core.convert.TestItemWithEmbeddedEntity.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
@@ -234,6 +236,24 @@ public class DefaultDatastoreEntityConverterTests {
 				.isEqualTo(Blob.copyFrom(bytes));
 		assertThat(entity.getKey("keyField")).as("validate key field")
 				.isEqualTo(otherKey);
+	}
+
+	@Test
+	public void writeTestSubtypes() {
+		TestDatastoreItemSubtypeA itemA = new TestDatastoreItemSubtypeA();
+		itemA.stringField = "item A";
+		itemA.intField = 10;
+
+		Entity.Builder builder = getEntityBuilder();
+		ENTITY_CONVERTER.write(itemA, builder);
+
+		Entity entity = builder.build();
+
+
+		assertThat(entity.getString("stringField")).as("validate string field")
+				.isEqualTo("item A");
+		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(10L);
+		assertThat(entity.getString("subtype")).as("validate discrimination field").isEqualTo("A");
 	}
 
 	@Test
@@ -665,4 +685,13 @@ public class DefaultDatastoreEntityConverterTests {
 		};
 	}
 
+	@DiscriminationField(field = "subtype")
+	abstract class TestDatastoreItemParentType {
+		String stringField;
+	}
+
+	@DiscriminationValue("A")
+	class TestDatastoreItemSubtypeA extends TestDatastoreItemParentType {
+		int intField;
+	}
 }
