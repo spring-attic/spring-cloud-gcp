@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -57,6 +59,12 @@ public interface DatastorePersistentEntity<T> extends
 	 * @return the value or {@code null} if there is no value for this type.
 	 */
 	String getDiscriminationValue();
+
+	/**
+	 * Get the discrimination values corresponding to this persistent entity ad its supertypes.
+	 * @return the list of values where the first item is this entity's discrimination value
+	 */
+	List<String> getCompatibleDiscriminationValues();
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all

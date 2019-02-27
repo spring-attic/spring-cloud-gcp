@@ -290,20 +290,22 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void writeTestSubtypes() {
-		TestDatastoreItemSubtypeA itemA = new TestDatastoreItemSubtypeA();
-		itemA.stringField = "item A";
-		itemA.intField = 10;
+		DiscrimEntityD entityD = new DiscrimEntityD();
+		entityD.stringField = "item D";
+		entityD.intField = 10;
+		entityD.enumField = TestDatastoreItem.Color.BLACK;
 
 		Entity.Builder builder = getEntityBuilder();
-		ENTITY_CONVERTER.write(itemA, builder);
+		ENTITY_CONVERTER.write(entityD, builder);
 
 		Entity entity = builder.build();
 
 
-		assertThat(entity.getString("stringField")).as("validate string field")
-				.isEqualTo("item A");
+		assertThat(entity.getString("stringField")).as("validate string field").isEqualTo("item D");
 		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(10L);
-		assertThat(entity.getString("subtype")).as("validate discrimination field").isEqualTo("A");
+		assertThat(entity.getString("enumField")).as("validate enum field").isEqualTo("BLACK");
+		assertThat(entity.getList("discrimination_column")).as("validate discrimination field")
+				.containsExactly(StringValue.of("D"), StringValue.of("B"), StringValue.of("X"));
 	}
 
 	@Test
@@ -735,15 +737,6 @@ public class DefaultDatastoreEntityConverterTests {
 		};
 	}
 
-	@DiscriminationField(field = "subtype")
-	abstract class TestDatastoreItemParentType {
-		String stringField;
-	}
-
-	@DiscriminationValue("A")
-	class TestDatastoreItemSubtypeA extends TestDatastoreItemParentType {
-		int intField;
-	}
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
 	@DiscriminationField(field = "discrimination_column")
 	@DiscriminationValue("X")
@@ -761,6 +754,12 @@ public class DefaultDatastoreEntityConverterTests {
 	@DiscriminationValue("B")
 	private static class DiscrimEntityB extends DiscrimEntityX {
 		int intField;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminationValue("D")
+	private static class DiscrimEntityD extends DiscrimEntityB {
+		String stringField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity

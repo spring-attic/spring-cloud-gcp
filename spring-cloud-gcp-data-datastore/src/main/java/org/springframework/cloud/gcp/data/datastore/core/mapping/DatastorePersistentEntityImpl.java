@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
@@ -169,6 +172,24 @@ public class DatastorePersistentEntityImpl<T>
 	@Override
 	public String getDiscriminationFieldName() {
 		return this.discriminationField == null ? null : this.discriminationField.field();
+	}
+
+	@Override
+	public List<String> getCompatibleDiscriminationValues() {
+		if (this.discriminationValue == null) {
+			return Collections.emptyList();
+		}
+		else {
+			List<String> compatibleValues = new LinkedList<>();
+			compatibleValues.add(this.discriminationValue.value());
+			DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext
+					.getPersistentEntity(getType().getSuperclass());
+			if (persistentEntity != null) {
+				List<String> compatibleDiscriminationValues = persistentEntity.getCompatibleDiscriminationValues();
+				compatibleValues.addAll(compatibleDiscriminationValues);
+			}
+			return compatibleValues;
+		}
 	}
 
 	@Override

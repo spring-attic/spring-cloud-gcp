@@ -17,11 +17,14 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
 
@@ -116,13 +119,13 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
-						// if a property is a constructor argument, it was already computed on instantiation
-						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
+				// if a property is a constructor argument, it was already computed on instantiation
+				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 					Object value = propertyValueProvider
 							.getPropertyValue(datastorePersistentProperty);
-							accessor.setProperty(datastorePersistentProperty, value);
-						}
-					});
+					accessor.setProperty(datastorePersistentProperty, value);
+				}
+			});
 		}
 		catch (DatastoreDataException ex) {
 			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", ex);
@@ -157,9 +160,10 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 
 		String discriminationFieldName = persistentEntity.getDiscriminationFieldName();
-		String discriminationValue = persistentEntity.getDiscriminationValue();
-		if (discriminationValue != null || discriminationFieldName != null) {
-			sink.set(discriminationFieldName, discriminationValue);
+		List<String> discriminationValues = persistentEntity.getCompatibleDiscriminationValues();
+		if (!discriminationValues.isEmpty() || discriminationFieldName != null) {
+			sink.set(discriminationFieldName,
+					discriminationValues.stream().map(StringValue::of).collect(Collectors.toList()));
 		}
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
