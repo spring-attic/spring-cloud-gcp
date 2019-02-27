@@ -127,21 +127,21 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void discriminatingReadTest() {
 		Entity entityA = getEntityBuilder()
-				.set("discrimination_column", "A")
+				.set("discrimination_column", "A", "unused", "anotherParentValue")
 				.set("boolField", true)
 				.set("intField", 99)
 				.set("enumField", "WHITE")
 				.build();
 
 		Entity entityB = getEntityBuilder()
-				.set("discrimination_column", "B")
+				.set("discrimination_column", "B", "unused", "anotherParentValue")
 				.set("boolField", true)
 				.set("intField", 99)
 				.set("enumField", "WHITE")
 				.build();
 
 		Entity entityX = getEntityBuilder()
-				.set("discrimination_column", "X")
+				.set("discrimination_column", "X", "unused", "anotherParentValue")
 				.set("boolField", true)
 				.set("intField", 99)
 				.set("enumField", "WHITE")
@@ -165,7 +165,7 @@ public class DefaultDatastoreEntityConverterTests {
 				"has the same DiscriminationValue: ");
 
 		Entity entityY = getEntityBuilder()
-				.set("discrimination_column", "Y")
+				.set("discrimination_column", "Y", "unused", "anotherParentValue")
 				.set("boolField", true)
 				.set("intField", 99)
 				.set("enumField", "WHITE")

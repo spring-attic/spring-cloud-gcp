@@ -150,8 +150,9 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	private boolean isDiscriminationFieldMatch(DatastorePersistentEntity entity,
 			EntityPropertyValueProvider propertyValueProvider) {
-		return propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(), EmbeddedType.NOT_EMBEDDED,
-				ClassTypeInformation.from(String.class)).equals(entity.getDiscriminationValue());
+		return ((String[]) propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(),
+				EmbeddedType.NOT_EMBEDDED,
+				ClassTypeInformation.from(String[].class)))[0].equals(entity.getDiscriminationValue());
 	}
 
 	@Override
