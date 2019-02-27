@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
@@ -138,16 +137,15 @@ public class DatastorePersistentEntityImpl<T>
 
 	private void checkDiscriminationValues() {
 		Set<Class> otherMembers = DatastoreMappingContext.getDiscriminationFamily(getType());
-		Set<String> seenValues = new HashSet();
 		if (otherMembers != null) {
 			for (Class other : otherMembers) {
 				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getPersistentEntity(other);
-				if (seenValues.contains(persistentEntity.getDiscriminationValue())) {
+				if (getDiscriminationValue() != null
+						&& getDiscriminationValue().equals(persistentEntity.getDiscriminationValue())) {
 					throw new DatastoreDataException(
 							"More than one class in an inheritance hierarchy has the same DiscriminationValue: "
 									+ getType() + " and " + other);
 				}
-				seenValues.add(persistentEntity.getDiscriminationValue());
 			}
 		}
 
@@ -164,7 +162,7 @@ public class DatastorePersistentEntityImpl<T>
 						"This class and its super class both have discrimination fields but they are different fields: "
 								+ getType() + " and " + parentClass);
 			}
-			DatastoreMappingContext.addDiscriminationClassConnection(getType(), parentClass);
+			DatastoreMappingContext.addDiscriminationClassConnection(parentClass, getType());
 		}
 	}
 

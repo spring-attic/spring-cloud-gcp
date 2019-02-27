@@ -147,14 +147,13 @@ public class DatastorePersistentEntityImplTests {
 		assertThat(a2.getDiscriminationValue()).isEqualTo("A2");
 
 		assertThat(this.datastoreMappingContext.getDiscriminationFamily(TestEntity.class))
-				.isEqualTo(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class));
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
-				.isEqualTo(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class));
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
-				.containsExactlyInAnyOrder(TestEntity.class, SubA1TestEntity.class, SubA2TestEntity.class);
+				.containsExactlyInAnyOrder(SubA1TestEntity.class, SubA2TestEntity.class);
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
+				.containsExactlyInAnyOrder(SubA2TestEntity.class);
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class)).isEmpty();
 
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class))
-				.isNotEqualTo(this.datastoreMappingContext.getDiscriminationFamily(DiscrimEntityC.class));
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
+				.isNotEqualTo(this.datastoreMappingContext.getDiscriminationFamily(DiscrimEntityA.class));
 	}
 
 	@Test
