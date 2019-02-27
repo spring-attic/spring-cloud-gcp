@@ -86,12 +86,6 @@ public class DatastoreMappingContext extends
 		}
 	}
 
-	private static Set<Class> createSingletonSet(Class aClass) {
-			HashSet<Class> classes = new HashSet<>();
-			classes.add(aClass);
-			return classes;
-	}
-
 	/**
 	 * Get the set of other classes that share the same underlying Datastore Kind and that are
 	 * subclasses of the given class.
