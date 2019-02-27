@@ -80,12 +80,10 @@ public class DatastoreMappingContext extends
 				addDiscriminationClassConnection(parentClass, x);
 			}
 		});
-		setSubClass.forEach(x -> {
-			Class grandParent = parentClass.getSuperclass();
-			if (!discriminationFamilies.computeIfAbsent(grandParent, unused -> new HashSet<>()).contains(x)) {
-				addDiscriminationClassConnection(grandParent, x);
-			}
-		});
+		Class grandParent = parentClass.getSuperclass();
+		if (grandParent != null) {
+			addDiscriminationClassConnection(grandParent, subClass);
+		}
 	}
 
 	private static Set<Class> createSingletonSet(Class aClass) {
