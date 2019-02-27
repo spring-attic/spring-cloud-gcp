@@ -17,11 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,6 +26,11 @@ import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A mapping context for Datastore that provides ways to create persistent entities and
@@ -81,12 +81,10 @@ public class DatastoreMappingContext extends
 				addDiscriminationClassConnection(parentClass, x);
 			}
 		});
-		setSubClass.forEach(x -> {
-			Class grandParent = parentClass.getSuperclass();
-			if (!discriminationFamilies.computeIfAbsent(grandParent, unused -> new HashSet<>()).contains(x)) {
-				addDiscriminationClassConnection(grandParent, x);
-			}
-		});
+		Class grandParent = parentClass.getSuperclass();
+		if (grandParent != null) {
+			addDiscriminationClassConnection(grandParent, subClass);
+		}
 	}
 
 	private static Set<Class> createSingletonSet(Class aClass) {
