@@ -71,8 +71,7 @@ public class DatastoreMappingContext extends
 	 * @param subClass the subclass.
 	 */
 	public static void addDiscriminationClassConnection(Class parentClass, Class subClass) {
-		Set<Class> setParent = discriminationFamilies.computeIfAbsent(parentClass,
-				unused -> createSingletonSet(subClass));
+		Set<Class> setParent = discriminationFamilies.computeIfAbsent(parentClass, unused -> new HashSet<>());
 		Set<Class> setSubClass = discriminationFamilies.computeIfAbsent(subClass, unused -> new HashSet<>());
 		setParent.add(subClass);
 
