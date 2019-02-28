@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,23 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
-import org.springframework.data.annotation.Id;
 
 /**
- * A musical group that {@link Singer}s can claim to be a part of.
+ * An example band type that is stored in the same Kind with its parent type.
  *
  * @author Chengyuan Zhao
  */
 @Entity
-@DiscriminationField(field = "band_type")
-@DiscriminationValue("generic_band")
-public class Band {
-
-	@Id
-	protected String name;
-
-	public Band(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+@DiscriminationValue("bluegrass")
+public class BluegrassBand extends Band {
+	public BluegrassBand(String name) {
+		super(name);
 	}
 
 	@Override
 	public String toString() {
-		return this.name;
+		return this.name + " is into progressive bluegrass and folk-country.";
 	}
 }

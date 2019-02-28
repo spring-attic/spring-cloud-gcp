@@ -57,16 +57,16 @@ public class DatastoreRepositoryExample {
 			this.singerRepository
 					.save(new Singer("singer1", "John", "Doe", new HashSet<Album>()));
 
-			Singer maryJane = new Singer("singer2", "Mary", "Jane",
+			Singer janeDoe = new Singer("singer2", "Jane", "Doe",
 					new TreeSet<>(Arrays.asList(
 							new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
 							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12)))));
-			Singer scottSmith = new Singer("singer3", "Scott", "Smith",
+			Singer richardRoe = new Singer("singer3", "Richard", "Roe",
 					new HashSet<>(Arrays.asList(new Album("c", LocalDate.of(2000, Month.AUGUST, 31)))));
 
-			this.singerRepository.saveAll(Arrays.asList(maryJane, scottSmith));
+			this.singerRepository.saveAll(Arrays.asList(janeDoe, richardRoe));
 
-			createRelationshipsInTransaction(maryJane, scottSmith);
+			createRelationshipsInTransaction(janeDoe, richardRoe);
 
 			// The following line uses count(), which is a global-query in Datastore. This
 			// has only eventual consistency.
@@ -100,15 +100,15 @@ public class DatastoreRepositoryExample {
 		singers.forEach(System.out::println);
 	}
 
-	private void createRelationshipsInTransaction(Singer maryJane, Singer scottSmith) {
-		Band band1 = new Band("band1");
-		Band band2 = new Band("band2");
-		Band band3 = new Band("band3");
+	private void createRelationshipsInTransaction(Singer singerA, Singer singerB) {
+		Band band1 = new Band("General Band");
+		Band band2 = new Band("Big Bland Band");
+		BluegrassBand band3 = new BluegrassBand("Crooked Still");
 
 		// Creates the related Band and Instrument entities and links them to a Singer
 		// in a single atomic transaction
 		this.transactionalRepositoryService.createAndSaveSingerRelationshipsInTransaction(
-				maryJane, band1, Arrays.asList(band1, band2), new HashSet<>(Arrays
+				singerA, band1, Arrays.asList(band1, band2), new HashSet<>(Arrays
 						.asList(new Instrument("recorder"), new Instrument("cow bell"))));
 
 		// You can also execute code within a transaction directly using the
@@ -116,11 +116,11 @@ public class DatastoreRepositoryExample {
 		// The following call also performs the creation and saving of relationships
 		// in a single transaction.
 		this.singerRepository.performTransaction((transactionRepository) -> {
-			scottSmith.setFirstBand(band3);
-			scottSmith.setBands(Arrays.asList(band3, band2));
-			scottSmith.setPersonalInstruments(new HashSet<>(Arrays
+			singerB.setFirstBand(band3);
+			singerB.setBands(Arrays.asList(band3, band2));
+			singerB.setPersonalInstruments(new HashSet<>(Arrays
 					.asList(new Instrument("triangle"), new Instrument("marimba"))));
-			this.singerRepository.save(scottSmith);
+			this.singerRepository.save(singerB);
 			return null;
 		});
 	}
