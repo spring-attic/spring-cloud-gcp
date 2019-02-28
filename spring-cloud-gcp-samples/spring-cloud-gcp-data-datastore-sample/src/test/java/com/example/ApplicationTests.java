@@ -92,19 +92,19 @@ public class ApplicationTests {
 	@Test
 	public void basicTest() throws Exception {
 		Singer johnDoe = new Singer(null, "John", "Doe", null);
-		Singer maryJane = new Singer(null, "Mary", "Jane", null);
-		Singer scottSmith = new Singer(null, "Scott", "Smith", null);
+		Singer janeDoe = new Singer(null, "Jane", "Doe", null);
+		Singer richardRoe = new Singer(null, "Richard", "Roe", null);
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAsc)
 				.as("Verify ASC order")
-				.containsExactly(johnDoe, maryJane, scottSmith);
+				.containsExactly(johnDoe, janeDoe, richardRoe);
 
 		List<Singer> singersDesc = getSingers("/singers?sort=lastName,DESC");
 		assertThat(singersDesc)
 				.as("Verify DESC order")
-				.containsExactly(scottSmith, maryJane, johnDoe);
+				.containsExactly(richardRoe, johnDoe, janeDoe);
 
 		sendRequest("/singers", "{\"singerId\": \"singerFrodo\", \"firstName\":" +
 						" \"Frodo\", \"lastName\": \"Baggins\"}",
@@ -116,7 +116,7 @@ public class ApplicationTests {
 		List<Singer> singersAfterInsertion = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAfterInsertion)
 				.as("Verify post")
-				.containsExactly(frodoBaggins, johnDoe, maryJane, scottSmith);
+				.containsExactly(frodoBaggins, johnDoe, janeDoe, richardRoe);
 
 		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
 
@@ -126,15 +126,15 @@ public class ApplicationTests {
 		List<Singer> singersAfterDeletion = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAfterDeletion)
 				.as("Verify Delete")
-				.containsExactly(frodoBaggins, maryJane, scottSmith);
+				.containsExactly(frodoBaggins, janeDoe, richardRoe);
 
 		assertThat(baos.toString())
 				.as("Verify relationships saved in transaction")
 				.contains("Relationship links "
 						+ "were saved between a singer, bands, and instruments in a single transaction: "
-						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
+						+ "Singer{singerId='singer2', firstName='Jane', lastName='Doe', "
 						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
-						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
+						+ "date=2018-02-12}], firstBand=General Band, bands=General Band,Big Bland Band, "
 						+ "personalInstruments=recorder,cow bell}");
 
 		assertThat(
@@ -145,7 +145,7 @@ public class ApplicationTests {
 		assertThat(
 				this.singerRepository.findById("singer2").get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("band1", "band2");
+								.containsExactlyInAnyOrder("General Band", "Big Bland Band");
 
 		assertThat(
 				this.singerRepository.findById("singer3").get().getPersonalInstruments()
@@ -155,7 +155,7 @@ public class ApplicationTests {
 		assertThat(
 				this.singerRepository.findById("singer3").get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("band3", "band2");
+								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
 
 		assertThat(baos.toString()).contains("Query by example\n" +
 				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +

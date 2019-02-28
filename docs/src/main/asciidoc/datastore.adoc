@@ -351,6 +351,58 @@ public class ConverterConfiguration {
 ----
 
 
+==== Inheritance Hierarchies
+
+Java entity types related by inheritance can be stored in the same Kind.
+When reading and querying entities using `DatastoreRepository` or `DatastoreTemplate` with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with `DiscriminationField` and `DiscriminationValue`:
+
+[source, java]
+----
+@Entity(name = "pets")
+@DiscriminationField(field = "pet_type")
+abstract class Pet {
+	@Id
+	Long id;
+
+	abstract String speak();
+}
+
+@DiscriminationValue("cat")
+class Cat extends Pet {
+	@Override
+	String speak() {
+		return "meow";
+	}
+}
+
+@DiscriminationValue("dog")
+class Dog extends Pet {
+	@Override
+	String speak() {
+		return "woof";
+	}
+}
+
+@DiscriminationValue("pug")
+class Pug extends Dog {
+	@Override
+	String speak() {
+		return "woof woof";
+	}
+}
+----
+
+Instances of all 3 types are stored in the `pets` Kind.
+Because a single Kind is used, all classes in the hierarchy must share the same ID property and no two instances of any type in the hierarchy can share the same ID value.
+
+Entity rows in Cloud Datastore store their respective types' `DiscriminationValue` in a field specified by the root superclass's `DiscriminationField` (`pet_type` in this case).
+Reads and queries using a given type parameter will match each entity with its specific type.
+For example, reading a `List<Pet>` will produce a list containing instances of all 3 types.
+However, reading a `List<Dog>` will produce a list containing only `Dog` and `Pug` instances.
+You can include the `pet_type` discrimination field in your Java entities, but its type must be convertible to a collection or array of `String`.
+Any value set in the discrimination field will be overwritten upon write to Cloud Datastore.
+
+
 === Relationships
 
 There are three ways to represent relationships between entities that are described in this section:
@@ -960,6 +1012,9 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 }
 ----
 
+NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with `DiscriminationField`.
+
 The following parameter types are supported:
 
 * `com.google.cloud.Timestamp`
@@ -1027,6 +1082,9 @@ You can also specify queries with Cloud Datastore parameter tags and SpEL expres
 
 By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the `META-INF/datastore-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:
+
+NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with `DiscriminationField`.
 
 [source, properties]
 ----
