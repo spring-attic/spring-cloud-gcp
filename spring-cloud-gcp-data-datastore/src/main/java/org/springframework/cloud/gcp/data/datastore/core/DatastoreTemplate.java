@@ -293,6 +293,16 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
 			DatastorePersistentEntity<?> persistentEntity) {
+		if (persistentEntity.getDiscriminationFieldName() != null
+				&& persistentEntity.getDiscriminationValue() != null) {
+			StructuredQuery.Filter discriminationFilter = PropertyFilter.eq(persistentEntity.getDiscriminationFieldName(),
+					persistentEntity.getDiscriminationValue());
+			StructuredQuery.Filter filter = builder.build().getFilter();
+			if (filter != null) {
+				discriminationFilter = StructuredQuery.CompositeFilter.and(filter, discriminationFilter);
+			}
+			builder.setFilter(discriminationFilter);
+		}
 		if (queryOptions == null) {
 			return;
 		}

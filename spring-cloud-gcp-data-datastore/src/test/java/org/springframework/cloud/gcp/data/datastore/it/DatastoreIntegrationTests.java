@@ -39,9 +39,14 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
@@ -53,6 +58,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -75,6 +81,12 @@ public class DatastoreIntegrationTests {
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
+
+	@Autowired
+	private PetRepository petRepository;
+
+	@Autowired
+	private DogRepository dogRepository;
 
 	@Autowired
 	private DatastoreTemplate datastoreTemplate;
@@ -119,6 +131,8 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.deleteAll(ReferenceEntry.class);
 		this.datastoreTemplate.deleteAll(ParentEntity.class);
 		this.datastoreTemplate.deleteAll(SubEntity.class);
+		this.datastoreTemplate.deleteAll(Pet.class);
+		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -457,6 +471,57 @@ public class DatastoreIntegrationTests {
 
 		return System.currentTimeMillis() - startTime;
 	}
+
+	@Test
+	public void inheritanceTest() {
+		PetOwner petOwner = new PetOwner();
+		petOwner.pets = Arrays.asList(
+				new Cat("Alice"),
+				new Cat("Bob"),
+				new Pug("Bob"),
+				new Dog("Bob"));
+
+		this.datastoreTemplate.save(petOwner);
+
+		PetOwner readPetOwner = this.datastoreTemplate.findById(petOwner.id, PetOwner.class);
+
+		assertThat(readPetOwner.pets).hasSize(4);
+
+		assertThat(readPetOwner.pets.stream().filter(pet -> "meow".equals(pet.speak()))).hasSize(2);
+		assertThat(readPetOwner.pets.stream().filter(pet -> "woof".equals(pet.speak()))).hasSize(1);
+		assertThat(readPetOwner.pets.stream().filter(pet -> "woof woof".equals(pet.speak()))).hasSize(1);
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Pet.class) == 4);
+		List<Pet> bobPets = this.petRepository.findByName("Bob");
+		assertThat(bobPets.stream().map(Pet::speak)).containsExactlyInAnyOrder("meow", "woof", "woof woof");
+
+		List<Dog> bobDogs = this.dogRepository.findByName("Bob");
+		assertThat(bobDogs.stream().map(Pet::speak)).containsExactlyInAnyOrder("woof", "woof woof");
+
+		assertThatThrownBy(() -> this.dogRepository.findByCustomQuery()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Can't append discrimination condition");
+	}
+
+	@Test
+	public void inheritanceTestFindAll() {
+		this.datastoreTemplate.saveAll(Arrays.asList(
+				new Cat("Cat1"),
+				new Dog("Dog1"),
+				new Pug("Dog2")));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Pet.class) == 3);
+
+		Collection<Dog> dogs = this.datastoreTemplate.findAll(Dog.class);
+
+		assertThat(dogs).hasSize(2);
+
+		Long dogCount = dogs.stream().filter(pet -> "woof".equals(pet.speak())).count();
+		Long pugCount = dogs.stream().filter(pet -> "woof woof".equals(pet.speak())).count();
+
+
+		assertThat(pugCount).isEqualTo(1);
+		assertThat(dogCount).isEqualTo(1);
+	}
 }
 
 /**
@@ -500,4 +565,77 @@ class SubEntity {
 
 	@Reference
 	SubEntity sibling;
+}
+
+class PetOwner {
+	@Id
+	Long id;
+
+	@Reference
+	Collection<Pet> pets;
+}
+
+@Entity
+@DiscriminationField(field = "pet_type")
+abstract class Pet {
+	@Id
+	Long id;
+
+	String name;
+
+	Pet(String name) {
+		this.name = name;
+	}
+
+	abstract String speak();
+}
+
+@DiscriminationValue("cat")
+class Cat extends Pet {
+
+	Cat(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "meow";
+	}
+}
+
+@DiscriminationValue("dog")
+class Dog extends Pet {
+
+	Dog(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "woof";
+	}
+}
+
+@DiscriminationValue("pug")
+class Pug extends Dog {
+
+	Pug(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "woof woof";
+	}
+}
+
+interface PetRepository extends DatastoreRepository<Pet, Long> {
+	List<Pet> findByName(String s);
+}
+
+interface DogRepository extends DatastoreRepository<Dog, Long> {
+	List<Dog> findByName(String s);
+
+	@Query("select * from Pet")
+	List<Dog> findByCustomQuery();
 }
