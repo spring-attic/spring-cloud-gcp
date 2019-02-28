@@ -3808,6 +3808,51 @@ public class ConverterConfiguration {
 	}
 }</programlisting>
 </section>
+<section xml:id="_inheritance_hierarchies">
+<title>Inheritance Hierarchies</title>
+<simpara>Java entity types related by inheritance can be stored in the same Kind.
+When reading and querying entities using <literal>DatastoreRepository</literal> or <literal>DatastoreTemplate</literal> with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with <literal>DiscriminationField</literal> and <literal>DiscriminationValue</literal>:</simpara>
+<programlisting language="java" linenumbering="unnumbered">@Entity(name = "pets")
+@DiscriminationField(field = "pet_type")
+abstract class Pet {
+	@Id
+	Long id;
+
+	abstract String speak();
+}
+
+@DiscriminationValue("cat")
+class Cat extends Pet {
+	@Override
+	String speak() {
+		return "meow";
+	}
+}
+
+@DiscriminationValue("dog")
+class Dog extends Pet {
+	@Override
+	String speak() {
+		return "woof";
+	}
+}
+
+@DiscriminationValue("pug")
+class Pug extends Dog {
+	@Override
+	String speak() {
+		return "woof woof";
+	}
+}</programlisting>
+<simpara>Instances of all 3 types are stored in the <literal>pets</literal> Kind.
+Because a single Kind is used, all classes in the hierarchy must share the same ID property and no two instances of any type in the hierarchy can share the same ID value.</simpara>
+<simpara>Entity rows in Cloud Datastore store their respective types' <literal>DiscriminationValue</literal> in a field specified by the root superclass&#8217;s <literal>DiscriminationField</literal> (<literal>pet_type</literal> in this case).
+Reads and queries using a given type parameter will match each entity with its specific type.
+For example, reading a <literal>List&lt;Pet&gt;</literal> will produce a list containing instances of all 3 types.
+However, reading a <literal>List&lt;Dog&gt;</literal> will produce a list containing only <literal>Dog</literal> and <literal>Pug</literal> instances.
+You can include the <literal>pet_type</literal> discrimination field in your Java entities, but its type must be convertible to a collection or array of <literal>String</literal>.
+Any value set in the discrimination field will be overwritten upon write to Cloud Datastore.</simpara>
+</section>
 </section>
 <section xml:id="_relationships_2">
 <title>Relationships</title>
@@ -4328,6 +4373,10 @@ It enables dynamic query generation based on a user-provided object. See <link x
   @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
   TestEntity getOneTestEntity(@Param("id_val") long id);
 }</programlisting>
+<note>
+<simpara>You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with <literal>DiscriminationField</literal>.</simpara>
+</note>
 <simpara>The following parameter types are supported:</simpara>
 <itemizedlist>
 <listitem>
@@ -4393,6 +4442,10 @@ List&lt;Trade&gt; fetchByActionNamedQuery(@Param("act") String action);</program
 <simpara>You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.</simpara>
 <simpara>By default, the <literal>namedQueriesLocation</literal> attribute on <literal>@EnableDatastoreRepositories</literal> points to the <literal>META-INF/datastore-named-queries.properties</literal> file.
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:</simpara>
+<note>
+<simpara>You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with <literal>DiscriminationField</literal>.</simpara>
+</note>
 <programlisting language="properties" linenumbering="unnumbered">Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0</programlisting>
 <programlisting language="java" linenumbering="unnumbered">public interface TraderRepository extends DatastoreRepository&lt;Trader, String&gt; {
 
