@@ -60,6 +60,8 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConver
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
@@ -776,6 +778,29 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void findAllDiscrimination() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+
+		this.datastoreTemplate.findAll(SimpleDiscriminationTestEntity.class);
+		verify(this.datastore, times(1)).run(builder.setFilter(PropertyFilter.eq("discrimination_field", "A")).build());
+	}
+
+	@Test
+	public void combineFiltersDiscrimination() {
+		PropertyFilter propertyFilter = PropertyFilter.eq("field", "some value");
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind")
+				.setFilter(propertyFilter);
+		DatastoreTemplate.applyQueryOptions(builder, new DatastoreQueryOptions(1, 2, null),
+				new DatastoreMappingContext().getPersistentEntity(SimpleDiscriminationTestEntity.class));
+
+		assertThat(builder.build().getFilter()).isEqualTo(
+				StructuredQuery.CompositeFilter.and(propertyFilter, PropertyFilter.eq("discrimination_field", "A")));
+
+		assertThat(builder.build().getLimit()).isEqualTo(1);
+		assertThat(builder.build().getOffset()).isEqualTo(2);
+	}
+
+	@Test
 	public void findAllTestSort() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
 
@@ -1033,4 +1058,16 @@ public class DatastoreTemplateTests {
 		@Reference
 		ReferenceTestEntity sibling;
 	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "test_kind")
+	@DiscriminationField(field = "discrimination_field")
+	@DiscriminationValue("A")
+	private static class SimpleDiscriminationTestEntity {
+		@Id
+		String id;
+
+		@Field(name = "int_field")
+		int intField;
+	}
+
 }

@@ -39,6 +39,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNative
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
@@ -46,6 +47,8 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.data.repository.query.SpelEvaluator;
 import org.springframework.data.repository.query.SpelQueryContext;
 import org.springframework.util.StringUtils;
+
+import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
 
 /**
  * Query Method for GQL queries.
@@ -110,6 +113,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
+		if (getAnnotation(this.entityType.getSuperclass(), DiscriminationField.class) != null) {
+			throw new DatastoreDataException("Can't append discrimination condition");
+		}
 
 		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
 				getOriginalParamTags(), parameters);
