@@ -4546,14 +4546,21 @@ public String hello(@PathVariable String name) {
 <simpara>Audience</simpara>
 </listitem>
 </itemizedlist>
-<simpara>The audience (<literal>"aud"</literal>) validation is automatically configured when the application is running on App Engine Standard or App Engine Flexible.
-For other runtime environments, a custom audience must be provided through <literal>spring.cloud.gcp.security.iap.audience</literal> property.
-The custom property, if specified, overrides the automatic App Engine audience detection.</simpara>
-<important>
-<simpara>There is no automatic audience string configuration for Compute Engine or Kubernetes Engine.
-To use the IAP starter on GCE/GKE, find the Audience string per instructions in the <link xl:href="https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload">Verify the JWT payload</link> guide, and specify it in the <literal>spring.cloud.gcp.security.iap.audience</literal> property.
-Otherwise, the application will fail to start with <literal>No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available</literal> message.</simpara>
-</important>
+<simpara>The <emphasis>audience</emphasis> (<literal>"aud"</literal> claim) validation string is automatically determined when the application is running on App Engine Standard or App Engine Flexible.
+This functionality relies on Cloud Resource Manager API to retrieve project details, so the following setup is needed:</simpara>
+<itemizedlist>
+<listitem>
+<simpara>Enable Cloud Resource Manager API in <link xl:href="https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com">GCP Console</link>.</simpara>
+</listitem>
+<listitem>
+<simpara>Make sure your application has <literal>resourcemanager.projects.get</literal> permission.</simpara>
+</listitem>
+</itemizedlist>
+<simpara>App Engine automatic <emphasis>audience</emphasis> determination can be overridden by using <literal>spring.cloud.gcp.security.iap.audience</literal> property.</simpara>
+<simpara>For Compute Engine or Kubernetes Engine <literal>spring.cloud.gcp.security.iap.audience</literal> property <emphasis role="strong">must</emphasis> be provided, as the <emphasis>audience</emphasis> string depends on the specific Backend Services setup and cannot be inferred automatically.
+To determine the <emphasis>audience</emphasis> value, follow directions in IAP <link xl:href="https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload">Verify the JWT payload</link> guide.
+If <literal>spring.cloud.gcp.security.iap.audience</literal> is not provided, the application will fail to start the following message:</simpara>
+<screen>No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available.</screen>
 <note>
 <simpara>If you create a custom <link xl:href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/config/annotation/web/configuration/WebSecurityConfigurerAdapter.html"><literal>WebSecurityConfigurerAdapter</literal></link>, enable extracting user identity by adding <literal>.oauth2ResourceServer().jwt()</literal> configuration to the <link xl:href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/config/annotation/web/builders/HttpSecurity.html"><literal>HttpSecurity</literal></link> object.
  If no custom <link xl:href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/config/annotation/web/configuration/WebSecurityConfigurerAdapter.html"><literal>WebSecurityConfigurerAdapter</literal></link> is present, nothing needs to be done because Spring Boot will add this customization by default.</simpara>
