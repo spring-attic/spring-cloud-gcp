@@ -64,7 +64,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorFi
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
@@ -461,18 +463,14 @@ public class DatastoreTemplateTests {
 		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
 		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
 
-		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
-				Collections.singletonList(this.e1));
+		doAnswer(invocation -> {
+			assertThat(invocation.getArguments()).containsExactlyInAnyOrder(writtenChildEntity2, writtenChildEntity3,
+					writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity);
+			return null;
+		}).when(this.datastore).put(ArgumentMatchers.<FullEntity[]>any());
 
 		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
-
-		assertArgs(callsArgs, new MapBuilder<List, Integer>()
-		.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
-		.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
-		.put(Arrays.asList(writtenChildEntity4), 1)
-		.put(Arrays.asList(writtenEntity), 1)
-				.buildModifiable());
-
+		verify(this.datastore, times(1)).put(ArgumentMatchers.<FullEntity[]>any());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
@@ -556,26 +554,25 @@ public class DatastoreTemplateTests {
 	public void saveAndAllocateIdTest() {
 		when(this.objectToKeyFactory.allocateKeyForObject(same(this.ob1), any()))
 				.thenReturn(this.key1);
-		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
-				Collections.singletonList(this.e1));
-		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
 				.build();
-
 		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
 		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
 		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
 		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
+		doAnswer(invocation -> {
+			assertThat(invocation.getArguments()).containsExactlyInAnyOrder(writtenChildEntity2, writtenChildEntity3,
+					writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1);
+			return null;
+		}).when(this.datastore).put(ArgumentMatchers.<FullEntity[]>any());
 
-		assertArgs(callsArgs, new MapBuilder<List, Integer>()
-				.put(Arrays.asList(writtenEntity1), 1)
-				.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
-				.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
-				.put(Arrays.asList(writtenChildEntity4), 1)
-				.buildModifiable());
+		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
+
+		verify(this.datastore, times(1)).put(ArgumentMatchers.<FullEntity[]>any());
+
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 	}
 
@@ -585,37 +582,40 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromObject(same(this.ob2), any()))
 				.thenReturn(this.key2);
-
-		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
-				Collections.singletonList(this.e1));
-
-		this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2));
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
 				.build();
 		Entity writtenEntity2 = Entity.newBuilder(this.key2).build();
-		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
-		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
-
 		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
 		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
 		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
 		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
+		doAnswer(invocation -> {
+			assertThat(invocation.getArguments()).containsExactlyInAnyOrder(writtenChildEntity2, writtenChildEntity3,
+					writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1, writtenEntity2);
+			return null;
+		}).when(this.datastore).put(ArgumentMatchers.<FullEntity[]>any());
 
-		assertArgs(callsArgs, new MapBuilder<List, Integer>()
-				.put(Arrays.asList(writtenEntity1, writtenEntity2), 1)
-				.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
-				.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
-				.put(Arrays.asList(writtenChildEntity4), 1)
-				.buildModifiable());
+		List<Entity> expected = Arrays.asList(writtenChildEntity2, writtenChildEntity3,
+				writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1, writtenEntity2);
+		List javaExpected = Arrays.asList(this.ob1, this.ob2);
 
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(expected, javaExpected),
+				new AfterSaveEvent(expected, javaExpected),
+				() -> this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2)),
+				x -> {
+				});
+
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity4), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity5), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
+		verify(this.datastore, times(1)).put(ArgumentMatchers.<FullEntity[]>any());
 	}
 
 	@Test
@@ -728,7 +728,7 @@ public class DatastoreTemplateTests {
 				x -> x.verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2)));
 	}
 
-	private void verifyEvents(ApplicationEvent expectedBefore,
+	private void verifyBeforeAndAfterEvents(ApplicationEvent expectedBefore,
 			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
 		ApplicationEventPublisher mockPublisher = mock(ApplicationEventPublisher.class);
 		ApplicationEventPublisher mockBeforePublisher = mock(ApplicationEventPublisher.class);
@@ -757,11 +757,6 @@ public class DatastoreTemplateTests {
 		if (expectedAfter != null) {
 			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
 		}
-	}
-
-	private void verifyBeforeAndAfterEvents(ApplicationEvent expectedBefore,
-			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
-		verifyEvents(expectedBefore, expectedAfter, operation, verifyOperation);
 	}
 
 	@Test

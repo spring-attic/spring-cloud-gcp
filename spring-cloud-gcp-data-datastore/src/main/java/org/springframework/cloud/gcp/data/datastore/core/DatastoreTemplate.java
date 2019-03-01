@@ -59,7 +59,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -140,32 +142,35 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> T save(T instance, Key... ancestors) {
-		return save(instance, new HashSet<>(), ancestors);
-	}
-
-	private <T> T save(T instance, Set<Key> persisted, Key... ancestors) {
-		saveAll(Collections.singletonList(instance), persisted, ancestors);
+		List<T> instances = Collections.singletonList(instance);
+		saveEntities(instances, getEntitiesForSave(instances, new HashSet<>(), ancestors));
 		return instance;
 	}
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
-		return saveAll(entities, new HashSet<>(), ancestors);
+		saveEntities((List<T>) entities, getEntitiesForSave(entities, new HashSet<>(), ancestors));
+		return entities;
 	}
 
-	private <T> Iterable<T> saveAll(Iterable<T> entities, Set<Key> persisted, Key... ancestors) {
+	private <T> List<Entity> getEntitiesForSave(Iterable<T> entities, Set<Key> persisted, Key... ancestors) {
 		List<Entity> entitiesForSave = new LinkedList<>();
 		for (T entity : entities) {
 			Key key = getKey(entity, true, ancestors);
 			if (!persisted.contains(key)) {
 				persisted.add(key);
-				entitiesForSave.add(convertToEntityForSave(entity, persisted, ancestors));
+				entitiesForSave.addAll(convertToEntityForSave(entity, persisted, ancestors));
 			}
 		}
-		if (!entitiesForSave.isEmpty()) {
-			getDatastoreReadWriter().put(entitiesForSave.toArray(new Entity[0]));
+		return entitiesForSave;
+	}
+
+	private <T> void saveEntities(List<T> instances, List<Entity> entities) {
+		if (!entities.isEmpty()) {
+			maybeEmitEvent(new BeforeSaveEvent(entities, instances));
+			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
+			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
-		return entities;
 	}
 
 	@Override
@@ -382,7 +387,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
 
-	private Entity convertToEntityForSave(Object entity, Set<Key> persistedEntities, Key... ancestors) {
+	private List<Entity> convertToEntityForSave(Object entity, Set<Key> persistedEntities, Key... ancestors) {
 		if (ancestors != null) {
 			for (Key ancestor : ancestors) {
 				validateKey(entity, keyToPathElement(ancestor));
@@ -390,15 +395,18 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		Key key = getKey(entity, true, ancestors);
 		Builder builder = Entity.newBuilder(key);
+		List<Entity> entitiesToSave = new ArrayList<>();
 		this.datastoreEntityConverter.write(entity, builder);
-		saveDescendents(entity, key, persistedEntities);
-		saveReferences(entity, builder, persistedEntities);
-		return builder.build();
+		entitiesToSave.addAll(getDescendantEntitiesForSave(entity, key, persistedEntities));
+		entitiesToSave.addAll(getReferenceEntitiesForSave(entity, builder, persistedEntities));
+		entitiesToSave.add(builder.build());
+		return entitiesToSave;
 	}
 
-	private void saveReferences(Object entity, Builder builder, Set<Key> persistedEntities) {
+	private List<Entity> getReferenceEntitiesForSave(Object entity, Builder builder, Set<Key> persistedEntities) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
+		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithAssociations((AssociationHandler) (association) -> {
 			PersistentProperty persistentProperty = association.getInverse();
 			PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
@@ -409,24 +417,26 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
 				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
-				saveAll(iterableVal, persistedEntities);
+				entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
 				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
 						.map((o) -> KeyValue.of(this.getKey(o, false)))
 						.collect(Collectors.toList());
 				value = ListValue.of(keyValues);
 			}
 			else {
-				save(val, persistedEntities);
+				entitiesToSave.addAll(getEntitiesForSave(Collections.singletonList(val), persistedEntities));
 				Key key = getKey(val, false);
 				value = KeyValue.of(key);
 			}
 			builder.set(((DatastorePersistentProperty) persistentProperty).getFieldName(), value);
 		});
+		return entitiesToSave;
 	}
 
-	private void saveDescendents(Object entity, Key key, Set<Key> persistedEntities) {
+	private List<Entity> getDescendantEntitiesForSave(Object entity, Key key, Set<Key> persistedEntities) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
+		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithDescendantProperties(
 				(PersistentProperty persistentProperty) -> {
 					//Convert and write descendants, applying ancestor from parent entry
@@ -435,9 +445,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 					if (val != null) {
 						//we can be sure that the property is an array or an iterable,
 						//because we check it in isDescendant
-						saveAll((Iterable<?>) ValueUtil.toListIfArray(val), persistedEntities, key);
+						entitiesToSave
+								.addAll(getEntitiesForSave((Iterable<?>) ValueUtil.toListIfArray(val), persistedEntities, key));
 					}
 				});
+		return entitiesToSave;
 	}
 
 	public static PathElement keyToPathElement(Key key) {
