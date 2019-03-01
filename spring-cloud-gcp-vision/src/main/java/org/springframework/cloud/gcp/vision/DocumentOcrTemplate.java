@@ -16,6 +16,14 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.longrunning.OperationFuture;
@@ -33,24 +41,13 @@ import com.google.cloud.vision.v1.GcsDestination;
 import com.google.cloud.vision.v1.GcsSource;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.InputConfig;
-
 import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.cloud.vision.v1.OutputConfig;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.springframework.util.Assert;
+
+import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
@@ -63,12 +60,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  */
 public class DocumentOcrTemplate {
 
-	private static final Set<String> SUPPORTED_FILE_FORMATS =
-			Stream.of("application/pdf", "image/tiff").collect(Collectors.toSet());
-
-	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-(\\d+)-to-\\d+\\.json");
-
-	private static final String OUTPUT_FOLDER_FORMAT = "ocr_results/%s/";
+	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-\\d+-to-\\d+\\.json");
 
 	private final ImageAnnotatorClient imageAnnotatorClient;
 
@@ -82,72 +74,65 @@ public class DocumentOcrTemplate {
 	}
 
 	/**
-	 * Runs OCR on all of the PDF/TIFF documents in the {@code inputBucket}. The OCR output files will
-	 * be saved in the {@code outputBucket} to a folder named ocr_results/[[document_file_name]]/.
-	 * One JSON output file is produced for each page of the document.
+	 * Runs OCR processing for a specified {@code document} and generates OCR output files
+	 * under the path specified by {@code outputFilePathPrefix}. One JSON output file is
+	 * produced for each page of the document.
 	 *
-	 * @param inputBucketName the bucket containing the documents to process
-	 * @param outputBucketName the bucket in which the OCR output files is to be written
-	 * @return A list of {@link DocumentOcrMetadata} describing the status of the files being processed
-	 * @throws IOException if I/O errors occurred with finding or reading the input files
+	 * <p>
+	 * For example, if you specify an {@code outputFilePathPrefix} of
+	 * "gs://bucket_name/ocr_results/myDoc_", all the output files of OCR processing will be
+	 * saved under prefix, such as:
+	 *
+	 * <ul>
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-1-to-1.json
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-2-to-2.json
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-3-to-3.json
+	 * </ul>
+	 *
+	 * <p>
+	 * Note: OCR processing operations may take several minutes to complete, so it may not be
+	 * advisable to block on the completion of the operation. One may use the returned
+	 * {@link ListenableFuture} to register callbacks or track the status of the operation.
+	 *
+	 * @param document The {@link GoogleStorageLocation} of the document to run OCR processing
+	 * @param outputFilePathPrefix The {@link GoogleStorageLocation} of a file, folder, or a
+	 *     bucket describing the path for which all output files shall be saved under
+	 *
+	 * @return A {@link ListenableFuture} allowing you to register callbacks or wait for the
+	 * completion of the operation.
 	 */
-	public List<DocumentOcrMetadata> runOcrForBucket(String inputBucketName, String outputBucketName)
-			throws IOException {
-
-		ArrayList<DocumentOcrMetadata> ocrMetadataList = new ArrayList<>();
-
-		for (Blob blob : this.storage.list(inputBucketName).getValues()) {
-			if (SUPPORTED_FILE_FORMATS.contains(blob.getContentType())) {
-				GoogleStorageLocation inputFileLocation = GoogleStorageLocation
-						.forFile(inputBucketName, blob.getName());
-
-				String outputFolderPath = String.format(OUTPUT_FOLDER_FORMAT, blob.getName());
-				GoogleStorageLocation outputFolder = GoogleStorageLocation
-						.forFolder(outputBucketName, outputFolderPath);
-
-				DocumentOcrMetadata ocrMetadata = runOcrForDocument(inputFileLocation, outputFolder);
-				ocrMetadataList.add(ocrMetadata);
-			}
+	public ListenableFuture<DocumentOcrResultSet> runOcrForDocument(
+			GoogleStorageLocation document,
+			GoogleStorageLocation outputFilePathPrefix) {
+		if (!document.isFile()) {
+			throw new IllegalArgumentException(
+					"Provided document location is not a valid file location: " + document);
 		}
-
-		return ocrMetadataList;
-	}
-
-	/**
-	 * Runs OCR processing for a specified {@code document} and outputs the results
-	 * to {@code outputFolder}.
-	 */
-	public DocumentOcrMetadata runOcrForDocument(
-			GoogleStorageLocation document, GoogleStorageLocation outputFolder)
-			throws IOException {
-
-		Assert.isTrue(
-				document.isFile(),
-				"The Google Storage document location provided must be a "
-						+ "file. Invalid location provided: " + document);
-
-		Assert.isTrue(
-				!outputFolder.isFile(),
-				"The Google Storage output location provided must be a "
-						+ "bucket or folder location. Invalid location provided: " + outputFolder);
 
 		GcsSource gcsSource = GcsSource.newBuilder()
 				.setUri(document.uriString())
 				.build();
 
-		String contentType = getContentType(document);
+		Blob documentBlob = this.storage.get(
+				BlobId.of(document.getBucketName(), document.getBlobName()));
+		if (documentBlob == null) {
+			throw new IllegalArgumentException(
+					"Provided document does not exist: " + document);
+		}
+
+		String contentType = documentBlob.getContentType();
 		InputConfig inputConfig = InputConfig.newBuilder()
 				.setMimeType(contentType)
 				.setGcsSource(gcsSource)
 				.build();
 
 		GcsDestination gcsDestination = GcsDestination.newBuilder()
-				.setUri(outputFolder.uriString())
+				.setUri(outputFilePathPrefix.uriString())
 				.build();
 
 		OutputConfig outputConfig = OutputConfig.newBuilder()
-				.setBatchSize(1)
 				.setGcsDestination(gcsDestination)
+				.setBatchSize(1)
 				.build();
 
 		Feature feature = Feature.newBuilder()
@@ -163,55 +148,54 @@ public class DocumentOcrTemplate {
 		OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> result =
 				imageAnnotatorClient.asyncBatchAnnotateFilesAsync(Collections.singletonList(request));
 
-		return new DocumentOcrMetadata(document, outputFolder, convertToSpringFuture(result));
+		return extractOcrResultFuture(result);
 	}
 
 	/**
-	 * Parses the OCR output file at the Google Storage location specified by {@code jsonOutputFile}.
+	 * Parses the OCR output files with the specified {@code jsonFilesetPrefix}. This method
+	 * assumes that all of the OCR output files with the prefix are a part of the same
+	 * document. This method is useful for processing a collection of output files produced by
+	 * the same document.
 	 *
-	 * <p>OCR output files are produced after running the Google Cloud Vision APIs on a document.
-	 *
-	 * @param jsonOutputFile the location of the JSON file containing the OCR output data
-	 * @return the {@link TextAnnotation} describing the OCR output contents
-	 * @throws InvalidProtocolBufferException if {@code jsonOutputFile} is not a JSON representation
-	 *    of {@link TextAnnotation}.
+	 * @param jsonFilePathPrefix the folder location containing all of the JSON files of OCR
+	 *     output
+	 * @return A {@link DocumentOcrResultSet} describing the OCR content of a document
 	 */
-	public TextAnnotation parseOcrOutputFile(GoogleStorageLocation jsonOutputFile)
-			throws InvalidProtocolBufferException {
-		if (!jsonOutputFile.isFile()) {
-			throw new IllegalArgumentException(
-					"Provided JSON output file is not a valid file location: " + jsonOutputFile);
-		}
-
-		Blob jsonBlob = this.storage.get(BlobId.of(jsonOutputFile.getBucketName(), jsonOutputFile.getPath()));
-		return parseJsonBlob(jsonBlob);
-	}
-
-	/**
-	 * Parses the OCR output files in a specified folder {@code jsonOutputFolder}. This method assumes
-	 * that all of the OCR output files in the folder are a part of the same document.
-	 *
-	 * @param jsonOutputFolder the folder location containing all of the JSON files of OCR output
-	 * @return A {@link DocumentOcrResult} describing the OCR content of a document
-	 */
-	public DocumentOcrResult parseOcrOutputFileSet(GoogleStorageLocation jsonOutputFolder) {
-		if (jsonOutputFolder.isFile()) {
-			throw new IllegalArgumentException(
-					"Provided JSON output folder is not a folder location: " + jsonOutputFolder);
-		}
+	public DocumentOcrResultSet parseOcrOutputFileSet(GoogleStorageLocation jsonFilePathPrefix) {
+		String nonNullPrefix = (jsonFilePathPrefix.getBlobName() == null) ? "" : jsonFilePathPrefix.getBlobName();
 
 		Page<Blob> blobsInFolder = this.storage.list(
-				jsonOutputFolder.getBucketName(),
+				jsonFilePathPrefix.getBucketName(),
 				BlobListOption.currentDirectory(),
-				BlobListOption.prefix(jsonOutputFolder.getPath()));
+				BlobListOption.prefix(nonNullPrefix));
 
 		List<Blob> blobPages =
 				StreamSupport.stream(blobsInFolder.getValues().spliterator(), false)
-						.filter(blob -> OUTPUT_PAGE_PATTERN.matcher(blob.getName()).find())
+						.filter(blob -> blob.getContentType().equals("application/octet-stream"))
 						.sorted(Comparator.comparingInt(blob -> extractPageNumber(blob)))
 						.collect(Collectors.toList());
 
-		return new DocumentOcrResult(blobPages, this.storage);
+		return new DocumentOcrResultSet(blobPages, this.storage);
+	}
+
+	/**
+	 * Parses a single JSON output file and returns the parsed OCR content.
+	 *
+	 * @param jsonFile the location of the JSON output file
+	 * @return the {@link TextAnnotation} containing the OCR results
+	 * @throws InvalidProtocolBufferException if the JSON file cannot be deserialized into a
+	 *     {@link TextAnnotation} object
+	 */
+	public TextAnnotation parseOcrOutputFile(GoogleStorageLocation jsonFile)
+			throws InvalidProtocolBufferException {
+		if (!jsonFile.isFile()) {
+			throw new IllegalArgumentException(
+					"Provided jsonOutputFile location is not a valid file location: " + jsonFile);
+		}
+
+		Blob jsonOutputBlob = this.storage.get(
+				BlobId.of(jsonFile.getBucketName(), jsonFile.getBlobName()));
+		return parseJsonBlob(jsonOutputBlob);
 	}
 
 	static TextAnnotation parseJsonBlob(Blob blob) throws InvalidProtocolBufferException {
@@ -224,10 +208,10 @@ public class DocumentOcrTemplate {
 		return annotateFileResponse.getResponses(0).getFullTextAnnotation();
 	}
 
-	private ListenableFuture<DocumentOcrResult> convertToSpringFuture(
+	private ListenableFuture<DocumentOcrResultSet> extractOcrResultFuture(
 			OperationFuture<AsyncBatchAnnotateFilesResponse, OperationMetadata> grpcFuture) {
 
-		SettableListenableFuture<DocumentOcrResult> result = new SettableListenableFuture<>();
+		SettableListenableFuture<DocumentOcrResultSet> result = new SettableListenableFuture<>();
 
 		ApiFutures.addCallback(grpcFuture, new ApiFutureCallback<AsyncBatchAnnotateFilesResponse>() {
 			@Override
@@ -252,15 +236,15 @@ public class DocumentOcrTemplate {
 		return result;
 	}
 
-	private String getContentType(GoogleStorageLocation googleStorageLocation) throws IOException {
-		Blob blob = this.storage.get(BlobId.of(googleStorageLocation.getBucketName(), googleStorageLocation
-				.getPath()));
-		return blob.getContentType();
-	}
-
 	private static int extractPageNumber(Blob blob) {
 		Matcher matcher = OUTPUT_PAGE_PATTERN.matcher(blob.getName());
-		matcher.find();
-		return Integer.parseInt(matcher.group(1));
+		boolean success = matcher.find();
+
+		if (success) {
+			return Integer.parseInt(matcher.group(1));
+		}
+		else {
+			return -1;
+		}
 	}
 }

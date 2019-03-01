@@ -16,41 +16,15 @@
 
 package org.springframework.cloud.gcp.vision;
 
-import static org.mockito.Mockito.when;
-
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.longrunning.OperationFuture;
-import com.google.api.gax.paging.Page;
-import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.Storage.BlobListOption;
-import com.google.cloud.storage.Storage.BucketListOption;
-import com.google.cloud.storage.StorageOptions;
-import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.cloud.vision.v1.ImageAnnotatorSettings;
-import com.google.cloud.vision.v1.OperationMetadata;
-import com.google.cloud.vision.v1.TextAnnotation;
-import com.google.longrunning.OperationsClient;
-import com.google.longrunning.OperationsSettings;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.gcp.core.Credentials;
-import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
-import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
+
+import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -71,41 +45,16 @@ public class DocumentOcrTemplateTests {
 	}
 
 	@Test
-	public void testRejectInvalidLocationInputs() {
-		assertThatThrownBy(
-				() -> documentOcrTemplate.runOcrForDocument(
-						GoogleStorageLocation.forFile("bucket", "document"),
-						GoogleStorageLocation.forFile("bucket", "otherDocument")))
-				.hasMessageContaining(
-						"The Google Storage output location provided must be a bucket or folder location.");
+	public void testValidateGcsFileInputs() {
+		GoogleStorageLocation folderLocation = GoogleStorageLocation.forFolder(
+				"bucket", "path/to/folder/");
 
-		assertThatThrownBy(
-				() -> documentOcrTemplate.runOcrForDocument(
-						GoogleStorageLocation.forFolder("bucket", "folder"),
-						GoogleStorageLocation.forFolder("bucket", "folder2")))
-				.hasMessageContaining(
-						"The Google Storage document location provided must be a file.");
+		assertThatThrownBy(() -> this.documentOcrTemplate.runOcrForDocument(folderLocation, folderLocation))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Provided document location is not a valid file location");
 
-		assertThatThrownBy(
-				() -> documentOcrTemplate.parseOcrOutputFile(
-						GoogleStorageLocation.forFolder("bucket", "folder")))
-				.hasMessageContaining(
-						"Provided JSON output file is not a valid file location");
-
-		assertThatThrownBy(
-				() -> documentOcrTemplate.parseOcrOutputFileSet(
-						GoogleStorageLocation.forFile("bucket", "file")))
-				.hasMessageContaining(
-						"Provided JSON output folder is not a folder location");
-	}
-
-	@Test
-	public void testProcessDocumentsInBucket() throws IOException {
-		DocumentOcrMetadata ocrMetadata = documentOcrTemplate.runOcrForDocument(
-				GoogleStorageLocation.forFile("bucket", "folder/file.pdf"),
-				GoogleStorageLocation.forFolder("bucket", "outputFolder"));
-
-		when
-
+		assertThatThrownBy(() -> this.documentOcrTemplate.parseOcrOutputFile(folderLocation))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Provided jsonOutputFile location is not a valid file location");
 	}
 }

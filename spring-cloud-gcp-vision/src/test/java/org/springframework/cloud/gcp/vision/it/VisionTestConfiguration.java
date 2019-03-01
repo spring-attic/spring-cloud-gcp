@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,59 +14,46 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.vision;
+package org.springframework.cloud.gcp.vision.it;
 
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
-import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.cloud.gcp.vision.DocumentOcrTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Provides Spring Beans for using Cloud Vision API.
- *
- * @author Daniel Zou
- * @since 1.1
- */
 @Configuration
-@EnableConfigurationProperties(CloudVisionProperties.class)
-@ConditionalOnClass(CloudVisionTemplate.class)
-@ConditionalOnProperty(value = "spring.cloud.gcp.vision.enabled", matchIfMissing = true)
-public class CloudVisionAutoConfiguration {
+public class VisionTestConfiguration {
+
+	private final String projectId;
 
 	private final CredentialsProvider credentialsProvider;
 
-	public CloudVisionAutoConfiguration(
-			CloudVisionProperties properties, CredentialsProvider credentialsProvider)
-			throws IOException {
-
-		if (properties.getCredentials().hasKey()) {
-			this.credentialsProvider = new DefaultCredentialsProvider(properties);
-		}
-		else {
-			this.credentialsProvider = credentialsProvider;
-		}
+	public VisionTestConfiguration() throws IOException {
+		this.projectId = new DefaultGcpProjectIdProvider().getProjectId();
+		this.credentialsProvider = new DefaultCredentialsProvider(Credentials::new);
 	}
 
 	/**
 	 * Configure the Cloud Vision API client {@link ImageAnnotatorClient}. The
 	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides
 	 * the GCP credentials, required to authenticate and authorize Vision API calls.
-	 * <p>Cloud Vision API client implements {@link AutoCloseable}, which is automatically
+	 * <p>
+	 * Cloud Vision API client implements {@link AutoCloseable}, which is automatically
 	 * honored by Spring bean lifecycle.
-	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
+	 * <p>
+	 * Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
 	 * to produce a singleton and re-using the client object for multiple requests.
 	 * @return a Cloud Vision API client
 	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
@@ -76,7 +63,6 @@ public class CloudVisionAutoConfiguration {
 	public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
 		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
-				.setHeaderProvider(new UserAgentHeaderProvider(CloudVisionAutoConfiguration.class))
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);
@@ -94,5 +80,15 @@ public class CloudVisionAutoConfiguration {
 			ImageAnnotatorClient imageAnnotatorClient, Storage storage) {
 
 		return new DocumentOcrTemplate(imageAnnotatorClient, storage);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public Storage storage() throws IOException {
+		return StorageOptions.newBuilder()
+				.setCredentials(this.credentialsProvider.getCredentials())
+				.setProjectId(this.projectId)
+				.build()
+				.getService();
 	}
 }

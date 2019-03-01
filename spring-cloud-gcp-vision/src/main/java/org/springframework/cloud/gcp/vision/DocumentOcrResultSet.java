@@ -16,49 +16,84 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import java.util.Iterator;
+import java.util.List;
+
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.List;
 
 /**
  * Represents the parsed OCR output for a document.
  *
  * @author Daniel Zou
  */
-public class DocumentOcrResult {
+public class DocumentOcrResultSet {
 
 	private final Storage storageClient;
 
 	private final List<Blob> pageBlobs;
 
-	public DocumentOcrResult(List<Blob> pages, Storage storageClient) {
+	public DocumentOcrResultSet(List<Blob> pages, Storage storageClient) {
 		this.pageBlobs = pages;
 		this.storageClient = storageClient;
 	}
 
 	/**
 	 * Returns the number of pages of the document.
+	 *
+	 * @return number of pages in the document
 	 */
 	public int getPageCount() {
 		return this.pageBlobs.size();
 	}
 
 	/**
-	 * Retrieves the parsed OCR information of the page at index {@code pageNumber} of the document.
-	 * All page numbers are 0-indexed.
+	 * Retrieves the parsed OCR information of the page at index {@code pageNumber} of the
+	 * document. All page numbers are 0-indexed.
 	 *
 	 * <p>This returns a TextAnnotation object which is Google Cloud Vision's representation of a
-	 * page of a document. For more information on processing this object, see:
+	 * page of a document. For more information on reading this object, see:
 	 * https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.TextAnnotation
 	 *
 	 * @param pageNumber the zero-indexed page number of the document
 	 * @return the {@link TextAnnotation} representing the page of the document
-	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be parsed
+	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be
+	 *     parsed
 	 */
 	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
 		Blob pageBlob = this.pageBlobs.get(pageNumber);
 		return DocumentOcrTemplate.parseJsonBlob(pageBlob);
+	}
+
+	/**
+	 * Returns an {@link Iterator} over all the OCR pages of the document.
+	 *
+	 * @return iterator of {@link TextAnnotation} describing OCR content of each page in the
+	 * document.
+	 */
+	public Iterator<TextAnnotation> getAllPages() {
+		return new Iterator<TextAnnotation>() {
+
+			int currentPage = 0;
+
+			@Override
+			public boolean hasNext() {
+				return currentPage < getPageCount();
+			}
+
+			@Override
+			public TextAnnotation next() {
+				try {
+					TextAnnotation result = getPage(currentPage);
+					currentPage++;
+					return result;
+				}
+				catch (InvalidProtocolBufferException e) {
+					throw new RuntimeException("Failed to process over document result set.", e);
+				}
+			}
+		};
 	}
 }
