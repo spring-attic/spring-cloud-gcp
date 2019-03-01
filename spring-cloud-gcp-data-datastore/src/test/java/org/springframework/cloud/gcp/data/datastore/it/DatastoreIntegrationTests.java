@@ -504,6 +504,7 @@ public class DatastoreIntegrationTests {
 
 	@Test
 	public void inheritanceTestFindAll() {
+		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.saveAll(Arrays.asList(
 				new Cat("Cat1"),
 				new Dog("Dog1"),
