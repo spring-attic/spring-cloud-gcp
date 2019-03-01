@@ -1013,7 +1013,7 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 ----
 
 NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with `DiscriminationField`.
+annotated with `DiscriminatorField`.
 
 The following parameter types are supported:
 
@@ -1084,7 +1084,7 @@ By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositorie
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:
 
 NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with `DiscriminationField`.
+annotated with `DiscriminatorField`.
 
 [source, properties]
 ----
