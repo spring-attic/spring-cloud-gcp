@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Google Cloud Vision OCR Sample</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h1>Google Cloud Vision OCR Sample</h1>
+
+<nav>
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/status">Document OCR Results</a></li>
+  </ul>
+</nav>
+
+<div>
+  This application demonstrates how one can upload documents to Google Cloud Storage and easily
+  run OCR analysis on the documents. This application will allow you to upload documents to your
+  bucket, run OCR analysis on them, and then retrieve the results.
+</div>
+
+<div>
+  <h2>Process Documents</h2>
+  <p>
+    You may upload a document to your GCS bucket: <b>[[${ocrBucket}]]</b>.
+    Then this app runs OCR analysis on the document and allows you to view the parsed text.
+  </p>
+
+  <form action="/submitDocument" method="post">
+    <b>Specify a document to upload:</b>
+    <input type="text" name="documentUrl"/>
+    <input type="submit" />
+  </form>
+
+  <br>
+  <div>
+    Note: You may submit any PDF document via the following protocols:
+    <ul>
+      <li>PDFs accessible through http:// (e.g. http://www.example.com/document.pdf)</li>
+      <li>PDFs in the application resources/ directory (e.g. classpath:test_pdfs/test.pdf)</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

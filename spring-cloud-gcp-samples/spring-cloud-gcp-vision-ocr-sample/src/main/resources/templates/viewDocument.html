@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>View Document Text</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+
+<body>
+<h1>Text from [[${gcsDocumentUrl}]]</h1>
+
+<p>
+  <a href="/status">Back to Status Page</a>
+</p>
+
+<p>
+  First 50 words of the document:
+</p>
+
+<p>
+  [[${text}]]
+</p>
+
+</body>
+</html>
