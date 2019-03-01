@@ -3811,9 +3811,9 @@ public class ConverterConfiguration {
 <section xml:id="_inheritance_hierarchies">
 <title>Inheritance Hierarchies</title>
 <simpara>Java entity types related by inheritance can be stored in the same Kind.
-When reading and querying entities using <literal>DatastoreRepository</literal> or <literal>DatastoreTemplate</literal> with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with <literal>DiscriminationField</literal> and <literal>DiscriminationValue</literal>:</simpara>
+When reading and querying entities using <literal>DatastoreRepository</literal> or <literal>DatastoreTemplate</literal> with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with <literal>DiscriminatorField</literal> and <literal>DiscriminatorValue</literal>:</simpara>
 <programlisting language="java" linenumbering="unnumbered">@Entity(name = "pets")
-@DiscriminationField(field = "pet_type")
+@DiscriminatorField(field = "pet_type")
 abstract class Pet {
 	@Id
 	Long id;
@@ -3821,7 +3821,7 @@ abstract class Pet {
 	abstract String speak();
 }
 
-@DiscriminationValue("cat")
+@DiscriminatorValue("cat")
 class Cat extends Pet {
 	@Override
 	String speak() {
@@ -3829,7 +3829,7 @@ class Cat extends Pet {
 	}
 }
 
-@DiscriminationValue("dog")
+@DiscriminatorValue("dog")
 class Dog extends Pet {
 	@Override
 	String speak() {
@@ -3837,7 +3837,7 @@ class Dog extends Pet {
 	}
 }
 
-@DiscriminationValue("pug")
+@DiscriminatorValue("pug")
 class Pug extends Dog {
 	@Override
 	String speak() {
@@ -3846,7 +3846,7 @@ class Pug extends Dog {
 }</programlisting>
 <simpara>Instances of all 3 types are stored in the <literal>pets</literal> Kind.
 Because a single Kind is used, all classes in the hierarchy must share the same ID property and no two instances of any type in the hierarchy can share the same ID value.</simpara>
-<simpara>Entity rows in Cloud Datastore store their respective types' <literal>DiscriminationValue</literal> in a field specified by the root superclass&#8217;s <literal>DiscriminationField</literal> (<literal>pet_type</literal> in this case).
+<simpara>Entity rows in Cloud Datastore store their respective types' <literal>DiscriminatorValue</literal> in a field specified by the root superclass&#8217;s <literal>DiscriminatorField</literal> (<literal>pet_type</literal> in this case).
 Reads and queries using a given type parameter will match each entity with its specific type.
 For example, reading a <literal>List&lt;Pet&gt;</literal> will produce a list containing instances of all 3 types.
 However, reading a <literal>List&lt;Dog&gt;</literal> will produce a list containing only <literal>Dog</literal> and <literal>Pug</literal> instances.
@@ -4375,7 +4375,7 @@ It enables dynamic query generation based on a user-provided object. See <link x
 }</programlisting>
 <note>
 <simpara>You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with <literal>DiscriminationField</literal>.</simpara>
+annotated with <literal>DiscriminatorField</literal>.</simpara>
 </note>
 <simpara>The following parameter types are supported:</simpara>
 <itemizedlist>
@@ -4444,7 +4444,7 @@ List&lt;Trade&gt; fetchByActionNamedQuery(@Param("act") String action);</program
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:</simpara>
 <note>
 <simpara>You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with <literal>DiscriminationField</literal>.</simpara>
+annotated with <literal>DiscriminatorField</literal>.</simpara>
 </note>
 <programlisting language="properties" linenumbering="unnumbered">Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0</programlisting>
 <programlisting language="java" linenumbering="unnumbered">public interface TraderRepository extends DatastoreRepository&lt;Trader, String&gt; {
