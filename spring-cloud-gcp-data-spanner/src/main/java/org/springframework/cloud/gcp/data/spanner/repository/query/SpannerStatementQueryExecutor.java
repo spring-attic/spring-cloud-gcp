@@ -188,7 +188,7 @@ public final class SpannerStatementQueryExecutor {
 		}
 		if (tags == null || params == null || tags.size() != params.length) {
 			throw new IllegalArgumentException(
-					"The number of tags does match the number of params.");
+					"The number of tags does not match the number of params.");
 		}
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
