@@ -119,7 +119,7 @@ public class GoogleStorageTests {
 		Assert.assertEquals("gs://test-spring/aaa/bbb", relative);
 		Assert.assertEquals(relative, this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
 
-		Assert.assertNull(((GoogleStorageResource) this.bucketResource).getBlobName());
+		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).getBlobName().isEmpty());
 		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).isBucket());
 
 		Assert.assertTrue(this.bucketResource.exists());
@@ -134,7 +134,7 @@ public class GoogleStorageTests {
 	@Test
 	public void testSpecifyBucketCorrect() {
 		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
-				this.storage, "test-spring", null, false);
+				this.storage, "test-spring", "", false);
 
 		Assert.assertTrue(googleStorageResource.isBucket());
 		Assert.assertEquals("test-spring", googleStorageResource.getBucket().getName());

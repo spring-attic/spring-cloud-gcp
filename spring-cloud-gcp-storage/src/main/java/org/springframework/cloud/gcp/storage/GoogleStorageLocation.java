@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.storage;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -61,7 +60,7 @@ public class GoogleStorageLocation {
 			this.blobName = getBlobPathFromUri(locationUri);
 
 			// ensure that if it's a bucket handle, location ends with a '/'
-			if (this.blobName == null && !gcsLocationUriString.endsWith("/")) {
+			if (this.blobName.isEmpty() && !gcsLocationUriString.endsWith("/")) {
 				locationUri = new URI(gcsLocationUriString + "/");
 			}
 			this.uri = locationUri;
@@ -76,15 +75,13 @@ public class GoogleStorageLocation {
 	 * {@code pathToFile}.
 	 *
 	 * @param bucketName name of the Google Storage bucket
-	 * @param pathToFile path to the file or folder in the bucket; set as null if
+	 * @param pathToFile path to the file or folder in the bucket; set as empty string if
 	 *    the location is to the bucket itself.
 	 */
-	public GoogleStorageLocation(String bucketName, @Nullable String pathToFile) {
+	public GoogleStorageLocation(String bucketName, String pathToFile) {
 		try {
 			this.bucketName = bucketName;
 			this.blobName = pathToFile;
-
-			pathToFile = (pathToFile == null) ? "" : pathToFile;
 			this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
 		}
 		catch (URISyntaxException e) {
@@ -99,7 +96,7 @@ public class GoogleStorageLocation {
 	 * @return if the location describes a bucket
 	 */
 	public boolean isBucket() {
-		return this.blobName == null;
+		return this.blobName.isEmpty();
 	}
 
 	/**
@@ -107,7 +104,7 @@ public class GoogleStorageLocation {
 	 * @return true if the location describes a file
 	 */
 	public boolean isFile() {
-		return this.blobName != null && !this.blobName.endsWith("/");
+		return !this.blobName.isEmpty() && !this.blobName.endsWith("/");
 	}
 
 	/**
@@ -120,10 +117,10 @@ public class GoogleStorageLocation {
 	}
 
 	/**
-	 * Returns the path to the blob/folder relative from the bucket root. Returns null
+	 * Returns the path to the blob/folder relative from the bucket root. Returns empty string
 	 * if the {@link GoogleStorageLocation} specifies a bucket itself.
 	 *
-	 * @return a path to the blob or folder; null if the location is to a bucket.
+	 * @return a path to the blob or folder; empty string if the location is to a bucket.
 	 */
 	public String getBlobName() {
 		return blobName;
@@ -144,8 +141,7 @@ public class GoogleStorageLocation {
 	 * @return the URI string of the Google Storage location.
 	 */
 	public String uriString() {
-		String processedBlobName = (blobName == null) ? "" : blobName;
-		return String.format(GCS_URI_FORMAT, bucketName, processedBlobName);
+		return String.format(GCS_URI_FORMAT, bucketName, blobName);
 	}
 
 	/**
@@ -154,7 +150,7 @@ public class GoogleStorageLocation {
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
 	public static GoogleStorageLocation forBucket(String bucketName) {
-		return new GoogleStorageLocation(bucketName, null);
+		return new GoogleStorageLocation(bucketName, "");
 	}
 
 	/**
@@ -190,7 +186,7 @@ public class GoogleStorageLocation {
 		String uriPath = gcsUri.getPath();
 		if (uriPath.isEmpty() || uriPath.equals("/")) {
 			// This indicates that the path specifies the root of the bucket
-			return null;
+			return "";
 		}
 		else {
 			return uriPath.substring(1);
