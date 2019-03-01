@@ -16,8 +16,8 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
@@ -27,8 +27,8 @@ import org.springframework.data.annotation.Id;
  * @author Chengyuan Zhao
  */
 @Entity
-@DiscriminationField(field = "band_type")
-@DiscriminationValue("generic_band")
+@DiscriminatorField(field = "band_type")
+@DiscriminatorValue("generic_band")
 public class Band {
 
 	@Id

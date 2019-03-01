@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DiscriminationField {
+public @interface DiscriminatorField {
 
 	/**
 	 * The name of the field that holds the value that distinguishes which subclass an entity

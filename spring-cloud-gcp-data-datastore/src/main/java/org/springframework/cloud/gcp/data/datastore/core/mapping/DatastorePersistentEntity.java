@@ -58,7 +58,7 @@ public interface DatastorePersistentEntity<T> extends
 	 * Get the discrimination value corresponding to this persistent entity type.
 	 * @return the value or {@code null} if there is no value for this type.
 	 */
-	String getDiscriminationValue();
+	String getDiscriminatorValue();
 
 	/**
 	 * Get the discrimination values corresponding to this persistent entity ad its supertypes.
