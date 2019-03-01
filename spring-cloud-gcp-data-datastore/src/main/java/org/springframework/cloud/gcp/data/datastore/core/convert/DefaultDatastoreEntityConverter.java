@@ -152,7 +152,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			EntityPropertyValueProvider propertyValueProvider) {
 		return ((String[]) propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(),
 				EmbeddedType.NOT_EMBEDDED,
-				ClassTypeInformation.from(String[].class)))[0].equals(entity.getDiscriminationValue());
+				ClassTypeInformation.from(String[].class)))[0].equals(entity.getDiscriminatorValue());
 	}
 
 	@Override

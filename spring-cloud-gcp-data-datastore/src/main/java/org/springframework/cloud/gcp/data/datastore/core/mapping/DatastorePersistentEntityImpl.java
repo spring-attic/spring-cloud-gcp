@@ -59,9 +59,9 @@ public class DatastorePersistentEntityImpl<T>
 
 	private final Entity kind;
 
-	private final DiscriminationField discriminationField;
+	private final DiscriminatorField discriminatorField;
 
-	private final DiscriminationValue discriminationValue;
+	private final DiscriminatorValue discriminatorValue;
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
@@ -82,8 +82,8 @@ public class DatastorePersistentEntityImpl<T>
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.context = new StandardEvaluationContext();
 		this.kind = findAnnotation(Entity.class);
-		this.discriminationField = findAnnotation(DiscriminationField.class);
-		this.discriminationValue = findAnnotation(DiscriminationValue.class);
+		this.discriminatorField = findAnnotation(DiscriminatorField.class);
+		this.discriminatorValue = findAnnotation(DiscriminatorValue.class);
 		this.classBasedKindName = this.hasTableName() ? this.kind.name()
 				: StringUtils.uncapitalize(rawType.getSimpleName());
 		this.kindNameExpression = detectExpression();
@@ -107,11 +107,11 @@ public class DatastorePersistentEntityImpl<T>
 
 	@Override
 	public String kindName() {
-		if (this.discriminationValue != null && this.discriminationField == null) {
+		if (this.discriminatorValue != null && this.discriminatorField == null) {
 			throw new DatastoreDataException(
 					"This class expects a discrimination field but none are designated: " + getType());
 		}
-		else if (this.discriminationValue != null && getType().getSuperclass() != Object.class) {
+		else if (this.discriminatorValue != null && getType().getSuperclass() != Object.class) {
 			return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
 					.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity()
 							.kindName();
@@ -143,10 +143,10 @@ public class DatastorePersistentEntityImpl<T>
 		if (otherMembers != null) {
 			for (Class other : otherMembers) {
 				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getPersistentEntity(other);
-				if (getDiscriminationValue() != null
-						&& getDiscriminationValue().equals(persistentEntity.getDiscriminationValue())) {
+				if (getDiscriminatorValue() != null
+						&& getDiscriminatorValue().equals(persistentEntity.getDiscriminatorValue())) {
 					throw new DatastoreDataException(
-							"More than one class in an inheritance hierarchy has the same DiscriminationValue: "
+							"More than one class in an inheritance hierarchy has the same DiscriminatorValue: "
 									+ getType() + " and " + other);
 				}
 			}
@@ -171,17 +171,17 @@ public class DatastorePersistentEntityImpl<T>
 
 	@Override
 	public String getDiscriminationFieldName() {
-		return this.discriminationField == null ? null : this.discriminationField.field();
+		return this.discriminatorField == null ? null : this.discriminatorField.field();
 	}
 
 	@Override
 	public List<String> getCompatibleDiscriminationValues() {
-		if (this.discriminationValue == null) {
+		if (this.discriminatorValue == null) {
 			return Collections.emptyList();
 		}
 		else {
 			List<String> compatibleValues = new LinkedList<>();
-			compatibleValues.add(this.discriminationValue.value());
+			compatibleValues.add(this.discriminatorValue.value());
 			DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext
 					.getPersistentEntity(getType().getSuperclass());
 			if (persistentEntity != null) {
@@ -193,8 +193,8 @@ public class DatastorePersistentEntityImpl<T>
 	}
 
 	@Override
-	public String getDiscriminationValue() {
-		return this.discriminationValue == null ? null : this.discriminationValue.value();
+	public String getDiscriminatorValue() {
+		return this.discriminatorValue == null ? null : this.discriminatorValue.value();
 	}
 
 	@Override
@@ -229,7 +229,7 @@ public class DatastorePersistentEntityImpl<T>
 
 	/* This method is used by subclass persistent entities to get the superclass Kind name. */
 	private DatastorePersistentEntity getDiscriminationSuperclassPersistentEntity() {
-		if (this.discriminationField != null) {
+		if (this.discriminatorField != null) {
 			return this;
 		}
 		return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext

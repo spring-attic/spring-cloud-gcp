@@ -60,8 +60,8 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConver
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
@@ -1060,8 +1060,8 @@ public class DatastoreTemplateTests {
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "test_kind")
-	@DiscriminationField(field = "discrimination_field")
-	@DiscriminationValue("A")
+	@DiscriminatorField(field = "discrimination_field")
+	@DiscriminatorValue("A")
 	private static class SimpleDiscriminationTestEntity {
 		@Id
 		String id;

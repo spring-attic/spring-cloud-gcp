@@ -41,8 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
@@ -576,7 +576,7 @@ class PetOwner {
 }
 
 @Entity
-@DiscriminationField(field = "pet_type")
+@DiscriminatorField(field = "pet_type")
 abstract class Pet {
 	@Id
 	Long id;
@@ -590,7 +590,7 @@ abstract class Pet {
 	abstract String speak();
 }
 
-@DiscriminationValue("cat")
+@DiscriminatorValue("cat")
 class Cat extends Pet {
 
 	Cat(String name) {
@@ -603,7 +603,7 @@ class Cat extends Pet {
 	}
 }
 
-@DiscriminationValue("dog")
+@DiscriminatorValue("dog")
 class Dog extends Pet {
 
 	Dog(String name) {
@@ -616,7 +616,7 @@ class Dog extends Pet {
 	}
 }
 
-@DiscriminationValue("pug")
+@DiscriminatorValue("pug")
 class Pug extends Dog {
 
 	Pug(String name) {

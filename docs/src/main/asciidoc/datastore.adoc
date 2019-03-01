@@ -354,12 +354,12 @@ public class ConverterConfiguration {
 ==== Inheritance Hierarchies
 
 Java entity types related by inheritance can be stored in the same Kind.
-When reading and querying entities using `DatastoreRepository` or `DatastoreTemplate` with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with `DiscriminationField` and `DiscriminationValue`:
+When reading and querying entities using `DatastoreRepository` or `DatastoreTemplate` with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with `DiscriminatorField` and `DiscriminatorValue`:
 
 [source, java]
 ----
 @Entity(name = "pets")
-@DiscriminationField(field = "pet_type")
+@DiscriminatorField(field = "pet_type")
 abstract class Pet {
 	@Id
 	Long id;
@@ -367,7 +367,7 @@ abstract class Pet {
 	abstract String speak();
 }
 
-@DiscriminationValue("cat")
+@DiscriminatorValue("cat")
 class Cat extends Pet {
 	@Override
 	String speak() {
@@ -375,7 +375,7 @@ class Cat extends Pet {
 	}
 }
 
-@DiscriminationValue("dog")
+@DiscriminatorValue("dog")
 class Dog extends Pet {
 	@Override
 	String speak() {
@@ -383,7 +383,7 @@ class Dog extends Pet {
 	}
 }
 
-@DiscriminationValue("pug")
+@DiscriminatorValue("pug")
 class Pug extends Dog {
 	@Override
 	String speak() {
@@ -395,7 +395,7 @@ class Pug extends Dog {
 Instances of all 3 types are stored in the `pets` Kind.
 Because a single Kind is used, all classes in the hierarchy must share the same ID property and no two instances of any type in the hierarchy can share the same ID value.
 
-Entity rows in Cloud Datastore store their respective types' `DiscriminationValue` in a field specified by the root superclass's `DiscriminationField` (`pet_type` in this case).
+Entity rows in Cloud Datastore store their respective types' `DiscriminatorValue` in a field specified by the root superclass's `DiscriminatorField` (`pet_type` in this case).
 Reads and queries using a given type parameter will match each entity with its specific type.
 For example, reading a `List<Pet>` will produce a list containing instances of all 3 types.
 However, reading a `List<Dog>` will produce a list containing only `Dog` and `Pug` instances.
@@ -1013,7 +1013,7 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 ----
 
 NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with `DiscriminationField`.
+annotated with `DiscriminatorField`.
 
 The following parameter types are supported:
 
@@ -1084,7 +1084,7 @@ By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositorie
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:
 
 NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
-annotated with `DiscriminationField`.
+annotated with `DiscriminatorField`.
 
 [source, properties]
 ----

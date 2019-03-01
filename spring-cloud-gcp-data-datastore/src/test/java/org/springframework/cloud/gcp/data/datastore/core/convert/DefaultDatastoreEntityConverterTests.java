@@ -47,8 +47,8 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreIt
 import org.springframework.cloud.gcp.data.datastore.core.convert.TestItemWithEmbeddedEntity.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
@@ -162,7 +162,7 @@ public class DefaultDatastoreEntityConverterTests {
 
 		this.thrown.expect(DatastoreDataException.class);
 		this.thrown.expectMessage("More than one class in an inheritance hierarchy " +
-				"has the same DiscriminationValue: ");
+				"has the same DiscriminatorValue: ");
 
 		Entity entityY = getEntityBuilder()
 				.set("discrimination_column", "Y", "unused", "anotherParentValue")
@@ -738,39 +738,39 @@ public class DefaultDatastoreEntityConverterTests {
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationField(field = "discrimination_column")
-	@DiscriminationValue("X")
+	@DiscriminatorField(field = "discrimination_column")
+	@DiscriminatorValue("X")
 	private static class DiscrimEntityX {
 		TestDatastoreItem.Color enumField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationValue("A")
+	@DiscriminatorValue("A")
 	private static class DiscrimEntityA extends DiscrimEntityX {
 		boolean boolField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationValue("B")
+	@DiscriminatorValue("B")
 	private static class DiscrimEntityB extends DiscrimEntityX {
 		int intField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationValue("D")
+	@DiscriminatorValue("D")
 	private static class DiscrimEntityD extends DiscrimEntityB {
 		String stringField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationField(field = "discrimination_column")
-	@DiscriminationValue("Y")
+	@DiscriminatorField(field = "discrimination_column")
+	@DiscriminatorValue("Y")
 	private static class DiscrimEntityY {
 		TestDatastoreItem.Color enumField;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
-	@DiscriminationValue("Y")
+	@DiscriminatorValue("Y")
 	private static class DiscrimEntityC extends DiscrimEntityY {
 		int intField;
 	}

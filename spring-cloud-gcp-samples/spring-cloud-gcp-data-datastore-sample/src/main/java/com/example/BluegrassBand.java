@@ -16,7 +16,7 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
  * @author Chengyuan Zhao
  */
 @Entity
-@DiscriminationValue("bluegrass")
+@DiscriminatorValue("bluegrass")
 public class BluegrassBand extends Band {
 	public BluegrassBand(String name) {
 		super(name);
