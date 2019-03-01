@@ -4533,6 +4533,16 @@ public interface TradeRepository extends DatastoreRepository&lt;Trade, String[]&
 </thead>
 <tbody>
 <row>
+<entry align="left" valign="top"><simpara><literal>BeforeSaveEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately before save operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The entities to be sent to Cloud Datastore and the original Java objects being saved.</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><literal>AfterSaveEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately after save operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The entities sent to Cloud Datastore  and the original Java objects being saved.</simpara></entry>
+</row>
+<row>
 <entry align="left" valign="top"><simpara><literal>BeforeDeleteEvent</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>Published immediately before delete operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.</simpara></entry>
