@@ -143,17 +143,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public <T> T save(T instance, Key... ancestors) {
 		List<T> instances = Collections.singletonList(instance);
-		saveEntities(instances, saveAll(instances, new HashSet<>(), ancestors));
+		saveEntities(instances, getEntitiesForSave(instances, new HashSet<>(), ancestors));
 		return instance;
 	}
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
-		saveEntities((List<T>) entities, saveAll(entities, new HashSet<>(), ancestors));
+		saveEntities((List<T>) entities, getEntitiesForSave(entities, new HashSet<>(), ancestors));
 		return entities;
 	}
 
-	private <T> List<Entity> saveAll(Iterable<T> entities, Set<Key> persisted, Key... ancestors) {
+	private <T> List<Entity> getEntitiesForSave(Iterable<T> entities, Set<Key> persisted, Key... ancestors) {
 		List<Entity> entitiesForSave = new LinkedList<>();
 		for (T entity : entities) {
 			Key key = getKey(entity, true, ancestors);
@@ -397,13 +397,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		Builder builder = Entity.newBuilder(key);
 		List<Entity> entitiesToSave = new ArrayList<>();
 		this.datastoreEntityConverter.write(entity, builder);
-		entitiesToSave.addAll(saveDescendents(entity, key, persistedEntities));
-		entitiesToSave.addAll(saveReferences(entity, builder, persistedEntities));
+		entitiesToSave.addAll(getDescendantEntitiesForSave(entity, key, persistedEntities));
+		entitiesToSave.addAll(getReferenceEntitiesForSave(entity, builder, persistedEntities));
 		entitiesToSave.add(builder.build());
 		return entitiesToSave;
 	}
 
-	private List<Entity> saveReferences(Object entity, Builder builder, Set<Key> persistedEntities) {
+	private List<Entity> getReferenceEntitiesForSave(Object entity, Builder builder, Set<Key> persistedEntities) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
@@ -417,14 +417,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
 				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
-				entitiesToSave.addAll(saveAll(iterableVal, persistedEntities));
+				entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
 				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
 						.map((o) -> KeyValue.of(this.getKey(o, false)))
 						.collect(Collectors.toList());
 				value = ListValue.of(keyValues);
 			}
 			else {
-				entitiesToSave.addAll(saveAll(Collections.singletonList(val), persistedEntities));
+				entitiesToSave.addAll(getEntitiesForSave(Collections.singletonList(val), persistedEntities));
 				Key key = getKey(val, false);
 				value = KeyValue.of(key);
 			}
@@ -433,7 +433,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return entitiesToSave;
 	}
 
-	private List<Entity> saveDescendents(Object entity, Key key, Set<Key> persistedEntities) {
+	private List<Entity> getDescendantEntitiesForSave(Object entity, Key key, Set<Key> persistedEntities) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
@@ -446,7 +446,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 						//we can be sure that the property is an array or an iterable,
 						//because we check it in isDescendant
 						entitiesToSave
-								.addAll(saveAll((Iterable<?>) ValueUtil.toListIfArray(val), persistedEntities, key));
+								.addAll(getEntitiesForSave((Iterable<?>) ValueUtil.toListIfArray(val), persistedEntities, key));
 					}
 				});
 		return entitiesToSave;
