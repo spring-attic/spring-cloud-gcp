@@ -43,12 +43,13 @@ public class ReactiveController {
 	public Flux<? super String> getMessages() {
 
 		// TODO: autoconfigure and inject.
-		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template);
+		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template, 1000);
 
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= factory.createPolledPublisher("reactiveSubscription", 1000);
+				= factory.createPolledPublisher("reactiveSubscription");
 
 		return Flux.from(flux)
+				//.doOnSubscribe(s -> s.request(Long.MAX_VALUE))
 				.doOnNext(message -> message.ack())  // remove after merging master
 				//.limitRequest(5)	// example of finite flux, as requested by client
 				.map(message -> new String(
