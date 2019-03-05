@@ -79,6 +79,8 @@ public class GoogleStorageLocation {
 	 *    the location is to the bucket itself.
 	 */
 	public GoogleStorageLocation(String bucketName, String pathToFile) {
+		Assert.notNull(pathToFile, "The GCS path to a file/folder must not be null.");
+
 		try {
 			this.bucketName = bucketName;
 			this.blobName = pathToFile;
@@ -184,7 +186,7 @@ public class GoogleStorageLocation {
 
 	private static String getBlobPathFromUri(URI gcsUri) {
 		String uriPath = gcsUri.getPath();
-		if (uriPath.isEmpty() || uriPath.equals("/")) {
+		if (uriPath == null || uriPath.isEmpty() || uriPath.equals("/")) {
 			// This indicates that the path specifies the root of the bucket
 			return "";
 		}
