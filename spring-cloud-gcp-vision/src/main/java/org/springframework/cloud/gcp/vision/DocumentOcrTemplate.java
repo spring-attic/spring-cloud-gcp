@@ -170,7 +170,7 @@ public class DocumentOcrTemplate {
 						.sorted(Comparator.comparingInt(blob -> extractPageNumber(blob)))
 						.collect(Collectors.toList());
 
-		return new DocumentOcrResultSet(blobPages, this.storage);
+		return new DocumentOcrResultSet(blobPages);
 	}
 
 	/**

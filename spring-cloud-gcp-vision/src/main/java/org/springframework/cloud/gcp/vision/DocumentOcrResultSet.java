@@ -33,7 +33,7 @@ public class DocumentOcrResultSet {
 
 	private final List<Blob> pageBlobs;
 
-	public DocumentOcrResultSet(List<Blob> pages) {
+	DocumentOcrResultSet(List<Blob> pages) {
 		this.pageBlobs = pages;
 	}
 
