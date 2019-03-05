@@ -18,8 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
 import org.springframework.context.ApplicationEvent;
 
-import java.util.List;
-
 /**
  * An event published when entities are read from Cloud Datastore.
  *
@@ -27,20 +25,20 @@ import java.util.List;
  */
 public class ReadEvent extends ApplicationEvent {
 
-    /**
-     * Constructor.
-     * @param results A list of results from the read operation where each item was mapped from a Cloud Datastore
-     *                entity.
-     */
-    public ReadEvent(List results) {
-        super(results);
-    }
+	/**
+	 * Constructor.
+	 * @param results A list of results from the read operation where each item was mapped
+	 *     from a Cloud Datastore entity.
+	 */
+	public ReadEvent(Iterable results) {
+		super(results);
+	}
 
-    /**
-     * Get the list of results from the read operation.
-     * @return the list of results from the read operation.
-     */
-    public List getResults(){
-        return (List) getSource();
-    }
+	/**
+	 * Get the list of results from the read operation.
+	 * @return the list of results from the read operation.
+	 */
+	public Iterable getResults() {
+		return (Iterable) getSource();
+	}
 }
