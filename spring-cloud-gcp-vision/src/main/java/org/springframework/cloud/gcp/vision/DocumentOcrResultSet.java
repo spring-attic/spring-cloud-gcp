@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.vision;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
@@ -85,6 +86,10 @@ public class DocumentOcrResultSet {
 
 			@Override
 			public TextAnnotation next() {
+				if (!hasNext()) {
+					throw new NoSuchElementException("No more pages left in DocumentOcrResultSet.");
+				}
+
 				try {
 					TextAnnotation result = getPage(currentPage);
 					currentPage++;

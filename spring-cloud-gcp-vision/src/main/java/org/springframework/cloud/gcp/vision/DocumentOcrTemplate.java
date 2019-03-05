@@ -47,6 +47,7 @@ import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -60,12 +61,17 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  */
 public class DocumentOcrTemplate {
 
+	private static final Feature DOCUMENT_OCR_FEATURE = Feature.newBuilder()
+			.setType(Type.DOCUMENT_TEXT_DETECTION)
+			.build();
+
 	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-\\d+-to-\\d+\\.json");
 
 	private final ImageAnnotatorClient imageAnnotatorClient;
 
 	private final Storage storage;
 
+	@Autowired
 	public DocumentOcrTemplate(
 			ImageAnnotatorClient imageAnnotatorClient,
 			Storage storage) {
@@ -113,14 +119,7 @@ public class DocumentOcrTemplate {
 				.setUri(document.uriString())
 				.build();
 
-		Blob documentBlob = this.storage.get(
-				BlobId.of(document.getBucketName(), document.getBlobName()));
-		if (documentBlob == null) {
-			throw new IllegalArgumentException(
-					"Provided document does not exist: " + document);
-		}
-
-		String contentType = documentBlob.getContentType();
+		String contentType = extractContentType(document);
 		InputConfig inputConfig = InputConfig.newBuilder()
 				.setMimeType(contentType)
 				.setGcsSource(gcsSource)
@@ -132,15 +131,11 @@ public class DocumentOcrTemplate {
 
 		OutputConfig outputConfig = OutputConfig.newBuilder()
 				.setGcsDestination(gcsDestination)
-				.setBatchSize(1)
-				.build();
-
-		Feature feature = Feature.newBuilder()
-				.setType(Type.DOCUMENT_TEXT_DETECTION)
+				.setBatchSize(1) // Produces 1 JSON output file per page in document
 				.build();
 
 		AsyncAnnotateFileRequest request = AsyncAnnotateFileRequest.newBuilder()
-				.addFeatures(feature)
+				.addFeatures(DOCUMENT_OCR_FEATURE)
 				.setInputConfig(inputConfig)
 				.setOutputConfig(outputConfig)
 				.build();
@@ -234,6 +229,17 @@ public class DocumentOcrTemplate {
 		}, Runnable::run);
 
 		return result;
+	}
+
+	private String extractContentType(GoogleStorageLocation document) {
+		Blob documentBlob = this.storage.get(
+				BlobId.of(document.getBucketName(), document.getBlobName()));
+		if (documentBlob == null) {
+			throw new IllegalArgumentException(
+					"Provided document does not exist: " + document);
+		}
+
+		return documentBlob.getContentType();
 	}
 
 	private static int extractPageNumber(Blob blob) {
