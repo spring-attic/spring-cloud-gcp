@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -32,13 +31,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
  */
 public class DocumentOcrResultSet {
 
-	private final Storage storageClient;
-
 	private final List<Blob> pageBlobs;
 
-	public DocumentOcrResultSet(List<Blob> pages, Storage storageClient) {
+	public DocumentOcrResultSet(List<Blob> pages) {
 		this.pageBlobs = pages;
-		this.storageClient = storageClient;
 	}
 
 	/**
@@ -60,10 +56,14 @@ public class DocumentOcrResultSet {
 	 *
 	 * @param pageNumber the zero-indexed page number of the document
 	 * @return the {@link TextAnnotation} representing the page of the document
-	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be
-	 *     parsed
+	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be parsed
+	 *
 	 */
 	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
+		if (pageNumber >= getPageCount()) {
+			throw new IndexOutOfBoundsException("Page number out of bounds: " + pageNumber);
+		}
+
 		Blob pageBlob = this.pageBlobs.get(pageNumber);
 		return DocumentOcrTemplate.parseJsonBlob(pageBlob);
 	}
