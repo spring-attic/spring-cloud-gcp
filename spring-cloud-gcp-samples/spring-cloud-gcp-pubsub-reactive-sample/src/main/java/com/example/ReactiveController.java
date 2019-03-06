@@ -22,7 +22,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.reactive.PubSubReactiveFactory;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.http.MediaType;
@@ -30,28 +29,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Sample controller demonstrating an HTTP endpoint acquiring data from a reactive GCP Pub/Sub stream.
+ *
  * @author Elena Felder
+ *
  * @since 1.2
  */
 @RestController
 public class ReactiveController {
 
 	@Autowired
-	PubSubTemplate template;
+	PubSubReactiveFactory reactiveFactory;
 
 	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<? super String> getMessages() {
 
-		// TODO: autoconfigure and inject.
-		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template);
-
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= factory.createPolledPublisher("reactiveSubscription", 1000);
+				= this.reactiveFactory.createPolledPublisher("reactiveSubscription", 1000);
 
 		return Flux.from(flux)
-				//.doOnSubscribe(s -> s.request(Long.MAX_VALUE))
 				.doOnNext(message -> message.ack())  // remove after merging master
-				//.limitRequest(5)	// example of finite flux, as requested by client
 				.map(message -> new String(
 						message.getPubsubMessage().getData().toByteArray(),
 						Charset.defaultCharset()));

@@ -38,6 +38,7 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.threeten.bp.Duration;
+import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,6 +56,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
+import org.springframework.cloud.gcp.pubsub.reactive.PubSubReactiveFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
@@ -381,4 +383,12 @@ public class GcpPubSubAutoConfiguration {
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
 	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnClass(Flux.class)
+	public PubSubReactiveFactory pubSubReactiveFactory(PubSubSubscriberTemplate subscriberTemplate) {
+		return new PubSubReactiveFactory(subscriberTemplate);
+	}
+
 }
