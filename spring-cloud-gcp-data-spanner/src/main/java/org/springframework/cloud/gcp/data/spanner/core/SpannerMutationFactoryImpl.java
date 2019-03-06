@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -139,7 +140,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 				Iterable kids = (Iterable) persistentEntity.getPropertyAccessor(object)
 						.getProperty(spannerPersistentProperty);
-				if (kids != null) {
+
+				if (kids != null && !ConversionUtils.ignoreForWriteLazyProxy(kids)) {
 					for (Object child : kids) {
 						verifyChildHasParentId(persistentEntity, object,
 								this.spannerMappingContext.getPersistentEntity(

@@ -48,7 +48,8 @@ public class AppEngineAudienceProvider implements AudienceProvider {
 	@Override
 	public String getAudience() {
 		Project project = this.resourceManager.get(this.projectIdProvider.getProjectId());
-		Assert.notNull(project, "Project expected not to be null.");
+		Assert.notNull(project,
+				"Project expected not to be null. Is Cloud Resource Manager API enabled? (https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com)");
 		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
 
 		String projectId = this.projectIdProvider.getProjectId();

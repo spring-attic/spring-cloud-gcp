@@ -186,6 +186,12 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isLazyInterleaved() {
+		Interleaved annotation = findAnnotation(Interleaved.class);
+		return annotation != null && annotation.lazy();
+	}
+
+	@Override
 	public boolean isIdProperty() {
 		return false;
 	}

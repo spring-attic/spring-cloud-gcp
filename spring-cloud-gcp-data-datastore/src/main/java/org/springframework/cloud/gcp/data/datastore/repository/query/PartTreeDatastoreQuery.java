@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -43,6 +44,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -127,8 +129,19 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			return executeSliceQuery(parameters);
 		}
 
-		return execute(parameters, returnedObjectType,
+		Object result = execute(parameters, returnedObjectType,
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
+
+		if (result == null) {
+			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
+				return Optional.empty();
+			}
+
+			if (!((DatastoreQueryMethod) getQueryMethod()).isNullable()) {
+				throw new EmptyResultDataAccessException("Expecting at least 1 result, but none found", 1);
+			}
+		}
+		return result;
 	}
 
 	protected boolean isPageQuery() {
@@ -164,8 +177,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
+		boolean singularResult = !isCountingQuery && collectionType == null;
 		Iterable rawResults = getDatastoreTemplate()
-				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType);
+				.queryKeysOrEntities(
+						applyQueryBody(parameters, structredQueryBuilder, total, singularResult),
+						this.entityType);
 
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
 
@@ -180,7 +196,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private Slice executeSliceQuery(Object[] parameters) {
 		EntityQuery.Builder builder = StructuredQuery.newEntityQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery query = applyQueryBody(parameters, builder, false);
+		StructuredQuery query = applyQueryBody(parameters, builder, false, false);
 		List items = this.datastoreTemplate.query((query), (x) -> x);
 		Integer limit = (query.getLimit() == null) ? null : query.getLimit() - 1;
 
@@ -203,6 +219,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	protected Object convertResultCollection(Object result, Class<?> collectionType) {
+		if (collectionType == null) {
+			List list = (List) result;
+			return list.isEmpty() ? null : list.get(0);
+		}
 		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
 				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());
 	}
@@ -217,7 +237,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
-			StructuredQuery.Builder builder, boolean total) {
+			Builder builder, boolean total, boolean singularResult) {
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 		if (this.tree.hasPredicate()) {
 			applySelectWithFilter(parameters, builder);
@@ -225,7 +245,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		Integer limit = null;
 		Integer offset = null;
-		if (this.tree.isExistsProjection()) {
+		if (singularResult || this.tree.isExistsProjection()) {
 			limit = 1;
 		}
 		else if (this.tree.isLimiting()) {

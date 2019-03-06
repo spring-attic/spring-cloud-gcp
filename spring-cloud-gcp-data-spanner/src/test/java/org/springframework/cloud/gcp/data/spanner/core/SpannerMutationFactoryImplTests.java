@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
@@ -102,6 +103,45 @@ public class SpannerMutationFactoryImplTests {
 		for (Mutation childMutation : childMutations) {
 			assertThat(childMutation.getTable()).isEqualTo("child_test_table");
 			assertThat(childMutation.getOperation()).isEqualTo(writeMethod);
+		}
+	}
+
+	@Test
+	public void lazyWriteTest() {
+		TestEntity t = new TestEntity();
+		t.id = "a";
+		ChildEntity c1 = new ChildEntity();
+		c1.keyComponents = new EmbeddedKeyComponents();
+		c1.keyComponents.id = t.id;
+		c1.keyComponents.id2 = "c2";
+		ChildEntity c2 = new ChildEntity();
+		c2.keyComponents = new EmbeddedKeyComponents();
+		c2.keyComponents.id = t.id;
+		c2.keyComponents.id2 = "c3";
+
+		// intentionally setting it as an untouched-proxy
+		t.childEntities = ConversionUtils.wrapSimpleLazyProxy(() -> Arrays.asList(c1, c2), List.class);
+
+		List<Mutation> mutations = this.spannerMutationFactory.upsert(t, null);
+		Mutation parentMutation = mutations.get(0);
+
+		// The size is 1 because the child is an un-evaluated proxy.
+		assertThat(mutations).hasSize(1);
+		assertThat(parentMutation.getTable()).isEqualTo("custom_test_table");
+		assertThat(parentMutation.getOperation()).isEqualTo(Op.INSERT_OR_UPDATE);
+
+		t.childEntities.size();
+
+		// mutations should now be generated since the child proxy has been touched.
+		mutations = this.spannerMutationFactory.upsert(t, null);
+		parentMutation = mutations.get(0);
+		assertThat(mutations).hasSize(3);
+		List<Mutation> childMutations = mutations.subList(1, mutations.size());
+		assertThat(parentMutation.getTable()).isEqualTo("custom_test_table");
+		assertThat(parentMutation.getOperation()).isEqualTo(Op.INSERT_OR_UPDATE);
+		for (Mutation childMutation : childMutations) {
+			assertThat(childMutation.getTable()).isEqualTo("child_test_table");
+			assertThat(childMutation.getOperation()).isEqualTo(Op.INSERT_OR_UPDATE);
 		}
 	}
 
