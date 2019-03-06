@@ -14,25 +14,44 @@
  * limitations under the License.
  */
 
-
 package org.springframework.cloud.gcp.autoconfigure.datastore.health;
+
+import com.google.cloud.datastore.Datastore;
 
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.health.HealthIndicatorAutoConfiguration;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 /**
- * {@link HealthIndicatorAutoConfiguration Auto-configuration} * for {@link
- * DatastoreHealthIndicatorConfiguration}.
+ * {@link HealthIndicatorAutoConfiguration Auto-configuration} * for
+ * {@link DatastoreHealthIndicator}.
  *
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
+ * @author Mike Eltsufin
+ *
+ * @since 1.2
  */
 @Configuration
+@ConditionalOnClass(Datastore.class)
+@ConditionalOnBean(Datastore.class)
 @ConditionalOnEnabledHealthIndicator("datastore")
 @AutoConfigureBefore(HealthIndicatorAutoConfiguration.class)
-@Import(DatastoreHealthIndicatorConfiguration.class)
+@AutoConfigureAfter(GcpDatastoreAutoConfiguration.class)
 public class DatastoreHealthIndicatorAutoConfiguration {
+
+	@Bean
+	@ConditionalOnMissingBean
+	public HealthIndicator datastoreHealthIndicator(Datastore datastore) {
+		return new DatastoreHealthIndicator(datastore);
+	}
+
 }

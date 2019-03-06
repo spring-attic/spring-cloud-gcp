@@ -28,11 +28,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 /**
- * Simple implementation of a {@link HealthIndicator} returning status information for Google
+ * A simple implementation of a {@link HealthIndicator} returning status information for Google
  * Cloud Datastore.
  *
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
+ * @author Mike Eltsufin
+ *
+ * @since 1.2
  */
 @Component
 public class DatastoreHealthIndicator extends AbstractHealthIndicator {
@@ -48,20 +51,13 @@ public class DatastoreHealthIndicator extends AbstractHealthIndicator {
 	 */
 	public DatastoreHealthIndicator(final Datastore datastore) {
 		super("Datastore health check failed");
-		this.datastore = datastore;
 		Assert.notNull(datastore, "Datastore must not be null");
+		this.datastore = datastore;
 	}
 
 	@Override
 	protected void doHealthCheck(Health.Builder builder) throws Exception {
-		try {
-			datastore.run(Query.newKeyQueryBuilder().setKind("__Stat_Total__").build());
-			builder.status(DATASTORE_HEALTH);
-			builder.up();
-		}
-		catch (Exception ex) {
-			builder.down();
-			throw ex;
-		}
+		datastore.run(Query.newKeyQueryBuilder().setKind("__Stat_Total__").build());
+		builder.up();
 	}
 }

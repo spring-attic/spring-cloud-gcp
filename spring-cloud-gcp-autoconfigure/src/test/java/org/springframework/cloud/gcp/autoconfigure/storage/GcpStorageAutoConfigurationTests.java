@@ -72,8 +72,8 @@ public class GcpStorageAutoConfigurationTests {
 	@Test
 	public void testValidObject() throws Exception {
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
-		Content actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Content.class);
-		assertThat(actual.getContentLength()).isEqualTo(null);
+		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
+		assertThat(actual).isEqualTo(4096);
 	}
 
 	@Test
@@ -99,7 +99,7 @@ public class GcpStorageAutoConfigurationTests {
 		private Resource remoteResource;
 
 		@GetMapping("/resource")
-		public Long getResource() throws IOException {
+		public long getResource() throws IOException {
 			return this.remoteResource.contentLength();
 		}
 
