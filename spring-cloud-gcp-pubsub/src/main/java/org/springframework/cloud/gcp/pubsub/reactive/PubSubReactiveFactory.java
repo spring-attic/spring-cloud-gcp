@@ -66,7 +66,6 @@ public final class PubSubReactiveFactory {
 
 		return Flux.<AcknowledgeablePubsubMessage>create(sink -> {
 			sink.onRequest((numRequested) -> {
-				System.out.println("****  " + this.toString() + " " + numRequested + " Requested ");
 				if (numRequested == Long.MAX_VALUE) {
 					// unlimited demand
 					Disposable task = Schedulers.single().schedulePeriodically(
@@ -101,7 +100,6 @@ public final class PubSubReactiveFactory {
 					this.subscriptionName, numMessagesToPull, !block);
 
 			if (messages.size() > 0) {
-				System.out.println("**** " + this.toString() + " Retrieved " + messages.size() + " messages. ");
 				messages.forEach(sink::next);
 			}
 
@@ -127,7 +125,6 @@ public final class PubSubReactiveFactory {
 			while (demand > 0 && !this.sink.isCancelled()) {
 				try {
 					messages = pullToSink(demand, true);
-					System.out.println("**** " + this.toString() + " decreasing demand from  " + demand + " to " + (demand - messages.size()));
 					demand -= messages.size();
 				}
 				catch (DeadlineExceededException e) {
@@ -135,7 +132,6 @@ public final class PubSubReactiveFactory {
 				}
 			}
 
-			System.out.println("**** " + this.toString() + " Completed fulfilling demand of initial size " + this.initialDemand);
 		}
 
 	}
