@@ -256,7 +256,7 @@ public class GoogleStorageResource implements WritableResource {
 	public GoogleStorageResource createRelative(String relativePath) throws IOException {
 		return new GoogleStorageResource(
 				this.storage,
-				this.location.uri().resolve(relativePath).toString(),
+				getURI().resolve(relativePath).toString(),
 				this.autoCreateFiles);
 	}
 
