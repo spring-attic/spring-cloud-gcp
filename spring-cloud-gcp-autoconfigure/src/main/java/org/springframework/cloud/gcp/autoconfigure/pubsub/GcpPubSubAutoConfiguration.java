@@ -18,8 +18,6 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -65,6 +63,7 @@ import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConve
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * Auto-config for Pub/Sub.
@@ -113,28 +112,34 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "pubsubPublisherThreadPool")
-	public ScheduledExecutorService pubsubPublisherThreadPool() {
-		return Executors.newScheduledThreadPool(this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
+	public ThreadPoolTaskScheduler pubsubPublisherThreadPool() {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(this.gcpPubSubProperties.getPublisher().getExecutorThreads());
+		scheduler.setThreadNamePrefix("gcp-pubsub-publisher");
+		return scheduler;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherExecutorProvider")
 	public ExecutorProvider publisherExecutorProvider(
-			@Qualifier("pubsubPublisherThreadPool") ScheduledExecutorService executorService) {
-		return FixedExecutorProvider.create(executorService);
+			@Qualifier("pubsubPublisherThreadPool") ThreadPoolTaskScheduler scheduler) {
+		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "pubsubSubscriberThreadPool")
-	public ScheduledExecutorService pubsubSubscriberThreadPool() {
-		return Executors.newScheduledThreadPool(this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
+	public ThreadPoolTaskScheduler pubsubSubscriberThreadPool() {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
+		scheduler.setThreadNamePrefix("gcp-pubsub-subscriber");
+		return scheduler;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberExecutorProvider")
 	public ExecutorProvider subscriberExecutorProvider(
-			@Qualifier("pubsubSubscriberThreadPool") ScheduledExecutorService executorService) {
-		return FixedExecutorProvider.create(executorService);
+			@Qualifier("pubsubSubscriberThreadPool") ThreadPoolTaskScheduler scheduler) {
+		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
 	@Bean
@@ -151,6 +156,7 @@ public class GcpPubSubAutoConfiguration {
 	public Executor pubSubAcknowledgementExecutor() {
 		ThreadPoolTaskExecutor ackExecutor = new ThreadPoolTaskExecutor();
 		ackExecutor.setMaxPoolSize(this.gcpPubSubProperties.getSubscriber().getMaxAcknowledgementThreads());
+		ackExecutor.setThreadNamePrefix("gcp-pubsub-ack-executor");
 		return ackExecutor;
 	}
 
