@@ -197,7 +197,7 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void unspecifiedParametersTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("The number of tags does match the number of params.");
+		this.expectedEx.expectMessage("The number of tags does not match the number of params.");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
