@@ -60,7 +60,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  */
 public class DocumentOcrTemplate {
 
-	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-\\d+-to-\\d+\\.json");
+	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-(\\d+)-to-\\d+\\.json");
 
 	private final ImageAnnotatorClient imageAnnotatorClient;
 
