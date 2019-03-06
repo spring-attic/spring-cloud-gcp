@@ -59,8 +59,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterKeyReadEvent;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryReadEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterFindByKeyEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
@@ -218,7 +218,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private <T> Collection<T> performFindByKey(Iterable<?> ids, Class<T> entityClass) {
 		Set<Key> keys = getKeysFromIds(ids, entityClass);
 		List<T> results = findAllById(keys, entityClass, new ReadContext());
-		maybeEmitEvent(new AfterKeyReadEvent(results, keys));
+		maybeEmitEvent(new AfterFindByKeyEvent(results, keys));
 		return results;
 	}
 
@@ -242,7 +242,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
 		Iterable<T> results = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
-		maybeEmitEvent(new AfterQueryReadEvent(results, query));
+		maybeEmitEvent(new AfterQueryEvent(results, query));
 		return results;
 	}
 
@@ -259,7 +259,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		QueryResults queryResults = getDatastoreReadWriter().run(query);
 		Iterable<?> convertedResults = queryResults.getResultClass() == Key.class ? () -> queryResults
 				: convertEntitiesForRead(queryResults, entityClass);
-		maybeEmitEvent(new AfterQueryReadEvent(convertedResults, query));
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
 		return convertedResults;
 	}
 
@@ -268,14 +268,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		List<T> results = new ArrayList<>();
 		getDatastoreReadWriter().run(query)
 				.forEachRemaining((x) -> results.add(entityFunc.apply(x)));
-		maybeEmitEvent(new AfterQueryReadEvent(results, query));
+		maybeEmitEvent(new AfterQueryEvent(results, query));
 		return results;
 	}
 
 	@Override
 	public Iterable<Key> queryKeys(Query<Key> query) {
 		Iterable<Key> keys = () -> getDatastoreReadWriter().run(query);
-		maybeEmitEvent(new AfterQueryReadEvent(keys, query));
+		maybeEmitEvent(new AfterQueryEvent(keys, query));
 		return keys;
 	}
 
@@ -293,7 +293,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	public <T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
 		Query query = exampleToQuery(example, queryOptions, true);
 		Iterable<Key> results = () -> getDatastoreReadWriter().run(query);
-		maybeEmitEvent(new AfterQueryReadEvent(results, query));
+		maybeEmitEvent(new AfterQueryEvent(results, query));
 		return results;
 	}
 
@@ -305,7 +305,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		applyQueryOptions(builder, queryOptions, persistentEntity);
 		Query query = builder.build();
 		Collection<T> convertedResults = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
-		maybeEmitEvent(new AfterQueryReadEvent(convertedResults, query));
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
 		return convertedResults;
 	}
 

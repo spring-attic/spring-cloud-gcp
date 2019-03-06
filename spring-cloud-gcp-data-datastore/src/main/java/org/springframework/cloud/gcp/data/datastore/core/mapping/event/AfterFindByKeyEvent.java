@@ -26,7 +26,7 @@ import com.google.cloud.datastore.Key;
  *
  * @author Chengyuan Zhao
  */
-public class AfterKeyReadEvent extends ReadEvent {
+public class AfterFindByKeyEvent extends ReadEvent {
 
 	private final Set<Key> targetKeys;
 
@@ -37,7 +37,7 @@ public class AfterKeyReadEvent extends ReadEvent {
 	 *     from a Cloud Datastore entity.
 	 * @param keys The Keys that were attempted to be read.
 	 */
-	public AfterKeyReadEvent(Iterable results, Set<Key> keys) {
+	public AfterFindByKeyEvent(Iterable results, Set<Key> keys) {
 		super(results);
 		this.targetKeys = keys;
 	}
@@ -58,7 +58,7 @@ public class AfterKeyReadEvent extends ReadEvent {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		AfterKeyReadEvent that = (AfterKeyReadEvent) o;
+		AfterFindByKeyEvent that = (AfterFindByKeyEvent) o;
 		return Objects.equals(getResults(), that.getResults())
 				&& Objects.equals(getTargetKeys(), that.getTargetKeys());
 	}

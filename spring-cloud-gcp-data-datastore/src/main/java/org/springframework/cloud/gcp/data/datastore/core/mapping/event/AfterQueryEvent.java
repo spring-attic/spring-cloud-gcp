@@ -25,7 +25,7 @@ import com.google.cloud.datastore.Query;
  *
  * @author Chengyuan Zhao
  */
-public class AfterQueryReadEvent extends ReadEvent {
+public class AfterQueryEvent extends ReadEvent {
 
 	private final Query query;
 
@@ -36,7 +36,7 @@ public class AfterQueryReadEvent extends ReadEvent {
 	 *     from a Cloud Datastore entity.
 	 * @param query The query run on Cloud Datastore.
 	 */
-	public AfterQueryReadEvent(Iterable results, Query query) {
+	public AfterQueryEvent(Iterable results, Query query) {
 		super(results);
 		this.query = query;
 	}
@@ -57,7 +57,7 @@ public class AfterQueryReadEvent extends ReadEvent {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		AfterQueryReadEvent that = (AfterQueryReadEvent) o;
+		AfterQueryEvent that = (AfterQueryEvent) o;
 		return Objects.equals(getResults(), that.getResults())
 				&& Objects.equals(getQuery(), that.getQuery());
 	}
