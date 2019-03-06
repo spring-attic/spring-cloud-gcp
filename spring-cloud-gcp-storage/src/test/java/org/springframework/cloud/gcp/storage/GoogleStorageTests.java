@@ -133,8 +133,9 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testSpecifyBucketCorrect() {
+		GoogleStorageLocation location = GoogleStorageLocation.forBucket("test-spring");
 		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
-				this.storage, "test-spring", null, false);
+				this.storage, location, false);
 
 		Assert.assertTrue(googleStorageResource.isBucket());
 		Assert.assertEquals("test-spring", googleStorageResource.getBucket().getName());
@@ -144,9 +145,8 @@ public class GoogleStorageTests {
 	@Test
 	public void testSpecifyPathCorrect() {
 		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
-				this.storage, "test-spring", "images/spring.png", false);
+				this.storage, "gs://test-spring/images/spring.png", false);
 
-		Assert.assertTrue(googleStorageResource.isFile());
 		Assert.assertTrue(googleStorageResource.exists());
 	}
 
