@@ -28,7 +28,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
-import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.cloud.gcp.vision.DocumentOcrTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,19 +44,6 @@ public class VisionTestConfiguration {
 		this.credentialsProvider = new DefaultCredentialsProvider(Credentials::new);
 	}
 
-	/**
-	 * Configure the Cloud Vision API client {@link ImageAnnotatorClient}. The
-	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides
-	 * the GCP credentials, required to authenticate and authorize Vision API calls.
-	 * <p>
-	 * Cloud Vision API client implements {@link AutoCloseable}, which is automatically
-	 * honored by Spring bean lifecycle.
-	 * <p>
-	 * Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
-	 * to produce a singleton and re-using the client object for multiple requests.
-	 * @return a Cloud Vision API client
-	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
-	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
@@ -66,12 +52,6 @@ public class VisionTestConfiguration {
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public CloudVisionTemplate cloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
-		return new CloudVisionTemplate(imageAnnotatorClient);
 	}
 
 	@Bean
