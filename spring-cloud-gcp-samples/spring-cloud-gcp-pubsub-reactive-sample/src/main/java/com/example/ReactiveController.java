@@ -45,10 +45,13 @@ public class ReactiveController {
 	public Flux<? super String> getMessages() {
 
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= this.reactiveFactory.createPolledPublisher("reactiveSubscription", 1000);
+				= this.reactiveFactory.createPolledPublisher("exampleSubscription", 1000);
 
 		return Flux.from(flux)
-				.doOnNext(message -> message.ack())  // remove after merging master
+				.doOnNext(message -> {
+					System.out.println("Received a message: " + message.getPubsubMessage().getMessageId());
+					message.ack();
+				})
 				.map(message -> new String(
 						message.getPubsubMessage().getData().toByteArray(),
 						Charset.defaultCharset()));
