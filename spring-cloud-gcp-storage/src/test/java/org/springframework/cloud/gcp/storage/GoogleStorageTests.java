@@ -138,6 +138,7 @@ public class GoogleStorageTests {
 				this.storage, location, false);
 
 		Assert.assertTrue(googleStorageResource.isBucket());
+		Assert.assertEquals("test-spring", googleStorageResource.getBucketName());
 		Assert.assertEquals("test-spring", googleStorageResource.getBucket().getName());
 		Assert.assertTrue(googleStorageResource.exists());
 	}
