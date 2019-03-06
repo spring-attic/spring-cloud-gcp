@@ -43,10 +43,10 @@ public class ReactiveController {
 	public Flux<? super String> getMessages() {
 
 		// TODO: autoconfigure and inject.
-		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template, 1000);
+		PubSubReactiveFactory factory = new PubSubReactiveFactory(this.template);
 
 		Publisher<AcknowledgeablePubsubMessage> flux
-				= factory.createPolledPublisher("reactiveSubscription");
+				= factory.createPolledPublisher("reactiveSubscription", 1000);
 
 		return Flux.from(flux)
 				//.doOnSubscribe(s -> s.request(Long.MAX_VALUE))

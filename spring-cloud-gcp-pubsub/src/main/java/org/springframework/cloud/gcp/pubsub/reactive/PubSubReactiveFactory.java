@@ -32,7 +32,7 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 
 /**
- * Creates a Flux respecting backpressure by way of Pub/Sub Synchronous Pull.
+ * Creates a GCP Pub/Sub Subscription-backed Flux respecting backpressure by way of Pub/Sub Synchronous Pull.
  *
  * @author Elena Felder
  *
@@ -44,34 +44,29 @@ public final class PubSubReactiveFactory {
 
 	private PubSubSubscriberOperations subscriberOperations;
 
-	private long pollingPeriod;
-
 	/**
-	 * Instantiates `PubSubReactiveFactory` with a `PubSubSubscriberOperations` template for interacting with GCP Pub/Sub,
-	 * and a default polling period to use in case of infinite demand.
+	 * Instantiates `PubSubReactiveFactory` capable of generating subscription-based streams.
 	 *
 	 * @param subscriberOperations template for interacting with GCP Pub/Sub subscriber operations.
-	 * @param pollingPeriod amount of time to wait between polling attempts, in milliseconds.
 	 */
-	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations, long pollingPeriod) {
+	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations) {
 		this.subscriberOperations = subscriberOperations;
-		this.pollingPeriod = pollingPeriod;
 	}
 
 	/**
 	 * Creates an infinite stream {@link Publisher} of {@link AcknowledgeablePubsubMessage} objects.
-	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval, specified at
-	 * `PubSubReactiveFactory` creation time.
+	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval.
 	 * <p>For specific demand, as many messages as are available will be returned immediately, with remaining demand being
 	 * fulfilled in the future. Pub/Sub timeout will cause a retry with the same demand.
 	 * @param subscriptionName subscription from which to retrieve messages.
-	 * @return unlimited stream of {@link AcknowledgeablePubsubMessage} objects.
+	 * @param pollingPeriod how frequently to poll the source subscription in case of unlimited demand.
+	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
 	 */
-	public Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(String subscriptionName) {
+	public Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(String subscriptionName, long pollingPeriod) {
 
 		return Flux.<AcknowledgeablePubsubMessage>create(sink -> {
 			sink.onRequest((numRequested) -> {
-				LOGGER.info("****  " + this.toString() + " " + numRequested + " Requested ");
+				System.out.println("****  " + this.toString() + " " + numRequested + " Requested ");
 				if (numRequested == Long.MAX_VALUE) {
 					// unlimited demand
 					Disposable task = Schedulers.single().schedulePeriodically(
@@ -106,7 +101,7 @@ public final class PubSubReactiveFactory {
 					this.subscriptionName, numMessagesToPull, !block);
 
 			if (messages.size() > 0) {
-				LOGGER.info("**** unbounded: " + this.toString() + " Retrieved " + messages.size() + " messages. ");
+				System.out.println("**** " + this.toString() + " Retrieved " + messages.size() + " messages. ");
 				messages.forEach(sink::next);
 			}
 
@@ -132,7 +127,7 @@ public final class PubSubReactiveFactory {
 			while (demand > 0 && !this.sink.isCancelled()) {
 				try {
 					messages = pullToSink(demand, true);
-					LOGGER.info("**** " + this.toString() + " decreasing demand from  " + demand + " to " + (demand - messages.size()));
+					System.out.println("**** " + this.toString() + " decreasing demand from  " + demand + " to " + (demand - messages.size()));
 					demand -= messages.size();
 				}
 				catch (DeadlineExceededException e) {
@@ -140,7 +135,7 @@ public final class PubSubReactiveFactory {
 				}
 			}
 
-			LOGGER.info("**** " + this.toString() + " Completed fulfilling demand of initial size " + this.initialDemand);
+			System.out.println("**** " + this.toString() + " Completed fulfilling demand of initial size " + this.initialDemand);
 		}
 
 	}
