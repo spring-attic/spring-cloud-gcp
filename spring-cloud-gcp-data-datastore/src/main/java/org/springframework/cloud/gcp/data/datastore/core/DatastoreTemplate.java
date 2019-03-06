@@ -59,6 +59,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterFindByKeyEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
@@ -132,11 +134,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
-		return findById(id, entityClass, new ReadContext());
-	}
-
-	private  <T> T findById(Object id, Class<T> entityClass, ReadContext context) {
-		Iterator<T> results = findAllById(Collections.singleton(id), entityClass, context).iterator();
+		Iterator<T> results = performFindByKey(Collections.singleton(id), entityClass).iterator();
 		return results.hasNext() ? results.next() : null;
 	}
 
@@ -214,11 +212,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
-		return findAllById(ids, entityClass, new ReadContext());
+		return performFindByKey(ids, entityClass);
 	}
 
-	private <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass, ReadContext context) {
-		List<Key> keys = getKeysFromIds(ids, entityClass);
+	private <T> Collection<T> performFindByKey(Iterable<?> ids, Class<T> entityClass) {
+		Set<Key> keys = getKeysFromIds(ids, entityClass);
+		List<T> results = findAllById(keys, entityClass, new ReadContext());
+		maybeEmitEvent(new AfterFindByKeyEvent(results, keys));
+		return results;
+	}
+
+	private <T> List<T> findAllById(Set<Key> keys, Class<T> entityClass, ReadContext context) {
 		List<Key> missingKeys = keys.stream().filter(context::notCached).collect(Collectors.toList());
 
 		if (!missingKeys.isEmpty()) {
@@ -237,7 +241,9 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
-		return convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		Iterable<T> results = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		maybeEmitEvent(new AfterQueryEvent(results, query));
+		return results;
 	}
 
 	/**
@@ -250,11 +256,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	 * empty.
 	 */
 	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
-		QueryResults results = getDatastoreReadWriter().run(query);
-		if (results.getResultClass() == Key.class) {
-			return () -> results;
-		}
-		return convertEntitiesForRead(results, entityClass);
+		QueryResults queryResults = getDatastoreReadWriter().run(query);
+		Iterable<?> convertedResults = queryResults.getResultClass() == Key.class ? () -> queryResults
+				: convertEntitiesForRead(queryResults, entityClass);
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
+		return convertedResults;
 	}
 
 	@Override
@@ -262,12 +268,15 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		List<T> results = new ArrayList<>();
 		getDatastoreReadWriter().run(query)
 				.forEachRemaining((x) -> results.add(entityFunc.apply(x)));
+		maybeEmitEvent(new AfterQueryEvent(results, query));
 		return results;
 	}
 
 	@Override
 	public Iterable<Key> queryKeys(Query<Key> query) {
-		return () -> getDatastoreReadWriter().run(query);
+		Iterable<Key> keys = () -> getDatastoreReadWriter().run(query);
+		maybeEmitEvent(new AfterQueryEvent(keys, query));
+		return keys;
 	}
 
 	@Override
@@ -282,8 +291,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
-		QueryResults results = this.datastore.run(exampleToQuery(example, queryOptions, true));
-		return () -> results;
+		Query query = exampleToQuery(example, queryOptions, true);
+		Iterable<Key> results = () -> getDatastoreReadWriter().run(query);
+		maybeEmitEvent(new AfterQueryEvent(results, query));
+		return results;
 	}
 
 	@Override
@@ -292,8 +303,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
 		applyQueryOptions(builder, queryOptions, persistentEntity);
-
-		return convertEntitiesForRead(getDatastoreReadWriter().run(builder.build()), entityClass);
+		Query query = builder.build();
+		Collection<T> convertedResults = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
+		return convertedResults;
 	}
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
@@ -571,13 +584,15 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				referenced = this.datastoreEntityConverter.getConversions()
 						.convertOnRead(
 								findAllById(
-										keyValues.stream().map(Value::get).collect(Collectors.toList()),
+										keyValues.stream().map(Value::get).collect(Collectors.toSet()),
 										referencedType, context),
 								referencePersistentProperty.getType(),
 								referencedType);
 			}
 			else {
-				referenced = findById(entity.getKey(fieldName), referencePersistentProperty.getType(), context);
+				List referencedList = findAllById(Collections.singleton(entity.getKey(fieldName)),
+						referencePersistentProperty.getType(), context);
+				referenced = referencedList.isEmpty() ? null : referencedList.get(0);
 			}
 			return referenced;
 		}
@@ -642,8 +657,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				false).toArray(Key[]::new);
 	}
 
-	private <T> List<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
-		List<Key> keys = new ArrayList<>();
+	private <T> Set<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
+		Set<Key> keys = new HashSet<>();
 		ids.forEach((x) -> keys.add(getKeyFromId(x, entityClass)));
 		return keys;
 	}

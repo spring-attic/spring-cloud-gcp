@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorFi
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterFindByKeyEvent;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
@@ -367,25 +370,38 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdTest() {
-		TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);
-		assertThat(result).isEqualTo(this.ob1);
-		assertThat(result.childEntities).contains(this.childEntity1);
-		assertThat(this.childEntity1).isEqualTo(result.singularReference);
-		assertThat(result.multipleReference).contains(this.childEntity1);
+		verifyBeforeAndAfterEvents(null,
+				new AfterFindByKeyEvent(Arrays.asList(this.ob1), Collections.singleton(this.key1)),
+				() -> {
+					TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);
+					assertThat(result).isEqualTo(this.ob1);
+					assertThat(result.childEntities).contains(this.childEntity1);
+					assertThat(this.childEntity1).isEqualTo(result.singularReference);
+					assertThat(result.multipleReference).contains(this.childEntity1);
+				}, x -> {
+				});
 	}
 
 	@Test
 	public void findByIdNotFoundTest() {
 		when(this.datastore.fetch(ArgumentMatchers.<Key[]>any())).thenReturn(Collections.singletonList(null));
-		assertThat(this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class)).isNull();
+		verifyBeforeAndAfterEvents(null, new AfterFindByKeyEvent(Collections.emptyList(), Collections.singleton(null)),
+				() -> assertThat(this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class)).isNull(),
+				x -> {
+				});
 	}
 
 	@Test
 	public void findAllByIdTest() {
-		when(this.datastore.fetch(eq(this.key1), eq(this.key2)))
+		when(this.datastore.fetch(eq(this.key2), eq(this.key1)))
 				.thenReturn(Arrays.asList(this.e1, this.e2));
 		List<Key> keys = Arrays.asList(this.key1, this.key2);
-		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1, this.ob2);
+
+		verifyBeforeAndAfterEvents(null, new AfterFindByKeyEvent(Arrays.asList(this.ob1, this.ob2), new HashSet<>(keys)),
+				() -> assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1,
+						this.ob2),
+				x -> {
+				});
 	}
 
 	@Test
@@ -395,24 +411,28 @@ public class DatastoreTemplateTests {
 		when(this.datastore.fetch(eq(this.key1)))
 				.thenReturn(Arrays.asList(this.e1));
 
-		TestEntity parentEntity1 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
-		assertThat(parentEntity1).isSameAs(this.ob1);
-		ChildEntity singularReference1 = parentEntity1.singularReference;
-		ChildEntity childEntity1 = parentEntity1.childEntities.get(0);
-		assertThat(singularReference1).isSameAs(childEntity1);
+		verifyBeforeAndAfterEvents(null,
+				new AfterFindByKeyEvent(Collections.singletonList(this.ob1), Collections.singleton(this.key1)),
+				() -> {
+					TestEntity parentEntity1 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
+					assertThat(parentEntity1).isSameAs(this.ob1);
+					ChildEntity singularReference1 = parentEntity1.singularReference;
+					ChildEntity childEntity1 = parentEntity1.childEntities.get(0);
+					assertThat(singularReference1).isSameAs(childEntity1);
 
-		TestEntity parentEntity2 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
-		assertThat(parentEntity2).isSameAs(this.ob1);
-		ChildEntity singularReference2 = parentEntity2.singularReference;
-		ChildEntity childEntity2 = parentEntity2.childEntities.get(0);
-		assertThat(singularReference2).isSameAs(childEntity2);
+					TestEntity parentEntity2 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
+					assertThat(parentEntity2).isSameAs(this.ob1);
+					ChildEntity singularReference2 = parentEntity2.singularReference;
+					ChildEntity childEntity2 = parentEntity2.childEntities.get(0);
+					assertThat(singularReference2).isSameAs(childEntity2);
 
-		assertThat(childEntity1).isNotSameAs(childEntity2);
+					assertThat(childEntity1).isNotSameAs(childEntity2);
+				}, x -> {
+				});
 	}
 
 	@Test
 	public void findAllReferenceLoopTest() {
-
 
 		Entity referenceTestDatastoreEntity = Entity.newBuilder(this.key1)
 				.set("sibling", this.key1)
@@ -421,12 +441,20 @@ public class DatastoreTemplateTests {
 		when(this.datastore.fetch(eq(this.key1)))
 				.thenReturn(Arrays.asList(referenceTestDatastoreEntity));
 
+		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
+
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(referenceTestDatastoreEntity)))
-				.thenAnswer(invocationOnMock -> new ReferenceTestEntity());
+				.thenAnswer(invocationOnMock -> referenceTestEntity);
 
-		ReferenceTestEntity readReferenceTestEntity = this.datastoreTemplate.findById(this.key1, ReferenceTestEntity.class);
+		verifyBeforeAndAfterEvents(null,
+				new AfterFindByKeyEvent(Collections.singletonList(referenceTestEntity), Collections.singleton(this.key1)),
+				() -> {
+					ReferenceTestEntity readReferenceTestEntity = this.datastoreTemplate.findById(this.key1,
+							ReferenceTestEntity.class);
 
-		assertThat(readReferenceTestEntity.sibling).isSameAs(readReferenceTestEntity);
+					assertThat(readReferenceTestEntity.sibling).isSameAs(readReferenceTestEntity);
+				}, x -> {
+				});
 	}
 
 	@Test
@@ -620,14 +648,20 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findAllTest() {
-		this.datastoreTemplate.findAll(TestEntity.class);
-		assertThat(this.datastoreTemplate.findAll(TestEntity.class)).contains(this.ob1, this.ob2);
+		verifyBeforeAndAfterEvents(null,
+				new AfterQueryEvent(Arrays.asList(this.ob1, this.ob2), this.findAllTestEntityQuery),
+				() -> assertThat(this.datastoreTemplate.findAll(TestEntity.class)).contains(this.ob1, this.ob2), x -> {
+				});
 	}
 
 	@Test
 	public void queryTest() {
-		assertThat(this.datastoreTemplate.query((Query<Entity>) this.testEntityQuery, TestEntity.class))
-				.contains(this.ob1, this.ob2);
+		verifyBeforeAndAfterEvents(null,
+				new AfterQueryEvent(Arrays.asList(this.ob1, this.ob2), this.testEntityQuery),
+				() -> assertThat(this.datastoreTemplate.query((Query<Entity>) this.testEntityQuery, TestEntity.class))
+						.contains(this.ob1, this.ob2),
+				x -> {
+				});
 	}
 
 	@Test
@@ -680,13 +714,13 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key2);
 
 		verifyBeforeAndAfterEvents(
-				new BeforeDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class,
+				new BeforeDeleteEvent(new Key[] { this.key2, this.key1 }, TestEntity.class,
 						Arrays.asList(this.key1, this.key2), null),
-				new AfterDeleteEvent(new Key[] { this.key1, this.key2 }, TestEntity.class,
+				new AfterDeleteEvent(new Key[] { this.key2, this.key1 }, TestEntity.class,
 						Arrays.asList(this.key1, this.key2), null),
 				() -> this.datastoreTemplate.deleteAllById(Arrays.asList(this.key1, this.key2),
 						TestEntity.class),
-				x -> x.verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2)));
+				x -> x.verify(this.datastore, times(1)).delete(same(this.key2), same(this.key1)));
 	}
 
 	@Test
@@ -827,12 +861,13 @@ public class DatastoreTemplateTests {
 	@Test
 	public void queryByExampleSimpleEntityTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
-		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity), null);
-
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"),
 						PropertyFilter.eq("int_field", 1));
-		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
+		Query query = builder.setFilter(filter).build();
+		verifyBeforeAndAfterEvents(null, new AfterQueryEvent(Collections.emptyList(), query),
+				() -> this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity), null),
+				x -> x.verify(this.datastore, times(1)).run(query));
 	}
 
 	@Test
