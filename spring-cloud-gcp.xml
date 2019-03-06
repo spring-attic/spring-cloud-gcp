@@ -4533,6 +4533,16 @@ public interface TradeRepository extends DatastoreRepository&lt;Trade, String[]&
 </thead>
 <tbody>
 <row>
+<entry align="left" valign="top"><simpara><literal>AfterFindByKeyEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately after read by-key operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The entities read from Cloud Datastore and the original keys in the request.</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><literal>AfterQueryEvent</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Published immediately after read byquery operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>The entities read from Cloud Datastore and the original query in the request.</simpara></entry>
+</row>
+<row>
 <entry align="left" valign="top"><simpara><literal>BeforeSaveEvent</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>Published immediately before save operations are executed by <literal>DatastoreTemplate</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>The entities to be sent to Cloud Datastore and the original Java objects being saved.</simpara></entry>
