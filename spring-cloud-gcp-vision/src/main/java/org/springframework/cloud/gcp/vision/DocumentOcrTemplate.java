@@ -88,9 +88,9 @@ public class DocumentOcrTemplate {
 	 * saved under prefix, such as:
 	 *
 	 * <ul>
-	 * <li>gs://bucket_name/ocr_results/myDoc_output-1-to-1.json
-	 * <li>gs://bucket_name/ocr_results/myDoc_output-2-to-2.json
-	 * <li>gs://bucket_name/ocr_results/myDoc_output-3-to-3.json
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-1-to-5.json
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-6-to-10.json
+	 * <li>gs://bucket_name/ocr_results/myDoc_output-11-to-15.json
 	 * </ul>
 	 *
 	 * <p>
