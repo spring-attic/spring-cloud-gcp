@@ -176,6 +176,12 @@ For example, the infinite stream can become a finite one with `limitRequest` ope
 Flux<AcknowledgeablePubsubMessage> fiveMessageFlux = flux.limitRequest(5);
 ----
 
+Acknowledging messages flowing through the `Flux` should be manually acknowledged.
+
+[source,java]
+----
+flux.doOnNext(AcknowledgeablePubsubMessage::ack);
+----
 
 === Pub/Sub management
 
