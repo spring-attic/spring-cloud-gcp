@@ -109,7 +109,9 @@ public final class PubSubReactiveFactory {
 			List<AcknowledgeablePubsubMessage> messages =  PubSubReactiveFactory.this.subscriberOperations.pull(
 					this.subscriptionName, numMessagesToPull, !block);
 
-			messages.forEach(sink::next);
+			if (!this.sink.isCancelled()) {
+				messages.forEach(sink::next);
+			}
 
 			return messages.size();
 		}
