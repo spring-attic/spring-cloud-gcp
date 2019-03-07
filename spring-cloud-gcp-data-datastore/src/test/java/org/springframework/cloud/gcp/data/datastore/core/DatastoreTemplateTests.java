@@ -630,7 +630,7 @@ public class DatastoreTemplateTests {
 				writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1, writtenEntity2);
 		List javaExpected = Arrays.asList(this.ob1, this.ob2);
 
-		verifyBeforeAndAfterEvents(new BeforeSaveEvent(expected, javaExpected),
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(javaExpected),
 				new AfterSaveEvent(expected, javaExpected),
 				() -> this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2)),
 				x -> {

@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.google.cloud.datastore.Entity;
 
@@ -26,6 +27,9 @@ import com.google.cloud.datastore.Entity;
  * @author Chengyuan Zhao
  */
 public class AfterSaveEvent extends SaveEvent {
+
+	private final List<Entity> datastoreEntities;
+
 	/**
 	 * Constructor.
 	 *
@@ -34,6 +38,33 @@ public class AfterSaveEvent extends SaveEvent {
 	 * @param javaEntities The original Java entities being saved. Each entity may result in
 	 */
 	public AfterSaveEvent(List<Entity> datastoreEntities, List javaEntities) {
-		super(datastoreEntities, javaEntities);
+		super(javaEntities);
+		this.datastoreEntities = datastoreEntities;
+	}
+
+	/**
+	 * Get the Cloud Datastore entities that were saved.
+	 * @return The entities that were saved in Cloud Datastore.
+	 */
+	public List<Entity> getDatastoreEntities() {
+		return this.datastoreEntities;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		AfterSaveEvent that = (AfterSaveEvent) o;
+		return getDatastoreEntities().containsAll(that.getDatastoreEntities())
+				&& Objects.equals(getTargetEntities(), that.getTargetEntities());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getDatastoreEntities(), getTargetEntities());
 	}
 }
