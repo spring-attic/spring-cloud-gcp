@@ -18,7 +18,6 @@ package com.example;
 
 import java.nio.charset.Charset;
 
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,12 +41,12 @@ public class ReactiveController {
 	PubSubReactiveFactory reactiveFactory;
 
 	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-	public Flux<? super String> getMessages() {
+	public Flux<String> getMessages() {
 
-		Publisher<AcknowledgeablePubsubMessage> flux
-				= this.reactiveFactory.createPolledPublisher("exampleSubscription", 1000);
+		Flux<AcknowledgeablePubsubMessage> flux
+				= this.reactiveFactory.createPolledFlux("exampleSubscription", 1000);
 
-		return Flux.from(flux)
+		return flux
 				.doOnNext(message -> {
 					System.out.println("Received a message: " + message.getPubsubMessage().getMessageId());
 					message.ack();

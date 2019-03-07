@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.api.gax.rpc.DeadlineExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.reactivestreams.Publisher;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -30,9 +29,10 @@ import reactor.core.scheduler.Schedulers;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.util.Assert;
 
 /**
- * Creates a GCP Pub/Sub Subscription-backed Flux respecting backpressure by way of Pub/Sub Synchronous Pull.
+ * A factory for procuring {@link Flux} instances backed by GCP Pub/Sub Subscriptions.
  *
  * @author Elena Felder
  *
@@ -45,34 +45,38 @@ public final class PubSubReactiveFactory {
 	private PubSubSubscriberOperations subscriberOperations;
 
 	/**
-	 * Instantiates `PubSubReactiveFactory` capable of generating subscription-based streams.
+	 * Instantiate `PubSubReactiveFactory` capable of generating subscription-based streams.
 	 *
 	 * @param subscriberOperations template for interacting with GCP Pub/Sub subscriber operations.
 	 */
 	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations) {
+		Assert.notNull(subscriberOperations, "subscriberOperations cannot be null.");
 		this.subscriberOperations = subscriberOperations;
 	}
 
 	/**
-	 * Creates an infinite stream {@link Publisher} of {@link AcknowledgeablePubsubMessage} objects.
-	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval.
-	 * <p>For specific demand, as many messages as are available will be returned immediately, with remaining demand being
-	 * fulfilled in the future. Pub/Sub timeout will cause a retry with the same demand.
+	 * Create an infinite stream {@link Flux} of {@link AcknowledgeablePubsubMessage} objects.
+	 * <p>The {@link Flux} respects backpressure by using of Pub/Sub Synchronous Pull to retrieve
+	 * batches of up to the requested number of messages until the full demand is fulfilled
+	 * or subscription terminated.
+	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval,
+	 * requesting up to {@code Integer.MAX_VALUE} messages at each poll.
+	 * <p>For specific demand, as many messages as are available will be returned immediately,
+	 * with remaining demand being fulfilled in the future.
+	 * Pub/Sub timeout will cause a retry with the same demand.
 	 * @param subscriptionName subscription from which to retrieve messages.
 	 * @param pollingPeriod how frequently to poll the source subscription in case of unlimited demand.
 	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
 	 */
-	public Publisher<AcknowledgeablePubsubMessage> createPolledPublisher(String subscriptionName, long pollingPeriod) {
+	public Flux<AcknowledgeablePubsubMessage> createPolledFlux(String subscriptionName, long pollingPeriod) {
 
-		return Flux.<AcknowledgeablePubsubMessage>create(sink -> {
+		return Flux.create(sink -> {
 			sink.onRequest((numRequested) -> {
 				if (numRequested == Long.MAX_VALUE) {
 					// unlimited demand
 					Disposable task = Schedulers.single().schedulePeriodically(
 							new PubSubNonBlockingUnlimitedDemandPullTask(subscriptionName, sink), 0, pollingPeriod, TimeUnit.MILLISECONDS);
-					sink.onCancel(() -> {
-						task.dispose();
-					});
+					sink.onCancel(task::dispose);
 				}
 				else {
 					Schedulers.single().schedule(new PubSubBlockingLimitedDemandPullTask(subscriptionName, numRequested, sink));
@@ -93,26 +97,34 @@ public final class PubSubReactiveFactory {
 			this.sink = sink;
 		}
 
-		protected List<AcknowledgeablePubsubMessage> pullToSink(long demand, boolean block) {
+		/**
+		 * Retrieve up to a specified number of messages, sending them to the subscription.
+		 * @param demand maximum number of messages to retrieve
+		 * @param block whether to wait for the first message to become available
+		 * @return number of messages retrieved
+		 */
+		protected int pullToSink(long demand, boolean block) {
 			int numMessagesToPull = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
 
 			List<AcknowledgeablePubsubMessage> messages =  PubSubReactiveFactory.this.subscriberOperations.pull(
 					this.subscriptionName, numMessagesToPull, !block);
 
-			if (messages.size() > 0) {
-				messages.forEach(sink::next);
-			}
+			messages.forEach(sink::next);
 
-			return messages;
+			return messages.size();
 		}
 
 	}
 
+	/**
+	 * Runnable task issuing blocking Pub/Sub Pull requests until the specified number of
+	 * messages has been retrieved.
+	 */
 	private class PubSubBlockingLimitedDemandPullTask extends PubSubPullTask {
 
 		private final long initialDemand;
 
-		PubSubBlockingLimitedDemandPullTask(String subscriptionName, long initialDemand, FluxSink sink) {
+		PubSubBlockingLimitedDemandPullTask(String subscriptionName, long initialDemand, FluxSink<AcknowledgeablePubsubMessage> sink) {
 			super(subscriptionName, sink);
 			this.initialDemand = initialDemand;
 		}
@@ -120,25 +132,27 @@ public final class PubSubReactiveFactory {
 		@Override
 		public void run() {
 			long demand = this.initialDemand;
-			List<AcknowledgeablePubsubMessage> messages = null;
+			List<AcknowledgeablePubsubMessage> messages;
 
 			while (demand > 0 && !this.sink.isCancelled()) {
 				try {
-					messages = pullToSink(demand, true);
-					demand -= messages.size();
+					demand -= pullToSink(demand, true);
 				}
 				catch (DeadlineExceededException e) {
 					LOGGER.trace("Blocking pull timed out due to empty subscription " + this.subscriptionName + "; retrying.");
 				}
 			}
-
 		}
 
 	}
 
+	/**
+	 * Runnable task issuing a single Pub/Sub Pull request for all available messages.
+	 * Terminates immediately if no messages are available.
+	 */
 	private class PubSubNonBlockingUnlimitedDemandPullTask extends PubSubPullTask {
 
-		PubSubNonBlockingUnlimitedDemandPullTask(String subscriptionName, FluxSink sink) {
+		PubSubNonBlockingUnlimitedDemandPullTask(String subscriptionName, FluxSink<AcknowledgeablePubsubMessage> sink) {
 			super(subscriptionName, sink);
 		}
 
@@ -148,6 +162,5 @@ public final class PubSubReactiveFactory {
 		}
 
 	}
-
 
 }

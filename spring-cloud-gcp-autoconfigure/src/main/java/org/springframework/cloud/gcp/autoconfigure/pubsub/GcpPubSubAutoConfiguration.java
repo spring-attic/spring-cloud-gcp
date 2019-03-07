@@ -384,11 +384,18 @@ public class GcpPubSubAutoConfiguration {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
+	/**
+	 * Configuration for reactive support.
+	 */
+	@Configuration
 	@ConditionalOnClass(Flux.class)
-	public PubSubReactiveFactory pubSubReactiveFactory(PubSubSubscriberTemplate subscriberTemplate) {
-		return new PubSubReactiveFactory(subscriberTemplate);
+	protected static class ReactivePubSubAutoconfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public PubSubReactiveFactory pubSubReactiveFactory(PubSubSubscriberTemplate subscriberTemplate) {
+			return new PubSubReactiveFactory(subscriberTemplate);
+		}
 	}
 
 }

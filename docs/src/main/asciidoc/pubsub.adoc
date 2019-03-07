@@ -163,20 +163,17 @@ PubSubReactiveFactory reactiveFactory;
 
 // ...
 
-Publisher<AcknowledgeablePubsubMessage> flux
-				= reactiveFactory.createPolledPublisher("exampleSubscription", 1000);
+Flux<AcknowledgeablePubsubMessage> flux
+				= reactiveFactory.createPolledFlux("exampleSubscription", 1000);
 ----
 
-The `Publisher` then represents an infinite stream of GCP Pub/Sub messages coming in through the specified subscription.
-By using `Flux.from(flux)` to cast the `Publisher` into a `Flux`, the full range of Project Reactor operations can be applied to the stream.
-
+The `Flux` then represents an infinite stream of GCP Pub/Sub messages coming in through the specified subscription.
+The full range of Project Reactor operations can be applied to the stream.
 For example, the infinite stream can become a finite one with `limitRequest` operation:
 
 [source,java]
 ----
-Publisher<AcknowledgeablePubsubMessage> fiveMessageFlux =
-        Flux.from(flux)
-            .limitRequest(5);
+Flux<AcknowledgeablePubsubMessage> fiveMessageFlux = flux.limitRequest(5);
 ----
 
 
