@@ -72,10 +72,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @throws IllegalArgumentException if the location URI is invalid
 	 */
 	public GoogleStorageResource(Storage storage, String locationUri, boolean autoCreateFiles) {
-		Assert.notNull(storage, "Storage object can not be null");
-		this.storage = storage;
-		this.location = new GoogleStorageLocation(locationUri);
-		this.autoCreateFiles = autoCreateFiles;
+		this(storage, new GoogleStorageLocation(locationUri), autoCreateFiles);
 	}
 
 	/**

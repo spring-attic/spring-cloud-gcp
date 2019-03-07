@@ -87,6 +87,14 @@ public class GoogleStorageLocation {
 	}
 
 	/**
+	 * Returns whether this {@link GoogleStorageLocation} represents a folder.
+	 * @return true if the location describes a folder
+	 */
+	public boolean isFolder() {
+		return this.blobName != null && this.blobName.endsWith("/");
+	}
+
+	/**
 	 * Returns the Google Storage bucket name.
 	 *
 	 * @return the name of the Google Storage bucket
