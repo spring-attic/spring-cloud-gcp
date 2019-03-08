@@ -18,8 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 
 import java.util.List;
 
-import com.google.cloud.datastore.Entity;
-
 /**
  * An event published immediately before a save event to Cloud Datastore.
  *
@@ -29,11 +27,9 @@ public class BeforeSaveEvent extends SaveEvent {
 	/**
 	 * Constructor.
 	 *
-	 * @param datastoreEntities The Cloud Datastore entities that are being saved. These
-	 *     include any referenced or descendant entities of the original entities being saved.
 	 * @param javaEntities The original Java entities being saved. Each entity may result in
 	 */
-	public BeforeSaveEvent(List<Entity> datastoreEntities, List javaEntities) {
-		super(datastoreEntities, javaEntities);
+	public BeforeSaveEvent(List javaEntities) {
+		super(javaEntities);
 	}
 }

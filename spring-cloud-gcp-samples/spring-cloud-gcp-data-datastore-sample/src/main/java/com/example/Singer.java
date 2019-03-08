@@ -22,11 +22,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.util.Strings;
+import org.joda.time.DateTime;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Reference;
 
 /**
@@ -56,6 +58,9 @@ public class Singer {
 
 	@Descendants
 	private Set<Instrument> personalInstruments;
+
+	@LastModifiedDate
+	private DateTime lastModifiedTime;
 
 	private Set<Album> albums;
 
@@ -158,5 +163,13 @@ public class Singer {
 						: Strings.join(this.personalInstruments.stream()
 								.map((x) -> x.getType()).collect(Collectors.toList()), ','))
 				+ '}';
+	}
+
+	public DateTime getLastModifiedTime() {
+		return this.lastModifiedTime;
+	}
+
+	public void setLastModifiedTime(DateTime lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
 	}
 }

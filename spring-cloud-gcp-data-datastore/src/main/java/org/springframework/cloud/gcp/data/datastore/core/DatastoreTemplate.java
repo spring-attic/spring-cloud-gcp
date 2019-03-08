@@ -141,13 +141,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public <T> T save(T instance, Key... ancestors) {
 		List<T> instances = Collections.singletonList(instance);
-		saveEntities(instances, getEntitiesForSave(instances, new HashSet<>(), ancestors));
+		saveEntities(instances, ancestors);
 		return instance;
 	}
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
-		saveEntities((List<T>) entities, getEntitiesForSave(entities, new HashSet<>(), ancestors));
+		saveEntities((List<T>) entities, ancestors);
 		return entities;
 	}
 
@@ -163,9 +163,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return entitiesForSave;
 	}
 
-	private <T> void saveEntities(List<T> instances, List<Entity> entities) {
-		if (!entities.isEmpty()) {
-			maybeEmitEvent(new BeforeSaveEvent(entities, instances));
+	private <T> void saveEntities(List<T> instances, Key[] ancestors) {
+		if (!instances.isEmpty()) {
+			maybeEmitEvent(new BeforeSaveEvent(instances));
+			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
 			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
 			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}

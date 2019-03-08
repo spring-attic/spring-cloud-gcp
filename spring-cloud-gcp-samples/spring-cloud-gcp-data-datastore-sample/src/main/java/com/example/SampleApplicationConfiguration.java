@@ -19,18 +19,20 @@ package com.example;
 import com.google.cloud.datastore.Datastore;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
+import org.springframework.cloud.gcp.data.datastore.repository.config.EnableDatastoreAuditing;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * Spring Boot configuration for {@link TransactionalRepositoryService}.
+ * Spring Boot configuration for the sample application enabling features like Transactional management and auditing.
  *
  * @author Chengyuan Zhao
  */
 @Configuration
 @EnableTransactionManagement
-public class TransactionalServiceConfiguration {
+@EnableDatastoreAuditing
+public class SampleApplicationConfiguration {
 
 	@Bean
 	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
