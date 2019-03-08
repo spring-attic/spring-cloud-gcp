@@ -91,4 +91,5 @@ public class IapAuthenticationProperties {
 	public void setAudience(String audience) {
 		this.audience = audience;
 	}
+
 }

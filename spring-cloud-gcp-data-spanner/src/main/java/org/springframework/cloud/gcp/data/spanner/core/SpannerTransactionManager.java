@@ -46,10 +46,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerTransactionManager extends AbstractPlatformTransactionManager {
+
 	private final DatabaseClient databaseClient;
 
 	public SpannerTransactionManager(final DatabaseClient databaseClient) {
@@ -59,8 +59,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	protected Tx getCurrentTX() {
 		try {
 			return (SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus())
-							.getTransaction();
+					.currentTransactionStatus()).getTransaction();
 		}
 		catch (NoTransactionException ex) {
 			return null;
@@ -70,8 +69,8 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
 		Tx tx = getCurrentTX();
-		if (tx != null
-				&& tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+		if (tx != null && tx.transactionManager
+				.getState() == TransactionManager.TransactionState.STARTED) {
 			logger.debug(tx + " reuse; state = " + tx.transactionManager.getState());
 			return tx;
 		}
@@ -83,16 +82,18 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	@Override
-	protected void doBegin(Object transactionObject, TransactionDefinition transactionDefinition)
-			throws TransactionException {
-		if (transactionDefinition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+	protected void doBegin(Object transactionObject,
+			TransactionDefinition transactionDefinition) throws TransactionException {
+		if (transactionDefinition
+				.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
 			throw new IllegalStateException(
 					"SpannerTransactionManager supports only isolation level TransactionDefinition.ISOLATION_DEFAULT");
 		}
-		if (transactionDefinition.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
+		if (transactionDefinition
+				.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
 			throw new IllegalStateException(
-					"SpannerTransactionManager supports only propagation behavior " +
-							"TransactionDefinition.PROPAGATION_REQUIRED");
+					"SpannerTransactionManager supports only propagation behavior "
+							+ "TransactionDefinition.PROPAGATION_REQUIRED");
 		}
 		Tx tx = (Tx) transactionObject;
 		if (transactionDefinition.isReadOnly()) {
@@ -102,39 +103,35 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			tx.transactionContext = new TransactionContext() {
 				@Override
 				public void buffer(Mutation mutation) {
-					throw new IllegalStateException("Spanner transaction cannot apply" +
-							" mutation because it is in readonly mode");
+					throw new IllegalStateException("Spanner transaction cannot apply"
+							+ " mutation because it is in readonly mode");
 				}
 
 				@Override
 				public void buffer(Iterable<Mutation> iterable) {
-					throw new IllegalStateException("Spanner transaction cannot apply" +
-							" mutations because it is in readonly mode");
+					throw new IllegalStateException("Spanner transaction cannot apply"
+							+ " mutations because it is in readonly mode");
 				}
 
 				@Override
 				public long executeUpdate(Statement statement) {
-					throw new IllegalStateException("Spanner transaction cannot execute DML " +
-							"because it is in readonly mode");
+					throw new IllegalStateException(
+							"Spanner transaction cannot execute DML "
+									+ "because it is in readonly mode");
 				}
 
 				@Override
-				public ResultSet read(
-						String s,
-						KeySet keySet,
-						Iterable<String> iterable,
+				public ResultSet read(String s, KeySet keySet, Iterable<String> iterable,
 						Options.ReadOption... readOptions) {
-					return targetTransactionContext.read(s, keySet, iterable, readOptions);
+					return targetTransactionContext.read(s, keySet, iterable,
+							readOptions);
 				}
 
 				@Override
-				public ResultSet readUsingIndex(
-						String s,
-						String s1,
-						KeySet keySet,
-						Iterable<String> iterable,
-						Options.ReadOption... readOptions) {
-					return targetTransactionContext.readUsingIndex(s, s1, keySet, iterable, readOptions);
+				public ResultSet readUsingIndex(String s, String s1, KeySet keySet,
+						Iterable<String> iterable, Options.ReadOption... readOptions) {
+					return targetTransactionContext.readUsingIndex(s, s1, keySet,
+							iterable, readOptions);
 				}
 
 				@Nullable
@@ -145,20 +142,23 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 				@Nullable
 				@Override
-				public Struct readRowUsingIndex(
-						String s, String s1, Key key, Iterable<String> iterable) {
-					return targetTransactionContext.readRowUsingIndex(s, s1, key, iterable);
+				public Struct readRowUsingIndex(String s, String s1, Key key,
+						Iterable<String> iterable) {
+					return targetTransactionContext.readRowUsingIndex(s, s1, key,
+							iterable);
 				}
 
 				@Override
-				public ResultSet executeQuery(
-						Statement statement, Options.QueryOption... queryOptions) {
+				public ResultSet executeQuery(Statement statement,
+						Options.QueryOption... queryOptions) {
 					return targetTransactionContext.executeQuery(statement, queryOptions);
 				}
 
 				@Override
-				public ResultSet analyzeQuery(Statement statement, QueryAnalyzeMode queryAnalyzeMode) {
-					return targetTransactionContext.analyzeQuery(statement, queryAnalyzeMode);
+				public ResultSet analyzeQuery(Statement statement,
+						QueryAnalyzeMode queryAnalyzeMode) {
+					return targetTransactionContext.analyzeQuery(statement,
+							queryAnalyzeMode);
 				}
 
 				@Override
@@ -179,11 +179,14 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		try {
-			logger.debug(tx + " beforeCommit; state = " + tx.transactionManager.getState());
-			if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+			logger.debug(
+					tx + " beforeCommit; state = " + tx.transactionManager.getState());
+			if (tx.transactionManager
+					.getState() == TransactionManager.TransactionState.STARTED) {
 
 				tx.transactionManager.commit();
-				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
+				logger.debug(
+						tx + " afterCommit; state = " + tx.transactionManager.getState());
 			}
 		}
 		catch (AbortedException ex) {
@@ -207,7 +210,8 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		logger.debug(tx + " beforeRollback; state = " + tx.transactionManager.getState());
-		if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+		if (tx.transactionManager
+				.getState() == TransactionManager.TransactionState.STARTED) {
 			tx.transactionManager.rollback();
 		}
 		logger.debug(tx + " afterRollback; state = " + tx.transactionManager.getState());
@@ -222,6 +226,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	 * A transaction object that holds the transaction context.
 	 */
 	public static class Tx {
+
 		private TransactionManager transactionManager;
 
 		private TransactionContext transactionContext;
@@ -229,5 +234,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
 		}
+
 	}
+
 }

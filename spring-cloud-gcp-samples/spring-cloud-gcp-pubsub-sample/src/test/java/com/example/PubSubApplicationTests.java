@@ -62,7 +62,8 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		PubSubApplication.class })
 public class PubSubApplicationTests {
 
 	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 10;
@@ -107,32 +108,28 @@ public class PubSubApplicationTests {
 		subscriptionAdminClient = SubscriptionAdminClient.create();
 
 		topicAdminClient.createTopic(ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC));
-		topicAdminClient.createTopic(ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC2));
+		topicAdminClient
+				.createTopic(ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC2));
 
 		subscriptionAdminClient.createSubscription(
 				ProjectSubscriptionName.of(projectName, SAMPLE_TEST_SUBSCRIPTION1),
 				ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC),
-				PushConfig.getDefaultInstance(),
-				10);
+				PushConfig.getDefaultInstance(), 10);
 
 		subscriptionAdminClient.createSubscription(
 				ProjectSubscriptionName.of(projectName, SAMPLE_TEST_SUBSCRIPTION2),
 				ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC2),
-				PushConfig.getDefaultInstance(),
-				10);
+				PushConfig.getDefaultInstance(), 10);
 		subscriptionAdminClient.createSubscription(
 				ProjectSubscriptionName.of(projectName, SAMPLE_TEST_SUBSCRIPTION3),
 				ProjectTopicName.of(projectName, SAMPLE_TEST_TOPIC2),
-				PushConfig.getDefaultInstance(),
-				10);
+				PushConfig.getDefaultInstance(), 10);
 	}
 
 	@AfterClass
 	public static void cleanupPubsubClients() {
 		if (topicAdminClient != null) {
-			List<String> testTopics = Arrays.asList(
-					SAMPLE_TEST_TOPIC,
-					SAMPLE_TEST_TOPIC2,
+			List<String> testTopics = Arrays.asList(SAMPLE_TEST_TOPIC, SAMPLE_TEST_TOPIC2,
 					SAMPLE_TEST_TOPIC_DELETE);
 
 			for (String topicName : testTopics) {
@@ -147,15 +144,13 @@ public class PubSubApplicationTests {
 		}
 
 		if (subscriptionAdminClient != null) {
-			List<String> testSubscriptions = Arrays.asList(
-					SAMPLE_TEST_SUBSCRIPTION1,
-					SAMPLE_TEST_SUBSCRIPTION2,
-					SAMPLE_TEST_SUBSCRIPTION3,
+			List<String> testSubscriptions = Arrays.asList(SAMPLE_TEST_SUBSCRIPTION1,
+					SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_SUBSCRIPTION3,
 					SAMPLE_TEST_SUBSCRIPTION_DELETE);
 
 			for (String testSubscription : testSubscriptions) {
-				String testSubscriptionName = ProjectSubscriptionName.format(
-						projectName, testSubscription);
+				String testSubscriptionName = ProjectSubscriptionName.format(projectName,
+						testSubscription);
 				List<String> projectSubscriptions = getSubscriptionNamesFromProject();
 				if (projectSubscriptions.contains(testSubscriptionName)) {
 					subscriptionAdminClient.deleteSubscription(testSubscriptionName);
@@ -187,45 +182,46 @@ public class PubSubApplicationTests {
 				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
 						.containsExactly("HelloWorld-Pull"));
 
-		// After subscribing, the message will be acked by the application and no longer be present.
+		// After subscribing, the message will be acked by the application and no longer
+		// be present.
 		subscribe(SAMPLE_TEST_SUBSCRIPTION1);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty());
+				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
+						.isEmpty());
 	}
 
 	@Test
 	public void testMultiPull() {
 		postMessage("HelloWorld-MultiPull", SAMPLE_TEST_TOPIC2);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-				.untilAsserted(
-						() -> {
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
-									.containsExactly("HelloWorld-MultiPull");
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3))
-									.containsExactly("HelloWorld-MultiPull");
-						});
+				.untilAsserted(() -> {
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
+							.containsExactly("HelloWorld-MultiPull");
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3))
+							.containsExactly("HelloWorld-MultiPull");
+				});
 
-		// After multi pull, the message will be acked by both subscriptions and no longer be present.
+		// After multi pull, the message will be acked by both subscriptions and no longer
+		// be present.
 		multiPull(SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_SUBSCRIPTION3);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-				.untilAsserted(
-						() -> {
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).isEmpty();
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3)).isEmpty();
-						});
+				.untilAsserted(() -> {
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
+							.isEmpty();
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3))
+							.isEmpty();
+				});
 	}
 
 	private List<String> getMessagesFromSubscription(String subscriptionName) {
-		String projectSubscriptionName = ProjectSubscriptionName.format(
-				projectName, subscriptionName);
+		String projectSubscriptionName = ProjectSubscriptionName.format(projectName,
+				subscriptionName);
 
-		PullRequest pullRequest = PullRequest.newBuilder()
-				.setReturnImmediately(true)
-				.setMaxMessages(10)
-				.setSubscription(projectSubscriptionName)
-				.build();
+		PullRequest pullRequest = PullRequest.newBuilder().setReturnImmediately(true)
+				.setMaxMessages(10).setSubscription(projectSubscriptionName).build();
 
-		PullResponse pullResponse = subscriptionAdminClient.getStub().pullCallable().call(pullRequest);
+		PullResponse pullResponse = subscriptionAdminClient.getStub().pullCallable()
+				.call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
 				.map((message) -> message.getMessage().getData().toStringUtf8())
 				.collect(Collectors.toList());
@@ -233,13 +229,13 @@ public class PubSubApplicationTests {
 
 	private void createTopic(String topicName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/createTopic")
-				.queryParam("topicName", topicName)
-				.toUriString();
-		ResponseEntity<String> response = this.testRestTemplate.postForEntity(url, null, String.class);
+				.queryParam("topicName", topicName).toUriString();
+		ResponseEntity<String> response = this.testRestTemplate.postForEntity(url, null,
+				String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).contains(projectTopicName);
 				});
@@ -247,13 +243,12 @@ public class PubSubApplicationTests {
 
 	private void deleteTopic(String topicName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/deleteTopic")
-				.queryParam("topic", topicName)
-				.toUriString();
+				.queryParam("topic", topicName).toUriString();
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).doesNotContain(projectTopicName);
 				});
@@ -262,13 +257,13 @@ public class PubSubApplicationTests {
 	private void createSubscription(String subscriptionName, String topicName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/createSubscription")
 				.queryParam("topicName", topicName)
-				.queryParam("subscriptionName", subscriptionName)
-				.toUriString();
+				.queryParam("subscriptionName", subscriptionName).toUriString();
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
-		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
+		String projectSubscriptionName = ProjectSubscriptionName.format(projectName,
+				subscriptionName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).contains(projectSubscriptionName);
 				});
@@ -276,13 +271,13 @@ public class PubSubApplicationTests {
 
 	private void deleteSubscription(String subscriptionName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/deleteSubscription")
-				.queryParam("subscription", subscriptionName)
-				.toUriString();
+				.queryParam("subscription", subscriptionName).toUriString();
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
-		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
+		String projectSubscriptionName = ProjectSubscriptionName.format(projectName,
+				subscriptionName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).doesNotContain(projectSubscriptionName);
 				});
@@ -290,39 +285,36 @@ public class PubSubApplicationTests {
 
 	private void subscribe(String subscriptionName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/subscribe")
-				.queryParam("subscription", subscriptionName)
-				.toUriString();
+				.queryParam("subscription", subscriptionName).toUriString();
 		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private void postMessage(String message, String topicName) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/postMessage")
-				.queryParam("message", message)
-				.queryParam("topicName", topicName)
-				.queryParam("count", 1)
-				.toUriString();
+				.queryParam("message", message).queryParam("topicName", topicName)
+				.queryParam("count", 1).toUriString();
 		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private void multiPull(String subscription1, String subscription2) {
 		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/multipull")
 				.queryParam("subscription1", subscription1)
-				.queryParam("subscription2", subscription2)
-				.toUriString();
+				.queryParam("subscription2", subscription2).toUriString();
 		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private static List<String> getTopicNamesFromProject() {
-		ListTopicsPagedResponse listTopicsResponse = topicAdminClient.listTopics("projects/" + projectName);
+		ListTopicsPagedResponse listTopicsResponse = topicAdminClient
+				.listTopics("projects/" + projectName);
 		return StreamSupport.stream(listTopicsResponse.iterateAll().spliterator(), false)
-				.map(Topic::getName)
-				.collect(Collectors.toList());
+				.map(Topic::getName).collect(Collectors.toList());
 	}
 
 	private static List<String> getSubscriptionNamesFromProject() {
-		ListSubscriptionsPagedResponse response = subscriptionAdminClient.listSubscriptions("projects/" + projectName);
+		ListSubscriptionsPagedResponse response = subscriptionAdminClient
+				.listSubscriptions("projects/" + projectName);
 		return StreamSupport.stream(response.iterateAll().spliterator(), false)
-				.map(Subscription::getName)
-				.collect(Collectors.toList());
+				.map(Subscription::getName).collect(Collectors.toList());
 	}
+
 }

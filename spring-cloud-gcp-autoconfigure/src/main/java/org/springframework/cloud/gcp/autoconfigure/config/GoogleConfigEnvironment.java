@@ -27,7 +27,6 @@ import java.util.Map;
  *
  * @author Jisha Abubaker
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 class GoogleConfigEnvironment {
@@ -48,7 +47,8 @@ class GoogleConfigEnvironment {
 	Map<String, Object> getConfig() {
 		Map<String, Object> config = new HashMap<>();
 		for (Variable variable : this.variables) {
-			Object value = (variable.getText() != null) ? variable.getText() : variable.getValue();
+			Object value = (variable.getText() != null) ? variable.getText()
+					: variable.getValue();
 			config.put(variable.getName(), value);
 		}
 		return config;
@@ -114,5 +114,7 @@ class GoogleConfigEnvironment {
 			byte[] decodedValue = Base64.getDecoder().decode(value);
 			return new String(decodedValue, StandardCharsets.UTF_8);
 		}
+
 	}
+
 }

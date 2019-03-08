@@ -25,7 +25,6 @@ import org.springframework.data.repository.core.support.AbstractEntityInformatio
  *
  * @param <T> the type of the underlying entity
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerPersistentEntityInformation<T>
@@ -36,7 +35,6 @@ public class SpannerPersistentEntityInformation<T>
 	/**
 	 * Creates a new {@link SpannerPersistentEntityInformation} for the given
 	 * {@link SpannerPersistentEntity}.
-	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	public SpannerPersistentEntityInformation(SpannerPersistentEntity<T> entity) {
@@ -54,4 +52,5 @@ public class SpannerPersistentEntityInformation<T>
 	public Class<Key> getIdType() {
 		return Key.class;
 	}
+
 }

@@ -39,7 +39,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class StructAccessor {
@@ -114,8 +113,10 @@ public class StructAccessor {
 		Class sourceType = getSingleItemTypeCode(colType);
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
 		if (readFunction == null) {
-			// This case should only occur if the POJO field is non-Iterable, but the column type
-			// is ARRAY of STRUCT, TIMESTAMP, DATE, BYTES, or STRING. This use-case is not supported.
+			// This case should only occur if the POJO field is non-Iterable, but the
+			// column type
+			// is ARRAY of STRUCT, TIMESTAMP, DATE, BYTES, or STRING. This use-case is not
+			// supported.
 			return null;
 		}
 		return readFunction.apply(this.struct, colName);
@@ -139,7 +140,8 @@ public class StructAccessor {
 		if (this.struct.getColumnType(colName).getCode() != Code.ARRAY) {
 			throw new SpannerDataException("Column is not an ARRAY type: " + colName);
 		}
-		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
+		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType()
+				.getCode();
 		Class clazz = SpannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
 		return readMethod.apply(this.struct, colName);
@@ -164,7 +166,9 @@ public class StructAccessor {
 	private Class getSingleItemTypeCode(Type colType) {
 		Code code = colType.getCode();
 		return code.equals(Code.ARRAY)
-				? SpannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				? SpannerTypeMapper
+						.getArrayJavaClassFor(colType.getArrayElementType().getCode())
 				: SpannerTypeMapper.getSimpleJavaClassFor(code);
 	}
+
 }

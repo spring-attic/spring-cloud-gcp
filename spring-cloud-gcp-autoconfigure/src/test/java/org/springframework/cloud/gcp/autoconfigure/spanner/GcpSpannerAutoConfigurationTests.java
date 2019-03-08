@@ -45,7 +45,8 @@ public class GcpSpannerAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
-					GcpContextAutoConfiguration.class, SpannerTransactionManagerAutoConfiguration.class,
+					GcpContextAutoConfiguration.class,
+					SpannerTransactionManagerAutoConfiguration.class,
 					SpannerRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
@@ -101,13 +102,12 @@ public class GcpSpannerAutoConfigurationTests {
 
 	@Test
 	public void testIdConverterNotCreated() {
-		this.contextRunner
-				.withClassLoader(
-						new FilteredClassLoader("org.springframework.data.rest.webmvc.spi"))
+		this.contextRunner.withClassLoader(
+				new FilteredClassLoader("org.springframework.data.rest.webmvc.spi"))
 				.run((context) -> {
-					assertThat(
-							context.getBeansOfType(BackendIdConverter.class).size()).isEqualTo(0);
-					});
+					assertThat(context.getBeansOfType(BackendIdConverter.class).size())
+							.isEqualTo(0);
+				});
 	}
 
 	/**
@@ -120,5 +120,7 @@ public class GcpSpannerAutoConfigurationTests {
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
 		}
+
 	}
+
 }

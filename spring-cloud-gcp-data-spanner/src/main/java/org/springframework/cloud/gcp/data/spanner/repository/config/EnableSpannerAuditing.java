@@ -41,17 +41,15 @@ import org.springframework.data.domain.AuditorAware;
 public @interface EnableSpannerAuditing {
 
 	/**
-	 * Configures a {@link AuditorAware} bean to be used to lookup the current
-	 * principal.
-	 *
-	 * @return the name of a custom auditor provider. If blank then one will be looked up bean type.
+	 * Configures a {@link AuditorAware} bean to be used to lookup the current principal.
+	 * @return the name of a custom auditor provider. If blank then one will be looked up
+	 * bean type.
 	 */
 	String auditorAwareRef() default "";
 
 	/**
 	 * Configures whether the creation and modification dates are set. Defaults to
 	 * {@literal true}.
-	 *
 	 * @return whether dates are set by the auditing functionality.
 	 */
 	boolean setDates() default true;
@@ -59,16 +57,17 @@ public @interface EnableSpannerAuditing {
 	/**
 	 * Configures whether the entity shall be marked as modified on creation. Defaults to
 	 * {@literal true}.
-	 *
 	 * @return whether an entity is marked as modified when it is created.
 	 */
 	boolean modifyOnCreate() default true;
 
 	/**
 	 * Configures a {@link DateTimeProvider} bean name that allows customizing the
-	 * {@link org.joda.time.DateTime} to be used for setting creation and modification dates.
-	 *
-	 * @return the name of the custom time provider. If blank then one will be looked up bean type.
+	 * {@link org.joda.time.DateTime} to be used for setting creation and modification
+	 * dates.
+	 * @return the name of the custom time provider. If blank then one will be looked up
+	 * bean type.
 	 */
 	String dateTimeProviderRef() default "";
+
 }

@@ -45,4 +45,5 @@ public class GcpStorageDisableTests {
 			assertThat(thrown).isInstanceOf(NoSuchBeanDefinitionException.class);
 		});
 	}
+
 }

@@ -43,12 +43,10 @@ import org.springframework.messaging.MessageHandler;
  * @author Artem Bilan
  * @author Daniel Zou
  */
-public class PubSubMessageChannelBinder
-		extends AbstractMessageChannelBinder<ExtendedConsumerProperties<PubSubConsumerProperties>,
-		ExtendedProducerProperties<PubSubProducerProperties>,
-		PubSubChannelProvisioner>
-	implements ExtendedPropertiesBinder<MessageChannel, PubSubConsumerProperties,
-		PubSubProducerProperties> {
+public class PubSubMessageChannelBinder extends
+		AbstractMessageChannelBinder<ExtendedConsumerProperties<PubSubConsumerProperties>, ExtendedProducerProperties<PubSubProducerProperties>, PubSubChannelProvisioner>
+		implements
+		ExtendedPropertiesBinder<MessageChannel, PubSubConsumerProperties, PubSubProducerProperties> {
 
 	private final PubSubTemplate pubSubTemplate;
 
@@ -71,26 +69,31 @@ public class PubSubMessageChannelBinder
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
 			MessageChannel errorChannel) {
 
-		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
+		PubSubMessageHandler messageHandler = new PubSubMessageHandler(
+				this.pubSubTemplate, destination.getName());
 		messageHandler.setBeanFactory(getBeanFactory());
 		return messageHandler;
 	}
 
 	@Override
-	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
+	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination,
+			String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
 
-		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		return new PubSubInboundChannelAdapter(this.pubSubTemplate,
+				destination.getName());
 	}
 
 	@Override
 	public PubSubConsumerProperties getExtendedConsumerProperties(String channelName) {
-		return this.pubSubExtendedBindingProperties.getExtendedConsumerProperties(channelName);
+		return this.pubSubExtendedBindingProperties
+				.getExtendedConsumerProperties(channelName);
 	}
 
 	@Override
 	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
-		return this.pubSubExtendedBindingProperties.getExtendedProducerProperties(channelName);
+		return this.pubSubExtendedBindingProperties
+				.getExtendedProducerProperties(channelName);
 	}
 
 	@Override
@@ -111,10 +114,13 @@ public class PubSubMessageChannelBinder
 	}
 
 	@Override
-	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination,
+	protected PolledConsumerResources createPolledConsumerResources(String name,
+			String group, ConsumerDestination destination,
 			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
-		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
-				registerErrorInfrastructure(destination, group, consumerProperties, true));
+		return new PolledConsumerResources(
+				new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
+				registerErrorInfrastructure(destination, group, consumerProperties,
+						true));
 	}
 
 }

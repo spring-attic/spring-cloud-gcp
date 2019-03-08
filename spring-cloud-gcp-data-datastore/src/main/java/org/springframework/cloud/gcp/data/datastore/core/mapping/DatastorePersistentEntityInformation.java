@@ -34,7 +34,6 @@ public class DatastorePersistentEntityInformation<T, ID>
 	/**
 	 * Creates a new {@link DatastorePersistentEntityInformation} for the given
 	 * {@link DatastorePersistentEntity}.
-	 *
 	 * @param entity must not be {@literal null}.
 	 */
 	public DatastorePersistentEntityInformation(DatastorePersistentEntity<T> entity) {
@@ -52,4 +51,5 @@ public class DatastorePersistentEntityInformation<T, ID>
 	public Class<ID> getIdType() {
 		return (Class<ID>) this.persistentEntity.getIdPropertyOrFail().getType();
 	}
+
 }

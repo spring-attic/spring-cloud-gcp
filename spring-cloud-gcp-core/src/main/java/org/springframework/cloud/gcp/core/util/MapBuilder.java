@@ -24,15 +24,15 @@ import org.springframework.util.Assert;
 
 /**
  * Utility for building an immutable, type-safe {@link Map}.
- * <p>Underlying implementation uses a {@link HashMap}, but disallows {@code null} keys,
- * {@code null} values, and duplicate keys. This is consistent with Java 9 {@code Map.of()}
- * static factory method, which will eventually replace the uses of this utility.
+ * <p>
+ * Underlying implementation uses a {@link HashMap}, but disallows {@code null} keys,
+ * {@code null} values, and duplicate keys. This is consistent with Java 9
+ * {@code Map.of()} static factory method, which will eventually replace the uses of this
+ * utility.
  *
  * @param <K> map key type
  * @param <V> map value type
- *
  * @author Elena Felder
- *
  * @since 1.1
  */
 public final class MapBuilder<K, V> {

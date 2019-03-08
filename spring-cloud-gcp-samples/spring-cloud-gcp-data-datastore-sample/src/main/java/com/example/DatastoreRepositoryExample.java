@@ -61,8 +61,8 @@ public class DatastoreRepositoryExample {
 					new TreeSet<>(Arrays.asList(
 							new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
 							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12)))));
-			Singer richardRoe = new Singer("singer3", "Richard", "Roe",
-					new HashSet<>(Arrays.asList(new Album("c", LocalDate.of(2000, Month.AUGUST, 31)))));
+			Singer richardRoe = new Singer("singer3", "Richard", "Roe", new HashSet<>(
+					Arrays.asList(new Album("c", LocalDate.of(2000, Month.AUGUST, 31)))));
 
 			this.singerRepository.saveAll(Arrays.asList(janeDoe, richardRoe));
 
@@ -90,12 +90,12 @@ public class DatastoreRepositoryExample {
 
 		// Retrieving by keys or querying with a restriction to a single entity group
 		// / family is strongly consistent.
-		this.singerRepository
-				.findAllById(Arrays.asList("singer1", "singer2", "singer3"))
+		this.singerRepository.findAllById(Arrays.asList("singer1", "singer2", "singer3"))
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
 
-		//Query by example: find all singers with the last name "Doe"
-		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
+		// Query by example: find all singers with the last name "Doe"
+		Iterable<Singer> singers = this.singerRepository
+				.findAll(Example.of(new Singer(null, null, "Doe", null)));
 		System.out.println("Query by example");
 		singers.forEach(System.out::println);
 	}
@@ -132,4 +132,5 @@ public class DatastoreRepositoryExample {
 				ConvertersExample.ALBUM_STRING_CONVERTER,
 				ConvertersExample.STRING_ALBUM_CONVERTER));
 	}
+
 }

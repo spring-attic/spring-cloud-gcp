@@ -28,6 +28,7 @@ import org.springframework.data.annotation.Id;
  */
 @Entity
 public class EmbeddableTreeNode {
+
 	@Id
 	long value;
 
@@ -35,7 +36,8 @@ public class EmbeddableTreeNode {
 
 	EmbeddableTreeNode right;
 
-	public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
+	public EmbeddableTreeNode(long value, EmbeddableTreeNode left,
+			EmbeddableTreeNode right) {
 		this.value = value;
 		this.left = left;
 		this.right = right;
@@ -50,9 +52,8 @@ public class EmbeddableTreeNode {
 			return false;
 		}
 		EmbeddableTreeNode treeNode = (EmbeddableTreeNode) o;
-		return this.value == treeNode.value &&
-				Objects.equals(this.left, treeNode.left) &&
-				Objects.equals(this.right, treeNode.right);
+		return this.value == treeNode.value && Objects.equals(this.left, treeNode.left)
+				&& Objects.equals(this.right, treeNode.right);
 	}
 
 	@Override
@@ -63,10 +64,8 @@ public class EmbeddableTreeNode {
 
 	@Override
 	public String toString() {
-		return "EmbeddableTreeNode{" +
-				"value=" + this.value +
-				", left=" + this.left +
-				", right=" + this.right +
-				'}';
+		return "EmbeddableTreeNode{" + "value=" + this.value + ", left=" + this.left
+				+ ", right=" + this.right + '}';
 	}
+
 }

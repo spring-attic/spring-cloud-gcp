@@ -25,11 +25,12 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
- * Implementation of a Spanner Query Method that handles all Part-tree / name-convention query methods.
+ * Implementation of a Spanner Query Method that handles all Part-tree / name-convention
+ * query methods.
+ *
  * @param <T> the return type of the Query Method
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
@@ -63,14 +64,14 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.performReadWriteTransaction(getDeleteFunction(parameters));
 		}
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
-						parameters, this.spannerTemplate, this.spannerMappingContext);
+				parameters, this.spannerTemplate, this.spannerMappingContext);
 	}
 
 	private Function<SpannerTemplate, List> getDeleteFunction(Object[] parameters) {
 		return (transactionTemplate) -> {
-			List<T> entitiesToDelete = SpannerStatementQueryExecutor
-					.executeQuery(this.entityType, this.tree, parameters,
-							transactionTemplate, this.spannerMappingContext);
+			List<T> entitiesToDelete = SpannerStatementQueryExecutor.executeQuery(
+					this.entityType, this.tree, parameters, transactionTemplate,
+					this.spannerMappingContext);
 			transactionTemplate.deleteAll(entitiesToDelete);
 
 			List result = null;

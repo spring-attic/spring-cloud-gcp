@@ -45,7 +45,8 @@ public class EntityPropertyValueProviderTests {
 
 	private Datastore datastore;
 
-	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
+	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(
+			new DatastoreCustomConversions(), null);
 
 	/**
 	 * used to check exception messages and types.
@@ -53,59 +54,69 @@ public class EntityPropertyValueProviderTests {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
-	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =
-			(DatastorePersistentEntity<TestDatastoreItem>)
-					new DatastoreMappingContext().getPersistentEntity(TestDatastoreItem.class);
+	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity = (DatastorePersistentEntity<TestDatastoreItem>) new DatastoreMappingContext()
+			.getPersistentEntity(TestDatastoreItem.class);
 
 	@Before
 	public void setUp() {
-		this.datastore = HELPER.getOptions().toBuilder().setNamespace("ghijklmnop").build().getService();
+		this.datastore = HELPER.getOptions().toBuilder().setNamespace("ghijklmnop")
+				.build().getService();
 	}
 
 	@Test
 	public void getPropertyValue() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
-				.set("stringField", "string value")
-				.set("boolField", true)
-				.set("doubleField", 3.1415D)
-				.set("longField", 123L)
+		Entity entity = Entity
+				.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+				.set("stringField", "string value").set("boolField", true)
+				.set("doubleField", 3.1415D).set("longField", 123L)
 				.set("latLngField", LatLng.of(10, 20))
 				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
-				.set("blobField", Blob.copyFrom(bytes))
-				.build();
+				.set("blobField", Blob.copyFrom(bytes)).build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity,
+				this.twoStepsConversion);
 
-		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
-				.as("validate string field").isEqualTo("string value");
-		assertThat((Boolean) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField")))
-				.as("validate boolean field").isTrue();
-		assertThat((Double) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("doubleField")))
-				.as("validate double field").isEqualTo(3.1415D);
-		assertThat((Long) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("longField")))
-				.as("validate long field").isEqualTo(123L);
-		assertThat((LatLng) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("latLngField")))
-				.as("validate latLng field").isEqualTo(LatLng.of(10, 20));
-		assertThat((Timestamp) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("timestampField")))
-				.as("validate timestamp field")
-				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
-		assertThat((Blob) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("blobField")))
-				.as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
+		assertThat((String) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("stringField")))
+						.as("validate string field").isEqualTo("string value");
+		assertThat((Boolean) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("boolField")))
+						.as("validate boolean field").isTrue();
+		assertThat((Double) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("doubleField")))
+						.as("validate double field").isEqualTo(3.1415D);
+		assertThat((Long) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("longField")))
+						.as("validate long field").isEqualTo(123L);
+		assertThat((LatLng) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("latLngField")))
+						.as("validate latLng field").isEqualTo(LatLng.of(10, 20));
+		assertThat((Timestamp) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("timestampField")))
+						.as("validate timestamp field")
+						.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
+		assertThat((Blob) provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("blobField")))
+						.as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
 	}
 
 	@Test
 	public void testException() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("Unable to read property boolField; nested exception is " +
-				"org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException: " +
-				"Unable to convert class java.lang.Long to class java.lang.Boolean");
-		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
-				.set("boolField", 123L)
-				.build();
+		this.expectedException
+				.expectMessage("Unable to read property boolField; nested exception is "
+						+ "org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException: "
+						+ "Unable to convert class java.lang.Long to class java.lang.Boolean");
+		Entity entity = Entity
+				.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+				.set("boolField", 123L).build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity,
+				this.twoStepsConversion);
 
-		provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField"));
+		provider.getPropertyValue(
+				this.persistentEntity.getPersistentProperty("boolField"));
 	}
+
 }

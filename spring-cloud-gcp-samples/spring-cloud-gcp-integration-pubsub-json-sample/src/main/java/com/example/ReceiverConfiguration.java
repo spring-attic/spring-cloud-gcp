@@ -57,7 +57,8 @@ public class ReceiverConfiguration {
 	public PubSubInboundChannelAdapter messageChannelAdapter(
 			@Qualifier("pubSubInputChannel") MessageChannel inputChannel,
 			PubSubTemplate pubSubTemplate) {
-		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(pubSubTemplate, SUBSCRIPTION_NAME);
+		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
+				pubSubTemplate, SUBSCRIPTION_NAME);
 		adapter.setOutputChannel(inputChannel);
 		adapter.setAckMode(AckMode.MANUAL);
 		adapter.setPayloadType(Person.class);
@@ -77,4 +78,5 @@ public class ReceiverConfiguration {
 	public ArrayList<Person> processedPersonsList() {
 		return this.processedPersonsList;
 	}
+
 }

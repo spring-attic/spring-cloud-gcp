@@ -37,7 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class StackdriverJsonLayoutLoggerTests {
 
-	private static final Log LOGGER = LogFactory.getLog("StackdriverJsonLayoutLoggerTests");
+	private static final Log LOGGER = LogFactory
+			.getLog("StackdriverJsonLayoutLoggerTests");
 
 	@Test
 	public void testEmulatorConfig() {
@@ -47,7 +48,8 @@ public class StackdriverJsonLayoutLoggerTests {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			System.setOut(new java.io.PrintStream(out));
 
-			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID,
+					"12345678901234561234567890123456");
 			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_ID, "span123");
 			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT, "true");
 			mdc.put("foo", "bar");
@@ -58,17 +60,26 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
 			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
-			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests", data);
+			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME,
+					"StackdriverJsonLayoutLoggerTests", data);
 			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/12345678901234561234567890123456", data);
+					"projects/test-project/traces/12345678901234561234567890123456",
+					data);
 			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID))
+					.isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID))
+					.isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT))
+					.isFalse();
 			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
+			assertThat(data
+					.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE))
+							.isTrue();
+			assertThat(
+					data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE))
+							.isTrue();
 		}
 		finally {
 			System.setOut(oldOut);
@@ -91,7 +102,8 @@ public class StackdriverJsonLayoutLoggerTests {
 			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
 
 			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/00000000000000001234567890123456", data);
+					"projects/test-project/traces/00000000000000001234567890123456",
+					data);
 		}
 		finally {
 			System.setOut(oldOut);
@@ -123,10 +135,10 @@ public class StackdriverJsonLayoutLoggerTests {
 		}
 	}
 
-
 	private void checkData(String attribute, Object value, Map data) {
 		Object actual = data.get(attribute);
 		assertThat(actual).isNotNull();
 		assertThat(actual).isEqualTo(value);
 	}
+
 }

@@ -43,8 +43,9 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {DemoApplication.class})
+@SpringBootTest(classes = { DemoApplication.class })
 public class ApplicationTests {
+
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
@@ -68,6 +69,8 @@ public class ApplicationTests {
 		this.commandLineRunner.run();
 
 		assertThat(this.outputCapture.toString()).contains("Number of houses is 4");
-		assertThat(this.outputCapture.toString()).contains("636 Avenue of the Americas, NYC");
+		assertThat(this.outputCapture.toString())
+				.contains("636 Avenue of the Americas, NYC");
 	}
+
 }

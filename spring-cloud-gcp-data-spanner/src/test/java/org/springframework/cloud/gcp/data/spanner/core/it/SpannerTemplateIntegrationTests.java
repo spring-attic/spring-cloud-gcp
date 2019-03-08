@@ -93,7 +93,8 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 	public void readOnlyTransactionTest() {
 
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("A read-only transaction template cannot perform mutations.");
+		this.expectedEx.expectMessage(
+				"A read-only transaction template cannot perform mutations.");
 
 		Trade trade = Trade.aTrade();
 		this.spannerOperations.performReadOnlyTransaction((transactionOperations) -> {
@@ -120,5 +121,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 			// 1
 			assertThat(this.spannerTemplate.count(Trade.class)).isEqualTo(1L);
 		}
+
 	}
+
 }

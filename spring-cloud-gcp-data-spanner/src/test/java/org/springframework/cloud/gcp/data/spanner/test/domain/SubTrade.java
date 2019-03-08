@@ -68,4 +68,5 @@ public class SubTrade {
 	public void setSubTradeComponentList(List<SubTradeComponent> subTradeComponentList) {
 		this.subTradeComponentList = subTradeComponentList;
 	}
+
 }

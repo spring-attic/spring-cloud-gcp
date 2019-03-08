@@ -41,8 +41,10 @@ public class SourceExample {
 	@PostMapping("/newMessage")
 	public UserMessage sendMessage(@RequestParam("messageBody") String messageBody,
 			@RequestParam("username") String username) {
-		UserMessage userMessage = new UserMessage(messageBody, username, LocalDateTime.now());
+		UserMessage userMessage = new UserMessage(messageBody, username,
+				LocalDateTime.now());
 		this.source.output().send(new GenericMessage<>(userMessage));
 		return userMessage;
 	}
+
 }

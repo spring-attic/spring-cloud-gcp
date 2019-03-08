@@ -24,7 +24,6 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 public class SpannerPageableQueryOptions extends SpannerQueryOptions {
@@ -68,4 +67,5 @@ public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 		super.setAllowPartialRead(allowPartialRead);
 		return this;
 	}
+
 }

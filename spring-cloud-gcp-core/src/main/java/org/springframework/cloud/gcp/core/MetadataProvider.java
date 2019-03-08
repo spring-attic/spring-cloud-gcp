@@ -20,7 +20,6 @@ package org.springframework.cloud.gcp.core;
  * Interface for retrieving properties from Metadata Server.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 public interface MetadataProvider {

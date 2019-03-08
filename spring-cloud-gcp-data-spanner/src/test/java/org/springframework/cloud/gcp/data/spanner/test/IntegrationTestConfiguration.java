@@ -128,7 +128,8 @@ public class IntegrationTestConfiguration {
 
 	@Bean
 	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
 			SpannerSchemaUtils spannerSchemaUtils) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
@@ -164,12 +165,16 @@ public class IntegrationTestConfiguration {
 	public SpannerSchemaUtils spannerSchemaUtils(
 			SpannerMappingContext spannerMappingContext,
 			SpannerEntityProcessor spannerEntityProcessor) {
-		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor, true);
+		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor,
+				true);
 	}
 
 	@Bean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			DatabaseAdminClient databaseAdminClient, DatabaseClient databaseClient, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseClient, databaseId);
+			DatabaseAdminClient databaseAdminClient, DatabaseClient databaseClient,
+			DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseClient,
+				databaseId);
 	}
+
 }

@@ -34,11 +34,11 @@ import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
- * A <a href="https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub Synchronous pull</a>
- * implementation of {@link AbstractMessageSource}.
+ * A <a href=
+ * "https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub
+ * Synchronous pull</a> implementation of {@link AbstractMessageSource}.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Object> {
@@ -59,7 +59,8 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
 			String subscriptionName) {
-		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
+		Assert.notNull(pubSubSubscriberOperations,
+				"Pub/Sub subscriber template can't be null.");
 		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
@@ -90,8 +91,9 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	/**
 	 * Provides a single polled message.
-	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
-	 * by {@code fetchSize}.
+	 * <p>
+	 * Messages are received from Pub/Sub by synchronous pull, in batches determined by
+	 * {@code fetchSize}.
 	 * @param fetchSize number of messages to fetch from Pub/Sub.
 	 * @return {@link Message} wrapper containing the original message.
 	 */
@@ -101,7 +103,8 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 			Integer maxMessages = (fetchSize > 0) ? fetchSize : 1;
 
 			List<? extends ConvertedAcknowledgeablePubsubMessage<?>> messages = this.pubSubSubscriberOperations
-					.pullAndConvert(this.subscriptionName, maxMessages, !this.blockOnPull, this.payloadType);
+					.pullAndConvert(this.subscriptionName, maxMessages, !this.blockOnPull,
+							this.payloadType);
 			if (messages.isEmpty()) {
 				return null;
 			}
@@ -124,25 +127,26 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	/**
 	 * Applies header customizations and acknowledges the message, if necessary.
-	 * <p>{@link AckMode#AUTO} and {@link AckMode#AUTO_ACK} result in automatic acking on
+	 * <p>
+	 * {@link AckMode#AUTO} and {@link AckMode#AUTO_ACK} result in automatic acking on
 	 * success. {@link AckMode#AUTO} results in automatic nacking on failure.
 	 * @param message source Pub/Sub message.
 	 * @return {@link Message} wrapper containing the original message.
 	 */
-	private AbstractIntegrationMessageBuilder<?> processMessage(ConvertedAcknowledgeablePubsubMessage<?> message) {
+	private AbstractIntegrationMessageBuilder<?> processMessage(
+			ConvertedAcknowledgeablePubsubMessage<?> message) {
 		if (message == null) {
 			return null;
 		}
 
-		Map<String, Object> messageHeaders =
-				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
+		Map<String, Object> messageHeaders = this.headerMapper
+				.toHeaders(message.getPubsubMessage().getAttributesMap());
 
 		messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
 		messageHeaders.put(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
-					new PubSubAcknowledgmentCallback(message, this.ackMode));
+				new PubSubAcknowledgmentCallback(message, this.ackMode));
 
-		return getMessageBuilderFactory()
-				.withPayload(message.getPayload())
+		return getMessageBuilderFactory().withPayload(message.getPayload())
 				.copyHeaders(messageHeaders);
 	}
 

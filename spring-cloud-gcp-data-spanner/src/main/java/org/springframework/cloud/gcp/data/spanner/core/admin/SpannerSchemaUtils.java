@@ -41,7 +41,6 @@ import org.springframework.util.Assert;
  * Contains functions related to the table schema of entities.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerSchemaUtils {
@@ -101,17 +100,16 @@ public class SpannerSchemaUtils {
 	/**
 	 * Gets the DDL string to create the table for the given entity in Cloud Spanner. This
 	 * is just one of the possible schemas that can support the given entity type. The
-	 * specific schema
-	 * is determined by the configured property type converters used by the read and write
-	 * methods in this SpannerOperations and will be compatible with those methods.
+	 * specific schema is determined by the configured property type converters used by
+	 * the read and write methods in this SpannerOperations and will be compatible with
+	 * those methods.
 	 * @param entityClass the entity type.
 	 * @param <T> the type of the entity class
 	 * @return the DDL string.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> String getCreateTableDdlString(Class<T> entityClass) {
-		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>)
-				this.mappingContext
+		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>) this.mappingContext
 				.getPersistentEntity(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder(
@@ -174,7 +172,8 @@ public class SpannerSchemaUtils {
 					.getCorrespondingSpannerJavaType(innerType, true);
 
 			if (spannerColumnType == null) {
-				spannerColumnType = SpannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
+				spannerColumnType = SpannerTypeMapper
+						.getSimpleTypeCodeForJavaType(spannerJavaType);
 			}
 
 			if (spannerColumnType == null) {
@@ -188,7 +187,7 @@ public class SpannerSchemaUtils {
 					spannerPersistentProperty.isCommitTimestamp());
 		}
 		spannerJavaType = spannerEntityProcessor
-					.getCorrespondingSpannerJavaType(columnType, false);
+				.getCorrespondingSpannerJavaType(columnType, false);
 
 		if (spannerJavaType == null) {
 			throw new SpannerDataException(
@@ -232,8 +231,8 @@ public class SpannerSchemaUtils {
 	private <T> void addColumnDdlStrings(
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
-		spannerPersistentEntity.doWithColumnBackedProperties(
-				(spannerPersistentProperty) -> {
+		spannerPersistentEntity
+				.doWithColumnBackedProperties((spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
 								this.mappingContext.getPersistentEntity(
@@ -251,9 +250,11 @@ public class SpannerSchemaUtils {
 			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
 		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
 				seenClasses,
-				(type, parent) -> getCreateTableDdlString(type) + (
-						(parent != null) ? ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-						+ ((this.createInterleavedTableDdlOnDeleteCascade) ? "CASCADE" : "NO ACTION") : ""),
+				(type, parent) -> getCreateTableDdlString(type) + ((parent != null)
+						? ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
+								+ ((this.createInterleavedTableDdlOnDeleteCascade)
+										? "CASCADE" : "NO ACTION")
+						: ""),
 				false);
 	}
 
@@ -276,11 +277,12 @@ public class SpannerSchemaUtils {
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) ->
-						getDdlStringForInterleavedHierarchy(
-						spannerPersistentEntity.tableName(),
-						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
-						seenClasses, generateSingleDdlStringFunc, prependDdlString));
+				(PropertyHandler<SpannerPersistentProperty>) (
+						spannerPersistentProperty) -> getDdlStringForInterleavedHierarchy(
+								spannerPersistentEntity.tableName(),
+								spannerPersistentProperty.getColumnInnerType(),
+								ddlStrings, seenClasses, generateSingleDdlStringFunc,
+								prependDdlString));
 	}
 
 	private String getTypeDdlString(Type.Code type, boolean isArray,

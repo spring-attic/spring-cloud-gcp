@@ -46,8 +46,9 @@ public class TwoStepsConversionsTests {
 	@Test
 	public void convertOnReadReturnsNullWhenConvertingNullSimpleValue() {
 
-		assertThat(this.twoStepsConversions.<String>convertOnRead(null, null, String.class))
-				.isNull();
+		assertThat(
+				this.twoStepsConversions.<String>convertOnRead(null, null, String.class))
+						.isNull();
 	}
 
 	@Test
@@ -69,7 +70,8 @@ public class TwoStepsConversionsTests {
 		okayList.add("128");
 		okayList.add("256");
 
-		Set<Integer> result = this.twoStepsConversions.<Set<Integer>>convertOnRead(okayList, Set.class, Integer.class);
+		Set<Integer> result = this.twoStepsConversions
+				.<Set<Integer>>convertOnRead(okayList, Set.class, Integer.class);
 		assertThat(result).isNotNull();
 		assertThat(result).containsExactlyInAnyOrder(128, 256);
 	}
@@ -77,7 +79,8 @@ public class TwoStepsConversionsTests {
 	@Test
 	public void convertOnReadConvertsSimpleElementTypesCorrectly() {
 
-		Integer result = this.twoStepsConversions.<Integer>convertOnRead("512", null, Integer.class);
+		Integer result = this.twoStepsConversions.<Integer>convertOnRead("512", null,
+				Integer.class);
 		assertThat(result).isNotNull();
 		assertThat(result).isEqualTo(512);
 	}
@@ -86,14 +89,14 @@ public class TwoStepsConversionsTests {
 	public void convertOnReadFailsOnIncompatibleTypes() {
 		assertThatThrownBy(() -> {
 			this.twoStepsConversions.<String>convertOnRead(3, null, String.class);
-		}).isInstanceOf(DatastoreDataException.class)
-		.hasMessageContaining("Unable to convert class java.lang.Integer to class java.lang.String");
+		}).isInstanceOf(DatastoreDataException.class).hasMessageContaining(
+				"Unable to convert class java.lang.Integer to class java.lang.String");
 	}
-
 
 	@Test
 	public void convertOnReadUsesCustomConverter() {
-		List<String> numberNames = Arrays.asList("zero", "one", "two", "three", "four", "five");
+		List<String> numberNames = Arrays.asList("zero", "one", "two", "three", "four",
+				"five");
 		Converter<Long, String> converter = new Converter<Long, String>() {
 			@Override
 			public String convert(Long num) {
@@ -106,7 +109,8 @@ public class TwoStepsConversionsTests {
 
 		TwoStepsConversions twoStepsConversionsThatSpeaksEnglish = new TwoStepsConversions(
 				new DatastoreCustomConversions(Arrays.asList(converter)), null);
-		String result = twoStepsConversionsThatSpeaksEnglish.<String>convertOnRead(3L, null, String.class);
+		String result = twoStepsConversionsThatSpeaksEnglish.<String>convertOnRead(3L,
+				null, String.class);
 		assertThat(result).isEqualTo("three");
 	}
 

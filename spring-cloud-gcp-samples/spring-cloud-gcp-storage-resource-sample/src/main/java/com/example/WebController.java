@@ -44,8 +44,7 @@ public class WebController {
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String readGcsFile() throws IOException {
-		return StreamUtils.copyToString(
-				this.gcsFile.getInputStream(),
+		return StreamUtils.copyToString(this.gcsFile.getInputStream(),
 				Charset.defaultCharset()) + "\n";
 	}
 
@@ -56,4 +55,5 @@ public class WebController {
 		}
 		return "file was updated\n";
 	}
+
 }

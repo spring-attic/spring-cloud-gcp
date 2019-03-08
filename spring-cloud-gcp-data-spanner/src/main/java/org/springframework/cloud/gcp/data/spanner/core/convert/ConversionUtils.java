@@ -33,7 +33,6 @@ import org.springframework.util.Assert;
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public final class ConversionUtils {
@@ -51,11 +50,12 @@ public final class ConversionUtils {
 	}
 
 	public static boolean isIterableNonByteArrayType(Class propType) {
-		return Iterable.class.isAssignableFrom(propType) && !ByteArray.class.isAssignableFrom(propType);
+		return Iterable.class.isAssignableFrom(propType)
+				&& !ByteArray.class.isAssignableFrom(propType);
 	}
 
-	static <T> Iterable<T> convertIterable(
-			Iterable<Object> source, Class<T> targetType, SpannerCustomConverter converter) {
+	static <T> Iterable<T> convertIterable(Iterable<Object> source, Class<T> targetType,
+			SpannerCustomConverter converter) {
 		List<T> result = new ArrayList<>();
 		source.forEach((item) -> result.add(converter.convert(item, targetType)));
 		return result;
@@ -67,8 +67,8 @@ public final class ConversionUtils {
 	}
 
 	public static boolean ignoreForWriteLazyProxy(Object object) {
-		if (Proxy.isProxyClass(object.getClass())
-				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
+		if (Proxy.isProxyClass(object.getClass()) && (Proxy.getInvocationHandler(
+				object) instanceof SimpleLazyDynamicInvocationHandler)) {
 			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
 					.getInvocationHandler(object);
 			return !handler.isEvaluated();
@@ -76,7 +76,8 @@ public final class ConversionUtils {
 		return false;
 	}
 
-	private static final class SimpleLazyDynamicInvocationHandler<T> implements InvocationHandler {
+	private static final class SimpleLazyDynamicInvocationHandler<T>
+			implements InvocationHandler {
 
 		private final Supplier<T> supplierFunc;
 
@@ -85,7 +86,8 @@ public final class ConversionUtils {
 		private T value;
 
 		private SimpleLazyDynamicInvocationHandler(Supplier<T> supplierFunc) {
-			Assert.notNull(supplierFunc, "A non-null supplier function is required for a lazy proxy.");
+			Assert.notNull(supplierFunc,
+					"A non-null supplier function is required for a lazy proxy.");
 			this.supplierFunc = supplierFunc;
 		}
 
@@ -94,12 +96,15 @@ public final class ConversionUtils {
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		public Object invoke(Object proxy, Method method, Object[] args)
+				throws Throwable {
 			if (!this.isEvaluated) {
 				this.value = this.supplierFunc.get();
 				this.isEvaluated = true;
 			}
 			return method.invoke(this.value, args);
 		}
+
 	}
+
 }

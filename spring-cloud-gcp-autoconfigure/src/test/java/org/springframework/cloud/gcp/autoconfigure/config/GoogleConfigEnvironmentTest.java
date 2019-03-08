@@ -39,4 +39,5 @@ public class GoogleConfigEnvironmentTest {
 		var.setValue(encodedString);
 		assertThat(var.getValue()).isEqualTo(value);
 	}
+
 }

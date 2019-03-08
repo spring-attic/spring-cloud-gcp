@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 @Entity
 @DiscriminatorValue("bluegrass")
 public class BluegrassBand extends Band {
+
 	public BluegrassBand(String name) {
 		super(name);
 	}
@@ -35,4 +36,5 @@ public class BluegrassBand extends Band {
 	public String toString() {
 		return this.name + " is into progressive bluegrass and folk-country.";
 	}
+
 }

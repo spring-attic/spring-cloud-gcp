@@ -25,4 +25,5 @@ package org.springframework.cloud.gcp.core;
 public interface GcpProjectIdProvider {
 
 	String getProjectId();
+
 }

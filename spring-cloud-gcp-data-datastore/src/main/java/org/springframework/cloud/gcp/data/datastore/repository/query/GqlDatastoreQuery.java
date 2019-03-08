@@ -52,9 +52,9 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotation;
 
 /**
  * Query Method for GQL queries.
+ *
  * @param <T> the return type of the Query Method
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
@@ -62,8 +62,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	// A small string that isn't used in GQL syntax
 	private static final String ENTITY_CLASS_NAME_BOOKEND = "|";
 
-	private static final Pattern CLASS_NAME_PATTERN = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
-			+ ENTITY_CLASS_NAME_BOOKEND + "");
+	private static final Pattern CLASS_NAME_PATTERN = Pattern.compile(
+			"\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\" + ENTITY_CLASS_NAME_BOOKEND + "");
 
 	private final String originalGql;
 
@@ -81,7 +81,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param queryMethod the underlying query method to support.
 	 * @param datastoreTemplate used for executing queries.
 	 * @param gql the query text.
-	 * @param evaluationContextProvider the provider used to evaluate SpEL expressions in queries.
+	 * @param evaluationContextProvider the provider used to evaluate SpEL expressions in
+	 * queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
@@ -113,7 +114,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		if (getAnnotation(this.entityType.getSuperclass(), DiscriminatorField.class) != null) {
+		if (getAnnotation(this.entityType.getSuperclass(),
+				DiscriminatorField.class) != null) {
 			throw new DatastoreDataException("Can't append discrimination condition");
 		}
 
@@ -121,7 +123,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				getOriginalParamTags(), parameters);
 
 		GqlQuery query = bindArgsToGqlQuery(parsedQueryWithTagsAndValues.finalGql,
-				parsedQueryWithTagsAndValues.tagsOrdered, parsedQueryWithTagsAndValues.params);
+				parsedQueryWithTagsAndValues.tagsOrdered,
+				parsedQueryWithTagsAndValues.params);
 
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
@@ -133,8 +136,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
-		List rawResult = (found != null)
-				? (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList())
+		List rawResult = (found != null) ? (List) StreamSupport
+				.stream(found.spliterator(), false).collect(Collectors.toList())
 				: Collections.emptyList();
 
 		Object result;
@@ -217,8 +220,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(String gql,
-			List<String> tags,
-			List vals) {
+			List<String> tags, List vals) {
 		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
 		builder.setAllowLiteral(true);
 		if (tags.size() != vals.size()) {
@@ -230,18 +232,17 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			Object val = vals.get(i);
 			Object boundVal;
 			if (ValueUtil.isCollectionLike(val.getClass())) {
-				boundVal = convertCollectionParamToCompatibleArray((List) ValueUtil.toListIfArray(val));
+				boundVal = convertCollectionParamToCompatibleArray(
+						(List) ValueUtil.toListIfArray(val));
 			}
 			else {
-				boundVal = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-						.convertOnWriteSingle(val).get();
+				boundVal = this.datastoreTemplate.getDatastoreEntityConverter()
+						.getConversions().convertOnWriteSingle(val).get();
 			}
 			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), boundVal);
 		}
 		return builder.build();
 	}
-
-
 
 	// Convenience class to hold a grouping of GQL, tags, and parameter values.
 	private class ParsedQueryWithTagsAndValues {
@@ -261,7 +262,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 			SpelQueryContext.EvaluatingSpelQueryContext spelQueryContext = getEvaluatingSpelQueryContext();
 
-			SpelEvaluator spelEvaluator = spelQueryContext.parse(getGqlResolvedEntityClassName(),
+			SpelEvaluator spelEvaluator = spelQueryContext.parse(
+					getGqlResolvedEntityClassName(),
 					GqlDatastoreQuery.this.queryMethod.getParameters());
 			Map<String, Object> results = spelEvaluator.evaluate(this.rawParams);
 			this.finalGql = spelEvaluator.getQueryString();
@@ -275,7 +277,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		private String getGqlResolvedEntityClassName() {
 			if (GqlDatastoreQuery.this.gqlResolvedEntityClassName == null) {
-				Matcher matcher = CLASS_NAME_PATTERN.matcher(GqlDatastoreQuery.this.originalGql);
+				Matcher matcher = CLASS_NAME_PATTERN
+						.matcher(GqlDatastoreQuery.this.originalGql);
 				String result = GqlDatastoreQuery.this.originalGql;
 				while (matcher.find()) {
 					String matched = matcher.group();
@@ -289,7 +292,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 									"The class used in the GQL statement is not a Cloud Datastore persistent entity: "
 											+ className);
 						}
-						result = result.replace(matched, datastorePersistentEntity.kindName());
+						result = result.replace(matched,
+								datastorePersistentEntity.kindName());
 					}
 					catch (ClassNotFoundException ex) {
 						throw new DatastoreDataException(
@@ -316,10 +320,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							while (originalTags.contains(newTag));
 							originalTags.add(newTag);
 							return newTag;
-						}, (prefix, newTag) -> newTag)
-						.withEvaluationContextProvider(GqlDatastoreQuery.this.evaluationContextProvider);
+						}, (prefix, newTag) -> newTag).withEvaluationContextProvider(
+								GqlDatastoreQuery.this.evaluationContextProvider);
 			}
 			return GqlDatastoreQuery.this.evaluatingSpelQueryContext;
 		}
+
 	}
+
 }

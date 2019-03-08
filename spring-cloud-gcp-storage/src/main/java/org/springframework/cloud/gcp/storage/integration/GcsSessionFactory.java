@@ -53,4 +53,5 @@ public class GcsSessionFactory implements SessionFactory<BlobInfo>, SharedSessio
 	public void resetSharedSession() {
 
 	}
+
 }

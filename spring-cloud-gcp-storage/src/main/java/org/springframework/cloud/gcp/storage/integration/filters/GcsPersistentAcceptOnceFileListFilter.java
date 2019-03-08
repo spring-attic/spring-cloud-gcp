@@ -30,7 +30,8 @@ import org.springframework.integration.metadata.ConcurrentMetadataStore;
 public class GcsPersistentAcceptOnceFileListFilter
 		extends AbstractPersistentAcceptOnceFileListFilter<BlobInfo> {
 
-	public GcsPersistentAcceptOnceFileListFilter(ConcurrentMetadataStore store, String prefix) {
+	public GcsPersistentAcceptOnceFileListFilter(ConcurrentMetadataStore store,
+			String prefix) {
 		super(store, prefix);
 	}
 
@@ -43,4 +44,5 @@ public class GcsPersistentAcceptOnceFileListFilter
 	protected String fileName(BlobInfo blobInfo) {
 		return (blobInfo != null) ? blobInfo.getName() : null;
 	}
+
 }

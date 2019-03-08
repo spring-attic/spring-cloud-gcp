@@ -36,28 +36,31 @@ public class SpannerConvertersTest {
 	public void dateConversionTest() {
 		Date date = Date.fromYearMonthDay(2018, 3, 29);
 		assertThat(SpannerConverters.JAVA_TO_SPANNER_DATE_CONVERTER
-				.convert(SpannerConverters.SPANNER_TO_JAVA_DATE_CONVERTER.convert(date))).isEqualTo(date);
+				.convert(SpannerConverters.SPANNER_TO_JAVA_DATE_CONVERTER.convert(date)))
+						.isEqualTo(date);
 	}
 
 	@Test
 	public void sqlDateConversionTest() {
 		Date date = Date.fromYearMonthDay(2018, 3, 29);
-		assertThat(SpannerConverters.JAVA_SQL_TO_SPANNER_DATE_CONVERTER
-				.convert(SpannerConverters.SPANNER_TO_JAVA_SQL_DATE_CONVERTER.convert(date))).isEqualTo(date);
+		assertThat(SpannerConverters.JAVA_SQL_TO_SPANNER_DATE_CONVERTER.convert(
+				SpannerConverters.SPANNER_TO_JAVA_SQL_DATE_CONVERTER.convert(date)))
+						.isEqualTo(date);
 	}
 
 	@Test
 	public void timestampInstantConversionTest() {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
-		assertThat(SpannerConverters.INSTANT_TIMESTAMP_CONVERTER
-				.convert(SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp))).isEqualTo(timestamp);
+		assertThat(SpannerConverters.INSTANT_TIMESTAMP_CONVERTER.convert(
+				SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp)))
+						.isEqualTo(timestamp);
 	}
 
 	@Test
 	public void timestampConversionTest() {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
-		assertThat(SpannerConverters.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER
-				.convert(SpannerConverters.SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp)))
+		assertThat(SpannerConverters.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER.convert(
+				SpannerConverters.SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp)))
 						.isEqualTo(timestamp);
 	}
 
@@ -65,7 +68,8 @@ public class SpannerConvertersTest {
 	public void bytesConversionTest() {
 		ByteArray byteArray = ByteArray.copyFrom("some bytes");
 		assertThat(SpannerConverters.JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER
-				.convert(SpannerConverters.SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER.convert(byteArray)))
-						.isEqualTo(byteArray);
+				.convert(SpannerConverters.SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER
+						.convert(byteArray))).isEqualTo(byteArray);
 	}
+
 }

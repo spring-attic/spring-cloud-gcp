@@ -36,4 +36,5 @@ public class AllowedPayload {
 	 * A test property.
 	 */
 	public int value;
+
 }

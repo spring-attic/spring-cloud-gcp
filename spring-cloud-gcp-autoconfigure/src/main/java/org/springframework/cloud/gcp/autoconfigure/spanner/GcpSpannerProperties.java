@@ -24,6 +24,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Settings for Spring Data Cloud Spanner.
+ *
  * @author Chengyuan Zhao
  * @author Ray Tsang
  */
@@ -156,7 +157,7 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	public void setCreateInterleavedTableDdlOnDeleteCascade(
 			boolean createInterleavedTableDdlOnDeleteCascade) {
-		this.createInterleavedTableDdlOnDeleteCascade =
-				createInterleavedTableDdlOnDeleteCascade;
+		this.createInterleavedTableDdlOnDeleteCascade = createInterleavedTableDdlOnDeleteCascade;
 	}
+
 }

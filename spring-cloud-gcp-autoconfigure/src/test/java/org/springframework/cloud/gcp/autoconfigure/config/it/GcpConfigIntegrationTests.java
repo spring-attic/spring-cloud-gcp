@@ -54,7 +54,8 @@ public class GcpConfigIntegrationTests {
 	@Test
 	public void testConfiguration() {
 		this.context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpConfigBootstrapConfiguration.class)
+				.sources(GcpContextAutoConfiguration.class,
+						GcpConfigBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.config.enabled=true",
 						"spring.application.name=myapp",
@@ -66,4 +67,5 @@ public class GcpConfigIntegrationTests {
 		assertThat(this.context.getEnvironment().getProperty("myapp.feature-x-enabled"))
 				.isEqualTo("true");
 	}
+
 }

@@ -34,8 +34,10 @@ import org.springframework.cloud.gcp.core.GcpScope;
 /**
  * Returns the credentials that are written to a system property by the Cloud SQL starter.
  *
- * <p>Since the sockets factory creates an instance of this class by reflection and without any
- * arguments, the credential location must be in a place that this class knows without any context.
+ * <p>
+ * Since the sockets factory creates an instance of this class by reflection and without
+ * any arguments, the credential location must be in a place that this class knows without
+ * any context.
  *
  * @author João André Martins
  * @author Chengyuan Zhao
@@ -45,26 +47,27 @@ public class SqlCredentialFactory implements CredentialFactory {
 	/**
 	 * the system property name for the location of the credentials.
 	 */
-	public static final String CREDENTIAL_LOCATION_PROPERTY_NAME =
-			"GOOGLE_CLOUD_SQL_CREDS_LOCATION";
+	public static final String CREDENTIAL_LOCATION_PROPERTY_NAME = "GOOGLE_CLOUD_SQL_CREDS_LOCATION";
 
 	/**
 	 * the system property name for the key name.
 	 */
-	public static final String CREDENTIAL_ENCODED_KEY_PROPERTY_NAME =
-			"GOOGLE_CLOUD_SQL_ENCODED_KEY";
+	public static final String CREDENTIAL_ENCODED_KEY_PROPERTY_NAME = "GOOGLE_CLOUD_SQL_ENCODED_KEY";
 
 	private static final Log LOGGER = LogFactory.getLog(SqlCredentialFactory.class);
 
 	@Override
 	public Credential create() {
-		String credentialResourceLocation = System.getProperty(CREDENTIAL_LOCATION_PROPERTY_NAME);
-		String encodedCredential = System.getProperty(CREDENTIAL_ENCODED_KEY_PROPERTY_NAME);
+		String credentialResourceLocation = System
+				.getProperty(CREDENTIAL_LOCATION_PROPERTY_NAME);
+		String encodedCredential = System
+				.getProperty(CREDENTIAL_ENCODED_KEY_PROPERTY_NAME);
 
 		if (credentialResourceLocation == null && encodedCredential == null) {
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.debug(CREDENTIAL_LOCATION_PROPERTY_NAME + " and "
-						+ CREDENTIAL_ENCODED_KEY_PROPERTY_NAME + " properties do not exist. "
+						+ CREDENTIAL_ENCODED_KEY_PROPERTY_NAME
+						+ " properties do not exist. "
 						+ "Socket factory will use application default credentials.");
 			}
 			return null;
@@ -90,4 +93,5 @@ public class SqlCredentialFactory implements CredentialFactory {
 		}
 
 	}
+
 }

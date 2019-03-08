@@ -56,14 +56,16 @@ public class SpannerKeyPropertyTests {
 	@Test
 	public void nullSpannerPersistentEntityTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("A valid Cloud Spanner persistent entity is required.");
+		this.expectedEx
+				.expectMessage("A valid Cloud Spanner persistent entity is required.");
 		new SpannerCompositeKeyProperty(null, new SpannerPersistentProperty[] {});
 	}
 
 	@Test
 	public void nullPropertiesTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("A valid array of primary key properties is required.");
+		this.expectedEx
+				.expectMessage("A valid array of primary key properties is required.");
 		new SpannerCompositeKeyProperty(this.spannerPersistentEntity, null);
 	}
 
@@ -84,7 +86,8 @@ public class SpannerKeyPropertyTests {
 
 	@Test
 	public void getOwnerTest() {
-		assertThat(this.spannerKeyProperty.getOwner()).isSameAs(this.spannerPersistentEntity);
+		assertThat(this.spannerKeyProperty.getOwner())
+				.isSameAs(this.spannerPersistentEntity);
 	}
 
 	@Test
@@ -107,7 +110,8 @@ public class SpannerKeyPropertyTests {
 	@SuppressWarnings("deprecation")
 	public void getPersistentEntityTypeTest() {
 		assertThat(
-				this.spannerKeyProperty.getPersistentEntityTypes().iterator().hasNext()).isFalse();
+				this.spannerKeyProperty.getPersistentEntityTypes().iterator().hasNext())
+						.isFalse();
 	}
 
 	@Test
@@ -208,7 +212,8 @@ public class SpannerKeyPropertyTests {
 
 	@Test
 	public void findPropertyOrOwnerAnnotationTest() {
-		Annotation annotation = this.spannerKeyProperty.findPropertyOrOwnerAnnotation(null);
+		Annotation annotation = this.spannerKeyProperty
+				.findPropertyOrOwnerAnnotation(null);
 		assertThat(annotation).isNull();
 	}
 
@@ -221,4 +226,5 @@ public class SpannerKeyPropertyTests {
 	public void usePropertyAccessTest() {
 		assertThat(this.spannerKeyProperty.usePropertyAccess()).isFalse();
 	}
+
 }

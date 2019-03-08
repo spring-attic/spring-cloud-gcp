@@ -50,20 +50,24 @@ public class PubSubAdminTests {
 	public void testNewPubSubAdmin_nullProjectProvider() {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("The project ID provider can't be null.");
-		new PubSubAdmin(null, this.mockTopicAdminClient, this.mockSubscriptionAdminClient);
+		new PubSubAdmin(null, this.mockTopicAdminClient,
+				this.mockSubscriptionAdminClient);
 	}
 
 	@Test
 	public void testNewPubSubAdmin_nullTopicAdminClient() {
 		this.expectedException.expect(IllegalArgumentException.class);
-		this.expectedException.expectMessage("The topic administration client can't be null");
+		this.expectedException
+				.expectMessage("The topic administration client can't be null");
 		new PubSubAdmin(() -> "test-project", null, this.mockSubscriptionAdminClient);
 	}
 
 	@Test
 	public void testNewPubSubAdmin_nullSubscriptionAdminClient() {
 		this.expectedException.expect(IllegalArgumentException.class);
-		this.expectedException.expectMessage("The subscription administration client can't be null");
+		this.expectedException
+				.expectMessage("The subscription administration client can't be null");
 		new PubSubAdmin(() -> "test-project", this.mockTopicAdminClient, null);
 	}
+
 }

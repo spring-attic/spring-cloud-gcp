@@ -49,15 +49,18 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
  *
- * <p>Prerequisites for running integration tests:
+ * <p>
+ * Prerequisites for running integration tests:
  *
- * <p>For Cloud Spanner integration tests, you will need to have an instance predefined, everything
- * else is generated. The instance by default is "integration-instance", which can be
- * overriden in <code>src/test/resources/application-test.properties</code>, the property:
- * <code>test.integration.spanner.instance</code>
+ * <p>
+ * For Cloud Spanner integration tests, you will need to have an instance predefined,
+ * everything else is generated. The instance by default is "integration-instance", which
+ * can be overriden in <code>src/test/resources/application-test.properties</code>, the
+ * property: <code>test.integration.spanner.instance</code>
  * </p>
  *
- * <p>Within the <code>integration-instance</code> instance, the tests rely on a single
+ * <p>
+ * Within the <code>integration-instance</code> instance, the tests rely on a single
  * database for tests, <code>integration-db</code>. This is automatically created, if
  * doesn't exist. The tables are generated to have a unique suffix, which is updated on
  * the entity annotations as well dynamically to avoid collisions of multiple parallel
@@ -72,7 +75,8 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
-	private static final Log LOGGER = LogFactory.getLog(AbstractSpannerIntegrationTest.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(AbstractSpannerIntegrationTest.class);
 
 	@Autowired
 	protected SpannerOperations spannerOperations;
@@ -124,26 +128,25 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Test
 	public void tableCreatedTest() {
 		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
-				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName())).isTrue();
+				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName()))
+						.isTrue();
 	}
 
 	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory =
-				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
+		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
+				.getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
 		List<String> createStatements = createSchemaStatements();
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
-			LOGGER.debug(
-					this.getClass() + " - Integration database created with schema: "
-							+ createStatements);
+			LOGGER.debug(this.getClass() + " - Integration database created with schema: "
+					+ createStatements);
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, true);
 		}
 		else {
-			LOGGER.debug(
-					this.getClass() + " - schema created: " + createStatements);
+			LOGGER.debug(this.getClass() + " - schema created: " + createStatements);
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, false);
 		}
 	}
@@ -178,4 +181,5 @@ public abstract class AbstractSpannerIntegrationTest {
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
 		}
 	}
+
 }

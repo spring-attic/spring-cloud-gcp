@@ -33,4 +33,5 @@ public class PubSubCommonProperties {
 	public void setAutoCreateResources(boolean autoCreateResources) {
 		this.autoCreateResources = autoCreateResources;
 	}
+
 }

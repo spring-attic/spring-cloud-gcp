@@ -46,8 +46,8 @@ public class SenderApplication {
 	@Bean
 	@ServiceActivator(inputChannel = "pubSubOutputChannel")
 	public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-		PubSubMessageHandler adapter =
-				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
+		PubSubMessageHandler adapter = new PubSubMessageHandler(pubsubTemplate,
+				"exampleTopic");
 		adapter.setPublishCallback(new ListenableFutureCallback<String>() {
 			@Override
 			public void onFailure(Throwable ex) {
@@ -70,5 +70,7 @@ public class SenderApplication {
 	public interface PubSubOutboundGateway {
 
 		void sendToPubSub(String text);
+
 	}
+
 }

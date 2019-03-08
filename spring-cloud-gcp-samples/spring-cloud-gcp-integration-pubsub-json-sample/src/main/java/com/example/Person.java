@@ -54,8 +54,7 @@ public class Person {
 			return false;
 		}
 		Person person = (Person) o;
-		return this.age == person.age &&
-				Objects.equals(this.name, person.name);
+		return this.age == person.age && Objects.equals(this.name, person.name);
 	}
 
 	@Override
@@ -65,9 +64,7 @@ public class Person {
 
 	@Override
 	public String toString() {
-		return "Person{" +
-				"name='" + this.name + '\'' +
-				", age=" + this.age +
-				'}';
+		return "Person{" + "name='" + this.name + '\'' + ", age=" + this.age + '}';
 	}
+
 }

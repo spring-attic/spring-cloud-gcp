@@ -26,6 +26,7 @@ import org.springframework.data.annotation.Id;
  */
 @Entity(name = "books")
 public class Book {
+
 	@Id
 	Long id;
 
@@ -47,11 +48,8 @@ public class Book {
 
 	@Override
 	public String toString() {
-		return "Book{" +
-				"id=" + this.id +
-				", title='" + this.title + '\'' +
-				", author='" + this.author + '\'' +
-				", year=" + this.year +
-				'}';
+		return "Book{" + "id=" + this.id + ", title='" + this.title + '\'' + ", author='"
+				+ this.author + '\'' + ", year=" + this.year + '}';
 	}
+
 }

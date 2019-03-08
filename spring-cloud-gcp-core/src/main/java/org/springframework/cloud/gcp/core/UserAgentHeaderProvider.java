@@ -22,8 +22,8 @@ import java.util.Map;
 import com.google.api.gax.rpc.HeaderProvider;
 
 /**
- * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
- * Integration.
+ * Provides the User-Agent header to signal to the Google Cloud Client Libraries that
+ * requests originate from a Spring Integration.
  *
  * @author João André Martins
  * @author Chengyuan Zhao
@@ -41,8 +41,9 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 	}
 
 	/**
-	 * Returns the "User-Agent" header whose value should be added to the google-cloud-java REST API calls.
-	 * e.g., {@code User-Agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 * Returns the "User-Agent" header whose value should be added to the
+	 * google-cloud-java REST API calls. e.g.,
+	 * {@code User-Agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
 	 */
 	@Override
 	public Map<String, String> getHeaders() {
@@ -50,9 +51,9 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 	}
 
 	/**
-	 * Returns the "User-Agent" header value which should be added to the google-cloud-java REST API calls.
-	 * e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
-	 *
+	 * Returns the "User-Agent" header value which should be added to the
+	 * google-cloud-java REST API calls. e.g.,
+	 * {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
 	 * @return the user agent string.
 	 */
 	public String getUserAgent() {
@@ -61,7 +62,8 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 
 	private String computeUserAgent(Class clazz) {
 		String[] packageTokens = clazz.getPackage().getName().split("\\.");
-		String springLibrary = "spring-cloud-gcp-" + packageTokens[packageTokens.length - 1];
+		String springLibrary = "spring-cloud-gcp-"
+				+ packageTokens[packageTokens.length - 1];
 		String version = this.getClass().getPackage().getImplementationVersion();
 
 		return "Spring/" + version + " " + springLibrary + "/" + version;

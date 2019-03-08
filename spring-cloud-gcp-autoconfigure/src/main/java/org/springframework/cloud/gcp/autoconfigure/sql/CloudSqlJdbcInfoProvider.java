@@ -17,8 +17,8 @@
 package org.springframework.cloud.gcp.autoconfigure.sql;
 
 /**
- * Implementations of this interface typically construct a JDBC URL for Cloud SQL from a GCP
- * project ID and an instance connection name.
+ * Implementations of this interface typically construct a JDBC URL for Cloud SQL from a
+ * GCP project ID and an instance connection name.
  *
  * @author João André Martins
  */
@@ -27,4 +27,5 @@ public interface CloudSqlJdbcInfoProvider {
 	String getJdbcDriverClass();
 
 	String getJdbcUrl();
+
 }

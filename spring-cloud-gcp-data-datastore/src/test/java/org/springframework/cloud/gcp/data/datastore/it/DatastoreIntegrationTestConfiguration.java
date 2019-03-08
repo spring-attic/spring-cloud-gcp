@@ -90,8 +90,10 @@ public class DatastoreIntegrationTestConfiguration {
 
 	@Bean
 	public DatastoreEntityConverter datastoreEntityConverter(
-			DatastoreMappingContext datastoreMappingContext, ObjectToKeyFactory objectToKeyFactory) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext, objectToKeyFactory);
+			DatastoreMappingContext datastoreMappingContext,
+			ObjectToKeyFactory objectToKeyFactory) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext,
+				objectToKeyFactory);
 	}
 
 	@Bean
@@ -107,4 +109,5 @@ public class DatastoreIntegrationTestConfiguration {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter,
 				datastoreMappingContext, objectToKeyFactory);
 	}
+
 }

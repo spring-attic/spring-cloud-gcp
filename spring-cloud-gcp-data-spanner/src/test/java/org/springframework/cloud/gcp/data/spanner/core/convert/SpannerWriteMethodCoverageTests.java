@@ -47,7 +47,8 @@ public class SpannerWriteMethodCoverageTests {
 				continue;
 			}
 
-			Class<?> paramType = ConversionUtils.boxIfNeeded(method.getParameterTypes()[0]);
+			Class<?> paramType = ConversionUtils
+					.boxIfNeeded(method.getParameterTypes()[0]);
 			if (paramType.equals(Struct.class) || paramType.equals(Value.class)) {
 				/*
 				 * 1. there is a method for binding a Struct value, but because Struct
@@ -63,14 +64,15 @@ public class SpannerWriteMethodCoverageTests {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
 				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.keySet())
-								.contains(innerParamType);
+						ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
+								.keySet()).contains(innerParamType);
 			}
 			else {
 				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet())
-								.contains(paramType);
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+								.keySet()).contains(paramType);
 			}
 		}
 	}
+
 }

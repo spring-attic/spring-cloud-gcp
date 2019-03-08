@@ -38,10 +38,10 @@ import org.springframework.util.Assert;
 
 /**
  * Implementation of {@link DatastoreRepository}.
+ *
  * @param <T> the type of the entities
  * @param <ID> the id type of the entities
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, ID> {
@@ -67,18 +67,17 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	@Override
 	public Iterable<T> findAll(Sort sort) {
 		Assert.notNull(sort, "A non-null Sort is required.");
-		return this.datastoreTemplate
-				.findAll(this.entityType, new DatastoreQueryOptions(null, null, sort));
+		return this.datastoreTemplate.findAll(this.entityType,
+				new DatastoreQueryOptions(null, null, sort));
 	}
 
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 		Assert.notNull(pageable, "A non-null Pageable is required.");
 		return new PageImpl<>(
-				new ArrayList<>(this.datastoreTemplate
-						.findAll(this.entityType,
-								new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(),
-										pageable.getSort()))),
+				new ArrayList<>(this.datastoreTemplate.findAll(this.entityType,
+						new DatastoreQueryOptions(pageable.getPageSize(),
+								(int) pageable.getOffset(), pageable.getSort()))),
 				pageable, this.datastoreTemplate.count(this.entityType));
 	}
 
@@ -139,7 +138,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Optional<S> findOne(Example<S> example) {
-		Iterable<S> entities = this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions(1, null, null));
 		Iterator<S> iterator = entities.iterator();
 		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
 	}
@@ -151,7 +151,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Iterable<S> findAll(Example<S> example, Sort sort) {
-		return this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(null, null, sort));
+		return this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions(null, null, sort));
 	}
 
 	@Override
@@ -159,8 +160,10 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 		Assert.notNull(pageable, "A non-null pageable is required.");
 
 		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
-				new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(), pageable.getSort()));
-		List<S> result = StreamSupport.stream(entities.spliterator(), false).collect(Collectors.toList());
+				new DatastoreQueryOptions(pageable.getPageSize(),
+						(int) pageable.getOffset(), pageable.getSort()));
+		List<S> result = StreamSupport.stream(entities.spliterator(), false)
+				.collect(Collectors.toList());
 
 		return new PageImpl<>(result, pageable, count(example));
 	}
@@ -174,7 +177,9 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> boolean exists(Example<S> example) {
-		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example,
+				new DatastoreQueryOptions(1, null, null));
 		return StreamSupport.stream(keys.spliterator(), false).findAny().isPresent();
 	}
+
 }

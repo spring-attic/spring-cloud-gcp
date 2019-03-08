@@ -47,66 +47,74 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GcpCloudFoundryEnvironmentPostProcessorTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withInitializer((context) ->
-					new GcpCloudFoundryEnvironmentPostProcessor()
-							.postProcessEnvironment(context.getEnvironment(), null))
+			.withInitializer((context) -> new GcpCloudFoundryEnvironmentPostProcessor()
+					.postProcessEnvironment(context.getEnvironment(), null))
 			.withSystemProperties(new String[] {
 					"spring.cloud.gcp.sql.instance-connection-name=test-connection",
 					"spring.cloud.gcp.sql.database-name=test-dbname",
-					"spring.cloud.gcp.sql.credentials.encoded-key=test-key"
-			})
+					"spring.cloud.gcp.sql.credentials.encoded-key=test-key" })
 			.withUserConfiguration(GcpCfEnvPPTestConfiguration.class);
 
 	@Test
 	public void testConfigurationProperties() throws IOException {
-		String vcapFileContents = new String(Files.readAllBytes(
-				new ClassPathResource("VCAP_SERVICES").getFile().toPath()));
+		String vcapFileContents = new String(Files
+				.readAllBytes(new ClassPathResource("VCAP_SERVICES").getFile().toPath()));
 		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
 				.run((context) -> {
-					GcpPubSubProperties pubSubProperties =
-							context.getBean(GcpPubSubProperties.class);
+					GcpPubSubProperties pubSubProperties = context
+							.getBean(GcpPubSubProperties.class);
 					assertThat(pubSubProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(pubSubProperties.getCredentials().getEncodedKey())
-					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-pubsub"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-pubsub"));
 
-					GcpStorageProperties storageProperties =
-							context.getBean(GcpStorageProperties.class);
+					GcpStorageProperties storageProperties = context
+							.getBean(GcpStorageProperties.class);
 					assertThat(storageProperties.getCredentials().getEncodedKey())
-					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-storage"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-storage"));
 
-					GcpSpannerProperties spannerProperties =
-							context.getBean(GcpSpannerProperties.class);
+					GcpSpannerProperties spannerProperties = context
+							.getBean(GcpSpannerProperties.class);
 					assertThat(spannerProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(spannerProperties.getCredentials().getEncodedKey())
-							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-spanner"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-spanner"));
 					assertThat(spannerProperties.getInstanceId())
 							.isEqualTo("pcf-sb-7-1521579042901037743");
 
-					GcpDatastoreProperties datastoreProperties =
-							context.getBean(GcpDatastoreProperties.class);
+					GcpDatastoreProperties datastoreProperties = context
+							.getBean(GcpDatastoreProperties.class);
 					assertThat(datastoreProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(datastoreProperties.getCredentials().getEncodedKey())
-							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-datastore"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-datastore"));
 
-					GcpTraceProperties traceProperties = context.getBean(GcpTraceProperties.class);
+					GcpTraceProperties traceProperties = context
+							.getBean(GcpTraceProperties.class);
 					assertThat(traceProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(traceProperties.getCredentials().getEncodedKey())
-							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-stackdriver-trace"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-stackdriver-trace"));
 
-					GcpCloudSqlProperties sqlProperties = context.getBean(GcpCloudSqlProperties.class);
+					GcpCloudSqlProperties sqlProperties = context
+							.getBean(GcpCloudSqlProperties.class);
 					assertThat(sqlProperties.getCredentials().getEncodedKey())
-							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-cloudsql-postgres"));
-					assertThat(sqlProperties.getInstanceConnectionName())
-							.isEqualTo("graphite-test-spring-cloud-gcp:us-central1:pcf-sb-3-1521233681947276465");
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents,
+									"google-cloudsql-postgres"));
+					assertThat(sqlProperties.getInstanceConnectionName()).isEqualTo(
+							"graphite-test-spring-cloud-gcp:us-central1:pcf-sb-3-1521233681947276465");
 					assertThat(sqlProperties.getDatabaseName())
 							.isEqualTo("pcf-sb-4-1521234236513507790");
 
-					DataSourceProperties dataSourceProperties = context.getBean(DataSourceProperties.class);
-					assertThat(dataSourceProperties.getUsername()).isEqualTo("fa6bb781-c76d-42");
+					DataSourceProperties dataSourceProperties = context
+							.getBean(DataSourceProperties.class);
+					assertThat(dataSourceProperties.getUsername())
+							.isEqualTo("fa6bb781-c76d-42");
 					assertThat(dataSourceProperties.getPassword())
 							.isEqualTo("IxEQ63FRxSUSgoDWKbqEHmhY6D9h4nro1fja8lnP48s=");
 				});
@@ -118,31 +126,36 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 				new ClassPathResource("VCAP_SERVICES_2_SQL").getFile().toPath()));
 		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
 				.run((context) -> {
-					GcpCloudSqlProperties sqlProperties =
-							context.getBean(GcpCloudSqlProperties.class);
+					GcpCloudSqlProperties sqlProperties = context
+							.getBean(GcpCloudSqlProperties.class);
 
-					//Both mysql and postgres settings present in VCAP_SERVICES_2_SQL file,
-					//so db name and connection name should not change
+					// Both mysql and postgres settings present in VCAP_SERVICES_2_SQL
+					// file,
+					// so db name and connection name should not change
 					assertThat(sqlProperties.getDatabaseName()).isEqualTo("test-dbname");
-					assertThat(sqlProperties.getInstanceConnectionName()).isEqualTo("test-connection");
-					assertThat(sqlProperties.getCredentials().getEncodedKey()).isEqualTo("test-key");
+					assertThat(sqlProperties.getInstanceConnectionName())
+							.isEqualTo("test-connection");
+					assertThat(sqlProperties.getCredentials().getEncodedKey())
+							.isEqualTo("test-key");
 				});
 	}
 
 	private String getPrivateKeyDataFromJson(String json, String serviceName) {
 		JsonParser parser = JsonParserFactory.getJsonParser();
 		Map<String, Object> vcapMap = parser.parseMap(json);
-		return ((Map<String, String>) ((Map<String, Object>) ((List<Object>) vcapMap.get(serviceName)).get(0))
-				.get("credentials")).get("PrivateKeyData");
+		return ((Map<String, String>) ((Map<String, Object>) ((List<Object>) vcapMap
+				.get(serviceName)).get(0)).get("credentials")).get("PrivateKeyData");
 	}
 
 	/**
 	 * Config class for the tests.
 	 */
-	@EnableConfigurationProperties({ GcpPubSubProperties.class, GcpStorageProperties.class,
-			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class,
+	@EnableConfigurationProperties({ GcpPubSubProperties.class,
+			GcpStorageProperties.class, GcpSpannerProperties.class,
+			GcpDatastoreProperties.class, GcpTraceProperties.class,
 			GcpCloudSqlProperties.class, DataSourceProperties.class })
 	static class GcpCfEnvPPTestConfiguration {
 
 	}
+
 }

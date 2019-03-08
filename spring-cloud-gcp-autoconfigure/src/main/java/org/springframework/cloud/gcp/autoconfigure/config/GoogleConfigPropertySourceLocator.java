@@ -45,15 +45,13 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Jisha Abubaker
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
 	private static final String RUNTIMECONFIG_API_ROOT = "https://runtimeconfig.googleapis.com/v1beta1/";
 
-	private static final String ALL_VARIABLES_PATH =
-			"projects/{project}/configs/{name}_{profile}/variables?returnValues=true";
+	private static final String ALL_VARIABLES_PATH = "projects/{project}/configs/{name}_{profile}/variables?returnValues=true";
 
 	private static final String PROPERTY_SOURCE_NAME = "spring-cloud-gcp";
 
@@ -100,12 +98,15 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private HttpEntity<Void> getAuthorizedRequest() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
-		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
+		Map<String, List<String>> credentialHeaders = this.credentials
+				.getRequestMetadata();
 		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
 
-		credentialHeaders.forEach((key, values) -> values.forEach((value) -> headers.add(key, value)));
+		credentialHeaders.forEach(
+				(key, values) -> values.forEach((value) -> headers.add(key, value)));
 
-		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
+		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER),
+				"Authorization header required");
 
 		// Adds product version header for usage metrics
 		new UserAgentHeaderProvider(this.getClass()).getHeaders().forEach(headers::add);
@@ -113,14 +114,16 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return new HttpEntity<>(headers);
 	}
 
-	GoogleConfigEnvironment getRemoteEnvironment() throws IOException, HttpClientErrorException {
+	GoogleConfigEnvironment getRemoteEnvironment()
+			throws IOException, HttpClientErrorException {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setReadTimeout(this.timeout);
 		RestTemplate template = new RestTemplate(requestFactory);
 		HttpEntity<Void> requestEntity = getAuthorizedRequest();
 		ResponseEntity<GoogleConfigEnvironment> response = template.exchange(
-				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET, requestEntity,
-				GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
+				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET,
+				requestEntity, GoogleConfigEnvironment.class, this.projectId, this.name,
+				this.profile);
 
 		if (!response.getStatusCode().is2xxSuccessful()) {
 			throw new HttpClientErrorException(response.getStatusCode(),
@@ -137,12 +140,13 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Map<String, Object> config;
 		try {
 			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment();
-			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
+			Assert.notNull(googleConfigEnvironment,
+					"Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
 		catch (Exception ex) {
-			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
-					this.name, this.profile);
+			String message = String.format("Error loading configuration for %s/%s_%s",
+					this.projectId, this.name, this.profile);
 			throw new RuntimeException(message, ex);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);
@@ -151,4 +155,5 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 	public String getProjectId() {
 		return this.projectId;
 	}
+
 }

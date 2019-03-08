@@ -30,4 +30,5 @@ public class PubSubBinderApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PubSubBinderApplication.class, args);
 	}
+
 }

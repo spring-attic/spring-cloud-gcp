@@ -40,7 +40,6 @@ import org.springframework.util.Assert;
  * APIs.
  *
  * @author Daniel Zou
- *
  * @since 1.1
  */
 public class CloudVisionTemplate {
@@ -56,7 +55,8 @@ public class CloudVisionTemplate {
 	 * Extract the text out of an image and return the result as a String.
 	 * @param imageResource the image one wishes to analyze
 	 * @return the text extracted from the image aggregated to a String
-	 * @throws CloudVisionException if the image could not be read or if text extraction failed
+	 * @throws CloudVisionException if the image could not be read or if text extraction
+	 * failed
 	 */
 	public String extractTextFromImage(Resource imageResource) {
 		AnnotateImageResponse response = analyzeImage(imageResource, Type.TEXT_DETECTION);
@@ -72,23 +72,26 @@ public class CloudVisionTemplate {
 	/**
 	 * Analyze an image and extract the features of the image specified by
 	 * {@code featureTypes}.
-	 * <p>A feature describes the kind of Cloud Vision analysis one wishes to perform on an
-	 * image, such as text detection, image labelling, facial detection, etc. A full list of
-	 * feature types can be found in {@link Feature.Type}.
+	 * <p>
+	 * A feature describes the kind of Cloud Vision analysis one wishes to perform on an
+	 * image, such as text detection, image labelling, facial detection, etc. A full list
+	 * of feature types can be found in {@link Feature.Type}.
 	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
-	 *     image formats described here: https://cloud.google.com/vision/docs/supported-files
+	 * image formats described here: https://cloud.google.com/vision/docs/supported-files
 	 * @param featureTypes the types of image analysis to perform on the image
 	 * @return the results of image analyses
-	 * @throws CloudVisionException if the image could not be read or if a malformed response
-	 *     is received from the Cloud Vision APIs
+	 * @throws CloudVisionException if the image could not be read or if a malformed
+	 * response is received from the Cloud Vision APIs
 	 */
-	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes) {
+	public AnnotateImageResponse analyzeImage(Resource imageResource,
+			Feature.Type... featureTypes) {
 		ByteString imgBytes;
 		try {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
 		}
 		catch (IOException ex) {
-			throw new CloudVisionException("Failed to read image bytes from provided resource.", ex);
+			throw new CloudVisionException(
+					"Failed to read image bytes from provided resource.", ex);
 		}
 
 		Image image = Image.newBuilder().setContent(imgBytes).build();
@@ -98,14 +101,14 @@ public class CloudVisionTemplate {
 				.collect(Collectors.toList());
 
 		BatchAnnotateImagesRequest request = BatchAnnotateImagesRequest.newBuilder()
-				.addRequests(
-						AnnotateImageRequest.newBuilder()
-								.addAllFeatures(featureList)
-								.setImage(image))
+				.addRequests(AnnotateImageRequest.newBuilder().addAllFeatures(featureList)
+						.setImage(image))
 				.build();
 
-		BatchAnnotateImagesResponse batchResponse = this.imageAnnotatorClient.batchAnnotateImages(request);
-		List<AnnotateImageResponse> annotateImageResponses = batchResponse.getResponsesList();
+		BatchAnnotateImagesResponse batchResponse = this.imageAnnotatorClient
+				.batchAnnotateImages(request);
+		List<AnnotateImageResponse> annotateImageResponses = batchResponse
+				.getResponsesList();
 
 		if (!annotateImageResponses.isEmpty()) {
 			return annotateImageResponses.get(0);

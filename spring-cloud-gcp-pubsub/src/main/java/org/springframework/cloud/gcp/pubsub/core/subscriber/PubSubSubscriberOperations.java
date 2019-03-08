@@ -38,14 +38,12 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- *
  * @since 1.1
  */
 public interface PubSubSubscriberOperations {
 
 	/**
 	 * Subscribe to a subscription with a given message receiver.
-	 *
 	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 * @param messageReceiver the message receiver with which to subscribe
 	 * @param subscription the subscription to subscribe to
@@ -56,63 +54,71 @@ public interface PubSubSubscriberOperations {
 
 	/**
 	 * Add a callback method to an existing subscription.
-	 * <p>The created {@link Subscriber} is returned so it can be stopped.
+	 * <p>
+	 * The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
 	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
 	 * @since 1.1
 	 */
-	Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer);
+	Subscriber subscribe(String subscription,
+			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer);
 
 	/**
-	 * Add a callback method to an existing subscription that receives Pub/Sub messages converted to the requested
-	 * payload type.
-	 * <p>The created {@link Subscriber} is returned so it can be stopped.
+	 * Add a callback method to an existing subscription that receives Pub/Sub messages
+	 * converted to the requested payload type.
+	 * <p>
+	 * The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
 	 * @param messageConsumer the callback method triggered when new messages arrive
-	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
+	 * @param payloadType the type to which the payload of the Pub/Sub message should be
+	 * converted
 	 * @param <T> the type of the payload
 	 * @return subscriber listening to new messages
 	 * @since 1.1
 	 */
 	<T> Subscriber subscribeAndConvert(String subscription,
-			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType);
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer,
+			Class<T> payloadType);
 
 	/**
-	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
+	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub
+	 * subscription.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * @param returnImmediately returns immediately even if subscription doesn't contain
+	 * enough messages to satisfy {@code maxMessages}
 	 * @return the list of received messages
 	 */
-	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages, Boolean returnImmediately);
+	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
+			Boolean returnImmediately);
 
 	/**
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * @param returnImmediately returns immediately even if subscription doesn't contain
+	 * enough messages to satisfy {@code maxMessages}
 	 * @return the list of received acknowledgeable messages
 	 */
-	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
+	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately);
 
 	/**
-	 * Pull a number of messages from a Google Cloud Pub/Sub subscription and convert them to Spring messages with
-	 * the desired payload type.
+	 * Pull a number of messages from a Google Cloud Pub/Sub subscription and convert them
+	 * to Spring messages with the desired payload type.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
-	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
+	 * @param returnImmediately returns immediately even if subscription doesn't contain
+	 * enough messages to satisfy {@code maxMessages}
+	 * @param payloadType the type to which the payload of the Pub/Sub messages should be
+	 * converted
 	 * @param <T> the type of the payload
 	 * @return the list of received acknowledgeable messages
 	 * @since 1.1
 	 */
-	<T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
-			Boolean returnImmediately, Class<T> payloadType);
-
+	<T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription,
+			Integer maxMessages, Boolean returnImmediately, Class<T> payloadType);
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
@@ -124,22 +130,30 @@ public interface PubSubSubscriberOperations {
 	/**
 	 * Acknowledge a batch of messages. The messages must have the same project id.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
-	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous
+	 * execution
 	 */
-	ListenableFuture<Void> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> ack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
-	 * Negatively acknowledge a batch of messages. The messages must have the same project id.
+	 * Negatively acknowledge a batch of messages. The messages must have the same project
+	 * id.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
-	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous
+	 * execution
 	 */
-	ListenableFuture<Void> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> nack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
-	 * Modify the ack deadline of a batch of messages. The messages must have the same project id.
+	 * Modify the ack deadline of a batch of messages. The messages must have the same
+	 * project id.
 	 * @param acknowledgeablePubsubMessages messages to be modified
-	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
-	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
+	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0
+	 * effectively nacks the messages.
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous
+	 * execution
 	 * @since 1.1
 	 */
 	ListenableFuture<Void> modifyAckDeadline(

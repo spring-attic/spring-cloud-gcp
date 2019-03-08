@@ -27,14 +27,15 @@ import java.util.Set;
 public class BeforeSaveEvent extends SaveEvent {
 
 	/**
-	 * Constructor. {@code BeforeSaveEvent} does not hold mutations because this event gives
-	 * the opportunity to modify the entities from which mutations are ultimately generated.
-	 *
+	 * Constructor. {@code BeforeSaveEvent} does not hold mutations because this event
+	 * gives the opportunity to modify the entities from which mutations are ultimately
+	 * generated.
 	 * @param targetEntities the target entities that need to be mutated. This may be
-	 *     {@code null} depending on the original request.
+	 * {@code null} depending on the original request.
 	 * @param includeProperties the set of properties to include in the save operation.
 	 */
 	public BeforeSaveEvent(Iterable targetEntities, Set<String> includeProperties) {
 		super(Collections.emptyList(), targetEntities, includeProperties);
 	}
+
 }

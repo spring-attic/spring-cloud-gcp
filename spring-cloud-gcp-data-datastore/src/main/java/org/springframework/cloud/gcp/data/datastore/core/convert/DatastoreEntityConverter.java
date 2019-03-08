@@ -28,11 +28,10 @@ import org.springframework.data.util.TypeInformation;
  * An interface for converting objects to Datastore Entities and vice versa.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
-public interface DatastoreEntityConverter extends
-		EntityReader<Object, BaseEntity>, EntityWriter<Object, BaseEntity.Builder> {
+public interface DatastoreEntityConverter extends EntityReader<Object, BaseEntity>,
+		EntityWriter<Object, BaseEntity.Builder> {
 
 	/**
 	 * Get the {@link ReadWriteConversions} used in this converter.
@@ -53,4 +52,5 @@ public interface DatastoreEntityConverter extends
 	 */
 	<T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
 			BaseEntity entity);
+
 }

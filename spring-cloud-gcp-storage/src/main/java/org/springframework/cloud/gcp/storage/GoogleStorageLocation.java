@@ -25,7 +25,6 @@ import org.springframework.util.Assert;
  * Represents a Google Cloud Storage location provided by the user.
  *
  * @author Daniel Zou
- *
  * @since 1.2
  */
 public class GoogleStorageLocation {
@@ -39,21 +38,18 @@ public class GoogleStorageLocation {
 	private final URI uri;
 
 	/**
-	 * Constructs a {@link GoogleStorageLocation} based on the provided Google Storage URI string.
-	 * The URI string is of the form: {@code gs://<BUCKET_NAME>/<PATH_TO_FILE>}
-	 *
+	 * Constructs a {@link GoogleStorageLocation} based on the provided Google Storage URI
+	 * string. The URI string is of the form: {@code gs://<BUCKET_NAME>/<PATH_TO_FILE>}
 	 * @param gcsLocationUriString a Google Storage URI string to a bucket/folder/file.
 	 */
 	public GoogleStorageLocation(String gcsLocationUriString) {
 		try {
-			Assert.isTrue(
-					gcsLocationUriString.startsWith("gs://"),
+			Assert.isTrue(gcsLocationUriString.startsWith("gs://"),
 					"A Google Storage URI must start with gs://");
 
 			URI locationUri = new URI(gcsLocationUriString);
 
-			Assert.isTrue(
-					locationUri.getAuthority() != null,
+			Assert.isTrue(locationUri.getAuthority() != null,
 					"No bucket specified in the location: " + gcsLocationUriString);
 
 			this.bucketName = locationUri.getAuthority();
@@ -66,7 +62,8 @@ public class GoogleStorageLocation {
 			this.uri = locationUri;
 		}
 		catch (URISyntaxException e) {
-			throw new IllegalArgumentException("Invalid location: " + gcsLocationUriString, e);
+			throw new IllegalArgumentException(
+					"Invalid location: " + gcsLocationUriString, e);
 		}
 	}
 
@@ -96,7 +93,6 @@ public class GoogleStorageLocation {
 
 	/**
 	 * Returns the Google Storage bucket name.
-	 *
 	 * @return the name of the Google Storage bucket
 	 */
 	public String getBucketName() {
@@ -104,9 +100,8 @@ public class GoogleStorageLocation {
 	}
 
 	/**
-	 * Returns the path to the blob/folder relative from the bucket root. Returns null
-	 * if the {@link GoogleStorageLocation} specifies a bucket itself.
-	 *
+	 * Returns the path to the blob/folder relative from the bucket root. Returns null if
+	 * the {@link GoogleStorageLocation} specifies a bucket itself.
 	 * @return a path to the blob or folder; null if the location is to a bucket.
 	 */
 	public String getBlobName() {
@@ -115,7 +110,6 @@ public class GoogleStorageLocation {
 
 	/**
 	 * Returns the GCS URI of the location.
-	 *
 	 * @return the URI object of the Google Storage location.
 	 */
 	public URI uri() {
@@ -124,7 +118,6 @@ public class GoogleStorageLocation {
 
 	/**
 	 * Returns the Google Storage URI string for the location.
-	 *
 	 * @return the URI string of the Google Storage location.
 	 */
 	public String uriString() {
@@ -149,7 +142,8 @@ public class GoogleStorageLocation {
 	 */
 	public static GoogleStorageLocation forFile(String bucketName, String pathToFile) {
 		Assert.notNull(pathToFile, "The path to a Google Storage file must not be null.");
-		return new GoogleStorageLocation(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
+		return new GoogleStorageLocation(
+				String.format(GCS_URI_FORMAT, bucketName, pathToFile));
 	}
 
 	/**
@@ -159,12 +153,15 @@ public class GoogleStorageLocation {
 	 * @param pathToFolder path to the folder within the bucket.
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
-	public static GoogleStorageLocation forFolder(String bucketName, String pathToFolder) {
-		Assert.notNull(pathToFolder, "The path to a Google Storage folder must not be null.");
+	public static GoogleStorageLocation forFolder(String bucketName,
+			String pathToFolder) {
+		Assert.notNull(pathToFolder,
+				"The path to a Google Storage folder must not be null.");
 		if (!pathToFolder.endsWith("/")) {
 			pathToFolder += "/";
 		}
-		return new GoogleStorageLocation(String.format(GCS_URI_FORMAT, bucketName, pathToFolder));
+		return new GoogleStorageLocation(
+				String.format(GCS_URI_FORMAT, bucketName, pathToFolder));
 	}
 
 	@Override
@@ -182,4 +179,5 @@ public class GoogleStorageLocation {
 			return uriPath.substring(1);
 		}
 	}
+
 }

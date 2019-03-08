@@ -47,7 +47,6 @@ public @interface EnableSpannerRepositories {
 	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation
 	 * declarations e.g.: {@code @EnableSpannerRepositories("org.my.pkg")} instead of
 	 * {@code @EnableSpannerRepositories(basePackages="org.my.pkg")}.
-	 *
 	 * @return an empty array
 	 */
 	String[] value() default {};
@@ -86,7 +85,6 @@ public @interface EnableSpannerRepositories {
 	/**
 	 * Configure the repository base class to be used to create repository proxies for
 	 * this particular configuration.
-	 *
 	 * @return the base repository class
 	 */
 	Class repositoryBaseClass() default DefaultRepositoryBaseClass.class;
@@ -101,7 +99,6 @@ public @interface EnableSpannerRepositories {
 	/**
 	 * Returns the {@link org.springframework.beans.factory.FactoryBean} class to be used
 	 * for each repository instance. Defaults to {@link SpannerRepositoryFactoryBean}.
-	 *
 	 * @return the factory bean class used to create factories
 	 */
 	Class repositoryFactoryBeanClass() default SpannerRepositoryFactoryBean.class;
@@ -109,7 +106,6 @@ public @interface EnableSpannerRepositories {
 	/**
 	 * Configures the location of where to read the Spring Data named queries properties
 	 * file. Will default to {@code META-INF/spanner-named-queries.properties}
-	 *
 	 * @return the location of the file holding named queries' strings.
 	 */
 	String namedQueriesLocation() default "";
@@ -119,16 +115,15 @@ public @interface EnableSpannerRepositories {
 	 * Defaults to {@literal Impl}. So for a repository named {@code PersonRepository} the
 	 * corresponding implementation class will be looked up scanning for
 	 * {@code PersonRepositoryImpl}.
-	 *
-	 * @return the default suffix that will cause classes to be assumed to be implementations
+	 * @return the default suffix that will cause classes to be assumed to be
+	 * implementations
 	 */
 	String repositoryImplementationPostfix() default "";
 
 	/**
 	 * Configures the name of the
-	 * {@link org.springframework.cloud.gcp.data.spanner.core.SpannerOperations} bean to be used by
-	 * default with the repositories detected.
-	 *
+	 * {@link org.springframework.cloud.gcp.data.spanner.core.SpannerOperations} bean to
+	 * be used by default with the repositories detected.
 	 * @return the name of the Cloud Spanner template class
 	 */
 	String spannerTemplateRef() default "spannerTemplate";
@@ -137,8 +132,8 @@ public @interface EnableSpannerRepositories {
 	 * Configures the name of the
 	 * {@link org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext}
 	 * bean to be used by default with the repositories detected.
-	 *
 	 * @return the name of the Cloud Spanner mapping context class
 	 */
 	String spannerMappingContextRef() default "spannerMappingContext";
+
 }

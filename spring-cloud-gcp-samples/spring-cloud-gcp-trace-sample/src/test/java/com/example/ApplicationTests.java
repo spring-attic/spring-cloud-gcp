@@ -63,7 +63,8 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		Application.class })
 public class ApplicationTests {
 
 	@LocalServerPort
@@ -95,22 +96,22 @@ public class ApplicationTests {
 	public void setupTraceClient() throws IOException {
 		this.url = String.format("http://localhost:%d/", this.port);
 
-		// Create a new RestTemplate here because the auto-wired instance has built-in instrumentation
+		// Create a new RestTemplate here because the auto-wired instance has built-in
+		// instrumentation
 		// which interferes with us setting the 'x-cloud-trace-context' header.
 		this.testRestTemplate = new TestRestTemplate();
 
 		this.logClient = LoggingOptions.newBuilder()
 				.setProjectId(this.projectIdProvider.getProjectId())
-				.setCredentials(this.credentialsProvider.getCredentials())
-				.build()
+				.setCredentials(this.credentialsProvider.getCredentials()).build()
 				.getService();
 
 		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget("cloudtrace.googleapis.com")
-				.build();
+				.forTarget("cloudtrace.googleapis.com").build();
 
 		this.traceServiceStub = TraceServiceGrpc.newBlockingStub(channel)
-				.withCallCredentials(MoreCallCredentials.from(this.credentialsProvider.getCredentials()));
+				.withCallCredentials(MoreCallCredentials
+						.from(this.credentialsProvider.getCredentials()));
 	}
 
 	@Test
@@ -120,37 +121,38 @@ public class ApplicationTests {
 		String uuidString = UUID.randomUUID().toString().replaceAll("-", "");
 
 		headers.add("x-cloud-trace-context", uuidString);
-		this.testRestTemplate.exchange(this.url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		this.testRestTemplate.exchange(this.url, HttpMethod.GET,
+				new HttpEntity<>(headers), String.class);
 
 		GetTraceRequest getTraceRequest = GetTraceRequest.newBuilder()
 				.setProjectId(this.projectIdProvider.getProjectId())
-				.setTraceId(uuidString)
-				.build();
+				.setTraceId(uuidString).build();
 
-		String logFilter = String.format(
-				"trace=projects/%s/traces/%s", this.projectIdProvider.getProjectId(), uuidString);
+		String logFilter = String.format("trace=projects/%s/traces/%s",
+				this.projectIdProvider.getProjectId(), uuidString);
 
-		await().atMost(60, TimeUnit.SECONDS)
-				.pollInterval(Duration.TWO_SECONDS)
-				.ignoreExceptions()
-				.untilAsserted(() -> {
+		await().atMost(60, TimeUnit.SECONDS).pollInterval(Duration.TWO_SECONDS)
+				.ignoreExceptions().untilAsserted(() -> {
 
-			Trace trace = this.traceServiceStub.getTrace(getTraceRequest);
-			assertThat(trace.getTraceId()).isEqualTo(uuidString);
-			assertThat(trace.getSpansCount()).isEqualTo(8);
+					Trace trace = this.traceServiceStub.getTrace(getTraceRequest);
+					assertThat(trace.getTraceId()).isEqualTo(uuidString);
+					assertThat(trace.getSpansCount()).isEqualTo(8);
 
-			List<LogEntry> logEntries = new ArrayList<>();
-			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()
-					.forEach((le) -> {
-						logEntries.add(le);
-					});
+					List<LogEntry> logEntries = new ArrayList<>();
+					this.logClient
+							.listLogEntries(Logging.EntryListOption.filter(logFilter))
+							.iterateAll().forEach((le) -> {
+								logEntries.add(le);
+							});
 
-			List<String> logContents = logEntries.stream()
-					.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
-					.collect(Collectors.toList());
+					List<String> logContents = logEntries.stream()
+							.map((logEntry) -> ((StringPayload) logEntry.getPayload())
+									.getData())
+							.collect(Collectors.toList());
 
-			assertThat(logContents).contains("starting busy work");
-			assertThat(logContents).contains("finished busy work");
-		});
+					assertThat(logContents).contains("starting busy work");
+					assertThat(logContents).contains("finished busy work");
+				});
 	}
+
 }

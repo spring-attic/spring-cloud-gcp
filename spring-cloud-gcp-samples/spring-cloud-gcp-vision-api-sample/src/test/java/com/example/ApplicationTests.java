@@ -63,27 +63,25 @@ public class ApplicationTests {
 
 	@Test
 	public void testExtractTextFromImage() throws Exception {
-		this.mockMvc.perform(get(TEXT_IMAGE_URL))
-				.andDo((response) -> {
-					String textImageResponse = response.getResponse().getContentAsString();
-					assertThat(textImageResponse).isEqualTo("Text from image: STOP\n");
-				});
+		this.mockMvc.perform(get(TEXT_IMAGE_URL)).andDo((response) -> {
+			String textImageResponse = response.getResponse().getContentAsString();
+			assertThat(textImageResponse).isEqualTo("Text from image: STOP\n");
+		});
 	}
 
 	@Test
 	public void testClassifyImageLabels() throws Exception {
-		this.mockMvc.perform(get(LABEL_IMAGE_URL))
-				.andDo((response) -> {
-					ModelAndView result = response.getModelAndView();
-					Map<String, Float> annotations = (Map<String, Float>) result.getModelMap().get("annotations");
+		this.mockMvc.perform(get(LABEL_IMAGE_URL)).andDo((response) -> {
+			ModelAndView result = response.getModelAndView();
+			Map<String, Float> annotations = (Map<String, Float>) result.getModelMap()
+					.get("annotations");
 
-					// This represents the annotation on the image with the best score
-					String bestAnnotation = annotations.entrySet().stream()
-							.max(Comparator.comparingDouble((e) -> e.getValue()))
-							.get()
-							.getKey();
+			// This represents the annotation on the image with the best score
+			String bestAnnotation = annotations.entrySet().stream()
+					.max(Comparator.comparingDouble((e) -> e.getValue())).get().getKey();
 
-					assertThat(bestAnnotation).isEqualTo("boston terrier");
-				});
+			assertThat(bestAnnotation).isEqualTo("boston terrier");
+		});
 	}
+
 }

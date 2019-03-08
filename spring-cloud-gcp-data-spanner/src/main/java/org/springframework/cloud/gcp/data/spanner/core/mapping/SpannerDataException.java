@@ -24,7 +24,6 @@ import org.springframework.dao.DataAccessException;
  * @author Ray Tsang
  * @author Chengyuan Zhao
  * @author Balint Pato
- *
  * @since 1.1
  */
 public class SpannerDataException extends DataAccessException {

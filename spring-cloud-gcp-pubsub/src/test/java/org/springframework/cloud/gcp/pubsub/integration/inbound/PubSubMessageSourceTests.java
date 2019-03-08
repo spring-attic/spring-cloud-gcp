@@ -47,7 +47,6 @@ import static org.mockito.Mockito.when;
  * Tests for {@link PubSubMessageSource}.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -76,14 +75,14 @@ public class PubSubMessageSourceTests {
 		when(this.msg2.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
 		when(this.msg3.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
 
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true, String.class))
-				.thenReturn(Collections.singletonList(this.msg1));
+		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true,
+				String.class)).thenReturn(Collections.singletonList(this.msg1));
 	}
 
 	@Test
 	public void doReceive_returnsNullWhenNoMessagesAvailable() {
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true, String.class))
-				.thenReturn(Collections.emptyList());
+		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true,
+				String.class)).thenReturn(Collections.emptyList());
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -98,16 +97,19 @@ public class PubSubMessageSourceTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void doReceive_callsPubsubAndCachesCorrectly() {
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 3, true, String.class))
-				.thenReturn(Arrays.asList(this.msg1, this.msg2, this.msg3));
+		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 3, true,
+				String.class)).thenReturn(Arrays.asList(this.msg1, this.msg2, this.msg3));
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
 		pubSubMessageSource.setMaxFetchSize(3);
 		pubSubMessageSource.setPayloadType(String.class);
 
-		MessageBuilder<String> message1 = (MessageBuilder<String>) pubSubMessageSource.doReceive(3);
-		MessageBuilder<String> message2 = (MessageBuilder<String>) pubSubMessageSource.doReceive(3);
-		MessageBuilder<String> message3 = (MessageBuilder<String>) pubSubMessageSource.doReceive(3);
+		MessageBuilder<String> message1 = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(3);
+		MessageBuilder<String> message2 = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(3);
+		MessageBuilder<String> message3 = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(3);
 
 		assertThat(message1).isNotNull();
 		assertThat(message1).isNotNull();
@@ -116,8 +118,8 @@ public class PubSubMessageSourceTests {
 		assertThat(message1.getPayload()).isEqualTo("msg1");
 		assertThat(message2.getPayload()).isEqualTo("msg2");
 		assertThat(message3.getPayload()).isEqualTo("msg3");
-		verify(this.mockPubSubSubscriberOperations, times(1))
-				.pullAndConvert("sub1", 3, true, String.class);
+		verify(this.mockPubSubSubscriberOperations, times(1)).pullAndConvert("sub1", 3,
+				true, String.class);
 	}
 
 	@Test
@@ -127,13 +129,14 @@ public class PubSubMessageSourceTests {
 				this.mockPubSubSubscriberOperations, "sub1");
 		pubSubMessageSource.setPayloadType(String.class);
 
-		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource.doReceive(0);
+		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(0);
 
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isEqualTo("msg1");
 
-		verify(this.mockPubSubSubscriberOperations, times(1))
-				.pullAndConvert("sub1", 1, true, String.class);
+		verify(this.mockPubSubSubscriberOperations, times(1)).pullAndConvert("sub1", 1,
+				true, String.class);
 	}
 
 	@Test
@@ -143,13 +146,14 @@ public class PubSubMessageSourceTests {
 				this.mockPubSubSubscriberOperations, "sub1");
 		pubSubMessageSource.setPayloadType(String.class);
 
-		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource.doReceive(-1);
+		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(-1);
 
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isEqualTo("msg1");
 
-		verify(this.mockPubSubSubscriberOperations, times(1))
-				.pullAndConvert("sub1", 1, true, String.class);
+		verify(this.mockPubSubSubscriberOperations, times(1)).pullAndConvert("sub1", 1,
+				true, String.class);
 	}
 
 	@Test
@@ -162,7 +166,8 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.MANUAL);
 
-		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource.doReceive(1);
+		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(1);
 
 		assertThat(message).isNotNull();
 
@@ -186,12 +191,14 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
-		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(
+				pubSubMessageSource);
 		poller.poll((message) -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
-			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE))
+					.isEqualTo(this.msg1);
 		});
 
 		verify(this.msg1).ack();
@@ -205,12 +212,14 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
-		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(
+				pubSubMessageSource);
 		poller.poll((message) -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
-			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE))
+					.isEqualTo(this.msg1);
 		});
 
 		verify(this.msg1).ack();
@@ -223,12 +232,14 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 
-		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(
+				pubSubMessageSource);
 		poller.poll((message) -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
-			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE))
+					.isEqualTo(this.msg1);
 		});
 
 		verify(this.msg1).ack();
@@ -242,7 +253,8 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
-		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(
+				pubSubMessageSource);
 		assertThatThrownBy(() -> {
 			poller.poll((message) -> {
 				throw new RuntimeException("Nope.");
@@ -260,7 +272,8 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
-		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(
+				pubSubMessageSource);
 		assertThatThrownBy(() -> {
 			poller.poll((message) -> {
 				throw new RuntimeException("Nope.");
@@ -274,8 +287,8 @@ public class PubSubMessageSourceTests {
 	@SuppressWarnings("unchecked")
 	public void blockOnPullSetsReturnImmediatelyToFalse() {
 
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, false, String.class))
-				.thenReturn(Collections.singletonList(msg1));
+		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, false,
+				String.class)).thenReturn(Collections.singletonList(msg1));
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -283,12 +296,13 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setBlockOnPull(true);
 
-		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource.doReceive(1);
+		MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource
+				.doReceive(1);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isEqualTo("msg1");
 
-		verify(this.mockPubSubSubscriberOperations)
-				.pullAndConvert("sub1", 1, false, String.class);
+		verify(this.mockPubSubSubscriberOperations).pullAndConvert("sub1", 1, false,
+				String.class);
 	}
 
 }

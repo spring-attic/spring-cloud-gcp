@@ -77,13 +77,13 @@ import static org.mockito.Mockito.verify;
  * @author Mike Eltsufin
  */
 public class PubSubChannelAdaptersIntegrationTests {
+
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(
-					GcpContextAutoConfiguration.class,
+			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
 			.withUserConfiguration(
 					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
@@ -116,26 +116,32 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("static", "lift your skinny fists");
 				headers.put("sleep", "lift your skinny fists");
 
-				Message originalMessage = MessageBuilder.createMessage("I am a message.".getBytes(),
-						new MessageHeaders(headers));
-				context.getBean("inputChannel", MessageChannel.class).send(originalMessage);
+				Message originalMessage = MessageBuilder.createMessage(
+						"I am a message.".getBytes(), new MessageHeaders(headers));
+				context.getBean("inputChannel", MessageChannel.class)
+						.send(originalMessage);
 
-				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				Message<?> message = context
+						.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
 				String payload = new String((byte[]) message.getPayload());
 				assertThat(payload).isEqualTo("I am a message.");
 
 				assertThat(message.getHeaders().size()).isEqualTo(6);
-				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNotNull();
+				assertThat(message.getHeaders().get("storm"))
+						.isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get("static"))
+						.isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get("sleep"))
+						.isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE))
+						.isNotNull();
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin
+						.deleteSubscription((String) context.getBean("subscriptionName"));
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
@@ -148,8 +154,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
-				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				Message<?> message = context
+						.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
 				String stringPayload = new String((byte[]) message.getPayload());
@@ -157,7 +163,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin
+						.deleteSubscription((String) context.getBean("subscriptionName"));
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
@@ -167,23 +174,25 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessageManualAck() {
 		this.contextRunner.run((context) -> {
 			try {
-				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
+				context.getBean(PubSubInboundChannelAdapter.class)
+						.setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
-				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
+				PollableChannel channel = context.getBean("outputChannel",
+						PollableChannel.class);
 
 				Message<?> message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				BasicAcknowledgeablePubsubMessage origMessage =
-						(BasicAcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				BasicAcknowledgeablePubsubMessage origMessage = (BasicAcknowledgeablePubsubMessage) message
+						.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 				assertThat(origMessage).isNotNull();
 				origMessage.nack();
 
 				message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				origMessage = (BasicAcknowledgeablePubsubMessage)
-						message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				origMessage = (BasicAcknowledgeablePubsubMessage) message.getHeaders()
+						.get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 				assertThat(origMessage).isNotNull();
 				origMessage.ack();
 
@@ -192,7 +201,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin
+						.deleteSubscription((String) context.getBean("subscriptionName"));
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
@@ -203,16 +213,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
 		this.contextRunner.run((context) -> {
 			try {
-				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
+				context.getBean(PubSubInboundChannelAdapter.class)
+						.setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
-				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
+				PollableChannel channel = context.getBean("outputChannel",
+						PollableChannel.class);
 
 				Message<?> message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				AckReplyConsumer acker =
-						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
+				AckReplyConsumer acker = (AckReplyConsumer) message.getHeaders()
+						.get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 				assertThat(acker).isNotNull();
 				acker.ack();
 
@@ -223,7 +235,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin
+						.deleteSubscription((String) context.getBean("subscriptionName"));
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
@@ -249,8 +262,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessagePublishCallback() {
 		this.contextRunner.run((context) -> {
 			try {
-				ListenableFutureCallback<String> callbackSpy = Mockito.spy(
-						new ListenableFutureCallback<String>() {
+				ListenableFutureCallback<String> callbackSpy = Mockito
+						.spy(new ListenableFutureCallback<String>() {
 							@Override
 							public void onFailure(Throwable ex) {
 
@@ -261,18 +274,20 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 							}
 						});
-				context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
+				context.getBean(PubSubMessageHandler.class)
+						.setPublishCallback(callbackSpy);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
-				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				Message<?> message = context
+						.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
 				verify(callbackSpy, times(1)).onSuccess(any());
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin
+						.deleteSubscription((String) context.getBean("subscriptionName"));
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
@@ -295,8 +310,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
 				@Qualifier("outputChannel") MessageChannel outputChannel) {
-			PubSubInboundChannelAdapter inboundChannelAdapter =
-					new PubSubInboundChannelAdapter(this.pubSubTemplate, this.subscriptionName);
+			PubSubInboundChannelAdapter inboundChannelAdapter = new PubSubInboundChannelAdapter(
+					this.pubSubTemplate, this.subscriptionName);
 			inboundChannelAdapter.setOutputChannel(outputChannel);
 
 			return inboundChannelAdapter;
@@ -317,14 +332,14 @@ public class PubSubChannelAdaptersIntegrationTests {
 		public SubscriberFactory defaultSubscriberFactory(
 				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin,
-				GcpProjectIdProvider projectIdProvider,
+				PubSubAdmin pubSubAdmin, GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
 				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName);
 			}
 
-			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
+			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(
+					projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
 			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
@@ -338,14 +353,14 @@ public class PubSubChannelAdaptersIntegrationTests {
 		public PublisherFactory defaultPublisherFactory(
 				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin,
-				GcpProjectIdProvider projectIdProvider,
+				PubSubAdmin pubSubAdmin, GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getTopic(this.topicName) == null) {
 				pubSubAdmin.createTopic(this.topicName);
 			}
 
-			DefaultPublisherFactory factory = new DefaultPublisherFactory(projectIdProvider);
+			DefaultPublisherFactory factory = new DefaultPublisherFactory(
+					projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
 			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
@@ -363,5 +378,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		public String subscriptionName() {
 			return this.subscriptionName;
 		}
+
 	}
+
 }

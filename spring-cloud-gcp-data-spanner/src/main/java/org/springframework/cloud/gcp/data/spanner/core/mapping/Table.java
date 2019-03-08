@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table name,
- * instead of deriving it from the entity's class name.
+ * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table
+ * name, instead of deriving it from the entity's class name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -37,9 +37,10 @@ import java.lang.annotation.Target;
 public @interface Table {
 
 	/**
-	 * The name of the table in Spanner, which can differ from the name of the class which it
-	 * annotates.
+	 * The name of the table in Spanner, which can differ from the name of the class which
+	 * it annotates.
 	 * @return The name of the table
 	 */
 	String name() default "";
+
 }

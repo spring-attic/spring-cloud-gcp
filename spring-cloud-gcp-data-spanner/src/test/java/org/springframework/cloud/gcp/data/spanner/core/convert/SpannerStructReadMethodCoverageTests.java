@@ -36,9 +36,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SpannerStructReadMethodCoverageTests {
 
-	private static final Set<String> DISREGARDED_METHOD_NAMES = Collections.unmodifiableSet(new HashSet<String>(
-		Arrays.asList("getColumnIndex", "getStructList", "getColumnType")
-	));
+	private static final Set<String> DISREGARDED_METHOD_NAMES = Collections
+			.unmodifiableSet(new HashSet<String>(
+					Arrays.asList("getColumnIndex", "getStructList", "getColumnType")));
 
 	// Checks that the converter is aware of all Spanner struct getter types
 	@Test
@@ -56,11 +56,14 @@ public class SpannerStructReadMethodCoverageTests {
 			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
 				Class innerReturnType = (Class) ((ParameterizedType) method
 						.getGenericReturnType()).getActualTypeArguments()[0];
-				assertThat(StructAccessor.readIterableMapping.keySet()).contains(innerReturnType);
+				assertThat(StructAccessor.readIterableMapping.keySet())
+						.contains(innerReturnType);
 			}
 			else {
-				assertThat(StructAccessor.singleItemReadMethodMapping.keySet()).contains(returnType);
+				assertThat(StructAccessor.singleItemReadMethodMapping.keySet())
+						.contains(returnType);
 			}
 		}
 	}
+
 }

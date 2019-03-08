@@ -49,7 +49,8 @@ public class WebController {
 	}
 
 	@PostMapping("/createPerson")
-	public RedirectView createUser(@RequestParam("name") String name, @RequestParam("age") int age) {
+	public RedirectView createUser(@RequestParam("name") String name,
+			@RequestParam("age") int age) {
 		Person person = new Person(name, age);
 		this.pubSubPersonGateway.sendPersonToPubSub(person);
 		return new RedirectView("/");
@@ -59,4 +60,5 @@ public class WebController {
 	public List<Person> listPersons() {
 		return this.processedPersonsList;
 	}
+
 }

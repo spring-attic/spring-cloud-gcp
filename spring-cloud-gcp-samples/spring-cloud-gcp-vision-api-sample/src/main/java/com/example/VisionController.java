@@ -36,7 +36,8 @@ import org.springframework.web.servlet.ModelAndView;
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client
  * Libraries.
  *
- * <p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
+ * <p>
+ * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
  * configured and provided by the spring-cloud-gcp-starter-vision module.
  *
  * @author João André Martins
@@ -52,8 +53,8 @@ public class VisionController {
 	private CloudVisionTemplate cloudVisionTemplate;
 
 	/**
-	 * This method downloads an image from a URL and sends its contents to the Vision API for label detection.
-	 *
+	 * This method downloads an image from a URL and sends its contents to the Vision API
+	 * for label detection.
 	 * @param imageUrl the URL of the image
 	 * @param map the model map to use
 	 * @return a string with the list of labels and percentage of certainty
@@ -64,11 +65,9 @@ public class VisionController {
 		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
 				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
-		Map<String, Float> imageLabels =
-				response.getLabelAnnotationsList()
-						.stream()
-						.collect(Collectors.toMap(
-								EntityAnnotation::getDescription, EntityAnnotation::getScore));
+		Map<String, Float> imageLabels = response.getLabelAnnotationsList().stream()
+				.collect(Collectors.toMap(EntityAnnotation::getDescription,
+						EntityAnnotation::getScore));
 
 		map.addAttribute("annotations", imageLabels);
 		map.addAttribute("imageUrl", imageUrl);
@@ -78,8 +77,8 @@ public class VisionController {
 
 	@GetMapping("/extractText")
 	public String extractText(String imageUrl) {
-		String textFromImage = this.cloudVisionTemplate.extractTextFromImage(
-				this.resourceLoader.getResource(imageUrl));
+		String textFromImage = this.cloudVisionTemplate
+				.extractTextFromImage(this.resourceLoader.getResource(imageUrl));
 		return "Text from image: " + textFromImage;
 	}
 

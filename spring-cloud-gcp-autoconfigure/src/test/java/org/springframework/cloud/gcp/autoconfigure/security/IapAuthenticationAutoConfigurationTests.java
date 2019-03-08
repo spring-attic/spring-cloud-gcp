@@ -55,12 +55,10 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-
 /**
  * Tests for IAP auth config.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -75,8 +73,8 @@ public class IapAuthenticationAutoConfigurationTests {
 	static final String FAKE_USER_TOKEN = "lol cats forever";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(
-					AutoConfigurations.of(IapAuthenticationAutoConfiguration.class, TestConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(
+					IapAuthenticationAutoConfiguration.class, TestConfiguration.class));
 
 	@Mock
 	HttpServletRequest mockIapRequest;
@@ -104,7 +102,8 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Before
 	public void httpRequestSetup() {
-		when(this.mockIapRequest.getHeader("x-goog-iap-jwt-assertion")).thenReturn("very fake jwt");
+		when(this.mockIapRequest.getHeader("x-goog-iap-jwt-assertion"))
+				.thenReturn("very fake jwt");
 	}
 
 	@Test
@@ -118,12 +117,12 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testAutoconfiguredBeansMissingWhenGatingPropertyFalse() {
 
 		this.expectedException.expect(NoSuchBeanDefinitionException.class);
-		this.expectedException.expectMessage("No qualifying bean of type " +
-				"'org.springframework.security.oauth2.jwt.JwtDecoder' available");
+		this.expectedException.expectMessage("No qualifying bean of type "
+				+ "'org.springframework.security.oauth2.jwt.JwtDecoder' available");
 
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=false")
-				.run((context) ->	context.getBean(JwtDecoder.class));
+				.run((context) -> context.getBean(JwtDecoder.class));
 	}
 
 	@Test
@@ -131,8 +130,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		new ApplicationContextRunner()
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.withConfiguration(
-						AutoConfigurations.of(
-								IapAuthenticationAutoConfiguration.class,
+						AutoConfigurations.of(IapAuthenticationAutoConfiguration.class,
 								OAuth2ResourceServerAutoConfiguration.class,
 								TestConfiguration.class))
 				.run(this::verifyJwtBeans);
@@ -140,46 +138,54 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Test
 	public void testUserBeansReturnedUserConfigPresent() {
-		this.contextRunner
-				.withUserConfiguration(UserConfiguration.class)
+		this.contextRunner.withUserConfiguration(UserConfiguration.class)
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.run((context) -> {
-					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
+					JwtDecoder jwtDecoder = context.getBean(JwtDecoder.class);
 					assertThat(jwtDecoder).isNotNull();
-					assertThat(jwtDecoder).isNotInstanceOf(NimbusJwtDecoderJwkSupport.class);
-					assertThat(jwtDecoder.decode("Ceci n'est pas un Jwt")).isSameAs(mockJwt);
+					assertThat(jwtDecoder)
+							.isNotInstanceOf(NimbusJwtDecoderJwkSupport.class);
+					assertThat(jwtDecoder.decode("Ceci n'est pas un Jwt"))
+							.isSameAs(mockJwt);
 
-					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
+					BearerTokenResolver resolver = context
+							.getBean(BearerTokenResolver.class);
 					assertThat(resolver).isNotNull();
-					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(FAKE_USER_TOKEN);
-					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo(FAKE_USER_TOKEN);
+					assertThat(resolver.resolve(this.mockIapRequest))
+							.isEqualTo(FAKE_USER_TOKEN);
+					assertThat(resolver.resolve(this.mockNonIapRequest))
+							.isEqualTo(FAKE_USER_TOKEN);
 				});
 	}
 
 	@Test
 	public void testCustomPropertyOverridesDefault() {
 		this.contextRunner
-				.withPropertyValues("spring.cloud.gcp.security.iap.header=some-other-header")
+				.withPropertyValues(
+						"spring.cloud.gcp.security.iap.header=some-other-header")
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.run((context) -> {
-					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
+					when(this.mockNonIapRequest.getHeader("some-other-header"))
+							.thenReturn("other header jwt");
 
-					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
+					BearerTokenResolver resolver = context
+							.getBean(BearerTokenResolver.class);
 					assertThat(resolver).isNotNull();
 					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(null);
-					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo("other header jwt");
+					assertThat(resolver.resolve(this.mockNonIapRequest))
+							.isEqualTo("other header jwt");
 				});
 	}
 
 	@Test
 	public void testContextFailsWhenAudienceValidatorNotAvailable() throws Exception {
 
-		this.contextRunner
-				.run((context) -> {
-					assertThat(context).getFailure()
-							.hasCauseInstanceOf(NoSuchBeanDefinitionException.class)
-							.hasMessageContaining("No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider'");
-				});
+		this.contextRunner.run((context) -> {
+			assertThat(context).getFailure()
+					.hasCauseInstanceOf(NoSuchBeanDefinitionException.class)
+					.hasMessageContaining(
+							"No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider'");
+		});
 	}
 
 	@Test
@@ -191,32 +197,36 @@ public class IapAuthenticationAutoConfigurationTests {
 		this.contextRunner
 				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
 				.run((context) -> {
-					DelegatingOAuth2TokenValidator validator
-							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
+					DelegatingOAuth2TokenValidator validator = context.getBean(
+							"iapJwtDelegatingValidator",
+							DelegatingOAuth2TokenValidator.class);
 					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
 					assertThat(result.hasErrors()).isTrue();
 					assertThat(result.getErrors().size()).isEqualTo(1);
 					assertThat(
 							result.getErrors().stream().findAny().get().getDescription())
-								.startsWith("This aud claim is not equal");
+									.startsWith("This aud claim is not equal");
 				});
 	}
 
 	@Test
 	public void testAppEngineAudienceValidatorAddedWhenAvailable() {
-		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.APP_ENGINE_FLEXIBLE);
+		when(this.mockEnvironmentProvider.getCurrentEnvironment())
+				.thenReturn(GcpEnvironment.APP_ENGINE_FLEXIBLE);
 
 		this.contextRunner
 				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
 				.run((context) -> {
-					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
+					AudienceProvider audienceProvider = context
+							.getBean(AudienceProvider.class);
 					assertThat(audienceProvider).isNotNull();
-					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
+					assertThat(audienceProvider)
+							.isInstanceOf(AppEngineAudienceProvider.class);
 				});
 	}
 
 	private void verifyJwtBeans(AssertableApplicationContext context) {
-		JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
+		JwtDecoder jwtDecoder = context.getBean(JwtDecoder.class);
 		assertThat(jwtDecoder).isNotNull();
 		assertThat(jwtDecoder).isInstanceOf(NimbusJwtDecoderJwkSupport.class);
 
@@ -242,6 +252,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		public BearerTokenResolver bearerTokenResolver() {
 			return (httpServletRequest) -> FAKE_USER_TOKEN;
 		}
+
 	}
 
 	/**
@@ -260,6 +271,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		static GcpEnvironmentProvider mockEnvironmentProvider() {
 			return mockEnvironmentProvider;
 		}
+
 	}
 
 	/**
@@ -273,6 +285,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		AudienceValidator audienceValidator() {
 			return new AudienceValidator(() -> "right audience");
 		}
+
 	}
 
 }

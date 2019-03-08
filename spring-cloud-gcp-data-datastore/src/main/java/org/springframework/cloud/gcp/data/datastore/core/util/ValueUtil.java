@@ -23,7 +23,6 @@ import org.springframework.util.CollectionUtils;
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public final class ValueUtil {
@@ -33,7 +32,7 @@ public final class ValueUtil {
 
 	public static Object toListIfArray(Object val) {
 		if (val != null && isArrayOfItems(val.getClass())) {
-			//if a property is an array, convert it to list
+			// if a property is an array, convert it to list
 			return CollectionUtils.arrayToList(val);
 		}
 		return val;
@@ -46,4 +45,5 @@ public final class ValueUtil {
 	private static boolean isArrayOfItems(Class type) {
 		return type.isArray() && type != byte[].class;
 	}
+
 }

@@ -32,7 +32,6 @@ public class GcsRemoteFileTemplate extends RemoteFileTemplate<BlobInfo> {
 
 	/**
 	 * Construct a {@link RemoteFileTemplate} with the supplied session factory.
-	 *
 	 * @param sessionFactory the session factory.
 	 */
 	public GcsRemoteFileTemplate(SessionFactory<BlobInfo> sessionFactory) {
@@ -42,6 +41,8 @@ public class GcsRemoteFileTemplate extends RemoteFileTemplate<BlobInfo> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, C> T executeWithClient(ClientCallback<C, T> callback) {
-		return callback.doWithClient((C) this.sessionFactory.getSession().getClientInstance());
+		return callback
+				.doWithClient((C) this.sessionFactory.getSession().getClientInstance());
 	}
+
 }

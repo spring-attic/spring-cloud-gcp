@@ -32,7 +32,6 @@ import org.springframework.util.Assert;
  * the Datastore Service.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
@@ -75,11 +74,13 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	}
 
 	@Override
-	public Key getKeyFromObject(Object entity, DatastorePersistentEntity datastorePersistentEntity) {
+	public Key getKeyFromObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity) {
 		Assert.notNull(entity, "Cannot get key for null entity object.");
 		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
 		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
-		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp);
+		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity)
+				.getProperty(idProp);
 		if (idVal == null) {
 			return null;
 		}
@@ -98,14 +99,17 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		Class idPropType = idProp.getType();
 
 		if (!idPropType.equals(Key.class) && !idPropType.equals(Long.class)) {
-			throw new DatastoreDataException("Cloud Datastore can only allocate IDs for Long and Key properties. " +
-					"Cannot allocate for type: " + idPropType);
+			throw new DatastoreDataException(
+					"Cloud Datastore can only allocate IDs for Long and Key properties. "
+							+ "Cannot allocate for type: " + idPropType);
 		}
 
-		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
+		KeyFactory keyFactory = getKeyFactory()
+				.setKind(datastorePersistentEntity.kindName());
 		if (ancestors != null && ancestors.length > 0) {
 			if (!idPropType.equals(Key.class)) {
-				throw new DatastoreDataException("Only Key types are allowed for descendants id");
+				throw new DatastoreDataException(
+						"Only Key types are allowed for descendants id");
 			}
 			for (Key ancestor : ancestors) {
 				keyFactory.addAncestor(DatastoreTemplate.keyToPathElement(ancestor));
@@ -131,4 +135,5 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	private KeyFactory getKeyFactory() {
 		return this.datastore.newKeyFactory();
 	}
+
 }

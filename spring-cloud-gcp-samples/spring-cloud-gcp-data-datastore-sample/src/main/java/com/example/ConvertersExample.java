@@ -28,22 +28,23 @@ import org.springframework.core.convert.converter.Converter;
  */
 public class ConvertersExample {
 
-	//Converter to write custom Singer.Album type
-	static final Converter<Album, String> ALBUM_STRING_CONVERTER =
-			new Converter<Album, String>() {
-				@Override
-				public String convert(Album album) {
-					return album.getAlbumName() + " " + album.getDate().format(DateTimeFormatter.ISO_DATE);
-				}
-			};
+	// Converter to write custom Singer.Album type
+	static final Converter<Album, String> ALBUM_STRING_CONVERTER = new Converter<Album, String>() {
+		@Override
+		public String convert(Album album) {
+			return album.getAlbumName() + " "
+					+ album.getDate().format(DateTimeFormatter.ISO_DATE);
+		}
+	};
 
-	//Converters to read custom Singer.Album type
-	static final Converter<String, Album> STRING_ALBUM_CONVERTER =
-			new Converter<String, Album>() {
-				@Override
-				public Album convert(String s) {
-					String[] parts = s.split(" ");
-					return new Album(parts[0], LocalDate.parse(parts[parts.length - 1], DateTimeFormatter.ISO_DATE));
-				}
-			};
+	// Converters to read custom Singer.Album type
+	static final Converter<String, Album> STRING_ALBUM_CONVERTER = new Converter<String, Album>() {
+		@Override
+		public Album convert(String s) {
+			String[] parts = s.split(" ");
+			return new Album(parts[0],
+					LocalDate.parse(parts[parts.length - 1], DateTimeFormatter.ISO_DATE));
+		}
+	};
+
 }

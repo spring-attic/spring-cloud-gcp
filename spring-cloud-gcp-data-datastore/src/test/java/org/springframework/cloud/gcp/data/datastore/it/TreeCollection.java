@@ -27,6 +27,7 @@ import org.springframework.data.annotation.Id;
  * @author Dmitry Solomakha
  */
 public class TreeCollection {
+
 	@Id
 	private long id;
 
@@ -54,4 +55,5 @@ public class TreeCollection {
 
 		return Objects.hash(this.treeNodes);
 	}
+
 }

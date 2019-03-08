@@ -30,16 +30,17 @@ public class AfterDeleteEvent extends DeleteEvent {
 
 	/**
 	 * Constructor.
-	 *
 	 * @param source the mutations for the event initially occurred. (never {@code null})
 	 * @param targetEntities the target entities that need to be deleted. This may be
-	 *     {@code null} depending on the type of delete request.
+	 * {@code null} depending on the type of delete request.
 	 * @param targetKeys the target keys that need to be deleted. This may be {@code null}
-	 *     depending on the type of delete request.
+	 * depending on the type of delete request.
 	 * @param targetType the target entity type that needs to be deleted. This may be
-	 *     {@code null} depending on the
+	 * {@code null} depending on the
 	 */
-	public AfterDeleteEvent(List<Mutation> source, Iterable targetEntities, KeySet targetKeys, Class targetType) {
+	public AfterDeleteEvent(List<Mutation> source, Iterable targetEntities,
+			KeySet targetKeys, Class targetType) {
 		super(source, targetEntities, targetKeys, targetType);
 	}
+
 }

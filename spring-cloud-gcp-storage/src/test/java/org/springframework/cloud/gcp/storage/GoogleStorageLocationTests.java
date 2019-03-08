@@ -34,15 +34,18 @@ public class GoogleStorageLocationTests {
 
 	@Test
 	public void testCorrectLocationForFolder() {
-		GoogleStorageLocation location = GoogleStorageLocation.forFolder("bucketName", "folderName");
+		GoogleStorageLocation location = GoogleStorageLocation.forFolder("bucketName",
+				"folderName");
 		assertThat(location.uriString()).isEqualTo("gs://bucketName/folderName/");
 		assertThat(location.isFolder()).isTrue();
 	}
 
 	@Test
 	public void testCorrectLocationForFile() {
-		GoogleStorageLocation location = GoogleStorageLocation.forFile("bucketName", "fileName");
+		GoogleStorageLocation location = GoogleStorageLocation.forFile("bucketName",
+				"fileName");
 		assertThat(location.uriString()).isEqualTo("gs://bucketName/fileName");
 		assertThat(location.isFile()).isTrue();
 	}
+
 }

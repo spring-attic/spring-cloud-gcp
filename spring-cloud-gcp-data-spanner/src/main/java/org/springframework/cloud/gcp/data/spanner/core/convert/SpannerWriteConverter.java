@@ -31,7 +31,6 @@ import org.springframework.data.convert.CustomConversions;
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerWriteConverter extends SpannerCustomConverter {
@@ -41,17 +40,20 @@ public class SpannerWriteConverter extends SpannerCustomConverter {
 	}
 
 	public SpannerWriteConverter(Collection<Converter> readConverters) {
-		this(getCustomConversions(Stream.concat(
-					SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream(),
-					Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream())
-						.collect(Collectors.toList())));
+		this(getCustomConversions(Stream
+				.concat(SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream(),
+						Optional.ofNullable(readConverters)
+								.orElse(Collections.emptyList()).stream())
+				.collect(Collectors.toList())));
 	}
 
 	public SpannerWriteConverter(CustomConversions customConversions) {
 		this(customConversions, null);
 	}
 
-	public SpannerWriteConverter(CustomConversions customConversions, GenericConversionService conversionService) {
+	public SpannerWriteConverter(CustomConversions customConversions,
+			GenericConversionService conversionService) {
 		super(customConversions, conversionService);
 	}
+
 }

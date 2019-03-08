@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
@@ -31,9 +30,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * Abstract class for implementing Cloud Datastore query methods.
  *
  * @param <T> the domain type of the repository class containing this query method.
- *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
@@ -69,19 +66,25 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	}
 
 	/**
-	 * Convert collection-like param from the query method into an array of compatible types
-	 * for Datastore.
+	 * Convert collection-like param from the query method into an array of compatible
+	 * types for Datastore.
 	 * @param param the raw param
 	 * @return an array of a compatible type.
 	 */
 	protected Object[] convertCollectionParamToCompatibleArray(List<?> param) {
 		List converted = param.stream()
-				.map((x) -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
-						.get())
+				.map((x) -> this.datastoreTemplate.getDatastoreEntityConverter()
+						.getConversions().convertOnWriteSingle(x).get())
 				.collect(Collectors.toList());
-		return converted.toArray(
-				(Object[]) Array.newInstance(converted.isEmpty()
-						? String.class // if there are no items in the param
+		return converted
+				.toArray((Object[]) Array.newInstance(converted.isEmpty() ? String.class // if
+																							// there
+																							// are
+																							// no
+																							// items
+																							// in
+																							// the
+																							// param
 						: converted.get(0).getClass(), converted.size()));
 	}
 
@@ -92,4 +95,5 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	public DatastoreTemplate getDatastoreTemplate() {
 		return this.datastoreTemplate;
 	}
+
 }

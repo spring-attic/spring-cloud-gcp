@@ -34,4 +34,5 @@ public class TradeIdentifier {
 
 	@PrimaryKey(keyOrder = 2)
 	String trader_id;
+
 }

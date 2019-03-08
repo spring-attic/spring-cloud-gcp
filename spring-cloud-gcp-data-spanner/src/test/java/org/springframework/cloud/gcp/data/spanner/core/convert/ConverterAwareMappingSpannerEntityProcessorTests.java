@@ -130,12 +130,11 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		timestamps.add(ts2);
 		timestamps.add(ts3);
 
-		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
-				.set("id2").to(Value.string("key2")).set("id3").to(Value.string("key3"))
-				.set("id4").to(Value.string("key4"))
-				.set("custom_col").to(Value.string("WHITE")).set("booleanField")
-				.to(Value.bool(true)).set("intField").to(Value.int64(123L))
-				.set("intField2").to(Value.int64(333L))
+		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1")).set("id2")
+				.to(Value.string("key2")).set("id3").to(Value.string("key3")).set("id4")
+				.to(Value.string("key4")).set("custom_col").to(Value.string("WHITE"))
+				.set("booleanField").to(Value.bool(true)).set("intField")
+				.to(Value.int64(123L)).set("intField2").to(Value.int64(333L))
 				.set("longField").to(Value.int64(3L)).set("doubleField")
 				.to(Value.float64(3.33)).set("doubleArray")
 				.to(Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
@@ -149,17 +148,16 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.date(Date.fromYearMonthDay(2018, 11, 22))).set("timestampField")
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
 				.to(Value.bytes(ByteArray.copyFrom("string1"))).set("momentsInTime")
-				.to(Value.timestampArray(timestamps))
-				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
+				.to(Value.timestampArray(timestamps)).set("commitTimestamp")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
 
 		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key12"))
 				.set("id2").to(Value.string("key22")).set("id3").to(Value.string("key32"))
-				.set("id4").to(Value.string("key42"))
-				.set("custom_col").to(Value.string("BLACK")).set("booleanField")
-				.to(Value.bool(true)).set("intField").to(Value.int64(222L))
-				.set("intField2").to(Value.int64(555L))
-				.set("longField").to(Value.int64(5L)).set("doubleField")
-				.to(Value.float64(5.55)).set("doubleArray")
+				.set("id4").to(Value.string("key42")).set("custom_col")
+				.to(Value.string("BLACK")).set("booleanField").to(Value.bool(true))
+				.set("intField").to(Value.int64(222L)).set("intField2")
+				.to(Value.int64(555L)).set("longField").to(Value.int64(5L))
+				.set("doubleField").to(Value.float64(5.55)).set("doubleArray")
 				.to(Value.float64Array(new double[] { 5.55, 5.55 })).set("doubleList")
 				.to(Value.float64Array(doubleList)).set("stringList")
 				.to(Value.stringArray(stringList)).set("booleanList")
@@ -171,8 +169,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.date(Date.fromYearMonthDay(2019, 11, 22))).set("timestampField")
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.set("momentsInTime").to(Value.timestampArray(timestamps)).set("bytes")
-				.to(Value.bytes(ByteArray.copyFrom("string2")))
-				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
+				.to(Value.bytes(ByteArray.copyFrom("string2"))).set("commitTimestamp")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -277,15 +275,18 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 	}
 
 	private interface SpannerType {
+
 	}
 
 	private interface JavaType {
+
 	}
 
 	/**
 	 * A mock results class for mocked queries.
 	 */
 	static class MockResults {
+
 		List<Struct> structs;
 
 		int counter = -1;
@@ -301,5 +302,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		Struct getCurrent() {
 			return this.structs.get(this.counter);
 		}
+
 	}
+
 }

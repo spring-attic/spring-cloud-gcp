@@ -42,4 +42,5 @@ public class XCloudTraceIdExtractor implements TraceIdExtractor {
 		}
 		return traceId;
 	}
+
 }

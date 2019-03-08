@@ -49,7 +49,8 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	public PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers) {
 		try {
 			PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
-					.setData(ByteString.copyFrom(this.objectMapper.writeValueAsBytes(payload)));
+					.setData(ByteString
+							.copyFrom(this.objectMapper.writeValueAsBytes(payload)));
 
 			if (headers != null) {
 				pubsubMessageBuilder.putAllAttributes(headers);
@@ -58,19 +59,24 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 			return pubsubMessageBuilder.build();
 		}
 		catch (JsonProcessingException ex) {
-			throw new PubSubMessageConversionException("JSON serialization of an object of type " +
-					payload.getClass().getName() + " failed.", ex);
+			throw new PubSubMessageConversionException(
+					"JSON serialization of an object of type "
+							+ payload.getClass().getName() + " failed.",
+					ex);
 		}
 	}
 
 	@Override
 	public <T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType) {
 		try {
-			return (T) this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
+			return (T) this.objectMapper.readerFor(payloadType)
+					.readValue(message.getData().toByteArray());
 		}
 		catch (IOException ex) {
-			throw new PubSubMessageConversionException("JSON deserialization of an object of type " +
-					payloadType.getName() + " failed.", ex);
+			throw new PubSubMessageConversionException(
+					"JSON deserialization of an object of type " + payloadType.getName()
+							+ " failed.",
+					ex);
 		}
 	}
 

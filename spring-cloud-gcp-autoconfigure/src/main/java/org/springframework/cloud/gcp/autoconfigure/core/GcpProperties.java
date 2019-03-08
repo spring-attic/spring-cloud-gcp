@@ -35,7 +35,10 @@ public class GcpProperties implements CredentialsSupplier {
 	/** GCP project ID where services are running. */
 	private String projectId;
 
-	/** GCP OAuth2 credentials to authenticate and authorize calls to Google Cloud Client Libraries. */
+	/**
+	 * GCP OAuth2 credentials to authenticate and authorize calls to Google Cloud Client
+	 * Libraries.
+	 */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials();
 

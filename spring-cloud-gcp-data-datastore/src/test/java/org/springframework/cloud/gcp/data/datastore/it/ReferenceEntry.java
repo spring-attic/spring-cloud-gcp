@@ -30,6 +30,7 @@ import org.springframework.data.annotation.Reference;
  * @author Dmitry Solomakha
  */
 class ReferenceEntry {
+
 	@Id
 	Long id;
 
@@ -56,11 +57,12 @@ class ReferenceEntry {
 			return false;
 		}
 		ReferenceEntry that = (ReferenceEntry) o;
-		return Objects.equals(this.id, that.id) &&
-				Objects.equals(this.name, that.name) &&
-				Objects.equals(this.sibling, that.sibling) &&
-				new HashSet<>((this.childeren != null) ? this.childeren : Collections.emptyList())
-						.equals(new HashSet<>((that.childeren != null) ? that.childeren : Collections.emptyList()));
+		return Objects.equals(this.id, that.id) && Objects.equals(this.name, that.name)
+				&& Objects.equals(this.sibling, that.sibling)
+				&& new HashSet<>((this.childeren != null) ? this.childeren
+						: Collections.emptyList())
+								.equals(new HashSet<>((that.childeren != null)
+										? that.childeren : Collections.emptyList()));
 	}
 
 	@Override
@@ -71,11 +73,8 @@ class ReferenceEntry {
 
 	@Override
 	public String toString() {
-		return "ReferenceEntry{" +
-				"id=" + this.id +
-				", name='" + this.name + '\'' +
-				", sibling=" + this.sibling +
-				", childeren=" + this.childeren +
-				'}';
+		return "ReferenceEntry{" + "id=" + this.id + ", name='" + this.name + '\''
+				+ ", sibling=" + this.sibling + ", childeren=" + this.childeren + '}';
 	}
+
 }

@@ -52,8 +52,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	 */
 	public static final String VCAP_SERVICES_ENVVAR = "VCAP_SERVICES";
 
-	private static final Log LOGGER =
-			LogFactory.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
 
 	private static final String SPRING_CLOUD_GCP_PROPERTY_PREFIX = "spring.cloud.gcp.";
 
@@ -78,27 +78,39 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		PUBSUB("google-pubsub", "pubsub", new MapBuilder<String, String>()
 				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
-				.build()),
-		STORAGE("google-storage", "storage", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
-				.build()),
-		SPANNER("google-spanner", "spanner", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
-				.put("instance_id", "instance-id")
-				.build()),
-		DATASTORE("google-datastore", "datastore", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
-				.build()),
-		TRACE("google-stackdriver-trace", "trace", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
-				.build()),
-		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
-		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
+				.put("PrivateKeyData", "credentials.encoded-key").build()), STORAGE(
+						"google-storage", "storage",
+						new MapBuilder<String, String>().put("ProjectId", "project-id")
+								.put("PrivateKeyData", "credentials.encoded-key")
+								.build()), SPANNER(
+										"google-spanner", "spanner",
+										new MapBuilder<String, String>()
+												.put("ProjectId", "project-id")
+												.put("PrivateKeyData",
+														"credentials.encoded-key")
+												.put("instance_id", "instance-id")
+												.build()), DATASTORE("google-datastore",
+														"datastore",
+														new MapBuilder<String, String>()
+																.put("ProjectId",
+																		"project-id")
+																.put("PrivateKeyData",
+																		"credentials.encoded-key")
+																.build()), TRACE(
+																		"google-stackdriver-trace",
+																		"trace",
+																		new MapBuilder<String, String>()
+																				.put("ProjectId",
+																						"project-id")
+																				.put("PrivateKeyData",
+																						"credentials.encoded-key")
+																				.build()), MYSQL(
+																						"google-cloudsql-mysql",
+																						"sql",
+																						sqlPropertyMap), POSTGRES(
+																								"google-cloudsql-postgres",
+																								"sql",
+																								sqlPropertyMap);
 
 		/**
 		 * Name of the GCP Cloud Foundry service in the VCAP_SERVICES JSON.
@@ -111,17 +123,19 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		private String gcpServiceName;
 
 		/**
-		 * Direct mapping of GCP service broker field names in VCAP_SERVICES JSON to Spring Cloud
-		 * GCP property names. {@link #retrieveCfProperties(Map, String, String, Map)} uses this map
-		 * to perform the actual transformation.
+		 * Direct mapping of GCP service broker field names in VCAP_SERVICES JSON to
+		 * Spring Cloud GCP property names.
+		 * {@link #retrieveCfProperties(Map, String, String, Map)} uses this map to
+		 * perform the actual transformation.
 		 *
-		 * <p>For instance, "ProjectId" for the "google-storage" service will map to
-		 * "spring.cloud.gcp.storage.project-id" field.</p>
+		 * <p>
+		 * For instance, "ProjectId" for the "google-storage" service will map to
+		 * "spring.cloud.gcp.storage.project-id" field.
+		 * </p>
 		 */
 		private Map<String, String> cfPropNameToGcp;
 
-		GcpCfService(String cfServiceName,
-				String gcpServiceName,
+		GcpCfService(String cfServiceName, String gcpServiceName,
 				Map<String, String> cfPropNameToGcp) {
 			this.cfServiceName = cfServiceName;
 			this.gcpServiceName = gcpServiceName;
@@ -139,18 +153,20 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		public String getGcpServiceName() {
 			return this.gcpServiceName;
 		}
+
 	}
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment,
 			SpringApplication application) {
 		if (!StringUtils.isEmpty(environment.getProperty(VCAP_SERVICES_ENVVAR))) {
-			Map<String, Object> vcapMap =
-					this.parser.parseMap(environment.getProperty(VCAP_SERVICES_ENVVAR));
+			Map<String, Object> vcapMap = this.parser
+					.parseMap(environment.getProperty(VCAP_SERVICES_ENVVAR));
 
 			Properties gcpCfServiceProperties = new Properties();
 
-			Set<GcpCfService> servicesToMap = new HashSet<>(Arrays.asList(GcpCfService.values()));
+			Set<GcpCfService> servicesToMap = new HashSet<>(
+					Arrays.asList(GcpCfService.values()));
 			if (vcapMap.containsKey(GcpCfService.MYSQL.getCfServiceName())
 					&& vcapMap.containsKey(GcpCfService.POSTGRES.getCfServiceName())) {
 				LOGGER.warn("Both MySQL and PostgreSQL bound to the app. "
@@ -159,42 +175,46 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				servicesToMap.remove(GcpCfService.POSTGRES);
 			}
 
-			servicesToMap.forEach(
-					(service) -> gcpCfServiceProperties.putAll(
-							retrieveCfProperties(
-									vcapMap,
-									service.getGcpServiceName(),
-									service.getCfServiceName(),
-									service.getCfPropNameToGcp())));
+			servicesToMap.forEach((service) -> gcpCfServiceProperties
+					.putAll(retrieveCfProperties(vcapMap, service.getGcpServiceName(),
+							service.getCfServiceName(), service.getCfPropNameToGcp())));
 
 			// For Cloud SQL, there are some exceptions to the rule.
 			// The instance connection name must be built from three fields.
-			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.instance-name")) {
-				String instanceConnectionName =
-						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id") + ":"
-						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.region") + ":"
-						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.instance-name");
-				gcpCfServiceProperties.put("spring.cloud.gcp.sql.instance-connection-name",
+			if (gcpCfServiceProperties
+					.containsKey("spring.cloud.gcp.sql.instance-name")) {
+				String instanceConnectionName = gcpCfServiceProperties
+						.getProperty("spring.cloud.gcp.sql.project-id")
+						+ ":"
+						+ gcpCfServiceProperties
+								.getProperty("spring.cloud.gcp.sql.region")
+						+ ":" + gcpCfServiceProperties
+								.getProperty("spring.cloud.gcp.sql.instance-name");
+				gcpCfServiceProperties.put(
+						"spring.cloud.gcp.sql.instance-connection-name",
 						instanceConnectionName);
 			}
 			// The username and password should be in the generic DataSourceProperties.
 			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.username")) {
 				gcpCfServiceProperties.put("spring.datasource.username",
-						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.username"));
+						gcpCfServiceProperties
+								.getProperty("spring.cloud.gcp.sql.username"));
 			}
 			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.password")) {
 				gcpCfServiceProperties.put("spring.datasource.password",
-						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.password"));
+						gcpCfServiceProperties
+								.getProperty("spring.cloud.gcp.sql.password"));
 			}
 
-			environment.getPropertySources()
-					.addFirst(new PropertiesPropertySource("gcpCf", gcpCfServiceProperties));
+			environment.getPropertySources().addFirst(
+					new PropertiesPropertySource("gcpCf", gcpCfServiceProperties));
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private static Properties retrieveCfProperties(Map<String, Object> vcapMap,
-			String gcpServiceName, String cfServiceName, Map<String, String> fieldsToMap) {
+			String gcpServiceName, String cfServiceName,
+			Map<String, String> fieldsToMap) {
 		Properties properties = new Properties();
 
 		try {
@@ -210,13 +230,13 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				return properties;
 			}
 
-			Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings.get(0);
-			Map<String, String> credentialsMap = (Map<String, String>) serviceBinding.get("credentials");
+			Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings
+					.get(0);
+			Map<String, String> credentialsMap = (Map<String, String>) serviceBinding
+					.get("credentials");
 			String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + gcpServiceName + ".";
-			fieldsToMap.forEach(
-					(cfPropKey, gcpPropKey) -> properties.put(
-							prefix + gcpPropKey,
-							credentialsMap.get(cfPropKey)));
+			fieldsToMap.forEach((cfPropKey, gcpPropKey) -> properties
+					.put(prefix + gcpPropKey, credentialsMap.get(cfPropKey)));
 		}
 		catch (ClassCastException ex) {
 			LOGGER.warn("Unexpected format of CF (VCAP) properties", ex);
@@ -229,4 +249,5 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	public int getOrder() {
 		return this.order;
 	}
+
 }

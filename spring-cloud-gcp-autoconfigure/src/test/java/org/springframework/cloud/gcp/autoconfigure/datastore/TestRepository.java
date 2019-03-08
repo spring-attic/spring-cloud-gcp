@@ -24,4 +24,5 @@ import org.springframework.cloud.gcp.data.datastore.repository.DatastoreReposito
  * @author Chengyuan Zhao
  */
 public interface TestRepository extends DatastoreRepository {
+
 }

@@ -23,7 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for an entity's field that causes the field to be ignored by Spring Data Spanner.
+ * Annotation for an entity's field that causes the field to be ignored by Spring Data
+ * Spanner.
  *
  * @author Chengyuan Zhao
  *
@@ -33,4 +34,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotMapped {
+
 }

@@ -19,11 +19,13 @@ package org.springframework.cloud.gcp.pubsub.support.converter;
 import org.springframework.core.NestedRuntimeException;
 
 /**
- * An exception raised when conversion to or from a {@link com.google.pubsub.v1.PubsubMessage} fails.
+ * An exception raised when conversion to or from a
+ * {@link com.google.pubsub.v1.PubsubMessage} fails.
  *
  * @author Mike Eltsufin
  */
 public class PubSubMessageConversionException extends NestedRuntimeException {
+
 	public PubSubMessageConversionException(String msg) {
 		super(msg);
 	}
@@ -31,4 +33,5 @@ public class PubSubMessageConversionException extends NestedRuntimeException {
 	public PubSubMessageConversionException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
+
 }

@@ -33,6 +33,7 @@ import org.springframework.shell.standard.ShellMethod;
 @ShellComponent
 @SpringBootApplication
 public class DatastoreBookshelfExample {
+
 	@Autowired
 	BookRepository bookRepository;
 
@@ -76,4 +77,5 @@ public class DatastoreBookshelfExample {
 	public void removeAllBooks() {
 		this.bookRepository.deleteAll();
 	}
+
 }

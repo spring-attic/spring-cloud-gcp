@@ -38,11 +38,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * Represents an persistent property just to represent Cloud Spanner primary keys, and does not
- * correspond to actual properties of POJOs, as it might even be a composite, multi-column key.
+ * Represents an persistent property just to represent Cloud Spanner primary keys, and
+ * does not correspond to actual properties of POJOs, as it might even be a composite,
+ * multi-column key.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
@@ -70,22 +70,24 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				Key embeddedKeyParts = this.spannerPersistentEntity
 						.getSpannerMappingContext()
 						.getPersistentEntity(spannerPersistentProperty.getType())
-						.getIdProperty()
-						.getId(value);
+						.getIdProperty().getId(value);
 				for (Object keyPart : embeddedKeyParts.getParts()) {
 					keyParts.add(keyPart);
 				}
 			}
-			else if (spannerPersistentProperty.getAnnotatedColumnItemType() == null || value == null) {
+			else if (spannerPersistentProperty.getAnnotatedColumnItemType() == null
+					|| value == null) {
 				keyParts.add(value);
 			}
 			else {
-				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
-						.convert(value, SpannerTypeMapper
-								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
+				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter()
+						.getSpannerWriteConverter()
+						.convert(value, SpannerTypeMapper.getSimpleJavaClassFor(
+								spannerPersistentProperty.getAnnotatedColumnItemType())));
 			}
 		}
-		return this.spannerPersistentEntity.getSpannerEntityWriter().convertToKey(keyParts);
+		return this.spannerPersistentEntity.getSpannerEntityWriter()
+				.convertToKey(keyParts);
 	}
 
 	@Override
@@ -317,4 +319,5 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	public Method getWither() {
 		return null;
 	}
+
 }

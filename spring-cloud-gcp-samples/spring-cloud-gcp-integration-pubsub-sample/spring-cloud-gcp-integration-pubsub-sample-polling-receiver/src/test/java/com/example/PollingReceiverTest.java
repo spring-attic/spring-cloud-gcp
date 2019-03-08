@@ -42,7 +42,6 @@ import static org.junit.Assume.assumeThat;
  * Tests for the receiver application.
  *
  * @author Dmitry Solomakha
- *
  * @since 1.2
  */
 
@@ -50,6 +49,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest
 @DirtiesContext
 public class PollingReceiverTest {
+
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -78,13 +78,14 @@ public class PollingReceiverTest {
 	@Test
 	public void testSample() throws Exception {
 		String message = "test message " + UUID.randomUUID();
-		String expectedString = "Message arrived by Synchronous Pull! Payload: " + message;
+		String expectedString = "Message arrived by Synchronous Pull! Payload: "
+				+ message;
 
 		this.pubSubTemplate.publish("exampleTopic", message);
 
-		Awaitility.await()
-				.atMost(10, TimeUnit.SECONDS)
+		Awaitility.await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> baos.toString().contains(expectedString));
 		assertThat(baos.toString()).contains(expectedString);
 	}
+
 }

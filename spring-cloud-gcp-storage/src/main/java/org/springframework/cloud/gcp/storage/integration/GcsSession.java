@@ -66,8 +66,7 @@ public class GcsSession implements Session<BlobInfo> {
 		Assert.state(tokens.length == 1 || tokens.length == 2,
 				"Path must be in the form of [bucket] or [bucket]/[blob name]");
 
-		return (tokens.length == 1)
-				? this.gcs.delete(tokens[0])
+		return (tokens.length == 1) ? this.gcs.delete(tokens[0])
 				: this.gcs.delete(tokens[0], tokens[1]);
 	}
 
@@ -99,7 +98,8 @@ public class GcsSession implements Session<BlobInfo> {
 		String[] tokens = getBucketAndObjectFromPath(destination);
 		Assert.state(tokens.length == 2, "Can only write to files, not buckets.");
 
-		BlobInfo gcsBlobInfo = BlobInfo.newBuilder(BlobId.of(tokens[0], tokens[1])).build();
+		BlobInfo gcsBlobInfo = BlobInfo.newBuilder(BlobId.of(tokens[0], tokens[1]))
+				.build();
 
 		try (InputStream is = inputStream) {
 			try (WriteChannel channel = this.gcs.writer(gcsBlobInfo)) {
@@ -110,9 +110,11 @@ public class GcsSession implements Session<BlobInfo> {
 
 	@Override
 	public void append(InputStream inputStream, String destination) throws IOException {
-		// TODO(joaomartins): We could do compose here, but it assumes that InputStream is first copied to a
+		// TODO(joaomartins): We could do compose here, but it assumes that InputStream is
+		// first copied to a
 		// GCS object that we can then "compose" to the original object.
-		throw new UnsupportedOperationException("Appending isn't supported by Google Cloud Storage.");
+		throw new UnsupportedOperationException(
+				"Appending isn't supported by Google Cloud Storage.");
 	}
 
 	@Override
@@ -138,7 +140,8 @@ public class GcsSession implements Session<BlobInfo> {
 		String[] fromTokens = getBucketAndObjectFromPath(pathFrom);
 		String[] toTokens = getBucketAndObjectFromPath(pathTo);
 
-		// There is currently no way to rename/move things in GCS, so we'll have to copy and remove.
+		// There is currently no way to rename/move things in GCS, so we'll have to copy
+		// and remove.
 		BlobId source = BlobId.of(fromTokens[0], fromTokens[1]);
 		BlobId target = BlobId.of(toTokens[0], toTokens[1]);
 		Storage.CopyRequest copyRequest = Storage.CopyRequest.of(source, target);
@@ -161,15 +164,13 @@ public class GcsSession implements Session<BlobInfo> {
 	public boolean exists(String path) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(path);
 
-		return (tokens.length == 1)
-				? this.gcs.get(path) != null
+		return (tokens.length == 1) ? this.gcs.get(path) != null
 				: this.gcs.get(tokens[0], tokens[1]) != null;
 	}
 
 	@Override
 	public String[] listNames(String path) throws IOException {
-		List<String> names = Stream.of(list(path))
-				.map(BlobInfo::getName)
+		List<String> names = Stream.of(list(path)).map(BlobInfo::getName)
 				.collect(Collectors.toList());
 
 		return names.toArray(new String[names.size()]);
@@ -198,4 +199,5 @@ public class GcsSession implements Session<BlobInfo> {
 
 		return path.split(SEPARATOR, 2);
 	}
+
 }

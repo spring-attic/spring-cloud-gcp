@@ -26,7 +26,6 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * Properties for configuring Cloud Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 @ConfigurationProperties("spring.cloud.gcp.datastore")
@@ -74,4 +73,5 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
 	}
+
 }

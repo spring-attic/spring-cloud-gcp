@@ -41,10 +41,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * Cloud Datastore transaction manager.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreTransactionManager extends AbstractPlatformTransactionManager {
+
 	private final Datastore datastore;
 
 	public DatastoreTransactionManager(final Datastore datastore) {
@@ -142,6 +142,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 	 * A class to contain the transaction context.
 	 */
 	public static class Tx {
+
 		private Transaction transaction;
 
 		public Transaction getTransaction() {
@@ -151,6 +152,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		void setTransaction(Transaction transaction) {
 			this.transaction = transaction;
 		}
+
 	}
 
 	private static final class ReadOnlyTransaction implements Transaction {
@@ -253,5 +255,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		public ByteString getTransactionId() {
 			return this.transaction.getTransactionId();
 		}
+
 	}
+
 }

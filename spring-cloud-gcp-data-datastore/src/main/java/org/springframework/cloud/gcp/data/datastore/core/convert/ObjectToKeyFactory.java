@@ -25,7 +25,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
  * An interface for creating Datastore Keys from objects and ID values.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface ObjectToKeyFactory {
@@ -38,8 +37,8 @@ public interface ObjectToKeyFactory {
 	IncompleteKey getIncompleteKey(String kindName);
 
 	/**
-	 * Get a {@link Key} from a provided ID value and a kind name. If the given ID value is
-	 * already a Key then this is the Key returned. Otherwise a Key is created with the
+	 * Get a {@link Key} from a provided ID value and a kind name. If the given ID value
+	 * is already a Key then this is the Key returned. Otherwise a Key is created with the
 	 * given kind name and the given ID value as the only and root value.
 	 * @param id the ID value that can be the root single ID value or a fully formed Key.
 	 * @param kindName the kind name used if the ID value provided is not a fully formed
@@ -54,16 +53,20 @@ public interface ObjectToKeyFactory {
 	 * @param datastorePersistentEntity the metadata of the given entity.
 	 * @return a Key.
 	 */
-	Key getKeyFromObject(Object entity, DatastorePersistentEntity datastorePersistentEntity);
+	Key getKeyFromObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity);
 
 	/**
-	 * Allocates a new ID {@link Key} for the given entity object and sets the allocated ID value in the
-	 * object.
-	 * Only Key ids are allowed in entities if ancestors are present.
+	 * Allocates a new ID {@link Key} for the given entity object and sets the allocated
+	 * ID value in the object. Only Key ids are allowed in entities if ancestors are
+	 * present.
 	 * @param entity the object for which to get and set the ID value.
-	 * @param datastorePersistentEntity the persistent entity metadata for the entity object.
+	 * @param datastorePersistentEntity the persistent entity metadata for the entity
+	 * object.
 	 * @param ancestors ancestors that should be added to the entity
 	 * @return the newly allocated Key.
 	 */
-	Key allocateKeyForObject(Object entity, DatastorePersistentEntity datastorePersistentEntity, Key... ancestors);
+	Key allocateKeyForObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity, Key... ancestors);
+
 }

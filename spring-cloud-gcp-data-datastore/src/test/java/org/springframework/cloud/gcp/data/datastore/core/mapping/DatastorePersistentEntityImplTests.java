@@ -73,7 +73,8 @@ public class DatastorePersistentEntityImplTests {
 	@Test
 	public void testExpressionResolutionWithoutApplicationContext() {
 		this.expectedException.expect(SpelEvaluationException.class);
-		this.expectedException.expectMessage("Property or field 'kindPostfix' cannot be found on null");
+		this.expectedException
+				.expectMessage("Property or field 'kindPostfix' cannot be found on null");
 		DatastorePersistentEntityImpl<EntityWithExpression> entity = new DatastorePersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class), null);
 
@@ -101,15 +102,17 @@ public class DatastorePersistentEntityImplTests {
 
 	@Test
 	public void testHasNoIdProperty() {
-		assertThat(new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class).hasIdProperty()).isFalse();
+		assertThat(new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class)
+				.hasIdProperty()).isFalse();
 	}
 
 	@Test
 	public void testGetIdPropertyOrFail() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("An ID property was required but does not exist for the type: " +
-				"class org.springframework.cloud.gcp.data.datastore.core.mapping." +
-				"DatastorePersistentEntityImplTests$EntityWithNoId");
+		this.expectedException.expectMessage(
+				"An ID property was required but does not exist for the type: "
+						+ "class org.springframework.cloud.gcp.data.datastore.core.mapping."
+						+ "DatastorePersistentEntityImplTests$EntityWithNoId");
 		new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class)
 				.getIdPropertyOrFail();
 	}
@@ -124,15 +127,19 @@ public class DatastorePersistentEntityImplTests {
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
 
-		p.doWithProperties(
-				(SimplePropertyHandler) (property) -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
+		p.doWithProperties((SimplePropertyHandler) (
+				property) -> assertThat(accessor.getProperty(property))
+						.isNotEqualTo("b"));
 	}
 
 	@Test
 	public void testDiscriminationMetadata() {
-		DatastorePersistentEntity base = this.datastoreMappingContext.getPersistentEntity(TestEntity.class);
-		DatastorePersistentEntity a1 = this.datastoreMappingContext.getPersistentEntity(SubA1TestEntity.class);
-		DatastorePersistentEntity a2 = this.datastoreMappingContext.getPersistentEntity(SubA2TestEntity.class);
+		DatastorePersistentEntity base = this.datastoreMappingContext
+				.getPersistentEntity(TestEntity.class);
+		DatastorePersistentEntity a1 = this.datastoreMappingContext
+				.getPersistentEntity(SubA1TestEntity.class);
+		DatastorePersistentEntity a2 = this.datastoreMappingContext
+				.getPersistentEntity(SubA2TestEntity.class);
 
 		assertThat(base.kindName()).isEqualTo("custom_test_kind");
 		assertThat(a1.kindName()).isEqualTo("custom_test_kind");
@@ -148,19 +155,23 @@ public class DatastorePersistentEntityImplTests {
 
 		assertThat(this.datastoreMappingContext.getDiscriminationFamily(TestEntity.class))
 				.containsExactlyInAnyOrder(SubA1TestEntity.class, SubA2TestEntity.class);
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
-				.containsExactlyInAnyOrder(SubA2TestEntity.class);
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class)).isEmpty();
+		assertThat(this.datastoreMappingContext
+				.getDiscriminationFamily(SubA1TestEntity.class))
+						.containsExactlyInAnyOrder(SubA2TestEntity.class);
+		assertThat(this.datastoreMappingContext
+				.getDiscriminationFamily(SubA2TestEntity.class)).isEmpty();
 
-		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
-				.isNotEqualTo(this.datastoreMappingContext.getDiscriminationFamily(DiscrimEntityA.class));
+		assertThat(this.datastoreMappingContext
+				.getDiscriminationFamily(SubA1TestEntity.class))
+						.isNotEqualTo(this.datastoreMappingContext
+								.getDiscriminationFamily(DiscrimEntityA.class));
 	}
 
 	@Test
 	public void testConflictingDiscriminationFieldNames() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("This class and its super class both have " +
-				"discrimination fields but they are different fields: ");
+		this.expectedException.expectMessage("This class and its super class both have "
+				+ "discrimination fields but they are different fields: ");
 
 		this.datastoreMappingContext.getPersistentEntity(DiscrimEntityB.class);
 	}
@@ -168,9 +179,11 @@ public class DatastorePersistentEntityImplTests {
 	@Test
 	public void testEntityMissingDiscriminationSuperclass() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("This class expects a discrimination field but none are designated");
+		this.expectedException.expectMessage(
+				"This class expects a discrimination field but none are designated");
 
-		this.datastoreMappingContext.getPersistentEntity(TestEntityNoSuperclass.class).kindName();
+		this.datastoreMappingContext.getPersistentEntity(TestEntityNoSuperclass.class)
+				.kindName();
 	}
 
 	@Entity
@@ -197,6 +210,7 @@ public class DatastorePersistentEntityImplTests {
 	@Entity(name = "custom_test_kind")
 	@DiscriminatorField(field = "type_disc_col")
 	private static class TestEntity {
+
 		@Id
 		String id;
 
@@ -205,6 +219,7 @@ public class DatastorePersistentEntityImplTests {
 
 		@Transient
 		String notMapped;
+
 	}
 
 	@Entity
@@ -213,6 +228,7 @@ public class DatastorePersistentEntityImplTests {
 
 		@Field(name = "type_disc_col")
 		String discValue;
+
 	}
 
 	@Entity
@@ -224,35 +240,45 @@ public class DatastorePersistentEntityImplTests {
 	@Entity
 	@DiscriminatorValue("N/A")
 	private static class TestEntityNoSuperclass {
+
 		@Id
 		String id;
 
 	}
 
 	private static class EntityNoCustomName {
+
 		@Id
 		String id;
 
 		String something;
+
 	}
 
 	@Entity
 	private static class EntityEmptyCustomName {
+
 		@Id
 		String id;
 
 		String something;
+
 	}
 
 	@Entity(name = "#{'kind_'.concat(kindPostfix)}")
 	private static class EntityWithExpression {
+
 		@Id
 		String id;
 
 		String something;
+
 	}
 
 	private static class EntityWithNoId {
+
 		String id;
+
 	}
+
 }

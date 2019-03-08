@@ -48,4 +48,5 @@ public class House {
 	public void setAddress(String address) {
 		this.address = address;
 	}
+
 }

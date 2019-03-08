@@ -36,7 +36,8 @@ import org.springframework.util.Assert;
 /**
  * The default {@link PublisherFactory} implementation.
  *
- * <p>Creates {@link Publisher}s for topics once, caches and reuses them.
+ * <p>
+ * Creates {@link Publisher}s for topics once, caches and reuses them.
  *
  * @author João André Martins
  * @author Chengyuan Zhao
@@ -46,7 +47,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private final String projectId;
 
 	/**
-	 * {@link Publisher} cache, enforces only one {@link Publisher} per PubSub topic exists.
+	 * {@link Publisher} cache, enforces only one {@link Publisher} per PubSub topic
+	 * exists.
 	 */
 	private final ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
@@ -63,8 +65,11 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private BatchingSettings batchingSettings;
 
 	/**
-	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
-	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
+	 * Create {@link DefaultPublisherFactory} instance based on the provided
+	 * {@link GcpProjectIdProvider}.
+	 * <p>
+	 * The {@link GcpProjectIdProvider} must not be null, neither provide an empty
+	 * {@code projectId}.
 	 * @param projectIdProvider provides the GCP project ID
 	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
@@ -75,8 +80,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
-	 * Set the provider for the executor that will be used by the publisher. Useful to specify the number of threads to
-	 * be used by each executor.
+	 * Set the provider for the executor that will be used by the publisher. Useful to
+	 * specify the number of threads to be used by each executor.
 	 * @param executorProvider the executor provider to set
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
@@ -84,8 +89,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
-	 * Set the provider for the channel to be used by the publisher. Useful to specify HTTP headers for the REST API
-	 * calls.
+	 * Set the provider for the channel to be used by the publisher. Useful to specify
+	 * HTTP headers for the REST API calls.
 	 * @param channelProvider the channel provider to set
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
@@ -93,7 +98,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
-	 * Set the provider for the GCP credentials to be used by the publisher on every API calls it makes.
+	 * Set the provider for the GCP credentials to be used by the publisher on every API
+	 * calls it makes.
 	 * @param credentialsProvider the credentials provider to set
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
@@ -128,8 +134,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, (key) -> {
 			try {
-				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(ProjectTopicName.of(this.projectId, key));
+				Publisher.Builder publisherBuilder = Publisher
+						.newBuilder(ProjectTopicName.of(this.projectId, key));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
@@ -158,8 +164,10 @@ public class DefaultPublisherFactory implements PublisherFactory {
 				return publisherBuilder.build();
 			}
 			catch (IOException ioe) {
-				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
-						"occurred.", ioe);
+				throw new PubSubException(
+						"An error creating the Google Cloud Pub/Sub publisher "
+								+ "occurred.",
+						ioe);
 			}
 		});
 	}
@@ -167,4 +175,5 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	Map<String, Publisher> getCache() {
 		return this.publishers;
 	}
+
 }

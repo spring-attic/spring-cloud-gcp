@@ -27,12 +27,10 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.Assert;
 
-
 /**
  * {@link Jwt} token validator for a custom audience claim.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 public class AudienceValidator implements OAuth2TokenValidator<Jwt>, InitializingBean {
@@ -41,8 +39,8 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 
 	private static final OAuth2Error INVALID_AUDIENCE = new OAuth2Error(
 			OAuth2ErrorCodes.INVALID_REQUEST,
-					"This aud claim is not equal to the configured audience",
-							"https://tools.ietf.org/html/rfc6750#section-3.1");
+			"This aud claim is not equal to the configured audience",
+			"https://tools.ietf.org/html/rfc6750#section-3.1");
 
 	private final AudienceProvider audienceProvider;
 
@@ -61,7 +59,8 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 		else {
 			if (LOGGER.isWarnEnabled()) {
 				LOGGER.warn(String.format(
-						"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+						"Expected audience %s did not match token audience %s",
+						this.audience, t.getAudience()));
 			}
 			return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 		}
@@ -76,4 +75,5 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 	public String getAudience() {
 		return this.audience;
 	}
+
 }

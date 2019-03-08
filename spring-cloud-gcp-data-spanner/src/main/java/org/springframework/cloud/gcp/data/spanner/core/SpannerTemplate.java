@@ -80,10 +80,10 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author Ray Tsang
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
-public class SpannerTemplate implements SpannerOperations, ApplicationEventPublisherAware {
+public class SpannerTemplate
+		implements SpannerOperations, ApplicationEventPublisherAware {
 
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
@@ -121,17 +121,19 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+	public void setApplicationEventPublisher(
+			ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
 	}
 
 	protected ReadContext getReadContext() {
-		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClient::singleUse);
+		return doWithOrWithoutTransactionContext((x) -> x,
+				this.databaseClient::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		return doWithOrWithoutTransactionContext((x) -> x,
-				() -> this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
+		return doWithOrWithoutTransactionContext((x) -> x, () -> this.databaseClient
+				.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -146,7 +148,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public long executeDmlStatement(Statement statement) {
 		Assert.notNull(statement, "A non-null statement is required.");
 		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
-		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
+		long rowsAffected = doWithOrWithoutTransactionContext(
+				(x) -> x.executeUpdate(statement),
 				() -> this.databaseClient.executePartitionedUpdate(statement));
 		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
 		return rowsAffected;
@@ -173,9 +176,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
+		List<T> entities = mapToListAndResolveChildren(
+				executeRead(persistentEntity.tableName(), keys,
+						persistentEntity.columns(), options),
+				entityClass, (options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
 		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
@@ -229,18 +233,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void insert(Object object) {
-		applySaveMutations(() -> this.mutationFactory.insert(object), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.insert(object),
+				Collections.singletonList(object), null);
 	}
-
 
 	@Override
 	public void insertAll(Iterable objects) {
-		applySaveMutations(() -> getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
+				this.mutationFactory::insert), objects, null);
 	}
 
 	@Override
 	public void update(Object object) {
-		applySaveMutations(() -> this.mutationFactory.update(object, null), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.update(object, null),
+				Collections.singletonList(object), null);
 	}
 
 	@Override
@@ -253,19 +259,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public void update(Object object, String... includeProperties) {
 		Set<String> incl = (includeProperties.length == 0) ? null
 				: new HashSet<>(Arrays.asList(includeProperties));
-		applySaveMutations(() -> this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
+		applySaveMutations(() -> this.mutationFactory.update(object, incl),
+				Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void update(Object object, Set<String> includeProperties) {
 		applySaveMutations(() -> this.mutationFactory.update(object, includeProperties),
-				Collections.singletonList(object),
-				includeProperties);
+				Collections.singletonList(object), includeProperties);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applySaveMutations(() -> this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
+		applySaveMutations(() -> this.mutationFactory.upsert(object, null),
+				Collections.singletonList(object), null);
 	}
 
 	@Override
@@ -276,19 +283,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
-		Set<String> incl = (includeProperties.length == 0) ? null : new HashSet<>(Arrays.asList(includeProperties));
-		applySaveMutations(() -> this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
+		Set<String> incl = (includeProperties.length == 0) ? null
+				: new HashSet<>(Arrays.asList(includeProperties));
+		applySaveMutations(() -> this.mutationFactory.upsert(object, incl),
+				Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void upsert(Object object, Set<String> includeProperties) {
 		applySaveMutations(() -> this.mutationFactory.upsert(object, includeProperties),
-				Collections.singletonList(object),
-				includeProperties);
+				Collections.singletonList(object), includeProperties);
 	}
 
-	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier, Iterable entities,
-			Set<String> includeProperties) {
+	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier,
+			Iterable entities, Set<String> includeProperties) {
 		maybeEmitEvent(new BeforeSaveEvent(entities, includeProperties));
 		List<Mutation> mutations = mutationsSupplier.get();
 		applyMutations(mutations);
@@ -303,8 +311,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		applyDeleteMutations(objects, (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
-				.map(this.mutationFactory::delete).collect(Collectors.toList()));
+		applyDeleteMutations(objects,
+				(List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+						.map(this.mutationFactory::delete).collect(Collectors.toList()));
 	}
 
 	private void applyDeleteMutations(Iterable objects, List<Mutation> mutations) {
@@ -325,7 +334,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
 	}
 
-	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+	private void applyDeleteMutations(Class entityClass, KeySet keys,
+			List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
@@ -346,8 +356,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
 		return doWithOrWithoutTransactionContext((x) -> {
-			throw new IllegalStateException("There is already declarative transaction open. " +
-					"Spanner does not support nested transactions");
+			throw new IllegalStateException(
+					"There is already declarative transaction open. "
+							+ "Spanner does not support nested transactions");
 		}, () -> this.databaseClient.readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
@@ -371,15 +382,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions) {
 		return doWithOrWithoutTransactionContext((x) -> {
-			throw new IllegalStateException("There is already declarative transaction open. " +
-					"Spanner does not support nested transactions");
+			throw new IllegalStateException(
+					"There is already declarative transaction open. "
+							+ "Spanner does not support nested transactions");
 		}, () -> {
 
-			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
-			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
-					? this.databaseClient.readOnlyTransaction(
+			SpannerReadOptions options = (readOptions != null) ? readOptions
+					: new SpannerReadOptions();
+			try (ReadOnlyTransaction readOnlyTransaction = (options
+					.getTimestamp() != null) ? this.databaseClient.readOnlyTransaction(
 							TimestampBound.ofReadTimestamp(options.getTimestamp()))
-					: this.databaseClient.readOnlyTransaction()) {
+							: this.databaseClient.readOnlyTransaction()) {
 				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 						SpannerTemplate.this.databaseClient,
 						SpannerTemplate.this.mappingContext,
@@ -404,16 +417,18 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				message = getQueryLogMessageWithOptions(statement, options);
 			}
 			LOGGER.debug(message);
-			LOGGER.debug("Query elapsed milliseconds: " + (System.currentTimeMillis() - startTime));
+			LOGGER.debug("Query elapsed milliseconds: "
+					+ (System.currentTimeMillis() - startTime));
 		}
 		return resultSet;
 	}
 
-	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
+	private String getQueryLogMessageWithOptions(Statement statement,
+			SpannerQueryOptions options) {
 		String message;
-		StringBuilder logSb = new StringBuilder("Executing query").append(
-				(options.getTimestamp() != null) ? " at timestamp" + options.getTimestamp()
-						: "");
+		StringBuilder logSb = new StringBuilder("Executing query")
+				.append((options.getTimestamp() != null)
+						? " at timestamp" + options.getTimestamp() : "");
 		for (QueryOption queryOption : options.getQueryOptions()) {
 			logSb.append(" with option: " + queryOption);
 		}
@@ -428,9 +443,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = ((options.getTimestamp() != null) ? getReadContext(options.getTimestamp())
-					: getReadContext()).executeQuery(statement,
-							options.getQueryOptions());
+			resultSet = ((options.getTimestamp() != null)
+					? getReadContext(options.getTimestamp()) : getReadContext())
+							.executeQuery(statement, options.getQueryOptions());
 		}
 		return resultSet;
 	}
@@ -443,8 +458,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		ResultSet resultSet;
 
 		ReadContext readContext = (options != null && options.getTimestamp() != null)
-				? getReadContext(options.getTimestamp())
-				: getReadContext();
+				? getReadContext(options.getTimestamp()) : getReadContext();
 
 		if (options == null) {
 			resultSet = readContext.read(tableName, keys, columns);
@@ -454,7 +468,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					columns, options.getReadOptions());
 		}
 		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
+			resultSet = readContext.read(tableName, keys, columns,
+					options.getReadOptions());
 		}
 
 		if (LOGGER.isDebugEnabled()) {
@@ -462,7 +477,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			logReadOptions(options, logs);
 			LOGGER.debug(logs.toString());
 
-			LOGGER.debug("Read elapsed milliseconds: " + (System.currentTimeMillis() - startTime));
+			LOGGER.debug("Read elapsed milliseconds: "
+					+ (System.currentTimeMillis() - startTime));
 		}
 
 		return resultSet;
@@ -532,7 +548,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		PersistentPropertyAccessor accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
+				(PropertyHandler<SpannerPersistentProperty>) (
+						spannerPersistentProperty) -> {
 					if (includeProperties != null && !includeProperties
 							.contains(spannerPersistentEntity.getName())) {
 						return;
@@ -541,7 +558,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
 
-					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
+					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(
+							childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
 									childPersistentEntity),
@@ -549,7 +567,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 					accessor.setProperty(spannerPersistentProperty,
 							spannerPersistentProperty.isLazyInterleaved()
-									? ConversionUtils.wrapSimpleLazyProxy(getChildrenEntitiesFunc, List.class)
+									? ConversionUtils.wrapSimpleLazyProxy(
+											getChildrenEntitiesFunc, List.class)
 									: getChildrenEntitiesFunc.get());
 				});
 	}
@@ -564,14 +583,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	private TransactionContext getTransactionContext() {
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? ((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-						.currentTransactionStatus()).getTransaction()).getTransactionContext()
+						.currentTransactionStatus()).getTransaction())
+								.getTransactionContext()
 				: null;
 	}
 
-	private <A> A doWithOrWithoutTransactionContext(Function<TransactionContext, A> funcWithTransactionContext,
+	private <A> A doWithOrWithoutTransactionContext(
+			Function<TransactionContext, A> funcWithTransactionContext,
 			Supplier<A> funcWithoutTransactionContext) {
 		TransactionContext txContext = getTransactionContext();
-		return (txContext != null) ? funcWithTransactionContext.apply(txContext) : funcWithoutTransactionContext.get();
+		return (txContext != null) ? funcWithTransactionContext.apply(txContext)
+				: funcWithoutTransactionContext.get();
 	}
 
 	private void maybeEmitEvent(ApplicationEvent event) {
@@ -579,4 +601,5 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			this.eventPublisher.publishEvent(event);
 		}
 	}
+
 }

@@ -42,14 +42,16 @@ public class DefaultCredentialsProviderTests {
 
 	@Test
 	public void testResolveScopesOverrideScopes() throws IOException {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("myscope"));
+		List<String> scopes = DefaultCredentialsProvider
+				.resolveScopes(Arrays.asList("myscope"));
 		assertThat(scopes).hasSize(1);
 		assertThat(scopes).contains("myscope");
 	}
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("DEFAULT_SCOPES", "myscope"));
+		List<String> scopes = DefaultCredentialsProvider
+				.resolveScopes(Arrays.asList("DEFAULT_SCOPES", "myscope"));
 		assertThat(scopes).hasSize(GcpScope.values().length + 1);
 		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
 		assertThat(scopes).contains("myscope");

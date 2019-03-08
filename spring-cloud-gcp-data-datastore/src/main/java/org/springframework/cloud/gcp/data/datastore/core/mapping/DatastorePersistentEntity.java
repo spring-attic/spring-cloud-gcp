@@ -26,9 +26,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * Persistent entity for Google Cloud Datastore.
  *
  * @param <T> the type of the property described by this persistent property
- *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface DatastorePersistentEntity<T> extends
@@ -49,8 +47,8 @@ public interface DatastorePersistentEntity<T> extends
 
 	/**
 	 * Get the name of the field for subtype discrimination if there is one.
-	 * @return the name of the discrimination field. {@code null} if this persistent entity
-	 * doesn't have one.
+	 * @return the name of the discrimination field. {@code null} if this persistent
+	 * entity doesn't have one.
 	 */
 	String getDiscriminationFieldName();
 
@@ -61,8 +59,10 @@ public interface DatastorePersistentEntity<T> extends
 	String getDiscriminatorValue();
 
 	/**
-	 * Get the discrimination values corresponding to this persistent entity ad its supertypes.
-	 * @return the list of values where the first item is this entity's discrimination value
+	 * Get the discrimination values corresponding to this persistent entity ad its
+	 * supertypes.
+	 * @return the list of values where the first item is this entity's discrimination
+	 * value
 	 */
 	List<String> getCompatibleDiscriminationValues();
 
@@ -72,7 +72,6 @@ public interface DatastorePersistentEntity<T> extends
 	 * {@link DatastorePersistentEntity} that are stored as columns in the table for this
 	 * entity. This means properties backed by descendants or references to entities of
 	 * other Kinds are not provided to the {@code handler}.
-	 *
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithColumnBackedProperties(
@@ -82,9 +81,8 @@ public interface DatastorePersistentEntity<T> extends
 	 * Applies the given {@link PropertyHandler} to all
 	 * {@link DatastorePersistentProperty} contained in this
 	 * {@link DatastorePersistentEntity} that are properties backed by descendants.
-	 *
 	 * @param handler must not be {@literal null}.
 	 */
-	void doWithDescendantProperties(
-			PropertyHandler<DatastorePersistentProperty> handler);
+	void doWithDescendantProperties(PropertyHandler<DatastorePersistentProperty> handler);
+
 }

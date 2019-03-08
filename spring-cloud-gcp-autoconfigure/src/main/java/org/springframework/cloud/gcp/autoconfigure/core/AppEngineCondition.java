@@ -23,14 +23,15 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.StringUtils;
 
 /**
- * Determine whether this is running inside of an App Engine Standard environment by looking into
- * the System properties {@value APPENGINE_RUNTIME_PROPERTY}.
+ * Determine whether this is running inside of an App Engine Standard environment by
+ * looking into the System properties {@value APPENGINE_RUNTIME_PROPERTY}.
  *
  * @author Ray Tsang
  * @author João André Martins
  * @author Chengyuan Zhao
  */
 public class AppEngineCondition extends SpringBootCondition {
+
 	/**
 	 * Name of the AppEngine runtime version property.
 	 */
@@ -42,15 +43,21 @@ public class AppEngineCondition extends SpringBootCondition {
 	public static final String APPENGINE_RUNTIME_PREFIX = "Google App Engine/";
 
 	@Override
-	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+	public ConditionOutcome getMatchOutcome(ConditionContext context,
+			AnnotatedTypeMetadata metadata) {
 		String appEngineVersion = System.getProperty(APPENGINE_RUNTIME_PROPERTY);
-		boolean match = !StringUtils.isEmpty(appEngineVersion) && appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
+		boolean match = !StringUtils.isEmpty(appEngineVersion)
+				&& appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
 		String message = match
-				? "Your app is running on Google App Engine. " + APPENGINE_RUNTIME_PROPERTY + " property is set to "
-				+ appEngineVersion + "."
-				: "App not running on Google App Engine. Property " + APPENGINE_RUNTIME_PROPERTY + " isn't present, or"
-				+ " it doesn't start with the " + APPENGINE_RUNTIME_PREFIX + " prefix.";
+				? "Your app is running on Google App Engine. "
+						+ APPENGINE_RUNTIME_PROPERTY + " property is set to "
+						+ appEngineVersion + "."
+				: "App not running on Google App Engine. Property "
+						+ APPENGINE_RUNTIME_PROPERTY + " isn't present, or"
+						+ " it doesn't start with the " + APPENGINE_RUNTIME_PREFIX
+						+ " prefix.";
 
 		return new ConditionOutcome(match, message);
 	}
+
 }

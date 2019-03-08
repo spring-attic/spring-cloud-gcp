@@ -59,7 +59,6 @@ import org.springframework.util.StringUtils;
  * @param <T> the return type of the Query Method
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
@@ -205,7 +204,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 							"Only a single Pageable or Sort param is allowed.");
 				}
 				else if (Pageable.class.isAssignableFrom(paramClass)) {
-						pageable = (Pageable) param;
+					pageable = (Pageable) param;
 				}
 				else {
 					sort = (Sort) param;
@@ -217,18 +216,18 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		}
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
-				params.toArray(),
-				resolveEntityClassNames(this.sql));
+				params.toArray(), resolveEntityClassNames(this.sql));
 
 		resolveSpELTags(queryTagValue);
 
 		return this.isDml
-				? Collections.singletonList(
-						this.spannerTemplate.executeDmlStatement(buildStatementFromQueryAndTags(queryTagValue)))
+				? Collections.singletonList(this.spannerTemplate.executeDmlStatement(
+						buildStatementFromQueryAndTags(queryTagValue)))
 				: executeReadSql(pageable, sort, queryTagValue);
 	}
 
-	private List executeReadSql(Pageable pageable, Sort sort, QueryTagValue queryTagValue) {
+	private List executeReadSql(Pageable pageable, Sort sort,
+			QueryTagValue queryTagValue) {
 		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions()
 				.setAllowPartialRead(true);
 
@@ -242,10 +241,9 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
-		queryTagValue.sql = SpannerStatementQueryExecutor
-				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						resolveEntityClassNames(queryTagValue.sql),
-						this.spannerMappingContext);
+		queryTagValue.sql = SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
+				this.entityType, spannerQueryOptions,
+				resolveEntityClassNames(queryTagValue.sql), this.spannerMappingContext);
 
 		Class simpleItemType = getReturnedSimpleConvertableItemType();
 
@@ -253,17 +251,15 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		return (simpleItemType != null)
 				? this.spannerTemplate.query(
-						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
-						spannerQueryOptions)
-				: this.spannerTemplate.query(this.entityType,
-						statement,
-				spannerQueryOptions);
+						(struct) -> new StructAccessor(struct).getSingleValue(0),
+						statement, spannerQueryOptions)
+				: this.spannerTemplate.query(this.entityType, statement,
+						spannerQueryOptions);
 	}
 
 	private Statement buildStatementFromQueryAndTags(QueryTagValue queryTagValue) {
 		return SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-				queryTagValue.sql, queryTagValue.tags,
-				this.paramStructConvertFunc, null,
+				queryTagValue.sql, queryTagValue.tags, this.paramStructConvertFunc, null,
 				queryTagValue.params.toArray());
 	}
 
@@ -306,5 +302,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			this.params = new ArrayList<>(Arrays.asList(params));
 			this.rawParams = rawParams;
 		}
+
 	}
+
 }

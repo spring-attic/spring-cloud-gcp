@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * A transactional service used for integration tests.
+ *
  * @author Chengyuan Zhao
  */
 public class TransactionalTemplateService {
@@ -35,11 +36,12 @@ public class TransactionalTemplateService {
 
 	@Transactional
 	public void testSaveAndStateConstantInTransaction(List<TestEntity> testEntities,
-			long waitMillisecondsForConfirmation)
-			throws InterruptedException {
+			long waitMillisecondsForConfirmation) throws InterruptedException {
 
 		for (TestEntity testEntity : testEntities) {
-			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
+			assertThat(
+					this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class))
+							.isNull();
 		}
 
 		this.datastoreTemplate.saveAll(testEntities);
@@ -48,10 +50,13 @@ public class TransactionalTemplateService {
 		// must wait a period of time that would see a non-transactional save go through.
 		Thread.sleep(waitMillisecondsForConfirmation);
 
-		// Datastore transactions always see the state at the start of the transaction. Even
+		// Datastore transactions always see the state at the start of the transaction.
+		// Even
 		// after waiting these entities should not be found.
 		for (TestEntity testEntity : testEntities) {
-			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
+			assertThat(
+					this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class))
+							.isNull();
 		}
 	}
 
@@ -60,4 +65,5 @@ public class TransactionalTemplateService {
 		this.datastoreTemplate.saveAll(testEntities);
 		throw new RuntimeException("Intentional failure to cause rollback.");
 	}
+
 }

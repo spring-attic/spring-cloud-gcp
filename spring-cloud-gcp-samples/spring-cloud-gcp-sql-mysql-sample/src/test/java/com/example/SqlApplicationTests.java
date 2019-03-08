@@ -46,7 +46,8 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		SqlApplication.class })
 public class SqlApplicationTests {
 
 	@Autowired
@@ -70,8 +71,8 @@ public class SqlApplicationTests {
 
 	@Test
 	public void testSqlRowsAccess() {
-		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
-				"/getTuples", HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+		ResponseEntity<List<String>> result = this.testRestTemplate.exchange("/getTuples",
+				HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
 				});
 
 		assertThat(result.getBody()).containsExactlyInAnyOrder(
@@ -79,4 +80,5 @@ public class SqlApplicationTests {
 				"[jonas@example.com, Jonas, Goncalves]",
 				"[fejsa@example.com, Ljubomir, Fejsa]");
 	}
+
 }

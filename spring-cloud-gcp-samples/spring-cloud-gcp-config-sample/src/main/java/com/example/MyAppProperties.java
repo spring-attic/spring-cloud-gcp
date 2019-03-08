@@ -20,7 +20,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 /**
- * Sample Configuration class with property values loaded using the Runtime Configurator API.
+ * Sample Configuration class with property values loaded using the Runtime Configurator
+ * API.
  *
  * @author Jisha Abubaker
  * @author Stephane Nicoll
@@ -48,4 +49,5 @@ public class MyAppProperties {
 	public void setFeatureXEnabled(boolean featureXEnabled) {
 		this.isFeatureXEnabled = featureXEnabled;
 	}
+
 }

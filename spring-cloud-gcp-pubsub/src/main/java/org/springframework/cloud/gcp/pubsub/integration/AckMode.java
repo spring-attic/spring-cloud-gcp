@@ -26,24 +26,26 @@ public enum AckMode {
 
 	/**
 	 * The framework does not ack / nack the message. The
-	 * {@link com.google.cloud.pubsub.v1.AckReplyConsumer} is sent back to the user
-	 * for acking or nacking the {@link com.google.pubsub.v1.PubsubMessage}.
+	 * {@link com.google.cloud.pubsub.v1.AckReplyConsumer} is sent back to the user for
+	 * acking or nacking the {@link com.google.pubsub.v1.PubsubMessage}.
 	 */
 	MANUAL,
 
 	/**
-	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is
-	 * sent to the channel and processed successfully.
-	 * <p>The framework nacks the {@link com.google.pubsub.v1.PubsubMessage} when an exception
-	 * occurs while processing the message.
+	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is sent
+	 * to the channel and processed successfully.
+	 * <p>
+	 * The framework nacks the {@link com.google.pubsub.v1.PubsubMessage} when an
+	 * exception occurs while processing the message.
 	 */
 	AUTO,
 
 	/**
-	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is
-	 * sent to the channel and processed successfully.
-	 * <p>The framework does not immediately nack the message when the exception occurs,
-	 * and allows the eventual redelivery to take effect.
+	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is sent
+	 * to the channel and processed successfully.
+	 * <p>
+	 * The framework does not immediately nack the message when the exception occurs, and
+	 * allows the eventual redelivery to take effect.
 	 * @since 1.1
 	 */
 	AUTO_ACK

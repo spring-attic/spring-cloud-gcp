@@ -29,7 +29,8 @@ import com.google.pubsub.v1.PubsubMessage;
 public interface PubSubMessageConverter {
 
 	/**
-	 * Create a {@code PubsubMessage} given an object for the payload and a map of headers.
+	 * Create a {@code PubsubMessage} given an object for the payload and a map of
+	 * headers.
 	 * @param payload the object to place into the message payload
 	 * @param headers the headers of the message
 	 * @return the PubsubMessage ready to be sent
@@ -44,4 +45,5 @@ public interface PubSubMessageConverter {
 	 * @return the object converted from the message's payload
 	 */
 	<T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType);
+
 }

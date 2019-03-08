@@ -47,10 +47,13 @@ public class DefaultSubscriberFactoryTests {
 
 	@Test
 	public void testNewSubscriber() {
-		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(
+				() -> "angeldust");
 		factory.setCredentialsProvider(this.credentialsProvider);
 
-		Subscriber subscriber = factory.createSubscriber("midnight cowboy", (message, consumer) -> { });
+		Subscriber subscriber = factory.createSubscriber("midnight cowboy",
+				(message, consumer) -> {
+				});
 
 		assertThat(subscriber.getSubscriptionNameString())
 				.isEqualTo("projects/angeldust/subscriptions/midnight cowboy");

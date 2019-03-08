@@ -31,6 +31,7 @@ import org.springframework.data.annotation.Id;
  * @author Dmitry Solomakha
  */
 public class AncestorEntity {
+
 	@Id
 	Long id;
 
@@ -53,8 +54,8 @@ public class AncestorEntity {
 			return false;
 		}
 		AncestorEntity that = (AncestorEntity) o;
-		return Objects.equals(this.name, that.name) &&
-				new HashSet<>(this.descendants).equals(new HashSet<>(that.descendants));
+		return Objects.equals(this.name, that.name) && new HashSet<>(this.descendants)
+				.equals(new HashSet<>(that.descendants));
 	}
 
 	@Override
@@ -67,6 +68,7 @@ public class AncestorEntity {
 	 * A descendant entity.
 	 */
 	public static class DescendantEntry {
+
 		@Id
 		Key id;
 
@@ -92,5 +94,7 @@ public class AncestorEntity {
 		public int hashCode() {
 			return Objects.hash(this.name);
 		}
+
 	}
+
 }

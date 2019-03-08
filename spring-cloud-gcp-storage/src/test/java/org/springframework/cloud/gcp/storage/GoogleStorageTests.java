@@ -115,9 +115,11 @@ public class GoogleStorageTests {
 		Assert.assertEquals("test-spring", this.bucketResource.getFilename());
 		Assert.assertEquals("gs://test-spring/", this.bucketResource.getURI().toString());
 
-		String relative = this.bucketResource.createRelative("aaa/bbb").getURI().toString();
+		String relative = this.bucketResource.createRelative("aaa/bbb").getURI()
+				.toString();
 		Assert.assertEquals("gs://test-spring/aaa/bbb", relative);
-		Assert.assertEquals(relative, this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
+		Assert.assertEquals(relative,
+				this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
 
 		Assert.assertNull(((GoogleStorageResource) this.bucketResource).getBlobName());
 		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).isBucket());
@@ -128,7 +130,8 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testBucketNotEndingInSlash() {
-		Assert.assertTrue(new GoogleStorageResource(this.storage, "gs://test-spring").isBucket());
+		Assert.assertTrue(
+				new GoogleStorageResource(this.storage, "gs://test-spring").isBucket());
 	}
 
 	@Test
@@ -154,37 +157,41 @@ public class GoogleStorageTests {
 	@Test
 	public void testBucketOutputStream() throws IOException {
 		this.expectedEx.expect(IllegalStateException.class);
-		this.expectedEx.expectMessage("Cannot open an output stream to a bucket: 'gs://test-spring/'");
+		this.expectedEx.expectMessage(
+				"Cannot open an output stream to a bucket: 'gs://test-spring/'");
 		((WritableResource) this.bucketResource).getOutputStream();
 	}
 
 	@Test
 	public void testBucketNoBlobInputStream() throws IOException {
 		this.expectedEx.expect(IllegalStateException.class);
-		this.expectedEx.expectMessage("Cannot open an input stream to a bucket: 'gs://test-spring/'");
+		this.expectedEx.expectMessage(
+				"Cannot open an input stream to a bucket: 'gs://test-spring/'");
 		this.bucketResource.getInputStream();
 	}
 
 	@Test
 	public void testBucketNoBlobContentLength() throws IOException {
 		this.expectedEx.expect(IllegalStateException.class);
-		this.expectedEx.expectMessage("No blob id specified in the location: " +
-				"'gs://test-spring/', and the operation is not allowed on buckets.");
+		this.expectedEx.expectMessage("No blob id specified in the location: "
+				+ "'gs://test-spring/', and the operation is not allowed on buckets.");
 		this.bucketResource.contentLength();
 	}
 
 	@Test
 	public void testBucketNoBlobFile() throws IOException {
 		this.expectedEx.expect(UnsupportedOperationException.class);
-		this.expectedEx.expectMessage("gs://test-spring/ cannot be resolved to absolute file path");
+		this.expectedEx.expectMessage(
+				"gs://test-spring/ cannot be resolved to absolute file path");
 		this.bucketResource.getFile();
 	}
 
 	@Test
 	public void testBucketNoBlobLastModified() throws IOException {
 		this.expectedEx.expect(IllegalStateException.class);
-		this.expectedEx.expectMessage("No blob id specified in the location: 'gs://test-spring/', " +
-				"and the operation is not allowed on buckets.");
+		this.expectedEx.expectMessage(
+				"No blob id specified in the location: 'gs://test-spring/', "
+						+ "and the operation is not allowed on buckets.");
 		this.bucketResource.lastModified();
 	}
 
@@ -265,7 +272,6 @@ public class GoogleStorageTests {
 		when(blob.writer()).thenReturn(writeChannel);
 		when(storage.create(blobInfo)).thenReturn(blob);
 
-
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
 		GoogleStorageResource spyResource = spy(resource);
 		OutputStream os = spyResource.getOutputStream();
@@ -309,8 +315,10 @@ public class GoogleStorageTests {
 		String location = "gs://test-spring/test.png";
 		Storage storage = mock(Storage.class);
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
-		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("relative.png");
-		Assert.assertEquals("gs://test-spring/relative.png", relative.getURI().toString());
+		GoogleStorageResource relative = (GoogleStorageResource) resource
+				.createRelative("relative.png");
+		Assert.assertEquals("gs://test-spring/relative.png",
+				relative.getURI().toString());
 	}
 
 	@Test
@@ -318,16 +326,18 @@ public class GoogleStorageTests {
 		String location = "gs://test-spring/t1/test.png";
 		Storage storage = mock(Storage.class);
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
-		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("r1/relative.png");
-		Assert.assertEquals("gs://test-spring/t1/r1/relative.png", relative.getURI().toString());
+		GoogleStorageResource relative = (GoogleStorageResource) resource
+				.createRelative("r1/relative.png");
+		Assert.assertEquals("gs://test-spring/t1/r1/relative.png",
+				relative.getURI().toString());
 	}
 
 	@Test
 	public void nullSignedUrlForNullBlob() throws IOException {
 		String location = "gs://test-spring/t1/test.png";
 		Storage storage = mock(Storage.class);
-		GoogleStorageResource resource =
-				new GoogleStorageResource(storage, location, false);
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+				false);
 		when(storage.get(any(BlobId.class))).thenReturn(null);
 		Assert.assertNull(resource.createSignedUrl(TimeUnit.DAYS, 1));
 	}
@@ -355,7 +365,8 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testBucketDoesNotExist() {
-		GoogleStorageResource bucket = new GoogleStorageResource(this.storage, "gs://non-existing/");
+		GoogleStorageResource bucket = new GoogleStorageResource(this.storage,
+				"gs://non-existing/");
 		Assert.assertFalse(bucket.bucketExists());
 		Assert.assertFalse(bucket.exists());
 
@@ -364,7 +375,8 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testBucketExistsButResourceDoesNot() {
-		GoogleStorageResource resource = new GoogleStorageResource(this.storage, "gs://test-spring/file1");
+		GoogleStorageResource resource = new GoogleStorageResource(this.storage,
+				"gs://test-spring/file1");
 		Assert.assertTrue(resource.bucketExists());
 		Assert.assertFalse(resource.exists());
 	}
@@ -380,7 +392,8 @@ public class GoogleStorageTests {
 		public static Storage mockStorage() throws Exception {
 			Storage storage = mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
-			BlobId validBlobWithUnderscore = BlobId.of("test_spring", "images/spring.png");
+			BlobId validBlobWithUnderscore = BlobId.of("test_spring",
+					"images/spring.png");
 			Bucket mockedBucket = mock(Bucket.class);
 			Blob mockedBlob = mock(Blob.class);
 			WriteChannel writeChannel = mock(WriteChannel.class);
@@ -390,7 +403,8 @@ public class GoogleStorageTests {
 			when(storage.get(eq(validBlob))).thenReturn(mockedBlob);
 			when(storage.get(eq(validBlobWithUnderscore))).thenReturn(mockedBlob);
 			when(storage.get("test-spring")).thenReturn(mockedBucket);
-			when(storage.create(BucketInfo.newBuilder("non-existing").build())).thenReturn(mockedBucket);
+			when(storage.create(BucketInfo.newBuilder("non-existing").build()))
+					.thenReturn(mockedBucket);
 			when(mockedBucket.getName()).thenReturn("test-spring");
 			when(mockedBlob.writer()).thenReturn(writeChannel);
 			return storage;
@@ -400,6 +414,7 @@ public class GoogleStorageTests {
 		public static GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings() {
 			return new GoogleStorageProtocolResolverSettings();
 		}
+
 	}
 
 }

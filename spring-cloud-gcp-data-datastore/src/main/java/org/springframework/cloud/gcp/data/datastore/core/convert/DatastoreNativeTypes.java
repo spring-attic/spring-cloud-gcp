@@ -54,7 +54,6 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public abstract class DatastoreNativeTypes {
@@ -71,11 +70,10 @@ public abstract class DatastoreNativeTypes {
 
 	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
-	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
-			GQL_PARAM_BINDING_FUNC_MAP;
+	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>> GQL_PARAM_BINDING_FUNC_MAP;
 
 	static {
-		//keys are used for type resolution, in order of insertion
+		// keys are used for type resolution, in order of insertion
 		Map<Class<?>, Function<?, Value<?>>> wrappers = new LinkedHashMap<>();
 		wrappers.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of);
 		wrappers.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of);
@@ -84,59 +82,73 @@ public abstract class DatastoreNativeTypes {
 		wrappers.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of);
 		wrappers.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of);
 		wrappers.put(String.class, (Function<String, Value<?>>) StringValue::of);
-		wrappers.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()));
+		wrappers.put(Enum.class,
+				(Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()));
 		wrappers.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of);
 		wrappers.put(Key.class, (Function<Key, Value<?>>) KeyValue::of);
 
 		DATASTORE_TYPE_WRAPPERS = Collections.unmodifiableMap(wrappers);
 
-		//entries are used for type resolution, in order of insertion
+		// entries are used for type resolution, in order of insertion
 		DATASTORE_NATIVE_TYPES = Collections.unmodifiableSet(wrappers.keySet());
 
-		ID_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(String.class, Long.class)));
+		ID_TYPES = Collections
+				.unmodifiableSet(new HashSet<>(Arrays.asList(String.class, Long.class)));
 
 		GQL_PARAM_BINDING_FUNC_MAP = new MapBuilder<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>()
-				.put(Cursor.class, (builder) -> (s, o) -> builder.setBinding(s, (Cursor) o))
-				.put(String.class, (builder) -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(Cursor.class,
+						(builder) -> (s, o) -> builder.setBinding(s, (Cursor) o))
+				.put(String.class,
+						(builder) -> (s, o) -> builder.setBinding(s, (String) o))
 				.put(Enum.class,
-					(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
+						(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
 				.put(String[].class,
-					(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
 				.put(Long.class, (builder) -> (s, o) -> builder.setBinding(s, (Long) o))
-				.put(Long[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
-					.mapToLong(Long::longValue).toArray()))
-				.put(long[].class, (builder) -> (s, o) -> builder.setBinding(s, (long[]) o))
-				.put(Double.class, (builder) -> (s, o) -> builder.setBinding(s, (Double) o))
-				.put(Double[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
-					.mapToDouble(Double::doubleValue).toArray()))
+				.put(Long[].class,
+						(builder) -> (s, o) -> builder.setBinding(s,
+								Stream.of((Long[]) o).mapToLong(Long::longValue)
+										.toArray()))
+				.put(long[].class,
+						(builder) -> (s, o) -> builder.setBinding(s, (long[]) o))
+				.put(Double.class,
+						(builder) -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(Double[].class,
+						(builder) -> (s, o) -> builder.setBinding(s,
+								Stream.of((Double[]) o).mapToDouble(Double::doubleValue)
+										.toArray()))
 				.put(double[].class,
-					(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
 				.put(Boolean.class,
-					(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
-				.put(Boolean[].class, (builder) -> (s, o) -> builder.setBinding(s,
-						wrapperToBooleanArray((Boolean[]) o)))
+						(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(Boolean[].class,
+						(builder) -> (s, o) -> builder.setBinding(s,
+								wrapperToBooleanArray((Boolean[]) o)))
 				.put(boolean[].class,
-					(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
 				.put(Timestamp.class,
-					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
 				.put(Timestamp[].class,
-					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
 				.put(Key.class, (builder) -> (s, o) -> builder.setBinding(s, (Key) o))
 				.put(Key[].class, (builder) -> (s, o) -> builder.setBinding(s, (Key[]) o))
 				.put(Blob.class, (builder) -> (s, o) -> builder.setBinding(s, (Blob) o))
-				.put(Blob[].class, (builder) -> (s, o) -> builder.setBinding(s, (Blob[]) o))
+				.put(Blob[].class,
+						(builder) -> (s, o) -> builder.setBinding(s, (Blob[]) o))
 				.build();
 	}
 
 	/**
 	 * A simple type holder that only contains the Cloud Datastore native data types.
 	 */
-	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(
+			DATASTORE_NATIVE_TYPES, true);
 
 	/**
 	 * Checks if a given type is a native type for Cloud Datastore.
 	 * @param aClass the class type to check
-	 * @return `true` if the type is a native type, which includes `null`. `false` otherwise.
+	 * @return `true` if the type is a native type, which includes `null`. `false`
+	 * otherwise.
 	 */
 	public static boolean isNativeType(Class aClass) {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
@@ -146,7 +158,7 @@ public abstract class DatastoreNativeTypes {
 	 * Wraps Datastore native type to Datastore value type.
 	 * @param propertyVal the property value to wrap
 	 * @return the wrapped value
-	*/
+	 */
 	@SuppressWarnings("unchecked")
 	public static Value wrapValue(Object propertyVal) {
 		if (propertyVal == null) {
@@ -159,8 +171,7 @@ public abstract class DatastoreNativeTypes {
 			return (Value) wrapper.apply(propertyVal);
 		}
 		throw new DatastoreDataException(
-				"Unable to convert " + propertyClass
-				+ " to Datastore supported type.");
+				"Unable to convert " + propertyClass + " to Datastore supported type.");
 	}
 
 	/**

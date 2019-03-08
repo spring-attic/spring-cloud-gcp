@@ -36,4 +36,5 @@ public class SubTradeIdentifier {
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "subTradeId")
 	String sub_trade_id;
+
 }

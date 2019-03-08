@@ -37,14 +37,12 @@ import org.springframework.messaging.handler.annotation.Header;
  * Spring Boot Application demonstrating receiving PubSub messages via synchronous pull.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 @SpringBootApplication
 public class PollingReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(PollingReceiverApplication.class);
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(PollingReceiverApplication.class, args);
@@ -53,7 +51,8 @@ public class PollingReceiverApplication {
 	@Bean
 	@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
 	public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
-		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
+		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,
+				"exampleSubscription");
 		messageSource.setMaxFetchSize(5);
 		messageSource.setAckMode(AckMode.MANUAL);
 		messageSource.setPayloadType(String.class);

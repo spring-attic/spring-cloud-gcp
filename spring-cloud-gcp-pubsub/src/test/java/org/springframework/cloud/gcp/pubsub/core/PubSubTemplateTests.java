@@ -93,14 +93,17 @@ public class PubSubTemplateTests {
 	private SettableApiFuture<String> settableApiFuture;
 
 	private PubSubTemplate createTemplate() {
-		PubSubTemplate pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
+				this.mockSubscriberFactory);
 
 		return pubSubTemplate;
 	}
 
 	private PubSubPublisherTemplate createPublisherTemplate() {
-		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
-		pubSubPublisherTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(
+				this.mockPublisherFactory);
+		pubSubPublisherTemplate.setMessageConverter(
+				new JacksonPubSubMessageConverter(new ObjectMapper()));
 		return pubSubPublisherTemplate;
 	}
 
@@ -113,13 +116,12 @@ public class PubSubTemplateTests {
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
 				.thenReturn(this.settableApiFuture);
 
-		when(this.mockSubscriberFactory.createSubscriber(
-				eq("testSubscription"), isA(MessageReceiver.class)))
-				.thenReturn(this.mockSubscriber);
+		when(this.mockSubscriberFactory.createSubscriber(eq("testSubscription"),
+				isA(MessageReceiver.class))).thenReturn(this.mockSubscriber);
 		when(this.mockSubscriber.startAsync()).thenReturn(mock(ApiService.class));
 
-		this.pubsubMessage = PubsubMessage.newBuilder().setData(
-				ByteString.copyFrom("permanating".getBytes())).build();
+		this.pubsubMessage = PubsubMessage.newBuilder()
+				.setData(ByteString.copyFrom("permanating".getBytes())).build();
 	}
 
 	@Test
@@ -135,16 +137,14 @@ public class PubSubTemplateTests {
 	public void testPublish_String() {
 		this.pubSubTemplate.publish("testTopic", "testPayload");
 
-		verify(this.mockPublisher, times(1))
-				.publish(isA(PubsubMessage.class));
+		verify(this.mockPublisher, times(1)).publish(isA(PubsubMessage.class));
 	}
 
 	@Test
 	public void testPublish_Bytes() {
 		this.pubSubTemplate.publish("testTopic", "testPayload".getBytes());
 
-		verify(this.mockPublisher, times(1))
-				.publish(isA(PubsubMessage.class));
+		verify(this.mockPublisher, times(1)).publish(isA(PubsubMessage.class));
 	}
 
 	@Test
@@ -156,15 +156,15 @@ public class PubSubTemplateTests {
 
 		doAnswer((invocation) -> {
 			PubsubMessage message = invocation.getArgument(1);
-			assertThat(message.getData().toStringUtf8())
-					.isEqualTo("{\"@class\":"
+			assertThat(message.getData().toStringUtf8()).isEqualTo("{\"@class\":"
 					+ "\"org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload\""
-							+ ",\"name\":\"allowed\",\"value\":12345}");
+					+ ",\"name\":\"allowed\",\"value\":12345}");
 			return null;
 		}).when(pubSubPublisherTemplate).publish(eq("test"), any());
 
 		pubSubPublisherTemplate.publish("test", allowedPayload);
-		verify(pubSubPublisherTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
+		verify(pubSubPublisherTemplate, times(1)).publish(eq("test"),
+				isA(PubsubMessage.class));
 	}
 
 	@Test
@@ -175,9 +175,9 @@ public class PubSubTemplateTests {
 
 		this.pubSubTemplate.publish("testTopic", "jaguar god", headers);
 
-		verify(this.mockPublisher).publish(argThat((message) ->
-				message.getAttributesMap().get("emperor of sand").equals("sultan's curse") &&
-				message.getAttributesMap().get("remission").equals("elephant man")));
+		verify(this.mockPublisher).publish(argThat((message) -> message.getAttributesMap()
+				.get("emperor of sand").equals("sultan's curse")
+				&& message.getAttributesMap().get("remission").equals("elephant man")));
 	}
 
 	@Test
@@ -192,20 +192,21 @@ public class PubSubTemplateTests {
 
 	@Test
 	public void testSend_onFailure() {
-		ListenableFuture<String> future =
-				this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic",
+				this.pubsubMessage);
 		this.settableApiFuture.setException(new Exception("future failed."));
 
-		assertThatThrownBy(() -> future.get())
-				.isInstanceOf(ExecutionException.class)
+		assertThatThrownBy(() -> future.get()).isInstanceOf(ExecutionException.class)
 				.hasMessageContaining("future failed.");
 	}
 
 	@Test
 	public void testSubscribe() {
 		Subscriber subscriber = this.pubSubTemplate.subscribe("testSubscription",
-				(message) -> { });
+				(message) -> {
+				});
 		assertThat(subscriber).isEqualTo(this.mockSubscriber);
 		verify(this.mockSubscriber, times(1)).startAsync();
 	}
+
 }

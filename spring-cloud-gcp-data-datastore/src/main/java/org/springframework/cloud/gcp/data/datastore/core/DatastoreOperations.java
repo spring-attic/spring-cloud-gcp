@@ -30,7 +30,6 @@ import org.springframework.data.domain.Example;
  * An interface of operations that can be done with Cloud Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface DatastoreOperations {
@@ -48,8 +47,7 @@ public interface DatastoreOperations {
 	<T> T findById(Object id, Class<T> entityClass);
 
 	/**
-	 * Saves an instance of an object to Cloud Datastore.
-	 * Behaves as update or insert.
+	 * Saves an instance of an object to Cloud Datastore. Behaves as update or insert.
 	 * Ancestors can be added only to entries with Key ids.
 	 * @param instance the instance to save.
 	 * @param ancestors ancestors that should be added to the entry
@@ -59,9 +57,8 @@ public interface DatastoreOperations {
 	<T> T save(T instance, Key... ancestors);
 
 	/**
-	 * Saves multiple instances of objects to Cloud Datastore.
-	 * Behaves as update or insert.
-	 * Ancestors can be added only to entries with Key ids.
+	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or
+	 * insert. Ancestors can be added only to entries with Key ids.
 	 * @param entities the objects to save.
 	 * @param ancestors ancestors that should be added to each entry
 	 * @param <T> the type of entities to save
@@ -194,8 +191,8 @@ public interface DatastoreOperations {
 
 	/**
 	 * Performs multiple read and write operations in a single transaction.
-	 * @param operations the function that uses {@link DatastoreOperations}
-	 * to perform operations in a transaction.
+	 * @param operations the function that uses {@link DatastoreOperations} to perform
+	 * operations in a transaction.
 	 * @param <A> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
@@ -222,8 +219,8 @@ public interface DatastoreOperations {
 	/**
 	 * Create a {@link com.google.cloud.datastore.Key} from kind name and id.
 	 * @param kind the Cloud Datastore kind name
-	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it is
-	 * converted to String
+	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it
+	 * is converted to String
 	 * @return created key
 	 */
 	Key createKey(String kind, Object id);
@@ -235,7 +232,8 @@ public interface DatastoreOperations {
 	 * @param queryOptions the query options
 	 * @return query results, converted to objects of class T
 	 */
-	<T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+	<T> Iterable<T> queryByExample(Example<T> example,
+			DatastoreQueryOptions queryOptions);
 
 	/**
 	 * Run key query by example.
@@ -244,5 +242,7 @@ public interface DatastoreOperations {
 	 * @param queryOptions the query options
 	 * @return result keys
 	 */
-	<T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+	<T> Iterable<Key> keyQueryByExample(Example<T> example,
+			DatastoreQueryOptions queryOptions);
+
 }

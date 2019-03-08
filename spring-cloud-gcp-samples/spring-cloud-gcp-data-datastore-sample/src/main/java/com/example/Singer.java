@@ -156,7 +156,9 @@ public class Singer {
 				+ ", personalInstruments="
 				+ ((this.personalInstruments == null) ? ""
 						: Strings.join(this.personalInstruments.stream()
-								.map((x) -> x.getType()).collect(Collectors.toList()), ','))
+								.map((x) -> x.getType()).collect(Collectors.toList()),
+								','))
 				+ '}';
 	}
+
 }

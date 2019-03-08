@@ -28,7 +28,7 @@ public class ReadEvent extends ApplicationEvent {
 	/**
 	 * Constructor.
 	 * @param results A list of results from the read operation where each item was mapped
-	 *     from a Cloud Datastore entity.
+	 * from a Cloud Datastore entity.
 	 */
 	public ReadEvent(Iterable results) {
 		super(results);
@@ -41,4 +41,5 @@ public class ReadEvent extends ApplicationEvent {
 	public Iterable getResults() {
 		return (Iterable) getSource();
 	}
+
 }

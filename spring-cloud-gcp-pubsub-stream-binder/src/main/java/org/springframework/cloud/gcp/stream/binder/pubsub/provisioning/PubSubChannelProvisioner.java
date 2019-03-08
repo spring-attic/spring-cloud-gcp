@@ -42,9 +42,8 @@ import org.springframework.util.StringUtils;
  * @author João André Martins
  * @author Mike Eltsufin
  */
-public class PubSubChannelProvisioner
-		implements ProvisioningProvider<ExtendedConsumerProperties<PubSubConsumerProperties>,
-		ExtendedProducerProperties<PubSubProducerProperties>> {
+public class PubSubChannelProvisioner implements
+		ProvisioningProvider<ExtendedConsumerProperties<PubSubConsumerProperties>, ExtendedProducerProperties<PubSubProducerProperties>> {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubChannelProvisioner.class);
 
@@ -66,11 +65,12 @@ public class PubSubChannelProvisioner
 	}
 
 	@Override
-	public ConsumerDestination provisionConsumerDestination(String topicName, String group,
-			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
+	public ConsumerDestination provisionConsumerDestination(String topicName,
+			String group, ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
 
-		Topic topic = makeSureTopicExists(topicName, properties.getExtension().isAutoCreateResources());
+		Topic topic = makeSureTopicExists(topicName,
+				properties.getExtension().isAutoCreateResources());
 
 		String subscriptionName;
 		Subscription subscription;
@@ -81,8 +81,10 @@ public class PubSubChannelProvisioner
 		}
 		else {
 			// Generate anonymous random group since one wasn't provided
-			subscriptionName = "anonymous." + topicName + "." + UUID.randomUUID().toString();
-			subscription = this.pubSubAdmin.createSubscription(subscriptionName, topicName);
+			subscriptionName = "anonymous." + topicName + "."
+					+ UUID.randomUUID().toString();
+			subscription = this.pubSubAdmin.createSubscription(subscriptionName,
+					topicName);
 			this.anonymousGroupSubscriptionNames.add(subscriptionName);
 		}
 
@@ -92,13 +94,14 @@ public class PubSubChannelProvisioner
 				this.pubSubAdmin.createSubscription(subscriptionName, topicName);
 			}
 			else {
-				throw new ProvisioningException("Non-existing '" + subscriptionName + "' subscription.");
+				throw new ProvisioningException(
+						"Non-existing '" + subscriptionName + "' subscription.");
 			}
 		}
 		else if (!subscription.getTopic().equals(topic.getName())) {
-			throw new ProvisioningException(
-					"Existing '" + subscriptionName + "' subscription is for a different topic '"
-							+ subscription.getTopic() + "'.");
+			throw new ProvisioningException("Existing '" + subscriptionName
+					+ "' subscription is for a different topic '"
+					+ subscription.getTopic() + "'.");
 		}
 		return new PubSubConsumerDestination(subscriptionName);
 	}
@@ -109,7 +112,8 @@ public class PubSubChannelProvisioner
 				this.pubSubAdmin.deleteSubscription(destination.getName());
 			}
 			catch (Exception ex) {
-				LOGGER.warn("Failed to delete auto-created anonymous subscription '" + destination.getName() + "'.");
+				LOGGER.warn("Failed to delete auto-created anonymous subscription '"
+						+ destination.getName() + "'.");
 			}
 		}
 	}
@@ -121,10 +125,12 @@ public class PubSubChannelProvisioner
 				topic = this.pubSubAdmin.createTopic(topicName);
 			}
 			else {
-				throw new ProvisioningException("Non-existing '" + topicName + "' topic.");
+				throw new ProvisioningException(
+						"Non-existing '" + topicName + "' topic.");
 			}
 		}
 
 		return topic;
 	}
+
 }

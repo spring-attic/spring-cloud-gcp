@@ -26,7 +26,8 @@ import org.springframework.util.Assert;
  */
 public final class StackdriverTraceConstants {
 
-	private StackdriverTraceConstants() { }
+	private StackdriverTraceConstants() {
+	}
 
 	/**
 	 * The JSON field name for the log level (severity).
@@ -64,13 +65,14 @@ public final class StackdriverTraceConstants {
 	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at.
+	 * The name of the MDC parameter, Spring Sleuth is storing the span export information
+	 * at.
 	 */
 	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
 	/**
-	 * Composes the full trace name as expected by the Google Developers Console log viewer, to
-	 * enable trace correlation with log entries.
+	 * Composes the full trace name as expected by the Google Developers Console log
+	 * viewer, to enable trace correlation with log entries.
 	 * @param projectId the GCP project ID
 	 * @param traceId the trace ID
 	 * @return the trace name in the "projects/[GCP_PROJECT_ID]/trace/[TRACE_ID]" format
@@ -80,4 +82,5 @@ public final class StackdriverTraceConstants {
 		Assert.notNull(traceId, "The trace ID can't be null.");
 		return "projects/" + projectId + "/traces/" + traceId;
 	}
+
 }

@@ -22,8 +22,8 @@ import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 
 /**
- * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate} to create
- * supporting objects for consuming messages from Pub/Sub subscriptions.
+ * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate}
+ * to create supporting objects for consuming messages from Pub/Sub subscriptions.
  *
  * @author João André Martins
  * @author Mike Eltsufin
@@ -45,17 +45,18 @@ public interface SubscriberFactory {
 	 * asynchronously deliver messages to the provided {@link MessageReceiver}.
 	 * @param subscriptionName the name of the subscription
 	 * @param receiver the callback for receiving messages asynchronously
-	 * @return the {@link Subscriber} that was created to bind the receiver to the subscription
+	 * @return the {@link Subscriber} that was created to bind the receiver to the
+	 * subscription
 	 */
 	Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver);
 
 	/**
-	 * Create a {@link PullRequest} for synchronously pulling a number of messages from
-	 * a Google Cloud Pub/Sub subscription.
+	 * Create a {@link PullRequest} for synchronously pulling a number of messages from a
+	 * Google Cloud Pub/Sub subscription.
 	 * @param subscriptionName the name of the subscription
 	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately causes the pull request to return immediately even
-	 * if subscription doesn't contain enough messages to satisfy {@code maxMessages}
+	 * @param returnImmediately causes the pull request to return immediately even if
+	 * subscription doesn't contain enough messages to satisfy {@code maxMessages}
 	 * @return the pull request that can be executed using a {@link SubscriberStub}
 	 */
 	PullRequest createPullRequest(String subscriptionName, Integer maxMessages,

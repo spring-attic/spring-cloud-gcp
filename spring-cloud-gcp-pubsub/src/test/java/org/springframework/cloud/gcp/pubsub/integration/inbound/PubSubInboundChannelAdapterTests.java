@@ -81,16 +81,17 @@ public class PubSubInboundChannelAdapterTests {
 
 		when(this.mockMessageChannel.send(any())).thenReturn(true);
 
-		when(mockAcknowledgeableMessage.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
+		when(mockAcknowledgeableMessage.getPubsubMessage())
+				.thenReturn(PubsubMessage.newBuilder().build());
 		when(mockAcknowledgeableMessage.getPayload()).thenReturn("Test message payload.");
 
-		when(this.mockPubSubSubscriberOperations.subscribeAndConvert(
-				anyString(), any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
-					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
-							invocationOnMock.getArgument(1);
+		when(this.mockPubSubSubscriberOperations.subscribeAndConvert(anyString(),
+				any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
+					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer = invocationOnMock
+							.getArgument(1);
 					messageConsumer.accept(mockAcknowledgeableMessage);
-				return null;
-		});
+					return null;
+				});
 	}
 
 	@Test
@@ -103,9 +104,10 @@ public class PubSubInboundChannelAdapterTests {
 	}
 
 	@Test
-	public void testAckModeAuto_nacksWhenDownstreamProcessingFails()  {
+	public void testAckModeAuto_nacksWhenDownstreamProcessingFails() {
 
-		when(this.mockMessageChannel.send(any())).thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
+		when(this.mockMessageChannel.send(any()))
+				.thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
 
 		this.adapter.setAckMode(AckMode.AUTO);
 		this.adapter.setOutputChannel(this.mockMessageChannel);
@@ -120,7 +122,8 @@ public class PubSubInboundChannelAdapterTests {
 	@Test
 	public void testAckModeAutoAck_nacksWhenDownstreamProcessingFails() {
 
-		when(this.mockMessageChannel.send(any())).thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
+		when(this.mockMessageChannel.send(any()))
+				.thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
 
 		this.adapter.setAckMode(AckMode.AUTO_ACK);
 
@@ -136,7 +139,8 @@ public class PubSubInboundChannelAdapterTests {
 	public void customMessageBuilderFactoryUsedWhenAvailable() {
 
 		MutableMessageBuilderFactory factory = mock(MutableMessageBuilderFactory.class);
-		when(factory.withPayload(any())).thenReturn(MutableMessageBuilder.withPayload("custom payload"));
+		when(factory.withPayload(any()))
+				.thenReturn(MutableMessageBuilder.withPayload("custom payload"));
 
 		this.adapter.setMessageBuilderFactory(factory);
 
@@ -178,7 +182,8 @@ public class PubSubInboundChannelAdapterTests {
 		verify(this.mockMessageChannel).send(argument.capture());
 		MessageHeaders headers = argument.getValue().getHeaders();
 		assertThat(headers).containsKey(GcpPubSubHeaders.ORIGINAL_MESSAGE);
-		assertThat(headers.get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(mockAcknowledgeableMessage);
+		assertThat(headers.get(GcpPubSubHeaders.ORIGINAL_MESSAGE))
+				.isEqualTo(mockAcknowledgeableMessage);
 	}
 
 }

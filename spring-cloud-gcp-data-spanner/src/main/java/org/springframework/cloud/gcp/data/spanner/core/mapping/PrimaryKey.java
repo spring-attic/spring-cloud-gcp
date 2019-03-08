@@ -50,4 +50,5 @@ public @interface PrimaryKey {
 	 */
 	@AliasFor(attribute = "keyOrder")
 	int value() default 1;
+
 }

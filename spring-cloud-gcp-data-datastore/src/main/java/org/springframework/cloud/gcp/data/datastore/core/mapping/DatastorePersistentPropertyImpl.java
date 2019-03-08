@@ -29,7 +29,6 @@ import org.springframework.util.StringUtils;
  * Persistent property metadata implementation for Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastorePersistentPropertyImpl
@@ -40,7 +39,6 @@ public class DatastorePersistentPropertyImpl
 
 	/**
 	 * Constructor.
-	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs
 	 * @param simpleTypeHolder the type holder
@@ -51,15 +49,13 @@ public class DatastorePersistentPropertyImpl
 			PersistentEntity<?, DatastorePersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
-		this.fieldNamingStrategy = (fieldNamingStrategy != null)
-				? fieldNamingStrategy
+		this.fieldNamingStrategy = (fieldNamingStrategy != null) ? fieldNamingStrategy
 				: PropertyNameFieldNamingStrategy.INSTANCE;
 		verify();
 	}
 
 	private void verify() {
-		if (hasFieldAnnotation()
-				&& (isDescendants() || isAssociation())) {
+		if (hasFieldAnnotation() && (isDescendants() || isAssociation())) {
 			throw new DatastoreDataException(
 					"Property cannot be annotated as @Field if it is annotated @Descendants or @Reference: "
 							+ getFieldName());
@@ -123,4 +119,5 @@ public class DatastorePersistentPropertyImpl
 
 		return null;
 	}
+
 }

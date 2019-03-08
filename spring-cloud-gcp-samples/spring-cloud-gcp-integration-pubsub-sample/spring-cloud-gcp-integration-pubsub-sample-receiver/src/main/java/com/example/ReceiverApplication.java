@@ -40,7 +40,6 @@ import org.springframework.messaging.handler.annotation.Header;
  * @author Mike Eltsufin
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 @SpringBootApplication
@@ -61,8 +60,8 @@ public class ReceiverApplication {
 	public PubSubInboundChannelAdapter messageChannelAdapter(
 			@Qualifier("pubsubInputChannel") MessageChannel inputChannel,
 			PubSubTemplate pubSubTemplate) {
-		PubSubInboundChannelAdapter adapter =
-				new PubSubInboundChannelAdapter(pubSubTemplate, "exampleSubscription");
+		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
+				pubSubTemplate, "exampleSubscription");
 		adapter.setOutputChannel(inputChannel);
 		adapter.setAckMode(AckMode.MANUAL);
 		adapter.setPayloadType(String.class);

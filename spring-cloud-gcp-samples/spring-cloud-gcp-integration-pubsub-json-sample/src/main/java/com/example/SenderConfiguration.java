@@ -49,7 +49,8 @@ public class SenderConfiguration {
 	@Bean
 	@ServiceActivator(inputChannel = "pubSubOutputChannel")
 	public MessageHandler messageSender(PubSubTemplate pubSubTemplate) {
-		PubSubMessageHandler adapter = new PubSubMessageHandler(pubSubTemplate, TOPIC_NAME);
+		PubSubMessageHandler adapter = new PubSubMessageHandler(pubSubTemplate,
+				TOPIC_NAME);
 		adapter.setPublishCallback(new ListenableFutureCallback<String>() {
 			@Override
 			public void onFailure(Throwable ex) {
@@ -70,6 +71,9 @@ public class SenderConfiguration {
 	 */
 	@MessagingGateway(defaultRequestChannel = "pubSubOutputChannel")
 	public interface PubSubPersonGateway {
+
 		void sendPersonToPubSub(Person person);
+
 	}
+
 }

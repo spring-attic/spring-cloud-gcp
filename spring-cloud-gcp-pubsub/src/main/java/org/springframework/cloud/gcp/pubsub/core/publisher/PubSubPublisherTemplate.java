@@ -34,14 +34,14 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
  * Default implementation of {@link PubSubPublisherOperations}.
- * <p>The main Google Cloud Pub/Sub integration component for publishing to topics.
+ * <p>
+ * The main Google Cloud Pub/Sub integration component for publishing to topics.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- *
  * @since 1.1
  */
 public class PubSubPublisherTemplate implements PubSubPublisherOperations {
@@ -53,11 +53,10 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	private final PublisherFactory publisherFactory;
 
 	/**
-	 * Default {@link PubSubPublisherTemplate} constructor that uses {@link SimplePubSubMessageConverter}
-	 * to serialize and deserialize payloads.
-	 *
+	 * Default {@link PubSubPublisherTemplate} constructor that uses
+	 * {@link SimplePubSubMessageConverter} to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 *                         publish to topics.
+	 * publish to topics.
 	 */
 	public PubSubPublisherTemplate(PublisherFactory publisherFactory) {
 		Assert.notNull(publisherFactory, "The publisherFactory can't be null.");
@@ -70,7 +69,8 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	}
 
 	public void setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
-		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+		Assert.notNull(pubSubMessageConverter,
+				"The pubSubMessageConverter can't be null.");
 
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
@@ -80,8 +80,10 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	 * {@code PubsubMessage} and then publish it.
 	 */
 	@Override
-	public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers) {
-		return publish(topic, this.pubSubMessageConverter.toPubSubMessage(payload, headers));
+	public <T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) {
+		return publish(topic,
+				this.pubSubMessageConverter.toPubSubMessage(payload, headers));
 	}
 
 	@Override
@@ -90,12 +92,13 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	}
 
 	@Override
-	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
+	public ListenableFuture<String> publish(final String topic,
+			PubsubMessage pubsubMessage) {
 		Assert.hasText(topic, "The topic can't be null or empty.");
 		Assert.notNull(pubsubMessage, "The pubsubMessage can't be null.");
 
-		ApiFuture<String> publishFuture =
-				this.publisherFactory.createPublisher(topic).publish(pubsubMessage);
+		ApiFuture<String> publishFuture = this.publisherFactory.createPublisher(topic)
+				.publish(pubsubMessage);
 
 		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
 		ApiFutures.addCallback(publishFuture, new ApiFutureCallback<String>() {
@@ -109,8 +112,8 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 			@Override
 			public void onSuccess(String result) {
 				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug(
-							"Publishing to " + topic + " was successful. Message ID: " + result);
+					LOGGER.debug("Publishing to " + topic
+							+ " was successful. Message ID: " + result);
 				}
 				settableFuture.set(result);
 			}

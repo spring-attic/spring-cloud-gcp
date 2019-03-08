@@ -31,11 +31,13 @@ import org.springframework.integration.metadata.SimpleMetadataStore;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<BlobInfo> {
+public class GcsInboundFileSynchronizer
+		extends AbstractInboundFileSynchronizer<BlobInfo> {
 
 	public GcsInboundFileSynchronizer(Storage gcs) {
 		super(new GcsSessionFactory(gcs));
-		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsMessageSource"));
+		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(),
+				"gcsMessageSource"));
 	}
 
 	@Override

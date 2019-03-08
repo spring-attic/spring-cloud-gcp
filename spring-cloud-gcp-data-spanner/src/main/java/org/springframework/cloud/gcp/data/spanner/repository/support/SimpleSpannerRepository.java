@@ -38,7 +38,6 @@ import org.springframework.util.Assert;
  * @param <T> the entity type of the repository
  * @param <ID> the id type of the entity
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> {
@@ -73,9 +72,9 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public <A> A performReadWriteTransaction(
 			Function<SpannerRepository<T, ID>, A> operations) {
-		return this.spannerTemplate
-				.performReadWriteTransaction((transactionSpannerOperations) -> operations
-						.apply(new SimpleSpannerRepository<T, ID>(transactionSpannerOperations,
+		return this.spannerTemplate.performReadWriteTransaction(
+				(transactionSpannerOperations) -> operations.apply(
+						new SimpleSpannerRepository<T, ID>(transactionSpannerOperations,
 								this.entityType)));
 	}
 

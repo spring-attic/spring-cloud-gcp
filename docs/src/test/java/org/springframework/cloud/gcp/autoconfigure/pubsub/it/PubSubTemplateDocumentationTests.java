@@ -61,33 +61,36 @@ import static org.awaitility.Awaitility.await;
 public class PubSubTemplateDocumentationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
+			.withPropertyValues(
+					"spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 
 	@BeforeClass
 	public static void enableTests() {
-			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
 	public void testCreatePublishPullNextAndDelete() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
-			//some text tag::publish[]
+		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName,
+				String topicName) -> {
+			// some text tag::publish[]
 			Map<String, String> headers = Collections.singletonMap("key1", "val1");
 			pubSubTemplate.publish(topicName, "message", headers).get();
-			//some text end::publish[]
+			// some text end::publish[]
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
-			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
+			assertThat(pubsubMessage.getData())
+					.isEqualTo(ByteString.copyFromUtf8("message"));
 			assertThat(pubsubMessage.getAttributesCount()).isEqualTo(1);
 			assertThat(pubsubMessage.getAttributesOrThrow("key1")).isEqualTo("val1");
 		});
 	}
 
-
 	private void pubSubTest(PubSubTest pubSubTest, Class... configClass) {
-		ApplicationContextRunner contextRunner = configClass.length == 0 ? this.contextRunner
+		ApplicationContextRunner contextRunner = configClass.length == 0
+				? this.contextRunner
 				: this.contextRunner.withUserConfiguration(configClass[0]);
 		contextRunner.run((context) -> {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
@@ -100,36 +103,31 @@ public class PubSubTemplateDocumentationTests {
 				assertThat(pubSubAdmin.getTopic(topicName)).isNull();
 				assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNull();
 
-				//tag::create_topic[]
+				// tag::create_topic[]
 				pubSubAdmin.createTopic(topicName);
-				//end::create_topic[]
-				//tag::create_subscription[]
+				// end::create_topic[]
+				// tag::create_subscription[]
 				pubSubAdmin.createSubscription(subscriptionName, topicName);
-				//end::create_subscription[]
+				// end::create_subscription[]
 
 				pubSubTest.run(pubSubTemplate, subscriptionName, topicName);
 			}
 			finally {
-				//tag::list_subscriptions[]
-				List<String> subscriptions = pubSubAdmin
-						.listSubscriptions()
-						.stream()
-						.map(Subscription::getName)
-						.collect(Collectors.toList());
-				//end::list_subscriptions[]
+				// tag::list_subscriptions[]
+				List<String> subscriptions = pubSubAdmin.listSubscriptions().stream()
+						.map(Subscription::getName).collect(Collectors.toList());
+				// end::list_subscriptions[]
 
-				//tag::list_topics[]
-				List<String> topics = pubSubAdmin
-						.listTopics()
-						.stream()
-						.map(Topic::getName)
-						.collect(Collectors.toList());
-				//end::list_topics[]
+				// tag::list_topics[]
+				List<String> topics = pubSubAdmin.listTopics().stream()
+						.map(Topic::getName).collect(Collectors.toList());
+				// end::list_topics[]
 
 				pubSubAdmin.deleteSubscription(subscriptionName);
 				pubSubAdmin.deleteTopic(topicName);
 
-				assertThat(subscriptions.stream().map(this::getLastPart)).contains(subscriptionName);
+				assertThat(subscriptions.stream().map(this::getLastPart))
+						.contains(subscriptionName);
 				assertThat(topics.stream().map(this::getLastPart)).contains(topicName);
 			}
 		});
@@ -142,28 +140,33 @@ public class PubSubTemplateDocumentationTests {
 
 	@Test
 	public void subscribeSimpleTest() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName,
+				String topicName) -> {
 			pubSubTemplate.publish(topicName, "message");
 
 			Logger logger = new Logger();
-			//tag::subscribe[]
-			Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName, (message) -> {
-				logger.info("Message received from " + subscriptionName + " subscription: "
-						+ message.getPubsubMessage().getData().toStringUtf8());
-				message.ack();
-			});
-			//end::subscribe[]
+			// tag::subscribe[]
+			Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName,
+					(message) -> {
+						logger.info("Message received from " + subscriptionName
+								+ " subscription: "
+								+ message.getPubsubMessage().getData().toStringUtf8());
+						message.ack();
+					});
+			// end::subscribe[]
 
 			List<String> messages = logger.getMessages();
-			Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> !messages.isEmpty());
-			assertThat(messages)
-					.containsExactly("Message received from " + subscriptionName + " subscription: message");
+			Awaitility.await().atMost(5, TimeUnit.SECONDS)
+					.until(() -> !messages.isEmpty());
+			assertThat(messages).containsExactly("Message received from "
+					+ subscriptionName + " subscription: message");
 		});
 	}
 
 	@Test
 	public void testPubSubTemplatePull() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName,
+				String topicName) -> {
 
 			pubSubTemplate.publish(topicName, "message");
 			Logger logger = new Logger();
@@ -171,18 +174,19 @@ public class PubSubTemplateDocumentationTests {
 				// tag::pull[]
 				int maxMessages = 10;
 				boolean returnImmediately = false;
-				List<AcknowledgeablePubsubMessage> messages = pubSubTemplate.pull(subscriptionName, maxMessages,
-						returnImmediately);
+				List<AcknowledgeablePubsubMessage> messages = pubSubTemplate
+						.pull(subscriptionName, maxMessages, returnImmediately);
 				// end::pull[]
 
 				assertThat(messages).hasSize(1);
 
 				// tag::pull[]
 
-				//acknowledge the messages
+				// acknowledge the messages
 				pubSubTemplate.ack(messages);
 
-				messages.forEach(message -> logger.info(message.getPubsubMessage().getData().toStringUtf8()));
+				messages.forEach(message -> logger
+						.info(message.getPubsubMessage().getData().toStringUtf8()));
 
 				// end::pull[]
 
@@ -195,7 +199,8 @@ public class PubSubTemplateDocumentationTests {
 
 	@Test
 	public void testPubSubTemplateLoadsMessageConverter() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName,
+				String topicName) -> {
 			// tag::json_publish[]
 			TestUser user = new TestUser();
 			user.setUsername("John");
@@ -207,8 +212,9 @@ public class PubSubTemplateDocumentationTests {
 				// tag::json_pull[]
 				int maxMessages = 1;
 				boolean returnImmediately = false;
-				List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages = pubSubTemplate.pullAndConvert(
-						subscriptionName, maxMessages, returnImmediately, TestUser.class);
+				List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages = pubSubTemplate
+						.pullAndConvert(subscriptionName, maxMessages, returnImmediately,
+								TestUser.class);
 				// end::json_pull[]
 
 				assertThat(messages).hasSize(1);
@@ -217,7 +223,7 @@ public class PubSubTemplateDocumentationTests {
 
 				ConvertedAcknowledgeablePubsubMessage<TestUser> message = messages.get(0);
 
-				//acknowledge the message
+				// acknowledge the message
 				message.ack();
 
 				TestUser receivedTestUser = message.getPayload();
@@ -235,7 +241,8 @@ public class PubSubTemplateDocumentationTests {
 	 */
 	@Configuration
 	static class JsonPayloadTestConfiguration {
-		//tag::json_bean[]
+
+		// tag::json_bean[]
 		// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
 		// You will have to configure your own instance if you are unable to depend
 		// on the ObjectMapper provided by Spring Boot starters.
@@ -243,7 +250,8 @@ public class PubSubTemplateDocumentationTests {
 		public PubSubMessageConverter pubSubMessageConverter() {
 			return new JacksonPubSubMessageConverter(new ObjectMapper());
 		}
-		//end::json_bean[]
+		// end::json_bean[]
+
 	}
 
 	/**
@@ -271,15 +279,19 @@ public class PubSubTemplateDocumentationTests {
 		void setPassword(String password) {
 			this.password = password;
 		}
+
 	}
 	// end::json_convertible_class[]
 
 	interface PubSubTest {
+
 		void run(PubSubTemplate pubSubTemplate, String subscription, String topic)
 				throws ExecutionException, InterruptedException;
+
 	}
 
 	class Logger {
+
 		List<String> messages = new ArrayList<>();
 
 		void info(String message) {
@@ -289,5 +301,7 @@ public class PubSubTemplateDocumentationTests {
 		List<String> getMessages() {
 			return this.messages;
 		}
+
 	}
+
 }

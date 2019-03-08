@@ -25,7 +25,8 @@ import com.google.pubsub.v1.PubsubMessage;
 
 /**
  * A simple {@link PubSubMessageConverter} that directly maps payloads of type
- * {@code byte[]}, {@code ByteString}, {@code ByteBuffer}, and {@code String} to Pub/Sub messages.
+ * {@code byte[]}, {@code ByteString}, {@code ByteBuffer}, and {@code String} to Pub/Sub
+ * messages.
  *
  * @author Mike Eltsufin
  */
@@ -50,7 +51,8 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 			convertedPayload = (ByteString) payload;
 		}
 		else if (payload instanceof String) {
-			convertedPayload = ByteString.copyFrom(((String) payload).getBytes(this.charset));
+			convertedPayload = ByteString
+					.copyFrom(((String) payload).getBytes(this.charset));
 		}
 		else if (payload instanceof ByteBuffer) {
 			convertedPayload = ByteString.copyFrom((ByteBuffer) payload);
@@ -59,8 +61,9 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 			convertedPayload = ByteString.copyFrom((byte[]) payload);
 		}
 		else {
-			throw new PubSubMessageConversionException("Unable to convert payload of type " +
-					payload.getClass().getName() + " to byte[] for sending to Pub/Sub.");
+			throw new PubSubMessageConversionException(
+					"Unable to convert payload of type " + payload.getClass().getName()
+							+ " to byte[] for sending to Pub/Sub.");
 		}
 
 		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
@@ -92,10 +95,12 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 			result = (T) payload;
 		}
 		else {
-			throw new PubSubMessageConversionException("Unable to convert Pub/Sub message to payload of type " +
-					payloadType.getName() + ".");
+			throw new PubSubMessageConversionException(
+					"Unable to convert Pub/Sub message to payload of type "
+							+ payloadType.getName() + ".");
 		}
 
 		return result;
 	}
+
 }

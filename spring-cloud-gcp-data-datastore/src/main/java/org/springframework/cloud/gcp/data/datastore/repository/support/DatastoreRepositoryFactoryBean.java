@@ -27,10 +27,10 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 
 /**
  * Factory bean for creating factories that create Datastore repositories.
+ *
  * @param <S> the type of the entities
  * @param <ID> the id type of the entities
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreRepositoryFactoryBean<S, ID>
@@ -46,7 +46,6 @@ public class DatastoreRepositoryFactoryBean<S, ID>
 	/**
 	 * Creates a new {@link DatastoreRepositoryFactoryBean} for the given repository
 	 * interface.
-	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	DatastoreRepositoryFactoryBean(
@@ -76,4 +75,5 @@ public class DatastoreRepositoryFactoryBean<S, ID>
 			throws BeansException {
 		this.applicationContext = applicationContext;
 	}
+
 }

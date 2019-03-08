@@ -32,10 +32,10 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
-class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersistentProperty> {
+class StructPropertyValueProvider
+		implements PropertyValueProvider<SpannerPersistentProperty> {
 
 	private final SpannerCustomConverter readConverter;
 
@@ -46,29 +46,33 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 	private boolean allowMissingColumns;
 
 	/**
-	 * Constructor. Missing columns in nested struct column values for corresponding nested Java
-	 * object properties is not allowed.
+	 * Constructor. Missing columns in nested struct column values for corresponding
+	 * nested Java object properties is not allowed.
 	 * @param structAccessor an accessor used to obtain column values from the struct.
-	 * @param readConverter a converter used to convert between struct column types and the required
-	 * java types.
-	 * @param entityReader a reader used to access the data from each column of the struct.
+	 * @param readConverter a converter used to convert between struct column types and
+	 * the required java types.
+	 * @param entityReader a reader used to access the data from each column of the
+	 * struct.
 	 */
-	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
-			SpannerEntityReader entityReader) {
+	StructPropertyValueProvider(StructAccessor structAccessor,
+			SpannerCustomConverter readConverter, SpannerEntityReader entityReader) {
 		this(structAccessor, readConverter, entityReader, false);
 	}
 
 	/**
 	 * Constructor.
 	 * @param structAccessor an accessor used to obtain column values from the struct.
-	 * @param readConverter a converter used to convert between struct column types and the required
-	 * java types.
-	 * @param entityReader a reader used to access the data from each column of the struct.
-	 * @param allowMissingColumns if a nested struct is within this struct's column, then if true
-	 * missing columns in the nested struct are also allowed for the corresponding nested Java object.
+	 * @param readConverter a converter used to convert between struct column types and
+	 * the required java types.
+	 * @param entityReader a reader used to access the data from each column of the
+	 * struct.
+	 * @param allowMissingColumns if a nested struct is within this struct's column, then
+	 * if true missing columns in the nested struct are also allowed for the corresponding
+	 * nested Java object.
 	 */
-	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
-			SpannerEntityReader entityReader, boolean allowMissingColumns) {
+	StructPropertyValueProvider(StructAccessor structAccessor,
+			SpannerCustomConverter readConverter, SpannerEntityReader entityReader,
+			boolean allowMissingColumns) {
 		this.structAccessor = structAccessor;
 		this.readConverter = readConverter;
 		this.entityReader = entityReader;
@@ -91,11 +95,10 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 				: readSingleWithConversion(spannerPersistentProperty);
 
 		if (value == null) {
-			throw new SpannerDataException(String.format(
-					"The value in column with name %s"
+			throw new SpannerDataException(
+					String.format("The value in column with name %s"
 							+ " could not be converted to the corresponding property in the entity."
-							+ " The property's type is %s.",
-					colName, propType));
+							+ " The property's type is %s.", colName, propType));
 		}
 		return (T) value;
 	}
@@ -105,7 +108,9 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 			SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		Object value = this.structAccessor.getSingleValue(colName);
-		return (value != null) ? convertOrRead((Class<T>) spannerPersistentProperty.getType(), value) : null;
+		return (value != null)
+				? convertOrRead((Class<T>) spannerPersistentProperty.getType(), value)
+				: null;
 	}
 
 	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
@@ -114,7 +119,7 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 				&& !this.readConverter.canConvert(sourceClass, targetType))
 						? this.entityReader.read(targetType, (Struct) sourceValue, null,
 								this.allowMissingColumns)
-				: this.readConverter.convert(sourceValue, targetType);
+						: this.readConverter.convert(sourceValue, targetType);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -132,4 +137,5 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		source.forEach((item) -> result.add(convertOrRead(targetType, item)));
 		return result;
 	}
+
 }

@@ -32,11 +32,13 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Sample REST Controller to demonstrate IAP security header extraction.
  *
- * <p>Makes the following pages available:
+ * <p>
+ * Makes the following pages available:
  * <ul>
- *     <li>{@code /} - Unsecured page.
- *     <li>{@code /topsecret} - Secured page requiring non-anonymous authentication. Prints IAP identity details.
- *     <li>{@code /headers} - Unsecured page that can be used for troubleshooting.
+ * <li>{@code /} - Unsecured page.
+ * <li>{@code /topsecret} - Secured page requiring non-anonymous authentication. Prints
+ * IAP identity details.
+ * <li>{@code /headers} - Unsecured page that can be used for troubleshooting.
  * </ul>
  *
  * @author Elena Felder
@@ -52,7 +54,8 @@ public class ExampleController {
 
 	@RequestMapping("/topsecret")
 	public String secured() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = SecurityContextHolder.getContext()
+				.getAuthentication();
 		if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
 			Jwt jwt = (Jwt) authentication.getPrincipal();
 			return String.format("You are [%s] with e-mail address [%s].%n",
@@ -66,8 +69,8 @@ public class ExampleController {
 
 	@RequestMapping("/headers")
 	public Map<String, String> headers(HttpServletRequest req) {
-		return Collections.list(req.getHeaderNames())
-				.stream()
+		return Collections.list(req.getHeaderNames()).stream()
 				.collect(Collectors.toMap(Function.identity(), req::getHeader));
 	}
+
 }

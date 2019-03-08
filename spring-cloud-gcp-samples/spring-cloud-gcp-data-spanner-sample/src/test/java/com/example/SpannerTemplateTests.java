@@ -48,6 +48,7 @@ import static org.junit.Assume.assumeThat;
 @TestPropertySource("classpath:application.properties")
 @SpringBootTest(classes = { SpannerExampleDriver.class })
 public class SpannerTemplateTests {
+
 	@Autowired
 	private SpannerOperations spannerOperations;
 
@@ -80,13 +81,11 @@ public class SpannerTemplateTests {
 		this.spannerTemplateExample.runExample();
 
 		Set<String> tradeSpannerKeys = this.spannerOperations.readAll(Trade.class)
-				.stream()
-				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
+				.stream().map((t) -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 
-		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
-				"[template_trader1,1]",
-				"[template_trader1,2]",
-				"[template_trader2,1]");
+		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder("[template_trader1,1]",
+				"[template_trader1,2]", "[template_trader2,1]");
 	}
+
 }

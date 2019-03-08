@@ -30,20 +30,20 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- *
  * @since 1.1
  */
 public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.
-	 * @param topic   the name of an existing topic
+	 * @param topic the name of an existing topic
 	 * @param payload an object that will be serialized and sent
 	 * @param headers the headers to publish
 	 * @param <T> the type of the payload to publish
 	 * @return the listenable future of the call
 	 */
-	<T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers);
+	<T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers);
 
 	/**
 	 * Send a message to Pub/Sub.

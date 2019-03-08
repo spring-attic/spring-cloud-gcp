@@ -25,8 +25,8 @@ import java.lang.annotation.Target;
 import com.google.spanner.v1.TypeCode;
 
 /**
- * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
- * instead of deriving it from the field's name.
+ * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column
+ * name instead of deriving it from the field's name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -39,8 +39,8 @@ import com.google.spanner.v1.TypeCode;
 public @interface Column {
 
 	/**
-	 * The custom name of the column in the Spanner table, which can differ from the name of the
-	 * field which it annotates.
+	 * The custom name of the column in the Spanner table, which can differ from the name
+	 * of the field which it annotates.
 	 * @return the name of the column in the Spanner table
 	 */
 	String name() default "";
@@ -50,7 +50,6 @@ public @interface Column {
 	 * columns this refers to the number of characters. For BYTES columns this refers to
 	 * the number of bytes. This setting is only used when generating schema from an
 	 * entity class. A setting of less than 0 indicates an unlimited maximum length.
-	 *
 	 * @return the maximum length for the column
 	 */
 	long spannerTypeMaxLength() default -1;
@@ -73,10 +72,11 @@ public @interface Column {
 
 	/**
 	 * This setting takes effect when the entity in which it appears is used to generate
-	 * schema DDL. If {@code true}, then the column corresponding to the annotated property
-	 * will be auto-populated with the latest Cloud Spanner TrueTime commit timestamp of the
-	 * row. {@code false} for all other usage and columns.
+	 * schema DDL. If {@code true}, then the column corresponding to the annotated
+	 * property will be auto-populated with the latest Cloud Spanner TrueTime commit
+	 * timestamp of the row. {@code false} for all other usage and columns.
 	 * @return {@code true} for auto-populating commit timestamp. {@code false} otherwise.
 	 */
 	boolean spannerCommitTimestamp() default false;
+
 }

@@ -78,11 +78,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		Trade buyTrade1 = trader1BuyTrades.get(0);
 		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "invalid action");
-		assertThat(this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
-				.isEqualTo("invalid action");
+		assertThat(this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
+						.isEqualTo("invalid action");
 		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "BUY");
-		assertThat(this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
-				.isEqualTo("BUY");
+		assertThat(this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
+						.isEqualTo("BUY");
 
 		assertThat(this.tradeRepository.count()).isEqualTo(8L);
 
@@ -121,7 +123,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		List<Trade> trader2TradesRetrieved = this.tradeRepository
 				.findByTraderId("trader2");
-		assertThat(trader2TradesRetrieved).containsExactlyInAnyOrderElementsOf(trader2Trades);
+		assertThat(trader2TradesRetrieved)
+				.containsExactlyInAnyOrderElementsOf(trader2Trades);
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
 				.findByActionIgnoreCase("bUy");
@@ -132,8 +135,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		}
 
 		List<Trade> tradesReceivedPage0 = this.tradeRepository
-				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
-				.getContent();
+				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id")))).getContent();
 		assertThat(tradesReceivedPage0).hasSize(3);
 		assertThat(tradesReceivedPage0.get(0).getId()
 				.compareTo(tradesReceivedPage0.get(1).getId())).isNegative();
@@ -141,8 +143,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.compareTo(tradesReceivedPage0.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage1 = this.tradeRepository
-				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
-				.getContent();
+				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id")))).getContent();
 		assertThat(tradesReceivedPage1).hasSize(3);
 		assertThat(tradesReceivedPage0.get(2).getId()
 				.compareTo(tradesReceivedPage1.get(0).getId())).isNegative();
@@ -152,8 +153,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.compareTo(tradesReceivedPage1.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage2 = this.tradeRepository
-				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
-				.getContent();
+				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id")))).getContent();
 		assertThat(tradesReceivedPage2).hasSize(2);
 		assertThat(tradesReceivedPage1.get(2).getId()
 				.compareTo(tradesReceivedPage2.get(0).getId())).isNegative();
@@ -162,7 +162,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
-		assertThat(buyTradesRetrieved).containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
+		assertThat(buyTradesRetrieved)
+				.containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
 
 		List<Trade> customSortedTrades = this.tradeRepository.sortedTrades(PageRequest
 				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
@@ -182,8 +183,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository
 				.findBySymbolAndActionPojo(new SymbolAction("ABCD", "BUY"))).hasSize(3);
 		assertThat(this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
-						.set("symbol").to("ABCD").set("action").to("BUY").build())
-				).hasSize(3);
+				.set("symbol").to("ABCD").set("action").to("BUY").build())).hasSize(3);
 
 		// testing setting some columns to null.
 		Trade someTrade = this.tradeRepository.findBySymbolContains("ABCD").get(0);
@@ -192,7 +192,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		someTrade.setExecutionTimes(null);
 		someTrade.setSymbol(null);
 		this.tradeRepository.save(someTrade);
-		someTrade = this.tradeRepository.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		someTrade = this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
 		assertThat(someTrade.getExecutionTimes()).isNull();
 		assertThat(someTrade.getSymbol()).isNull();
 
@@ -225,13 +226,15 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.subTradeRepository.count()).isEqualTo(2);
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(3);
 
-		List<SubTradeComponent> subTradeComponents = (List) this.subTradeComponentRepository.findAll();
+		List<SubTradeComponent> subTradeComponents = (List) this.subTradeComponentRepository
+				.findAll();
 
 		assertThat(subTradeComponents.get(0).getCommitTimestamp())
 				.isEqualTo(subTradeComponents.get(1).getCommitTimestamp());
 		assertThat(subTradeComponents.get(0).getCommitTimestamp())
 				.isEqualTo(subTradeComponents.get(2).getCommitTimestamp());
-		assertThat(subTradeComponents.get(0).getCommitTimestamp()).isGreaterThan(Timestamp.ofTimeMicroseconds(22));
+		assertThat(subTradeComponents.get(0).getCommitTimestamp())
+				.isGreaterThan(Timestamp.ofTimeMicroseconds(22));
 
 		this.subTradeRepository.deleteById(this.spannerSchemaUtils.getKey(subTrade1));
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(2);
@@ -239,7 +242,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		someTrade = this.tradeRepository
 				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
 		assertThat(someTrade.getSubTrades()).hasSize(1);
-		assertThat(someTrade.getSubTrades().get(0).getSubTradeId()).isEqualTo("subTrade2");
+		assertThat(someTrade.getSubTrades().get(0).getSubTradeId())
+				.isEqualTo("subTrade2");
 		assertThat(someTrade.getSubTrades().get(0).getSubTradeComponentList()).hasSize(2);
 
 		this.tradeRepository.delete(someTrade);
@@ -281,5 +285,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);
 		}
+
 	}
+
 }

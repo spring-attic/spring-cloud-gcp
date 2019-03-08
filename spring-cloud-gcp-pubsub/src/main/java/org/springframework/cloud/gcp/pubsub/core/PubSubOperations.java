@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
  * @author Chengyuan Zhao
  * @author Doug Hoard
  */
-public interface PubSubOperations extends PubSubPublisherOperations, PubSubSubscriberOperations {
+public interface PubSubOperations
+		extends PubSubPublisherOperations, PubSubSubscriberOperations {
 
 }

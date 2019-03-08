@@ -36,7 +36,6 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
@@ -61,8 +60,8 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 	 * @param type the type of POJO
 	 * @param source the Cloud Spanner row
 	 * @param includeColumns the columns to read. If null then all columns will be read.
-	 * @param allowMissingColumns if true, then properties with no corresponding column are
-	 * not mapped. If false, then an exception is thrown.
+	 * @param allowMissingColumns if true, then properties with no corresponding column
+	 * are not mapped. If false, then an exception is thrown.
 	 * @param <R> the type of the POJO.
 	 * @return the POJO
 	 */
@@ -70,15 +69,13 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
 			boolean allowMissingColumns) {
 		boolean readAllColumns = includeColumns == null;
-		SpannerPersistentEntity<R> persistentEntity =
-				(SpannerPersistentEntity<R>) this.spannerMappingContext.getPersistentEntity(type);
+		SpannerPersistentEntity<R> persistentEntity = (SpannerPersistentEntity<R>) this.spannerMappingContext
+				.getPersistentEntity(type);
 
 		StructAccessor structAccessor = new StructAccessor(source);
 
 		StructPropertyValueProvider propertyValueProvider = new StructPropertyValueProvider(
-				structAccessor,
-				this.converter,
-				this, allowMissingColumns);
+				structAccessor, this.converter, this, allowMissingColumns);
 
 		PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor = persistentEntity
 				.getPersistenceConstructor();
@@ -88,45 +85,47 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 						new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
 		// @formatter:on
 
-		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
-		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
+		EntityInstantiator instantiator = this.instantiators
+				.getInstantiatorFor(persistentEntity);
+		R instance = instantiator.createInstance(persistentEntity,
+				parameterValueProvider);
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(instance);
 
-		persistentEntity.doWithColumnBackedProperties(
-				(spannerPersistentProperty) -> {
-					if (spannerPersistentProperty.isEmbedded()) {
-						accessor.setProperty(spannerPersistentProperty,
-								read(spannerPersistentProperty.getType(), source,
-										includeColumns, allowMissingColumns));
-					}
-					else {
-						if (!shouldSkipProperty(structAccessor, spannerPersistentProperty,
-								includeColumns, readAllColumns, allowMissingColumns,
-								persistenceConstructor)) {
+		persistentEntity.doWithColumnBackedProperties((spannerPersistentProperty) -> {
+			if (spannerPersistentProperty.isEmbedded()) {
+				accessor.setProperty(spannerPersistentProperty,
+						read(spannerPersistentProperty.getType(), source, includeColumns,
+								allowMissingColumns));
+			}
+			else {
+				if (!shouldSkipProperty(structAccessor, spannerPersistentProperty,
+						includeColumns, readAllColumns, allowMissingColumns,
+						persistenceConstructor)) {
 
-							Object value = propertyValueProvider
-									.getPropertyValue(spannerPersistentProperty);
-							accessor.setProperty(spannerPersistentProperty, value);
-						}
-					}
-				});
+					Object value = propertyValueProvider
+							.getPropertyValue(spannerPersistentProperty);
+					accessor.setProperty(spannerPersistentProperty, value);
+				}
+			}
+		});
 
 		return instance;
 	}
 
 	private boolean shouldSkipProperty(StructAccessor struct,
 			SpannerPersistentProperty spannerPersistentProperty,
-			Set<String> includeColumns,
-			boolean readAllColumns,
+			Set<String> includeColumns, boolean readAllColumns,
 			boolean allowMissingColumns,
 			PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor) {
 		String columnName = spannerPersistentProperty.getColumnName();
-		boolean notRequiredByPartialRead = !readAllColumns && !includeColumns.contains(columnName);
+		boolean notRequiredByPartialRead = !readAllColumns
+				&& !includeColumns.contains(columnName);
 
 		return notRequiredByPartialRead
 				|| isMissingColumn(struct, allowMissingColumns, columnName)
-				|| struct.isNull(columnName)
-				|| persistenceConstructor.isConstructorParameter(spannerPersistentProperty);
+				|| struct.isNull(columnName) || persistenceConstructor
+						.isConstructorParameter(spannerPersistentProperty);
 	}
 
 	private boolean isMissingColumn(StructAccessor struct, boolean allowMissingColumns,
@@ -134,8 +133,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		boolean missingColumn = !struct.hasColumn(columnName);
 		if (missingColumn && !allowMissingColumns) {
 			throw new SpannerDataException(
-					"Unable to read column from Cloud Spanner results: "
-							+ columnName);
+					"Unable to read column from Cloud Spanner results: " + columnName);
 		}
 		return missingColumn;
 	}

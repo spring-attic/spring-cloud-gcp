@@ -36,13 +36,13 @@ public class AfterReadEvent extends LoadEvent {
 	/**
 	 * Constructor.
 	 * @param source The entities that were read from Cloud Spanner.This is never
-	 *     {@code null}.
+	 * {@code null}.
 	 * @param keySet the keys that were read.
-	 * @param spannerReadOptions the options that were used to conduct the read. This may be
-	 *     {@code null} if the read operation wasn't a key-based read.
+	 * @param spannerReadOptions the options that were used to conduct the read. This may
+	 * be {@code null} if the read operation wasn't a key-based read.
 	 */
-	public AfterReadEvent(Iterable source,
-			KeySet keySet, SpannerReadOptions spannerReadOptions) {
+	public AfterReadEvent(Iterable source, KeySet keySet,
+			SpannerReadOptions spannerReadOptions) {
 		super(source);
 		this.spannerReadOptions = spannerReadOptions;
 		this.keySet = keySet;
@@ -82,4 +82,5 @@ public class AfterReadEvent extends LoadEvent {
 	public int hashCode() {
 		return Objects.hash(getRetrievedEntities(), getSpannerReadOptions(), getKeySet());
 	}
+
 }

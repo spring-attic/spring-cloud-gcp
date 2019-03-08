@@ -55,7 +55,8 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		Application.class })
 public class LoggingSampleApplicationTests {
 
 	private static final String LOG_FILTER_FORMAT = "trace:%s";
@@ -91,24 +92,24 @@ public class LoggingSampleApplicationTests {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("x-cloud-trace-context", traceHeader);
-		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
-				url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(url,
+				HttpMethod.GET, new HttpEntity<>(headers), String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
-		await().atMost(60, TimeUnit.SECONDS)
-				.pollInterval(2, TimeUnit.SECONDS)
+		await().atMost(60, TimeUnit.SECONDS).pollInterval(2, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
-					Page<LogEntry> logEntryPage = this.logClient.listLogEntries(
-							Logging.EntryListOption.filter(logFilter));
+					Page<LogEntry> logEntryPage = this.logClient
+							.listLogEntries(Logging.EntryListOption.filter(logFilter));
 					List<LogEntry> logEntries = new ArrayList<>();
 					logEntryPage.iterateAll().forEach((le) -> {
 						logEntries.add(le);
 					});
 
 					List<String> logContents = logEntries.stream()
-							.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
+							.map((logEntry) -> ((StringPayload) logEntry.getPayload())
+									.getData())
 							.collect(Collectors.toList());
 
 					assertThat(logContents).containsExactlyInAnyOrder(
@@ -117,9 +118,10 @@ public class LoggingSampleApplicationTests {
 
 					for (LogEntry logEntry : logEntries) {
 						assertThat(logEntry.getLogName()).isEqualTo("spring.log");
-						assertThat(logEntry.getResource().getLabels())
-								.containsEntry("project_id", this.projectIdProvider.getProjectId());
+						assertThat(logEntry.getResource().getLabels()).containsEntry(
+								"project_id", this.projectIdProvider.getProjectId());
 					}
 				});
 	}
+
 }

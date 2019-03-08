@@ -35,11 +35,10 @@ public class SaveEvent extends ApplicationEvent {
 
 	/**
 	 * Constructor.
-	 *
 	 * @param datastoreEntities The Cloud Datastore entities that are being saved. These
-	 *     include any referenced or descendant entities of the original entities being saved.
-	 * @param javaEntities The original Java entities being saved. Each entity may result in
-	 *     multiple Datastore entities being saved due to relationships.
+	 * include any referenced or descendant entities of the original entities being saved.
+	 * @param javaEntities The original Java entities being saved. Each entity may result
+	 * in multiple Datastore entities being saved due to relationships.
 	 */
 	public SaveEvent(List<Entity> datastoreEntities, List javaEntities) {
 		super(datastoreEntities);
@@ -80,4 +79,5 @@ public class SaveEvent extends ApplicationEvent {
 	public int hashCode() {
 		return Objects.hash(getDatastoreEntities(), getJavaEntities());
 	}
+
 }

@@ -45,7 +45,6 @@ import static org.junit.Assume.assumeThat;
  * These tests verifies that the pubsub-polling-binder-sample works.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 @RunWith(SpringRunner.class)
@@ -90,10 +89,11 @@ public class SampleAppIntegrationTest {
 
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
-		Callable<Boolean> logCheck = () -> baos.toString().contains("New message received from testUserName via polling: " + message);
-		Awaitility.await().atMost(10, TimeUnit.SECONDS)
-				.until(logCheck);
+		Callable<Boolean> logCheck = () -> baos.toString().contains(
+				"New message received from testUserName via polling: " + message);
+		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(logCheck);
 
 		assertThat(logCheck.call()).isTrue();
 	}
+
 }

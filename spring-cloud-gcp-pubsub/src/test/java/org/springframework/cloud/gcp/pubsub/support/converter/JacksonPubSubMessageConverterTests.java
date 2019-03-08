@@ -31,13 +31,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dmitry Solomakha
  * @author Doug Hoard
  * @author Chengyuan Zhao
- *
- * @since  1.1
+ * @since 1.1
  */
 
 public class JacksonPubSubMessageConverterTests {
 
-	private JacksonPubSubMessageConverter converter = new JacksonPubSubMessageConverter(new ObjectMapper());
+	private JacksonPubSubMessageConverter converter = new JacksonPubSubMessageConverter(
+			new ObjectMapper());
 
 	@Test
 	public void testString() throws JSONException {
@@ -45,14 +45,13 @@ public class JacksonPubSubMessageConverterTests {
 
 		PubsubMessage pubsubMessage = this.converter.toPubSubMessage(str, null);
 
-		JSONAssert.assertEquals(
-				"\"test 123\"",
-				pubsubMessage.getData().toStringUtf8(),
+		JSONAssert.assertEquals("\"test 123\"", pubsubMessage.getData().toStringUtf8(),
 				true);
 
 		Object o = this.converter.fromPubSubMessage(pubsubMessage, String.class);
 
-		assertThat(o).as("verify that deserialized object is equal to the original one").isEqualTo(str);
+		assertThat(o).as("verify that deserialized object is equal to the original one")
+				.isEqualTo(str);
 	}
 
 	@Test
@@ -63,12 +62,12 @@ public class JacksonPubSubMessageConverterTests {
 
 		JSONAssert.assertEquals(
 				"{\"firstName\":\"Thomas\",\"lastName\":\"Edison\",\"zip\":8817}",
-				pubsubMessage.getData().toStringUtf8(),
-				true);
+				pubsubMessage.getData().toStringUtf8(), true);
 
 		Object o = this.converter.fromPubSubMessage(pubsubMessage, Contact.class);
 
-		assertThat(o).as("verify that deserialized object is equal to the original one").isEqualTo(contact);
+		assertThat(o).as("verify that deserialized object is equal to the original one")
+				.isEqualTo(contact);
 	}
 
 	@Test
@@ -81,6 +80,7 @@ public class JacksonPubSubMessageConverterTests {
 	 * A test class containing data to test conversions.
 	 */
 	static class Contact {
+
 		String firstName;
 
 		String lastName;
@@ -130,14 +130,16 @@ public class JacksonPubSubMessageConverterTests {
 				return false;
 			}
 			Contact contact = (Contact) o;
-			return this.zip == contact.zip &&
-					java.util.Objects.equals(this.firstName, contact.firstName) &&
-					java.util.Objects.equals(this.lastName, contact.lastName);
+			return this.zip == contact.zip
+					&& java.util.Objects.equals(this.firstName, contact.firstName)
+					&& java.util.Objects.equals(this.lastName, contact.lastName);
 		}
 
 		@Override
 		public int hashCode() {
 			return java.util.Objects.hash(this.firstName, this.lastName, this.zip);
 		}
+
 	}
+
 }

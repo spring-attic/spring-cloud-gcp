@@ -68,10 +68,12 @@ public class GcsStreamingMessageSourceTests {
 
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
-		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("folder1/gcsfilename");
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE))
+				.isEqualTo("folder1/gcsfilename");
 
 		message = this.gcsChannel.receive(5000);
-		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("secondfilename");
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE))
+				.isEqualTo("secondfilename");
 		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
 
 		message = this.gcsChannel.receive(10);
@@ -91,24 +93,23 @@ public class GcsStreamingMessageSourceTests {
 			Blob blob2 = mock(Blob.class);
 
 			willAnswer((invocationOnMock) -> "gcsbucket").given(blob1).getBucket();
-			willAnswer((invocationOnMock) -> "folder1/gcsfilename").given(blob1).getName();
+			willAnswer((invocationOnMock) -> "folder1/gcsfilename").given(blob1)
+					.getName();
 			willAnswer((invocationOnMock) -> "gcsbucket").given(blob2).getBucket();
 			willAnswer((invocationOnMock) -> "secondfilename").given(blob2).getName();
 
 			Storage gcs = mock(Storage.class);
 
-			willAnswer((invocationOnMock) ->
-				new PageImpl<>(null, null,
-						Stream.of(blob1, blob2)
-								.collect(Collectors.toList())))
-					.given(gcs).list(eq("gcsbucket"));
+			willAnswer((invocationOnMock) -> new PageImpl<>(null, null,
+					Stream.of(blob1, blob2).collect(Collectors.toList()))).given(gcs)
+							.list(eq("gcsbucket"));
 
 			ReadChannel channel1 = mock(ReadChannel.class);
 			ReadChannel channel2 = mock(ReadChannel.class);
-			willAnswer((invocationOnMock) -> channel1)
-					.given(gcs).reader(eq("gcsbucket"), eq("folder1/gcsfilename"));
-			willAnswer((invocationOnMock) -> channel2)
-					.given(gcs).reader(eq("gcsbucket"), eq("secondfilename"));
+			willAnswer((invocationOnMock) -> channel1).given(gcs).reader(eq("gcsbucket"),
+					eq("folder1/gcsfilename"));
+			willAnswer((invocationOnMock) -> channel2).given(gcs).reader(eq("gcsbucket"),
+					eq("secondfilename"));
 
 			return gcs;
 		}
@@ -116,8 +117,8 @@ public class GcsStreamingMessageSourceTests {
 		@Bean
 		@InboundChannelAdapter(value = "gcsChannel", poller = @Poller(fixedDelay = "100"))
 		public MessageSource<InputStream> adapter(Storage gcs) {
-			GcsStreamingMessageSource adapter =
-					new GcsStreamingMessageSource(new RemoteFileTemplate<>(new GcsSessionFactory(gcs)));
+			GcsStreamingMessageSource adapter = new GcsStreamingMessageSource(
+					new RemoteFileTemplate<>(new GcsSessionFactory(gcs)));
 			adapter.setRemoteDirectory("gcsbucket");
 			adapter.setFilter(new AcceptOnceFileListFilter<>());
 
@@ -128,5 +129,7 @@ public class GcsStreamingMessageSourceTests {
 		public PollableChannel gcsChannel() {
 			return new QueueChannel();
 		}
+
 	}
+
 }

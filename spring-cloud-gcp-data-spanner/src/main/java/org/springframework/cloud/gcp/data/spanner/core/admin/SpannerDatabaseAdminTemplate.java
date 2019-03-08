@@ -34,12 +34,11 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.util.Assert;
 
 /**
- * Template for performing many operations to a Spanner database including generating hierarchy schemas and creating
- * and deleting tables.
+ * Template for performing many operations to a Spanner database including generating
+ * hierarchy schemas and creating and deleting tables.
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
- *
  * @since 1.1
  */
 public class SpannerDatabaseAdminTemplate {
@@ -67,13 +66,12 @@ public class SpannerDatabaseAdminTemplate {
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
 	 * @param databaseClient the client used to access schema information tables.
-	 * @param databaseId the combination of Cloud Spanner Instance Id and Database Id. While
-	 * databases can be created automatically by this template, instances determine
+	 * @param databaseId the combination of Cloud Spanner Instance Id and Database Id.
+	 * While databases can be created automatically by this template, instances determine
 	 * billing and are not created automatically.
 	 */
 	public SpannerDatabaseAdminTemplate(DatabaseAdminClient databaseAdminClient,
-			DatabaseClient databaseClient,
-			DatabaseId databaseId) {
+			DatabaseClient databaseClient, DatabaseId databaseId) {
 		Assert.notNull(databaseAdminClient, "A valid database admin client is required.");
 		Assert.notNull(databaseId, "A valid database ID is required.");
 		Assert.notNull(databaseClient, "A valid database client is required.");
@@ -90,13 +88,11 @@ public class SpannerDatabaseAdminTemplate {
 	 * time as the tables using the DDL strings. if {@code false}, then the database must
 	 * already exist.
 	 */
-	public void executeDdlStrings(Iterable<String> ddlStrings,
-			boolean createDatabase) {
+	public void executeDdlStrings(Iterable<String> ddlStrings, boolean createDatabase) {
 		try {
 			if (createDatabase && !this.databaseExists()) {
 				this.databaseAdminClient
-						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
-						.get();
+						.createDatabase(getInstanceId(), getDatabase(), ddlStrings).get();
 			}
 			else {
 				this.databaseAdminClient.updateDatabaseDdl(getInstanceId(), getDatabase(),
@@ -185,8 +181,7 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
-	 * Return a map of parent and child table relationships in the database at the
-	 * moment.
+	 * Return a map of parent and child table relationships in the database at the moment.
 	 * @return a map where the keys are parent table names, and the value is a set of that
 	 * parent's children.
 	 */
@@ -224,4 +219,5 @@ public class SpannerDatabaseAdminTemplate {
 	public boolean tableExists(String table) {
 		return databaseExists() && getTables().contains(table);
 	}
+
 }

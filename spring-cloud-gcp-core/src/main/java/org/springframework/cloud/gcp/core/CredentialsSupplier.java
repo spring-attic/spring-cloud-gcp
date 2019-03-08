@@ -17,8 +17,8 @@
 package org.springframework.cloud.gcp.core;
 
 /**
- * An interface meant to be implemented by configuration properties POJOs that store information about
- * Google Cloud credentials.
+ * An interface meant to be implemented by configuration properties POJOs that store
+ * information about Google Cloud credentials.
  *
  * @author Mike Eltsufin
  */
@@ -26,7 +26,6 @@ public interface CredentialsSupplier {
 
 	/**
 	 * Supplies credentials configuration.
-	 *
 	 * @return a POJO containing Google Cloud credentials location and scopes
 	 */
 	Credentials getCredentials();

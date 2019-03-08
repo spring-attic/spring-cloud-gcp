@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
  * @author Chengyuan Zhao
  */
 public class DatastoreMappingContextTests {
+
 	@Test
 	public void testApplicationContextPassing() {
 		DatastorePersistentEntityImpl mockEntity = mock(
@@ -69,4 +70,5 @@ public class DatastoreMappingContextTests {
 			}
 		};
 	}
+
 }

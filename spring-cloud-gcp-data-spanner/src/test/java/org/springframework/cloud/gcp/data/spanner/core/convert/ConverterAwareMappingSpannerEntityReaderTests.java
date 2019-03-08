@@ -106,7 +106,8 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 				.read(OuterTestHoldingStructsEntity.class, outerStruct);
 		assertThat(result.id).isEqualTo("key1");
 		assertThat(result.innerStructs).hasSize(1);
-		assertThat(result.innerStructs.get(0).getString("value")).isEqualTo("inner-value");
+		assertThat(result.innerStructs.get(0).getString("value"))
+				.isEqualTo("inner-value");
 	}
 
 	@Test
@@ -135,8 +136,9 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 	@Test
 	public void readSingularArrayMismatchTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("The value in column with name innerLengths could not be converted " +
-				"to the corresponding property in the entity. The property's type is class java.lang.Integer.");
+		this.expectedEx.expectMessage(
+				"The value in column with name innerLengths could not be converted "
+						+ "to the corresponding property in the entity. The property's type is class java.lang.Integer.");
 
 		Struct colStruct = Struct.newBuilder().set("string_col").to(Value.string("value"))
 				.build();
@@ -183,7 +185,8 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 	@Test
 	public void readNotFoundColumnTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unable to read column from Cloud Spanner results: id4");
+		this.expectedEx
+				.expectMessage("Unable to read column from Cloud Spanner results: id4");
 		Struct struct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("custom_col").to(Value.string("string1")).set("booleanField")
 				.to(Value.bool(true)).set("longField").to(Value.int64(3L))
@@ -200,9 +203,10 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 	@Test
 	public void readUnconvertableValueTest() {
 		this.expectedEx.expect(ConversionFailedException.class);
-		this.expectedEx.expectMessage("Failed to convert from type [java.lang.String] to type " +
-				"[java.lang.Double] for value 'UNCONVERTABLE VALUE'; nested exception is " +
-				"java.lang.NumberFormatException: For input string: \"UNCONVERTABLEVALUE\"");
+		this.expectedEx
+				.expectMessage("Failed to convert from type [java.lang.String] to type "
+						+ "[java.lang.Double] for value 'UNCONVERTABLE VALUE'; nested exception is "
+						+ "java.lang.NumberFormatException: For input string: \"UNCONVERTABLEVALUE\"");
 		Struct struct = Struct.newBuilder().set("id").to(Value.string("key1")).set("id2")
 				.to(Value.string("key2")).set("id3").to(Value.string("key3")).set("id4")
 				.to(Value.string("key4")).set("intField2").to(Value.int64(333L))
@@ -222,7 +226,8 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 	@Test
 	public void readUnmatachableTypesTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unable to read column from Cloud Spanner results: id");
+		this.expectedEx
+				.expectMessage("Unable to read column from Cloud Spanner results: id");
 		Struct struct = Struct.newBuilder().set("fieldWithUnsupportedType")
 				.to(Value.string("key1")).build();
 		this.spannerEntityReader.read(FaultyTestEntity.class, struct);
@@ -248,7 +253,8 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 				.build();
 
 		TestEntities.OuterTestEntityWithConstructor result = this.spannerEntityReader
-				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct, null, true);
+				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct,
+						null, true);
 		assertThat(result.id).isEqualTo("key1");
 		assertThat(result.innerTestEntities).hasSize(1);
 		assertThat(result.innerTestEntities.get(0).value).isEqualTo("value");
@@ -293,8 +299,9 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 	@Test
 	public void zeroArgsListShouldThrowError() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("in field 'zeroArgsListOfObjects': Unsupported number of " +
-				"type parameters found: 0 Only collections of exactly 1 type parameter are supported.");
+		this.expectedEx
+				.expectMessage("in field 'zeroArgsListOfObjects': Unsupported number of "
+						+ "type parameters found: 0 Only collections of exactly 1 type parameter are supported.");
 		Struct struct = Struct.newBuilder().set("zeroArgsListOfObjects")
 				.to(Value.stringArray(Arrays.asList("hello", "world"))).build();
 		this.spannerEntityReader

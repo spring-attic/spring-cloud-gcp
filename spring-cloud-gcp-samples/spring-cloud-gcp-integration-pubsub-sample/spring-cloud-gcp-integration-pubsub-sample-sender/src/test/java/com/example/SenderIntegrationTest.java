@@ -42,7 +42,6 @@ import static org.junit.Assume.assumeThat;
  * Integration test for the sender sample app.
  *
  * @author Dmitry Solomakha
- *
  * @since 1.1
  */
 
@@ -82,8 +81,8 @@ public class SenderIntegrationTest {
 			messages = this.pubSubTemplate.pull("exampleSubscription", 10, true);
 			messages.forEach(BasicAcknowledgeablePubsubMessage::ack);
 
-			if (messages.stream()
-					.anyMatch((m) -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
+			if (messages.stream().anyMatch((m) -> m.getPubsubMessage().getData()
+					.toStringUtf8().startsWith(message))) {
 				messageReceived = true;
 				break;
 			}
@@ -92,4 +91,5 @@ public class SenderIntegrationTest {
 		assertThat(messageReceived).isTrue();
 
 	}
+
 }

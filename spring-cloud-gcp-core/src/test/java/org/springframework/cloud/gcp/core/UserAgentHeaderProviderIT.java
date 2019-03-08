@@ -41,8 +41,9 @@ public class UserAgentHeaderProviderIT {
 
 		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
-		assertThat(subject.getHeaders().get("User-Agent")).matches(
-				Pattern.compile("Spring/" + versionRegex + " spring-cloud-gcp-core/" + versionRegex));
+		assertThat(subject.getHeaders().get("User-Agent")).matches(Pattern.compile(
+				"Spring/" + versionRegex + " spring-cloud-gcp-core/" + versionRegex));
 		assertThat(subject.getHeaders().size()).isEqualTo(1);
 	}
+
 }

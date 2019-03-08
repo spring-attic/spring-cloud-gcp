@@ -47,6 +47,8 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	int countByAction(String action);
 
-	// This method uses the query from the properties file instead of one generated based on name.
+	// This method uses the query from the properties file instead of one generated based
+	// on name.
 	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
+
 }

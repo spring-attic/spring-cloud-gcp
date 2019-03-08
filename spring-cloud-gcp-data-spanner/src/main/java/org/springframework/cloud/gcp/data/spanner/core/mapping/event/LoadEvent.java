@@ -30,7 +30,7 @@ public class LoadEvent extends ApplicationEvent {
 	/**
 	 * Constructor.
 	 * @param source The entities that were read from Cloud Spanner.This is never
-	 *     {@code null}.
+	 * {@code null}.
 	 */
 	public LoadEvent(Iterable source) {
 		super(source);
@@ -60,4 +60,5 @@ public class LoadEvent extends ApplicationEvent {
 	public int hashCode() {
 		return Objects.hash(getRetrievedEntities());
 	}
+
 }

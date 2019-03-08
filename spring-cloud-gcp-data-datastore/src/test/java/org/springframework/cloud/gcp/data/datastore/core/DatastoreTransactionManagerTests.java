@@ -115,8 +115,9 @@ public class DatastoreTransactionManagerTests {
 	@Test
 	public void testDoCommitFailure() {
 		this.expectedException.expect(TransactionSystemException.class);
-		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.; " +
-				"nested exception is com.google.cloud.datastore.DatastoreException: ");
+		this.expectedException
+				.expectMessage("Cloud Datastore transaction failed to commit.; "
+						+ "nested exception is com.google.cloud.datastore.DatastoreException: ");
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		when(this.transaction.commit()).thenThrow(new DatastoreException(0, "", ""));
@@ -142,8 +143,9 @@ public class DatastoreTransactionManagerTests {
 	@Test
 	public void testDoRollbackFailure() {
 		this.expectedException.expect(TransactionSystemException.class);
-		this.expectedException.expectMessage("Cloud Datastore transaction failed to rollback.; " +
-				"nested exception is com.google.cloud.datastore.DatastoreException: ");
+		this.expectedException
+				.expectMessage("Cloud Datastore transaction failed to rollback.; "
+						+ "nested exception is com.google.cloud.datastore.DatastoreException: ");
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		doThrow(new DatastoreException(0, "", "")).when(this.transaction).rollback();
@@ -157,4 +159,5 @@ public class DatastoreTransactionManagerTests {
 		this.manager.doRollback(this.status);
 		verify(this.transaction, never()).rollback();
 	}
+
 }

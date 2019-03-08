@@ -117,8 +117,7 @@ public class GcpSpannerAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public SpannerOptions spannerOptions(SessionPoolOptions sessionPoolOptions) {
-			Builder builder = SpannerOptions.newBuilder()
-					.setProjectId(this.projectId)
+			Builder builder = SpannerOptions.newBuilder().setProjectId(this.projectId)
 					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
 					.setCredentials(this.credentials);
 			if (this.numRpcChannels >= 0) {
@@ -171,7 +170,8 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
+		public DatabaseClient spannerDatabaseClient(Spanner spanner,
+				DatabaseId databaseId) {
 			return spanner.getDatabaseClient(databaseId);
 		}
 
@@ -184,16 +184,18 @@ public class GcpSpannerAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
-				SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
+				SpannerMappingContext mappingContext,
+				SpannerEntityProcessor spannerEntityProcessor,
 				SpannerMutationFactory spannerMutationFactory,
 				SpannerSchemaUtils spannerSchemaUtils) {
-			return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
-					spannerMutationFactory, spannerSchemaUtils);
+			return new SpannerTemplate(databaseClient, mappingContext,
+					spannerEntityProcessor, spannerMutationFactory, spannerSchemaUtils);
 		}
 
 		@Bean
 		@ConditionalOnMissingBean
-		public SpannerEntityProcessor spannerConverter(SpannerMappingContext mappingContext) {
+		public SpannerEntityProcessor spannerConverter(
+				SpannerMappingContext mappingContext) {
 			return new ConverterAwareMappingSpannerEntityProcessor(mappingContext);
 		}
 
@@ -203,8 +205,8 @@ public class GcpSpannerAutoConfiguration {
 				SpannerEntityProcessor spannerEntityProcessor,
 				SpannerMappingContext spannerMappingContext,
 				SpannerSchemaUtils spannerSchemaUtils) {
-			return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext,
-					spannerSchemaUtils);
+			return new SpannerMutationFactoryImpl(spannerEntityProcessor,
+					spannerMappingContext, spannerSchemaUtils);
 		}
 
 		@Bean
@@ -218,22 +220,27 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-				Spanner spanner, DatabaseId databaseId) {
+		public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(Spanner spanner,
+				DatabaseId databaseId) {
 			return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
 					spanner.getDatabaseClient(databaseId), databaseId);
 		}
+
 	}
 
 	/**
 	 * REST settings.
 	 */
-	@ConditionalOnClass({BackendIdConverter.class, SpannerMappingContext.class})
+	@ConditionalOnClass({ BackendIdConverter.class, SpannerMappingContext.class })
 	static class SpannerKeyRestSupportAutoConfiguration {
+
 		@Bean
 		@ConditionalOnMissingBean
-		public BackendIdConverter spannerKeyIdConverter(SpannerMappingContext mappingContext) {
+		public BackendIdConverter spannerKeyIdConverter(
+				SpannerMappingContext mappingContext) {
 			return new SpannerKeyIdConverter(mappingContext);
 		}
+
 	}
+
 }

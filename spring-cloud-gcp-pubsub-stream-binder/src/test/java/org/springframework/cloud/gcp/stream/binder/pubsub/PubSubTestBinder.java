@@ -49,59 +49,54 @@ import org.springframework.context.support.GenericApplicationContext;
  * @author João André Martins
  * @author Daniel Zou
  */
-public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBinder,
-		ExtendedConsumerProperties<PubSubConsumerProperties>,
-		ExtendedProducerProperties<PubSubProducerProperties>> {
+public class PubSubTestBinder extends
+		AbstractTestBinder<PubSubMessageChannelBinder, ExtendedConsumerProperties<PubSubConsumerProperties>, ExtendedProducerProperties<PubSubProducerProperties>> {
 
 	public PubSubTestBinder(String host) {
 		GcpProjectIdProvider projectIdProvider = () -> "porto sentido";
 
 		// Transport channel provider so that test binder talks to emulator.
-		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget(host)
-				.usePlaintext(true)
+		ManagedChannel channel = ManagedChannelBuilder.forTarget(host).usePlaintext(true)
 				.build();
-		TransportChannelProvider transportChannelProvider =
-				FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+		TransportChannelProvider transportChannelProvider = FixedTransportChannelProvider
+				.create(GrpcTransportChannel.create(channel));
 
 		PubSubChannelProvisioner pubSubChannelProvisioner;
 
 		try {
-			SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create(
-					SubscriptionAdminSettings.newBuilder()
+			SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient
+					.create(SubscriptionAdminSettings.newBuilder()
 							.setTransportChannelProvider(transportChannelProvider)
 							.setCredentialsProvider(NoCredentialsProvider.create())
-							.build()
-			);
+							.build());
 
-			TopicAdminClient topicAdminClient = TopicAdminClient.create(
-					TopicAdminSettings.newBuilder()
-							.setTransportChannelProvider(transportChannelProvider)
-							.setCredentialsProvider(NoCredentialsProvider.create())
-							.build()
-			);
+			TopicAdminClient topicAdminClient = TopicAdminClient.create(TopicAdminSettings
+					.newBuilder().setTransportChannelProvider(transportChannelProvider)
+					.setCredentialsProvider(NoCredentialsProvider.create()).build());
 
-			pubSubChannelProvisioner = new PubSubChannelProvisioner(
-					new PubSubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient)
-			);
+			pubSubChannelProvisioner = new PubSubChannelProvisioner(new PubSubAdmin(
+					projectIdProvider, topicAdminClient, subscriptionAdminClient));
 		}
 		catch (IOException ioe) {
 			throw new RuntimeException("Couldn't build test binder.", ioe);
 		}
 
-		DefaultSubscriberFactory subscriberFactory = new DefaultSubscriberFactory(projectIdProvider);
+		DefaultSubscriberFactory subscriberFactory = new DefaultSubscriberFactory(
+				projectIdProvider);
 		subscriberFactory.setChannelProvider(transportChannelProvider);
 		subscriberFactory.setCredentialsProvider(NoCredentialsProvider.create());
 
-		DefaultPublisherFactory publisherFactory = new DefaultPublisherFactory(projectIdProvider);
+		DefaultPublisherFactory publisherFactory = new DefaultPublisherFactory(
+				projectIdProvider);
 		publisherFactory.setChannelProvider(transportChannelProvider);
 		publisherFactory.setCredentialsProvider(NoCredentialsProvider.create());
 
-		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory,
+				subscriberFactory);
 
-		PubSubMessageChannelBinder binder =
-				new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate,
-						new PubSubExtendedBindingProperties());
+		PubSubMessageChannelBinder binder = new PubSubMessageChannelBinder(null,
+				pubSubChannelProvisioner, pubSubTemplate,
+				new PubSubExtendedBindingProperties());
 		GenericApplicationContext context = new GenericApplicationContext();
 		binder.setApplicationContext(context);
 		this.setBinder(binder);
@@ -111,4 +106,5 @@ public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBin
 	public void cleanup() {
 
 	}
+
 }

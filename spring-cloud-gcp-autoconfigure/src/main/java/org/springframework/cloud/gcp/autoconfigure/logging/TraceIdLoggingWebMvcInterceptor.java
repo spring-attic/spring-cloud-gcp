@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,7 +28,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * trace ID from the "x-cloud-trace-context" HTTP header and stores it in a thread-local
  * using {@link TraceIdLoggingEnhancer#setCurrentTraceId}.
  *
- * <p>The {@link TraceIdLoggingEnhancer} can then be used in a logging appender to add the
+ * <p>
+ * The {@link TraceIdLoggingEnhancer} can then be used in a logging appender to add the
  * trace ID metadata to log messages.
  *
  * @author Mike Eltsufin
@@ -49,8 +49,8 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 	}
 
 	@Override
-	public boolean preHandle(HttpServletRequest req,
-			HttpServletResponse resp, Object handler) throws Exception {
+	public boolean preHandle(HttpServletRequest req, HttpServletResponse resp,
+			Object handler) throws Exception {
 		String traceId = this.traceIdExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
 			TraceIdLoggingEnhancer.setCurrentTraceId(traceId);
@@ -60,9 +60,11 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
 	@Override
 	public void afterCompletion(HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, Object handler, Exception e) throws Exception {
+			HttpServletResponse httpServletResponse, Object handler, Exception e)
+			throws Exception {
 		// Note: the thread-local is currently not fully cleared, but just set to null
 		// See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2746
 		TraceIdLoggingEnhancer.setCurrentTraceId(null);
 	}
+
 }

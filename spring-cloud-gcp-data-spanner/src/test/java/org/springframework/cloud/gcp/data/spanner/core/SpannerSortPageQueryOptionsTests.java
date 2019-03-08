@@ -68,4 +68,5 @@ public class SpannerSortPageQueryOptionsTests {
 		assertThat(Arrays.asList(spannerQueryOptions.getQueryOptions()))
 				.containsExactlyInAnyOrder(r1, r2);
 	}
+
 }

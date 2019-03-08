@@ -37,10 +37,10 @@ public class AfterQueryEvent extends LoadEvent {
 	/**
 	 * Constructor.
 	 * @param source The entities that were read from Cloud Spanner.This is never
-	 *     {@code null}.
+	 * {@code null}.
 	 * @param query the read query that was run.
-	 * @param spannerQueryOptions the options that were used to conduct the query. This may be
-	 *     {@code null} if the operation was a key-based read.
+	 * @param spannerQueryOptions the options that were used to conduct the query. This
+	 * may be {@code null} if the operation was a key-based read.
 	 */
 	public AfterQueryEvent(Iterable source, Statement query,
 			SpannerQueryOptions spannerQueryOptions) {
@@ -75,12 +75,13 @@ public class AfterQueryEvent extends LoadEvent {
 		}
 		AfterQueryEvent that = (AfterQueryEvent) o;
 		return Objects.equals(getRetrievedEntities(), that.getRetrievedEntities())
-				&& Objects.equals(getQuery(), that.getQuery())
-				&& Objects.equals(getSpannerQueryOptions(), that.getSpannerQueryOptions());
+				&& Objects.equals(getQuery(), that.getQuery()) && Objects
+						.equals(getSpannerQueryOptions(), that.getSpannerQueryOptions());
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(getRetrievedEntities(), getQuery(), getSpannerQueryOptions());
 	}
+
 }

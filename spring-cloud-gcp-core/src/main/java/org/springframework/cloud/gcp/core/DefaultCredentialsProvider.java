@@ -55,9 +55,8 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 
 	private static final String DEFAULT_SCOPES_PLACEHOLDER = "DEFAULT_SCOPES";
 
-	private static final List<String> CREDENTIALS_SCOPES_LIST = Collections.unmodifiableList(
-			Arrays.stream(GcpScope.values())
-					.map(GcpScope::getUrl)
+	private static final List<String> CREDENTIALS_SCOPES_LIST = Collections
+			.unmodifiableList(Arrays.stream(GcpScope.values()).map(GcpScope::getUrl)
 					.collect(Collectors.toList()));
 
 	private CredentialsProvider wrappedCredentialsProvider;
@@ -70,40 +69,41 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	/**
 	 * The credentials provided by this object originate from the following sources:
 	 * <ul>
-	 *     <li>*.credentials.location: Credentials built from JSON content inside the file pointed
-	 *     to by this property,</li>
-	 *     <li>*.credentials.encoded-key: Credentials built from JSON String, encoded on
-	 *     base64,</li>
-	 *     <li>Google Cloud Client Libraries default credentials provider.</li>
+	 * <li>*.credentials.location: Credentials built from JSON content inside the file
+	 * pointed to by this property,</li>
+	 * <li>*.credentials.encoded-key: Credentials built from JSON String, encoded on
+	 * base64,</li>
+	 * <li>Google Cloud Client Libraries default credentials provider.</li>
 	 * </ul>
 	 *
-	 * <p>If credentials are provided by one source, the next sources are discarded.
-	 * @param credentialsSupplier provides properties that can override OAuth2
-	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
-	 * key.
+	 * <p>
+	 * If credentials are provided by one source, the next sources are discarded.
+	 * @param credentialsSupplier provides properties that can override OAuth2 scopes list
+	 * used by the credentials, and the location of the OAuth2 credentials private key.
 	 * @throws IOException if an issue occurs creating the DefaultCredentialsProvider
 	 */
-	public DefaultCredentialsProvider(CredentialsSupplier credentialsSupplier) throws IOException {
-		List<String> scopes = resolveScopes(credentialsSupplier.getCredentials().getScopes());
+	public DefaultCredentialsProvider(CredentialsSupplier credentialsSupplier)
+			throws IOException {
+		List<String> scopes = resolveScopes(
+				credentialsSupplier.getCredentials().getScopes());
 		Resource providedLocation = credentialsSupplier.getCredentials().getLocation();
 		String encodedKey = credentialsSupplier.getCredentials().getEncodedKey();
 
 		if (!StringUtils.isEmpty(providedLocation)) {
-			this.wrappedCredentialsProvider = FixedCredentialsProvider
-					.create(GoogleCredentials.fromStream(
-							providedLocation.getInputStream())
+			this.wrappedCredentialsProvider = FixedCredentialsProvider.create(
+					GoogleCredentials.fromStream(providedLocation.getInputStream())
 							.createScoped(scopes));
 		}
 		else if (!StringUtils.isEmpty(encodedKey)) {
-			this.wrappedCredentialsProvider = FixedCredentialsProvider.create(
-					GoogleCredentials.fromStream(
-							new ByteArrayInputStream(Base64.getDecoder().decode(encodedKey)))
+			this.wrappedCredentialsProvider = FixedCredentialsProvider
+					.create(GoogleCredentials
+							.fromStream(new ByteArrayInputStream(
+									Base64.getDecoder().decode(encodedKey)))
 							.createScoped(scopes));
 		}
 		else {
 			this.wrappedCredentialsProvider = GoogleCredentialsProvider.newBuilder()
-					.setScopesToApply(scopes)
-					.build();
+					.setScopesToApply(scopes).build();
 		}
 
 		try {
@@ -119,14 +119,15 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 							+ ((ServiceAccountCredentials) credentials).getClientEmail());
 				}
 				else if (credentials instanceof ComputeEngineCredentials) {
-					LOGGER.info("Default credentials provider for Google Compute Engine.");
+					LOGGER.info(
+							"Default credentials provider for Google Compute Engine.");
 				}
 				LOGGER.info("Scopes in use by default credentials: " + scopes.toString());
 			}
 		}
 		catch (IOException ioe) {
-			LOGGER.warn("No core credentials are set. Service-specific credentials " +
-					"(e.g., spring.cloud.gcp.pubsub.credentials.*) should be used if your app uses "
+			LOGGER.warn("No core credentials are set. Service-specific credentials "
+					+ "(e.g., spring.cloud.gcp.pubsub.credentials.*) should be used if your app uses "
 					+ "services that require credentials.");
 		}
 	}
@@ -148,4 +149,5 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 
 		return CREDENTIALS_SCOPES_LIST;
 	}
+
 }

@@ -26,11 +26,11 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerRepositoriesRegistrar
 		extends RepositoryBeanDefinitionRegistrarSupport {
+
 	@Override
 	protected Class<? extends Annotation> getAnnotation() {
 		return EnableSpannerRepositories.class;
@@ -40,4 +40,5 @@ public class SpannerRepositoriesRegistrar
 	protected RepositoryConfigurationExtension getExtension() {
 		return new SpannerRepositoryConfigurationExtension();
 	}
+
 }

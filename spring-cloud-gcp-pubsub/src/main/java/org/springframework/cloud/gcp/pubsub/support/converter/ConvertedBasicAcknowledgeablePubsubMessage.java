@@ -23,11 +23,12 @@ import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMe
  * Pub/Sub message converted to the desired type {@code T}.
  *
  * @param <T> the type of the converted payload.
- *
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
-public interface ConvertedBasicAcknowledgeablePubsubMessage<T> extends BasicAcknowledgeablePubsubMessage {
+public interface ConvertedBasicAcknowledgeablePubsubMessage<T>
+		extends BasicAcknowledgeablePubsubMessage {
+
 	T getPayload();
+
 }

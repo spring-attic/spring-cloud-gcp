@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Method;
 
-
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.projection.ProjectionFactory;
@@ -34,7 +33,6 @@ import org.springframework.util.Assert;
  * Query lookup strategy for Query Methods for Cloud Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
@@ -50,8 +48,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		Assert.notNull(datastoreMappingContext,
 				"A non-null DatastoreMappingContext is required.");
-		Assert.notNull(datastoreTemplate,
-				"A non-null DatastoreOperations is required.");
+		Assert.notNull(datastoreTemplate, "A non-null DatastoreOperations is required.");
 		Assert.notNull(evaluationContextProvider,
 				"A non-null EvaluationContextProvider is required.");
 		this.datastoreMappingContext = datastoreMappingContext;
@@ -81,8 +78,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreTemplate,
-				gql, this.evaluationContextProvider,
-				this.datastoreMappingContext);
+				gql, this.evaluationContextProvider, this.datastoreMappingContext);
 	}
 
 	Class<?> getEntityType(QueryMethod queryMethod) {

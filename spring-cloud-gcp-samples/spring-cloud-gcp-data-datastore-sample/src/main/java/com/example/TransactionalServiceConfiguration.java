@@ -41,4 +41,5 @@ public class TransactionalServiceConfiguration {
 	public TransactionalRepositoryService transactionalRepositoryService() {
 		return new TransactionalRepositoryService();
 	}
+
 }

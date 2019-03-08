@@ -53,8 +53,10 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @TestPropertySource("classpath:application.properties")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = { SpannerExampleDriver.class })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {
+		SpannerExampleDriver.class })
 public class SpannerRepositoryTests {
+
 	@LocalServerPort
 	private int port;
 
@@ -95,12 +97,11 @@ public class SpannerRepositoryTests {
 
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
 		ResponseEntity<PagedModel<Trade>> tradesResponse = testRestTemplate.exchange(
-				String.format("http://localhost:%s/trades/", this.port),
-				HttpMethod.GET,
-				null,
-				new ParameterizedTypeReference<PagedModel<Trade>>() {
+				String.format("http://localhost:%s/trades/", this.port), HttpMethod.GET,
+				null, new ParameterizedTypeReference<PagedModel<Trade>>() {
 				});
-		assertThat(tradesResponse.getBody().getMetadata().getTotalElements()).isEqualTo(8);
+		assertThat(tradesResponse.getBody().getMetadata().getTotalElements())
+				.isEqualTo(8);
 	}
 
 	@Test
@@ -111,24 +112,22 @@ public class SpannerRepositoryTests {
 		this.spannerRepositoryExample.runExample();
 		List<String> traderIds = new ArrayList<>();
 		this.traderRepository.findAll().forEach((t) -> traderIds.add(t.getTraderId()));
-		assertThat(traderIds).containsExactlyInAnyOrder("demo_trader1", "demo_trader2", "demo_trader3");
+		assertThat(traderIds).containsExactlyInAnyOrder("demo_trader1", "demo_trader2",
+				"demo_trader3");
 
 		assertThat(this.tradeRepository.findAll()).hasSize(8);
 
 		Set<String> tradeSpannerKeys = new HashSet<>();
-		this.tradeRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
+		this.tradeRepository.findAll().forEach((t) -> tradeSpannerKeys
+				.add(this.spannerSchemaUtils.getKey(t).toString()));
 
-		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
-				"[demo_trader1,1]",
-				"[demo_trader1,2]",
-				"[demo_trader1,3]",
-				"[demo_trader2,1]",
-				"[demo_trader2,2]",
-				"[demo_trader2,3]",
-				"[demo_trader3,1]",
+		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder("[demo_trader1,1]",
+				"[demo_trader1,2]", "[demo_trader1,3]", "[demo_trader2,1]",
+				"[demo_trader2,2]", "[demo_trader2,3]", "[demo_trader3,1]",
 				"[demo_trader3,2]");
 
 		List<String> buyTradeIds = this.tradeRepository.getTradeIds("BUY");
 		assertThat(buyTradeIds).hasSize(5);
 	}
+
 }

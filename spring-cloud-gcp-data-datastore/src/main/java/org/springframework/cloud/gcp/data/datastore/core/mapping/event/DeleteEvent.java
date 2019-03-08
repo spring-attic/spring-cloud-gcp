@@ -39,16 +39,17 @@ public class DeleteEvent extends ApplicationEvent {
 
 	/**
 	 * Constructor.
-	 *
-	 * @param keysToDelete The keys that are deleted in this operation (never {@code null}).
+	 * @param keysToDelete The keys that are deleted in this operation (never
+	 * {@code null}).
 	 * @param targetEntityClass The target entity type deleted. This may be {@code null}
-	 *     depending on the specific delete operation.
+	 * depending on the specific delete operation.
 	 * @param targetIds The target entity ID values deleted. This may be {@code null}
-	 *     depending on the specific delete operation.
+	 * depending on the specific delete operation.
 	 * @param targetEntities The target entity objects deleted. This may be {@code null}
-	 *     depending on the specific delete operation.
+	 * depending on the specific delete operation.
 	 */
-	public DeleteEvent(Key[] keysToDelete, Class targetEntityClass, Iterable targetIds, Iterable targetEntities) {
+	public DeleteEvent(Key[] keysToDelete, Class targetEntityClass, Iterable targetIds,
+			Iterable targetEntities) {
 		super(keysToDelete);
 		this.targetEntityClass = Optional.ofNullable(targetEntityClass);
 		this.targetIds = Optional.ofNullable(targetIds);
@@ -97,14 +98,17 @@ public class DeleteEvent extends ApplicationEvent {
 		}
 		DeleteEvent that = (DeleteEvent) o;
 		return Arrays.equals(getKeys(), that.getKeys())
-				&& Objects.equals(getOptionalTargetEntities(), that.getOptionalTargetEntities())
+				&& Objects.equals(getOptionalTargetEntities(),
+						that.getOptionalTargetEntities())
 				&& Objects.equals(getOptionalTargetIds(), that.getOptionalTargetIds())
-				&& Objects.equals(getOptionalTargetEntityClass(), that.getOptionalTargetEntityClass());
+				&& Objects.equals(getOptionalTargetEntityClass(),
+						that.getOptionalTargetEntityClass());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(getKeys()), getOptionalTargetEntities(), getOptionalTargetIds(),
-				getOptionalTargetEntityClass());
+		return Objects.hash(Arrays.hashCode(getKeys()), getOptionalTargetEntities(),
+				getOptionalTargetIds(), getOptionalTargetEntityClass());
 	}
+
 }

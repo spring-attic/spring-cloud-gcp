@@ -31,6 +31,7 @@ import java.util.logging.Logger;
  * @author Ray Tsang
  */
 public class GoogleDriver implements Driver {
+
 	@Override
 	public Connection connect(String url, Properties info) throws SQLException {
 		return null;
@@ -42,7 +43,8 @@ public class GoogleDriver implements Driver {
 	}
 
 	@Override
-	public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+	public DriverPropertyInfo[] getPropertyInfo(String url, Properties info)
+			throws SQLException {
 		return new DriverPropertyInfo[0];
 	}
 
@@ -65,4 +67,5 @@ public class GoogleDriver implements Driver {
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		return null;
 	}
+
 }

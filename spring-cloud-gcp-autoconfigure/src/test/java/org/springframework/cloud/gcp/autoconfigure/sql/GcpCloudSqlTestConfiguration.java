@@ -36,4 +36,5 @@ public class GcpCloudSqlTestConfiguration {
 	public CredentialsProvider googleCredentials() {
 		return () -> mock(Credentials.class);
 	}
+
 }

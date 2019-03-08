@@ -43,7 +43,6 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Dmitry Solomakha
  * @author Elena Felder
- *
  * @since 1.1
  */
 
@@ -51,6 +50,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest
 @DirtiesContext
 public class ReceiverTest {
+
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -83,9 +83,9 @@ public class ReceiverTest {
 
 		this.pubSubTemplate.publish("exampleTopic", message);
 
-		Awaitility.await()
-				.atMost(10, TimeUnit.SECONDS)
+		Awaitility.await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> baos.toString().contains(expectedString));
 		assertThat(baos.toString()).contains(expectedString);
 	}
+
 }

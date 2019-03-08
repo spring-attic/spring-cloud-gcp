@@ -25,14 +25,16 @@ import brave.http.HttpClientParser;
 /**
  * An {@link HttpClientParser} that fills information for Stackdriver Trace.
  *
- * <p>Based on {@link org.springframework.cloud.sleuth.instrument.web.SleuthHttpClientParser}.
+ * <p>
+ * Based on
+ * {@link org.springframework.cloud.sleuth.instrument.web.SleuthHttpClientParser}.
  *
  * @author Ray Tsang
  */
 public class StackdriverHttpClientParser extends HttpClientParser {
+
 	@Override
-	protected <Req> String spanName(HttpAdapter<Req, ?> adapter,
-			Req req) {
+	protected <Req> String spanName(HttpAdapter<Req, ?> adapter, Req req) {
 		URI uri = URI.create(adapter.url(req));
 		return uri.toASCIIString();
 	}
@@ -68,4 +70,5 @@ public class StackdriverHttpClientParser extends HttpClientParser {
 		}
 		error(statusCode, error, customizer);
 	}
+
 }

@@ -36,7 +36,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
  * template is not intended for the user to directly instantiate.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
@@ -90,4 +89,5 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 				"A read-write transaction is already under execution. "
 						+ "Opening sub-transactions is not supported!");
 	}
+
 }

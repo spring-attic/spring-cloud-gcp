@@ -23,6 +23,7 @@ package org.springframework.cloud.gcp.core;
  * @author Chengyuan Zhao
  */
 public enum GcpScope {
+
 	/** scope for Pub/Sub. **/
 	PUBSUB("https://www.googleapis.com/auth/pubsub"),
 
@@ -65,4 +66,5 @@ public enum GcpScope {
 	public String getUrl() {
 		return this.url;
 	}
+
 }

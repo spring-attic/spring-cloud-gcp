@@ -31,7 +31,6 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 public class SpannerReadOptions implements Serializable {
@@ -98,4 +97,5 @@ public class SpannerReadOptions implements Serializable {
 		this.allowPartialRead = allowPartialRead;
 		return this;
 	}
+
 }

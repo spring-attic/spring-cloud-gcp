@@ -40,4 +40,5 @@ public @interface Entity {
 	 * @return The Kind name of the Entity
 	 */
 	String name() default "";
+
 }

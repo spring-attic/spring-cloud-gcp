@@ -59,20 +59,25 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	/**
 	 * Set the trace and span ID fields of the log entry to the current one.
-	 * <p>The current trace ID is either the trace ID stored in the Mapped Diagnostic Context (MDC)
-	 * under the "X-B3-TraceId" key or, if none set, the current trace ID set by
+	 * <p>
+	 * The current trace ID is either the trace ID stored in the Mapped Diagnostic Context
+	 * (MDC) under the "X-B3-TraceId" key or, if none set, the current trace ID set by
 	 * {@link #setCurrentTraceId(String)}. The current span ID is retrieved from the MDC
 	 * under the "X-B3-SpanId" key, if set.
-	 * <p>The trace ID is set in the log entry in the "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]"
-	 * format, in order to be associated to traces by the Google Cloud Console.
-	 * <p>If an application is running on Google App Engine, the trace ID is also stored in the
-	 * "appengine.googleapis.com/trace_id" field, in order to enable log correlation on the logs
-	 * viewer.
+	 * <p>
+	 * The trace ID is set in the log entry in the
+	 * "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]" format, in order to be associated to
+	 * traces by the Google Cloud Console.
+	 * <p>
+	 * If an application is running on Google App Engine, the trace ID is also stored in
+	 * the "appengine.googleapis.com/trace_id" field, in order to enable log correlation
+	 * on the logs viewer.
 	 * @param builder log entry builder
 	 */
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
-		// In order not to duplicate the whole google-cloud-logging-logback LoggingAppender to add
+		// In order not to duplicate the whole google-cloud-logging-logback
+		// LoggingAppender to add
 		// the trace ID from the MDC there, we're doing it here.
 		// This requires a call to the org.slf4j package.
 		String traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
@@ -92,4 +97,5 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 			builder.setSpanId(spanId);
 		}
 	}
+
 }

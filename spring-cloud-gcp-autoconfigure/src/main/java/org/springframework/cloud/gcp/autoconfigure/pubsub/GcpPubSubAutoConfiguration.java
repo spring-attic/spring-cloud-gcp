@@ -86,15 +86,15 @@ public class GcpPubSubAutoConfiguration {
 
 	private final CredentialsProvider finalCredentialsProvider;
 
-	private final HeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
+	private final HeaderProvider headerProvider = new UserAgentHeaderProvider(
+			this.getClass());
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
 		this.gcpPubSubProperties = gcpPubSubProperties;
 		this.finalProjectIdProvider = (gcpPubSubProperties.getProjectId() != null)
-				? gcpPubSubProperties::getProjectId
-				: gcpProjectIdProvider;
+				? gcpPubSubProperties::getProjectId : gcpProjectIdProvider;
 
 		if (gcpPubSubProperties.getEmulatorHost() == null
 				|| "false".equals(gcpPubSubProperties.getEmulatorHost())) {
@@ -103,8 +103,10 @@ public class GcpPubSubAutoConfiguration {
 					: credentialsProvider;
 		}
 		else {
-			// Since we cannot create a general NoCredentialsProvider if the emulator host is enabled
-			// (because it would also be used for the other components), we have to create one here
+			// Since we cannot create a general NoCredentialsProvider if the emulator host
+			// is enabled
+			// (because it would also be used for the other components), we have to create
+			// one here
 			// for this particular case.
 			this.finalCredentialsProvider = NoCredentialsProvider.create();
 		}
@@ -114,7 +116,8 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "pubsubPublisherThreadPool")
 	public ThreadPoolTaskScheduler pubsubPublisherThreadPool() {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-		scheduler.setPoolSize(this.gcpPubSubProperties.getPublisher().getExecutorThreads());
+		scheduler.setPoolSize(
+				this.gcpPubSubProperties.getPublisher().getExecutorThreads());
 		scheduler.setThreadNamePrefix("gcp-pubsub-publisher");
 		return scheduler;
 	}
@@ -130,7 +133,8 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "pubsubSubscriberThreadPool")
 	public ThreadPoolTaskScheduler pubsubSubscriberThreadPool() {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-		scheduler.setPoolSize(this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
+		scheduler.setPoolSize(
+				this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
 		scheduler.setThreadNamePrefix("gcp-pubsub-subscriber");
 		return scheduler;
 	}
@@ -144,9 +148,11 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubPublisherTemplate pubSubPublisherTemplate(PublisherFactory publisherFactory,
+	public PubSubPublisherTemplate pubSubPublisherTemplate(
+			PublisherFactory publisherFactory,
 			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
-		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(publisherFactory);
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(
+				publisherFactory);
 		pubSubMessageConverter.ifUnique(pubSubPublisherTemplate::setMessageConverter);
 		return pubSubPublisherTemplate;
 	}
@@ -155,17 +161,20 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "pubSubAcknowledgementExecutor")
 	public Executor pubSubAcknowledgementExecutor() {
 		ThreadPoolTaskExecutor ackExecutor = new ThreadPoolTaskExecutor();
-		ackExecutor.setMaxPoolSize(this.gcpPubSubProperties.getSubscriber().getMaxAcknowledgementThreads());
+		ackExecutor.setMaxPoolSize(
+				this.gcpPubSubProperties.getSubscriber().getMaxAcknowledgementThreads());
 		ackExecutor.setThreadNamePrefix("gcp-pubsub-ack-executor");
 		return ackExecutor;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory,
+	public PubSubSubscriberTemplate pubSubSubscriberTemplate(
+			SubscriberFactory subscriberFactory,
 			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter,
 			@Qualifier("pubSubAcknowledgementExecutor") Executor executor) {
-		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
+		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(
+				subscriberFactory);
 		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
 		pubSubSubscriberTemplate.setAckExecutor(executor);
 		return pubSubSubscriberTemplate;
@@ -195,26 +204,29 @@ public class GcpPubSubAutoConfiguration {
 			GcpPubSubProperties.FlowControl flowControl) {
 		FlowControlSettings.Builder builder = FlowControlSettings.newBuilder();
 
-		return ifNotNull(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior)
-				.apply(ifNotNull(flowControl.getMaxOutstandingElementCount(),
-						builder::setMaxOutstandingElementCount)
-				.apply(ifNotNull(flowControl.getMaxOutstandingRequestBytes(),
-						builder::setMaxOutstandingRequestBytes)
-				.apply(false))) ? builder.build() : null;
+		return ifNotNull(flowControl.getLimitExceededBehavior(),
+				builder::setLimitExceededBehavior)
+						.apply(ifNotNull(flowControl.getMaxOutstandingElementCount(),
+								builder::setMaxOutstandingElementCount)
+										.apply(ifNotNull(
+												flowControl
+														.getMaxOutstandingRequestBytes(),
+												builder::setMaxOutstandingRequestBytes)
+														.apply(false))) ? builder.build()
+																: null;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("subscriberSystemExecutorProvider")
-			ObjectProvider<ExecutorProvider> systemExecutorProvider,
-			@Qualifier("subscriberFlowControlSettings")
-					ObjectProvider<FlowControlSettings> flowControlSettings,
+			@Qualifier("subscriberSystemExecutorProvider") ObjectProvider<ExecutorProvider> systemExecutorProvider,
+			@Qualifier("subscriberFlowControlSettings") ObjectProvider<FlowControlSettings> flowControlSettings,
 			@Qualifier("subscriberApiClock") ObjectProvider<ApiClock> apiClock,
 			@Qualifier("subscriberRetrySettings") ObjectProvider<RetrySettings> retrySettings,
 			TransportChannelProvider transportChannelProvider) {
-		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(
+				this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
@@ -231,8 +243,7 @@ public class GcpPubSubAutoConfiguration {
 			factory.setParallelPullCount(
 					this.gcpPubSubProperties.getSubscriber().getParallelPullCount());
 		}
-		if (this.gcpPubSubProperties.getSubscriber()
-				.getPullEndpoint() != null) {
+		if (this.gcpPubSubProperties.getSubscriber().getPullEndpoint() != null) {
 			factory.setPullEndpoint(
 					this.gcpPubSubProperties.getSubscriber().getPullEndpoint());
 		}
@@ -247,17 +258,22 @@ public class GcpPubSubAutoConfiguration {
 		GcpPubSubProperties.Batching batching = this.gcpPubSubProperties.getPublisher()
 				.getBatching();
 
-		FlowControlSettings flowControlSettings = buildFlowControlSettings(batching.getFlowControl());
+		FlowControlSettings flowControlSettings = buildFlowControlSettings(
+				batching.getFlowControl());
 		if (flowControlSettings != null) {
 			builder.setFlowControlSettings(flowControlSettings);
 		}
 
-		return ifNotNull(batching.getDelayThresholdSeconds(),
-					(x) -> builder.setDelayThreshold(Duration.ofSeconds(x)))
-				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
-				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
-				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
-				.apply(false)))) ? builder.build() : null;
+		return ifNotNull(batching.getDelayThresholdSeconds(), (x) -> builder
+				.setDelayThreshold(Duration.ofSeconds(x))).apply(ifNotNull(
+						batching.getElementCountThreshold(),
+						builder::setElementCountThreshold).apply(
+								ifNotNull(batching.getEnabled(), builder::setIsEnabled)
+										.apply(ifNotNull(
+												batching.getRequestByteThreshold(),
+												builder::setRequestByteThreshold)
+														.apply(false)))) ? builder.build()
+																: null;
 	}
 
 	@Bean
@@ -269,31 +285,57 @@ public class GcpPubSubAutoConfiguration {
 	private RetrySettings buildRetrySettings(GcpPubSubProperties.Retry retryProperties) {
 		Builder builder = RetrySettings.newBuilder();
 
-		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
-				(x) -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
+		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(), (x) -> builder
+				.setInitialRetryDelay(Duration.ofSeconds(x))).apply(ifNotNull(
+						retryProperties.getInitialRpcTimeoutSeconds(),
 						(x) -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
-				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
-				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
-						(x) -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
-						(x) -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
-				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
-						(x) -> builder.setTotalTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
-				.apply(false))))))))) ? builder.build() : null;
+								.apply(ifNotNull(retryProperties.getJittered(),
+										builder::setJittered)
+												.apply(ifNotNull(
+														retryProperties.getMaxAttempts(),
+														builder::setMaxAttempts).apply(
+																ifNotNull(retryProperties
+																		.getMaxRetryDelaySeconds(),
+																		(x) -> builder
+																				.setMaxRetryDelay(
+																						Duration.ofSeconds(
+																								x))).apply(
+																										ifNotNull(
+																												retryProperties
+																														.getMaxRpcTimeoutSeconds(),
+																												(x) -> builder
+																														.setMaxRpcTimeout(
+																																Duration.ofSeconds(
+																																		x))).apply(
+																																				ifNotNull(
+																																						retryProperties
+																																								.getRetryDelayMultiplier(),
+																																						builder::setRetryDelayMultiplier)
+																																								.apply(ifNotNull(
+																																										retryProperties
+																																												.getTotalTimeoutSeconds(),
+																																										(x) -> builder
+																																												.setTotalTimeout(
+																																														Duration.ofSeconds(
+																																																x))).apply(
+																																																		ifNotNull(
+																																																				retryProperties
+																																																						.getRpcTimeoutMultiplier(),
+																																																				builder::setRpcTimeoutMultiplier)
+																																																						.apply(false)))))))))
+																																																								? builder
+																																																										.build()
+																																																								: null;
 	}
 
 	/**
-	 * A helper method for applying properties to settings builders for purpose of seeing if at least
-	 * one setting was set.
+	 * A helper method for applying properties to settings builders for purpose of seeing
+	 * if at least one setting was set.
 	 * @param prop the property on which to operate
 	 * @param consumer the function to give the property
 	 * @param <T> the type of the property
-	 * @return a function that accepts a boolean of if there is a next property and returns a boolean indicating if the
-	 * propety was set
+	 * @return a function that accepts a boolean of if there is a next property and
+	 * returns a boolean indicating if the propety was set
 	 */
 	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
 		return (next) -> {
@@ -313,7 +355,8 @@ public class GcpPubSubAutoConfiguration {
 			@Qualifier("publisherBatchSettings") ObjectProvider<BatchingSettings> batchingSettings,
 			@Qualifier("publisherRetrySettings") ObjectProvider<RetrySettings> retrySettings,
 			TransportChannelProvider transportChannelProvider) {
-		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
+		DefaultPublisherFactory factory = new DefaultPublisherFactory(
+				this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
@@ -333,13 +376,13 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TopicAdminClient topicAdminClient(
-			TopicAdminSettings topicAdminSettings) {
+	public TopicAdminClient topicAdminClient(TopicAdminSettings topicAdminSettings) {
 		try {
 			return TopicAdminClient.create(topicAdminSettings);
 		}
 		catch (IOException ioe) {
-			throw new PubSubException("An error occurred while creating TopicAdminClient.", ioe);
+			throw new PubSubException(
+					"An error occurred while creating TopicAdminClient.", ioe);
 		}
 	}
 
@@ -351,11 +394,11 @@ public class GcpPubSubAutoConfiguration {
 			return TopicAdminSettings.newBuilder()
 					.setCredentialsProvider(this.finalCredentialsProvider)
 					.setHeaderProvider(this.headerProvider)
-					.setTransportChannelProvider(transportChannelProvider)
-					.build();
+					.setTransportChannelProvider(transportChannelProvider).build();
 		}
 		catch (IOException ioe) {
-			throw new PubSubException("An error occurred while creating TopicAdminSettings.", ioe);
+			throw new PubSubException(
+					"An error occurred while creating TopicAdminSettings.", ioe);
 		}
 	}
 
@@ -364,15 +407,14 @@ public class GcpPubSubAutoConfiguration {
 	public SubscriptionAdminClient subscriptionAdminClient(
 			TransportChannelProvider transportChannelProvider) {
 		try {
-			return SubscriptionAdminClient.create(
-					SubscriptionAdminSettings.newBuilder()
-							.setCredentialsProvider(this.finalCredentialsProvider)
-							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider)
-							.build());
+			return SubscriptionAdminClient.create(SubscriptionAdminSettings.newBuilder()
+					.setCredentialsProvider(this.finalCredentialsProvider)
+					.setHeaderProvider(this.headerProvider)
+					.setTransportChannelProvider(transportChannelProvider).build());
 		}
 		catch (IOException ioe) {
-			throw new PubSubException("An error occurred while creating SubscriptionAdminClient.", ioe);
+			throw new PubSubException(
+					"An error occurred while creating SubscriptionAdminClient.", ioe);
 		}
 	}
 
@@ -381,4 +423,5 @@ public class GcpPubSubAutoConfiguration {
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
 	}
+
 }

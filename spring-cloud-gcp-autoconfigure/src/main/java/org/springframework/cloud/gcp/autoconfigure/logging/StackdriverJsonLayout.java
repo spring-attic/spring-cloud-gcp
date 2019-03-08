@@ -43,10 +43,10 @@ import org.springframework.util.StringUtils;
  */
 public class StackdriverJsonLayout extends JsonLayout {
 
-	private static final Set<String> FILTERED_MDC_FIELDS = new HashSet<>(Arrays.asList(
-			StackdriverTraceConstants.MDC_FIELD_TRACE_ID,
-			StackdriverTraceConstants.MDC_FIELD_SPAN_ID,
-			StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
+	private static final Set<String> FILTERED_MDC_FIELDS = new HashSet<>(
+			Arrays.asList(StackdriverTraceConstants.MDC_FIELD_TRACE_ID,
+					StackdriverTraceConstants.MDC_FIELD_SPAN_ID,
+					StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
 
 	private String projectId;
 
@@ -127,7 +127,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 	/**
 	 * set whether the exception is included in the message.
-	 * @param includeExceptionInMessage true if the exception should be added to the message
+	 * @param includeExceptionInMessage true if the exception should be added to the
+	 * message
 	 */
 	public void setIncludeExceptionInMessage(boolean includeExceptionInMessage) {
 		this.includeExceptionInMessage = includeExceptionInMessage;
@@ -137,8 +138,10 @@ public class StackdriverJsonLayout extends JsonLayout {
 	public void start() {
 		super.start();
 
-		// If no Project ID set, then attempt to resolve it with the default project ID provider
-		if (StringUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
+		// If no Project ID set, then attempt to resolve it with the default project ID
+		// provider
+		if (StringUtils.isEmpty(this.projectId)
+				|| this.projectId.endsWith("_IS_UNDEFINED")) {
 			GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
 			this.projectId = projectIdProvider.getProjectId();
 		}
@@ -170,8 +173,10 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 		add(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, this.includeLevel,
 				String.valueOf(event.getLevel()), map);
-		add(JsonLayout.THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
-		add(JsonLayout.LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
+		add(JsonLayout.THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(),
+				map);
+		add(JsonLayout.LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(),
+				map);
 
 		if (this.includeFormattedMessage) {
 			String message = event.getFormattedMessage();
@@ -187,18 +192,22 @@ public class StackdriverJsonLayout extends JsonLayout {
 			map.put(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, message);
 		}
 		add(JsonLayout.MESSAGE_ATTR_NAME, this.includeMessage, event.getMessage(), map);
-		add(JsonLayout.CONTEXT_ATTR_NAME, this.includeContextName, event.getLoggerContextVO().getName(), map);
-		addThrowableInfo(JsonLayout.EXCEPTION_ATTR_NAME, this.includeException, event, map);
+		add(JsonLayout.CONTEXT_ATTR_NAME, this.includeContextName,
+				event.getLoggerContextVO().getName(), map);
+		addThrowableInfo(JsonLayout.EXCEPTION_ATTR_NAME, this.includeException, event,
+				map);
 		addTraceId(event, map);
-		add(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, this.includeSpanId,
-				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID), map);
+		add(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, this.includeSpanId, event
+				.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID),
+				map);
 		addCustomDataToJsonMap(map, event);
 		return map;
 	}
 
 	protected String formatTraceId(final String traceId) {
 		// Trace IDs are either 64-bit or 128-bit, which is 16-digit hex, or 32-digit hex.
-		// If traceId is 64-bit (16-digit hex), then we need to prepend 0's to make a 32-digit hex.
+		// If traceId is 64-bit (16-digit hex), then we need to prepend 0's to make a
+		// 32-digit hex.
 		if (traceId != null && traceId.length() == 16) {
 			return "0000000000000000" + traceId;
 		}
@@ -210,18 +219,19 @@ public class StackdriverJsonLayout extends JsonLayout {
 			return;
 		}
 
-		String traceId =
-				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+		String traceId = event.getMDCPropertyMap()
+				.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
 		if (traceId == null) {
 			traceId = TraceIdLoggingEnhancer.getCurrentTraceId();
 		}
-		if (!StringUtils.isEmpty(traceId)
-				&& !StringUtils.isEmpty(this.projectId)
+		if (!StringUtils.isEmpty(traceId) && !StringUtils.isEmpty(this.projectId)
 				&& !this.projectId.endsWith("_IS_UNDEFINED")) {
-			traceId = StackdriverTraceConstants.composeFullTraceName(
-					this.projectId, formatTraceId(traceId));
+			traceId = StackdriverTraceConstants.composeFullTraceName(this.projectId,
+					formatTraceId(traceId));
 		}
 
-		add(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);
+		add(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId,
+				map);
 	}
+
 }

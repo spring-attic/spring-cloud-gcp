@@ -53,8 +53,8 @@ public class PubSubBinderConfiguration {
 			PubSubTemplate pubSubTemplate,
 			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
 
-		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate,
-				pubSubExtendedBindingProperties);
+		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner,
+				pubSubTemplate, pubSubExtendedBindingProperties);
 	}
 
 	@Bean
@@ -63,4 +63,5 @@ public class PubSubBinderConfiguration {
 				ConfigurationPropertyName.of("spring.cloud.stream.gcp.pubsub.bindings"),
 				ConfigurationPropertyName.of("spring.cloud.stream.gcp.pubsub.default"));
 	}
+
 }

@@ -96,7 +96,8 @@ public class PubSubHeaderMapperTests {
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
 
 		assertThat(internalHeaders.size()).isEqualTo(1);
-		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP)).isEqualTo(headerValue);
+		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP))
+				.isEqualTo(headerValue);
 		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
 	}
 
@@ -117,4 +118,5 @@ public class PubSubHeaderMapperTests {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		mapper.setInboundHeaderPatterns(new String[1]);
 	}
+
 }

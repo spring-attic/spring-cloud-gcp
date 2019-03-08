@@ -65,7 +65,8 @@ public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 
 	@Override
 	public String getPermissions() {
-		throw new UnsupportedOperationException("Use [BlobInfo.getAcl()] to obtain permissions.");
+		throw new UnsupportedOperationException(
+				"Use [BlobInfo.getAcl()] to obtain permissions.");
 	}
 
 	@Override
@@ -76,8 +77,9 @@ public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 	@Override
 	public String toString() {
 		return "FileInfo [isDirectory=" + isDirectory() + ", isLink=" + isLink()
-				+ ", Size=" + getSize() + ", ModifiedTime="
-				+ new Date(getModified()) + ", Filename=" + getFilename()
-				+ ", RemoteDirectory=" + getRemoteDirectory() + "]";
+				+ ", Size=" + getSize() + ", ModifiedTime=" + new Date(getModified())
+				+ ", Filename=" + getFilename() + ", RemoteDirectory="
+				+ getRemoteDirectory() + "]";
 	}
+
 }

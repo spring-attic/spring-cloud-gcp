@@ -43,9 +43,7 @@ public class SimplePubSubMessageConverterTests {
 	private static final String TEST_STRING = "test";
 
 	private static final Map<String, String> TEST_HEADERS = new MapBuilder<String, String>()
-			.put("key1", "value1")
-			.put("key2", "value2")
-			.build();
+			.put("key1", "value1").put("key2", "value2").build();
 
 	/**
 	 * used to test exception messages and types.
@@ -93,12 +91,11 @@ public class SimplePubSubMessageConverterTests {
 		doFromTest(ByteBuffer.wrap(TEST_STRING.getBytes()));
 	}
 
-
 	@Test
 	public void testToUnknown() {
 		this.expectedException.expect(PubSubMessageConversionException.class);
-		this.expectedException.expectMessage("Unable to convert Pub/Sub message to " +
-				"payload of type java.lang.Integer.");
+		this.expectedException.expectMessage("Unable to convert Pub/Sub message to "
+				+ "payload of type java.lang.Integer.");
 		doToTestForType(Integer.class, (a) -> toString());
 
 	}
@@ -106,8 +103,9 @@ public class SimplePubSubMessageConverterTests {
 	@Test
 	public void testFromUnknown() {
 		this.expectedException.expect(PubSubMessageConversionException.class);
-		this.expectedException.expectMessage("Unable to convert payload of type java.lang.Class " +
-				"to byte[] for sending to Pub/Sub.");
+		this.expectedException
+				.expectMessage("Unable to convert payload of type java.lang.Class "
+						+ "to byte[] for sending to Pub/Sub.");
 		doFromTest(Integer.class);
 	}
 
@@ -116,7 +114,8 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 		PubsubMessage pubsubMessage = converter.toPubSubMessage(TEST_STRING, null);
 
-		assertThat(pubsubMessage.getData().toString(Charset.defaultCharset())).isEqualTo(TEST_STRING);
+		assertThat(pubsubMessage.getData().toString(Charset.defaultCharset()))
+				.isEqualTo(TEST_STRING);
 		assertThat(pubsubMessage.getAttributesMap()).isEqualTo(new HashMap<>());
 	}
 
@@ -125,13 +124,10 @@ public class SimplePubSubMessageConverterTests {
 
 		// test extraction from PubsubMessage to T
 
-		String extractedMessage = toString.convert(
-				(T) converter.fromPubSubMessage(
-						PubsubMessage.newBuilder()
-								.setData(ByteString.copyFrom(TEST_STRING.getBytes()))
-								.putAllAttributes(TEST_HEADERS)
-								.build(),
-						type));
+		String extractedMessage = toString
+				.convert((T) converter.fromPubSubMessage(PubsubMessage.newBuilder()
+						.setData(ByteString.copyFrom(TEST_STRING.getBytes()))
+						.putAllAttributes(TEST_HEADERS).build(), type));
 
 		assertThat(extractedMessage).isEqualTo(TEST_STRING);
 	}
@@ -140,8 +136,11 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 
 		// test conversion of T to PubsubMessage
-		PubsubMessage convertedPubSubMessage = converter.toPubSubMessage(value, TEST_HEADERS);
-		assertThat(new String(convertedPubSubMessage.getData().toByteArray())).isEqualTo(TEST_STRING);
+		PubsubMessage convertedPubSubMessage = converter.toPubSubMessage(value,
+				TEST_HEADERS);
+		assertThat(new String(convertedPubSubMessage.getData().toByteArray()))
+				.isEqualTo(TEST_STRING);
 		assertThat(convertedPubSubMessage.getAttributesMap()).isEqualTo(TEST_HEADERS);
 	}
+
 }

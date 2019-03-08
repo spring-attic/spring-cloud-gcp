@@ -28,7 +28,8 @@ import org.springframework.integration.file.filters.AbstractRegexPatternFileList
  * @author João André Martins
  * @author Chengyuan Zhao
  */
-public class GcsRegexPatternFileListFilter extends AbstractRegexPatternFileListFilter<BlobInfo> {
+public class GcsRegexPatternFileListFilter
+		extends AbstractRegexPatternFileListFilter<BlobInfo> {
 
 	public GcsRegexPatternFileListFilter(String pattern) {
 		super(pattern);
@@ -47,4 +48,5 @@ public class GcsRegexPatternFileListFilter extends AbstractRegexPatternFileListF
 	protected boolean isDirectory(BlobInfo blobInfo) {
 		return blobInfo.isDirectory();
 	}
+
 }

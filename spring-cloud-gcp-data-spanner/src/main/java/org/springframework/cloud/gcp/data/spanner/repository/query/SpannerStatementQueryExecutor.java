@@ -50,7 +50,6 @@ import org.springframework.data.util.Pair;
  * @author Chengyuan Zhao
  * @author Balint Pato
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 public final class SpannerStatementQueryExecutor {
@@ -73,9 +72,13 @@ public final class SpannerStatementQueryExecutor {
 			SpannerMappingContext spannerMappingContext) {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
-		return spannerTemplate.query(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
-				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params), null);
+		return spannerTemplate
+				.query(type,
+						buildStatementFromSqlWithArgs(sqlAndTags.getFirst(),
+								sqlAndTags.getSecond(), null, spannerTemplate
+										.getSpannerEntityProcessor().getWriteConverter(),
+								params),
+						null);
 	}
 
 	/**
@@ -96,9 +99,13 @@ public final class SpannerStatementQueryExecutor {
 			SpannerMappingContext spannerMappingContext) {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
-		return spannerTemplate.query(rowFunc, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
-				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params), null);
+		return spannerTemplate
+				.query(rowFunc,
+						buildStatementFromSqlWithArgs(sqlAndTags.getFirst(),
+								sqlAndTags.getSecond(), null, spannerTemplate
+										.getSpannerEntityProcessor().getWriteConverter(),
+								params),
+						null);
 	}
 
 	/**
@@ -106,8 +113,8 @@ public final class SpannerStatementQueryExecutor {
 	 * @param entityClass the domain type whose table is being queried.
 	 * @param options query options containing the sorting and paging options
 	 * @param sql the sql that will be wrapped with sorting and paging options.
-	 * @param mappingContext a mapping context to convert between Cloud Spanner column names
-	 *     and underlying property names.
+	 * @param mappingContext a mapping context to convert between Cloud Spanner column
+	 * names and underlying property names.
 	 * @param <T> the domain type.
 	 * @return the final SQL string with paging and sorting applied.
 	 */
@@ -120,7 +127,8 @@ public final class SpannerStatementQueryExecutor {
 				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
-					return (property != null) ? property.getColumnName() : o.getProperty();
+					return (property != null) ? property.getColumnName()
+							: o.getProperty();
 				});
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
@@ -160,8 +168,8 @@ public final class SpannerStatementQueryExecutor {
 			keyParts.add(parentKeyParts.next());
 			tagNum++;
 		}
-		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, null,
-				keyParts.toArray());
+		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null,
+				null, keyParts.toArray());
 	}
 
 	/**
@@ -169,20 +177,20 @@ public final class SpannerStatementQueryExecutor {
 	 * @param sql the SQL string with tags.
 	 * @param tags the tags that appear in the SQL string.
 	 * @param paramStructConvertFunc a function to use to convert params to {@link Struct}
-	 *     objects if they cannot be directly mapped to Cloud Spanner supported param types.
-	 *     If null then this last-attempt conversion is skipped.
+	 * objects if they cannot be directly mapped to Cloud Spanner supported param types.
+	 * If null then this last-attempt conversion is skipped.
 	 * @param spannerCustomConverter a converter used to convert params that aren't Cloud
-	 *     Spanner native types. if {@code null} then this conversion is not attempted.
-	 * @param params the parameters to substitute the tags. The ordering must be the same as
-	 *     the tags.
+	 * Spanner native types. if {@code null} then this conversion is not attempted.
+	 * @param params the parameters to substitute the tags. The ordering must be the same
+	 * as the tags.
 	 * @return an SQL statement ready to use with Spanner.
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
-	 *     params, or if a param of an unsupported type is given.
+	 * params, or if a param of an unsupported type is given.
 	 */
 	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
-			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
-			Object[] params) {
+			Function<Object, Struct> paramStructConvertFunc,
+			SpannerCustomConverter spannerCustomConverter, Object[] params) {
 		if (tags == null && params == null) {
 			return Statement.of(sql);
 		}
@@ -192,15 +200,15 @@ public final class SpannerStatementQueryExecutor {
 		}
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
-			bindParameter(builder.bind(tags.get(i)), paramStructConvertFunc, spannerCustomConverter,
-					params[i]);
+			bindParameter(builder.bind(tags.get(i)), paramStructConvertFunc,
+					spannerCustomConverter, params[i]);
 		}
 		return builder.build();
 	}
 
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
-			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
-			Object originalParam) {
+			Function<Object, Struct> paramStructConvertFunc,
+			SpannerCustomConverter spannerCustomConverter, Object originalParam) {
 		Object param = originalParam;
 		BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(
 				param);
@@ -208,10 +216,12 @@ public final class SpannerStatementQueryExecutor {
 		if (toMethod == null && spannerCustomConverter != null) {
 			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
 					.findFirstCompatibleSpannerSingleItemNativeType(
-							(type) -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
+							(type) -> spannerCustomConverter
+									.canConvert(originalParam.getClass(), type));
 			if (compatible != null) {
 				param = spannerCustomConverter.convert(originalParam, compatible);
-				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
+				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(
+						param);
 			}
 		}
 		// could not be converted, attempting to use it as a struct
@@ -221,8 +231,7 @@ public final class SpannerStatementQueryExecutor {
 						+ " is not a supported type: " + param.getClass());
 			}
 			try {
-				toMethod = (BiFunction<ValueBinder, Object, ?>)
-					ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+				toMethod = (BiFunction<ValueBinder, Object, ?>) ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
 						.get(Struct.class);
 				param = paramStructConvertFunc.apply(param);
 			}
@@ -231,7 +240,8 @@ public final class SpannerStatementQueryExecutor {
 						+ " is not a supported type: " + param.getClass(), ex);
 			}
 		}
-		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set
+		Object unused = toMethod.apply(bind, param); // NOSONAR compiler rule requires
+														// this to be set
 	}
 
 	public static String getColumnsStringForSelect(
@@ -241,16 +251,17 @@ public final class SpannerStatementQueryExecutor {
 
 	private static BiFunction<ValueBinder, ?, ?> getValueBinderBiFunction(Object param) {
 		if (Struct.class.isAssignableFrom(param.getClass())) {
-			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(Struct.class);
+			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+					.get(Struct.class);
 		}
 		else if (param.getClass().isEnum()) {
 			return (binder,
-					value) -> ((BiFunction<ValueBinder, String, ?>)
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+					value) -> ((BiFunction<ValueBinder, String, ?>) ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
 							.get(String.class)).apply(binder, value.toString());
 		}
 		else {
-			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(param.getClass());
+			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+					.get(param.getClass());
 		}
 	}
 
@@ -419,4 +430,5 @@ public final class SpannerStatementQueryExecutor {
 			stringBuilder.append(" LIMIT " + tree.getMaxResults());
 		}
 	}
+
 }

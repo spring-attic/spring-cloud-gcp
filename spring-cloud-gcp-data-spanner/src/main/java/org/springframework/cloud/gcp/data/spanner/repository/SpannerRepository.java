@@ -26,17 +26,15 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @param <T> the entity type of the repository
  * @param <ID> the id type of the entity
- *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
 
 	/**
-	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Cloud Spanner
-	 * functions.
+	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Cloud
+	 * Spanner functions.
 	 * @return the operations object providing Cloud Spanner functions.
 	 */
 	SpannerOperations getSpannerTemplate();
@@ -58,4 +56,5 @@ public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, 
 	 * @return the final result of the transaction.
 	 */
 	<A> A performReadOnlyTransaction(Function<SpannerRepository<T, ID>, A> operations);
+
 }

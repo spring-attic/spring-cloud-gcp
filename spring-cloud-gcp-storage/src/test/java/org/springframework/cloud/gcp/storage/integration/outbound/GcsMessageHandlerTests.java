@@ -80,16 +80,19 @@ public class GcsMessageHandlerTests {
 	public void testNewFiles() throws IOException {
 		File testFile = this.temporaryFolder.newFile("benfica");
 
-		BlobInfo expectedCreateBlobInfo =
-				BlobInfo.newBuilder(BlobId.of("testGcsBucket", "benfica.writing")).build();
+		BlobInfo expectedCreateBlobInfo = BlobInfo
+				.newBuilder(BlobId.of("testGcsBucket", "benfica.writing")).build();
 		WriteChannel writeChannel = mock(WriteChannel.class);
 		willAnswer((invocationOnMock) -> writeChannel).given(GCS)
 				.writer(eq(expectedCreateBlobInfo));
-		willAnswer((invocationOnMock) -> 10).given(writeChannel).write(isA(ByteBuffer.class));
+		willAnswer((invocationOnMock) -> 10).given(writeChannel)
+				.write(isA(ByteBuffer.class));
 
 		CopyWriter copyWriter = mock(CopyWriter.class);
-		ArgumentCaptor<Storage.CopyRequest> copyRequestCaptor = ArgumentCaptor.forClass(Storage.CopyRequest.class);
-		willAnswer((invocationOnMock) -> copyWriter).given(GCS).copy(isA(Storage.CopyRequest.class));
+		ArgumentCaptor<Storage.CopyRequest> copyRequestCaptor = ArgumentCaptor
+				.forClass(Storage.CopyRequest.class);
+		willAnswer((invocationOnMock) -> copyWriter).given(GCS)
+				.copy(isA(Storage.CopyRequest.class));
 
 		willAnswer((invocationOnMock) -> true).given(GCS)
 				.delete(eq(BlobId.of("testGcsBucket", "benfica.writing")));
@@ -101,8 +104,10 @@ public class GcsMessageHandlerTests {
 		verify(GCS, times(1)).delete(eq(BlobId.of("testGcsBucket", "benfica.writing")));
 
 		Storage.CopyRequest expectedCopyRequest = copyRequestCaptor.getValue();
-		assertThat(expectedCopyRequest.getSource()).isEqualTo(BlobId.of("testGcsBucket", "benfica.writing"));
-		assertThat(expectedCopyRequest.getTarget().getBlobId()).isEqualTo(BlobId.of("testGcsBucket", "benfica"));
+		assertThat(expectedCopyRequest.getSource())
+				.isEqualTo(BlobId.of("testGcsBucket", "benfica.writing"));
+		assertThat(expectedCopyRequest.getTarget().getBlobId())
+				.isEqualTo(BlobId.of("testGcsBucket", "benfica"));
 	}
 
 	/**
@@ -132,5 +137,7 @@ public class GcsMessageHandlerTests {
 		public MessageChannel siGcsTestChannel() {
 			return new DirectChannel();
 		}
+
 	}
+
 }

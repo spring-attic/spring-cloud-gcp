@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SpannerRepositoryExample {
+
 	private static final Log LOGGER = LogFactory.getLog(SpannerRepositoryExample.class);
 
 	@Autowired
@@ -59,22 +60,22 @@ public class SpannerRepositoryExample {
 		this.traderRepository.save(new Trader("demo_trader2", "Mary", "Jane"));
 		this.traderRepository.save(new Trader("demo_trader3", "Scott", "Smith"));
 
-		this.tradeRepository
-				.save(new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("2", "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("3", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("1", "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("2", "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("3", "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("1", "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
-		this.tradeRepository
-				.save(new Trade("2", "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("1", "BUY", 100.0, 50.0, "STOCK1",
+				"demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("2", "BUY", 105.0, 60.0, "STOCK2",
+				"demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("3", "BUY", 100.0, 50.0, "STOCK1",
+				"demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("1", "BUY", 100.0, 70.0, "STOCK2",
+				"demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("2", "BUY", 103.0, 50.0, "STOCK1",
+				"demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("3", "SELL", 100.0, 52.0, "STOCK2",
+				"demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("1", "SELL", 98.0, 50.0, "STOCK1",
+				"demo_trader3", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository.save(new Trade("2", "SELL", 110.0, 50.0, "STOCK2",
+				"demo_trader3", Arrays.asList(99.0, 101.00)));
 
 		LOGGER.info("The table for trades has been cleared and "
 				+ this.tradeRepository.count() + " new trades have been inserted:");
@@ -92,7 +93,8 @@ public class SpannerRepositoryExample {
 			LOGGER.info(key);
 		}
 
-		LOGGER.info("There are " + this.tradeRepository.countByAction("BUY") + " BUY trades:");
+		LOGGER.info("There are " + this.tradeRepository.countByAction("BUY")
+				+ " BUY trades:");
 		for (Trade t : this.tradeRepository.findByAction("BUY")) {
 			LOGGER.info(t);
 		}
@@ -101,8 +103,7 @@ public class SpannerRepositoryExample {
 		LOGGER.info(this.tradeRepository.getAnyOneTrade());
 
 		LOGGER.info("A query method can also select properties in entities:");
-		this.tradeRepository.getTradeIds("BUY").stream()
-				.forEach((x) -> LOGGER.info(x));
+		this.tradeRepository.getTradeIds("BUY").stream().forEach((x) -> LOGGER.info(x));
 
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}
@@ -120,4 +121,5 @@ public class SpannerRepositoryExample {
 					this.spannerSchemaUtils.getCreateTableDdlString(Trader.class)), true);
 		}
 	}
+
 }

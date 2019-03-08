@@ -38,7 +38,8 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 /**
  * Outbound channel adapter to publish messages to Google Cloud Pub/Sub.
  *
- * <p>It delegates Google Cloud Pub/Sub interaction to
+ * <p>
+ * It delegates Google Cloud Pub/Sub interaction to
  * {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate}.
  *
  * @author João André Martins
@@ -56,14 +57,17 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private EvaluationContext evaluationContext;
 
-	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
+	private Expression publishTimeoutExpression = new ValueExpression<>(
+			DEFAULT_PUBLISH_TIMEOUT);
 
 	private ListenableFutureCallback<String> publishCallback;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	public PubSubMessageHandler(PubSubPublisherOperations pubSubPublisherOperations, String topic) {
-		Assert.notNull(pubSubPublisherOperations, "Pub/Sub publisher template can't be null.");
+	public PubSubMessageHandler(PubSubPublisherOperations pubSubPublisherOperations,
+			String topic) {
+		Assert.notNull(pubSubPublisherOperations,
+				"Pub/Sub publisher template can't be null.");
 		Assert.hasText(topic, "Pub/Sub topic can't be null or empty.");
 
 		this.pubSubPublisherOperations = pubSubPublisherOperations;
@@ -77,7 +81,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set publish method to be synchronous or asynchronous.
 	 *
-	 * <p>Publish is asynchronous be default.
+	 * <p>
+	 * Publish is asynchronous be default.
 	 * @param sync true for synchronous, false for asynchronous
 	 */
 	public void setSync(boolean sync) {
@@ -89,29 +94,33 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	/**
-	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
-	 * to Google Cloud Pub/Sub.
+	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous
+	 * publish call to Google Cloud Pub/Sub.
 	 * @param publishTimeoutExpression the {@link Expression} for the publish timeout in
-	 *                                 milliseconds
+	 * milliseconds
 	 */
 	public void setPublishTimeoutExpression(Expression publishTimeoutExpression) {
-		Assert.notNull(publishTimeoutExpression, "Publish timeout expression can't be null.");
+		Assert.notNull(publishTimeoutExpression,
+				"Publish timeout expression can't be null.");
 		this.publishTimeoutExpression = publishTimeoutExpression;
 	}
 
 	/**
-	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
-	 * to Google Cloud Pub/Sub from a string.
-	 * @param publishTimeoutExpression a string with an expression for the publish timeout in
-	 *                                milliseconds
+	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous
+	 * publish call to Google Cloud Pub/Sub from a string.
+	 * @param publishTimeoutExpression a string with an expression for the publish timeout
+	 * in milliseconds
 	 */
 	public void setPublishTimeoutExpressionString(String publishTimeoutExpression) {
-		Assert.notNull(publishTimeoutExpression, "Publish timeout expression can't be null.");
-		setPublishTimeoutExpression(EXPRESSION_PARSER.parseExpression(publishTimeoutExpression));
+		Assert.notNull(publishTimeoutExpression,
+				"Publish timeout expression can't be null.");
+		setPublishTimeoutExpression(
+				EXPRESSION_PARSER.parseExpression(publishTimeoutExpression));
 	}
 
 	/**
-	 * Set the timeout in milliseconds for a synchronous publish call to Google Cloud Pub/Sub.
+	 * Set the timeout in milliseconds for a synchronous publish call to Google Cloud
+	 * Pub/Sub.
 	 * @param timeoutMillis timeout in milliseconds
 	 */
 	public void setPublishTimeout(long timeoutMillis) {
@@ -156,7 +165,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 * @param topicExpressionString topic expression string
 	 */
 	public void setTopicExpressionString(String topicExpressionString) {
-		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
+		this.topicExpression = this.EXPRESSION_PARSER
+				.parseExpression(topicExpressionString);
 	}
 
 	/**
@@ -174,7 +184,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		Object payload = message.getPayload();
 		String topic = message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
 				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
-				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
+				: this.topicExpression.getValue(this.evaluationContext, message,
+						String.class);
 
 		ListenableFuture<String> pubsubFuture;
 
@@ -188,8 +199,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		}
 
 		if (this.sync) {
-			Long timeout = this.publishTimeoutExpression.getValue(
-					this.evaluationContext, message, Long.class);
+			Long timeout = this.publishTimeoutExpression.getValue(this.evaluationContext,
+					message, Long.class);
 			if (timeout == null || timeout < 0) {
 				pubsubFuture.get();
 			}
@@ -200,8 +211,10 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	@Override
-	protected void onInit()  {
+	protected void onInit() {
 		super.onInit();
-		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
+		this.evaluationContext = ExpressionUtils
+				.createStandardEvaluationContext(getBeanFactory());
 	}
+
 }

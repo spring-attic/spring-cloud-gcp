@@ -35,4 +35,5 @@ public class PubSubConsumerDestination implements ConsumerDestination {
 	public String getName() {
 		return this.name;
 	}
+
 }

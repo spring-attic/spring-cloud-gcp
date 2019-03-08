@@ -32,11 +32,8 @@ public class MapBuilderTests {
 
 	@Test
 	public void mapWithDistinctKeysBuildsAsExpected() {
-		Map<String, String> result = new MapBuilder<String, String>()
-				.put("a", "alpha")
-				.put("b", "beta")
-				.put("g", "gamma")
-				.build();
+		Map<String, String> result = new MapBuilder<String, String>().put("a", "alpha")
+				.put("b", "beta").put("g", "gamma").build();
 		assertThat(result).containsOnlyKeys("a", "b", "g");
 		assertThat(result).containsEntry("a", "alpha");
 		assertThat(result).containsEntry("b", "beta");
@@ -65,9 +62,10 @@ public class MapBuilderTests {
 
 	@Test
 	public void mapWithDuplicateKeysThrowsException() {
-		assertThatThrownBy(() -> new MapBuilder<String, String>().put("b", "beta").put("b", "vita"))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessage("Duplicate keys not allowed.");
+		assertThatThrownBy(
+				() -> new MapBuilder<String, String>().put("b", "beta").put("b", "vita"))
+						.isInstanceOf(IllegalArgumentException.class)
+						.hasMessage("Duplicate keys not allowed.");
 	}
 
 }

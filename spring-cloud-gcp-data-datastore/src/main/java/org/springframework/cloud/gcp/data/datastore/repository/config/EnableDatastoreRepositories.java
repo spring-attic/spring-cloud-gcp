@@ -84,7 +84,6 @@ public @interface EnableDatastoreRepositories {
 	/**
 	 * Configure the repository base class to be used to create repository proxies for
 	 * this particular configuration.
-	 *
 	 * @return the base repository class
 	 */
 	Class repositoryBaseClass() default DefaultRepositoryBaseClass.class;
@@ -99,7 +98,6 @@ public @interface EnableDatastoreRepositories {
 	/**
 	 * Returns the {@link org.springframework.beans.factory.FactoryBean} class to be used
 	 * for each repository instance. Defaults to {@link DatastoreRepositoryFactoryBean}.
-	 *
 	 * @return the factory bean class used to create factories
 	 */
 	Class repositoryFactoryBeanClass() default DatastoreRepositoryFactoryBean.class;
@@ -107,7 +105,6 @@ public @interface EnableDatastoreRepositories {
 	/**
 	 * Configures the location of where to read the Spring Data named queries properties
 	 * file. Will default to {@code META-INF/datastore-named-queries.properties}
-	 *
 	 * @return the location of the file holding named queries' strings.
 	 */
 	String namedQueriesLocation() default "";
@@ -117,7 +114,6 @@ public @interface EnableDatastoreRepositories {
 	 * Defaults to {@literal Impl}. So for a repository named {@code PersonRepository} the
 	 * corresponding implementation class will be looked up scanning for
 	 * {@code PersonRepositoryImpl}.
-	 *
 	 * @return the default suffix that will cause classes to be assumed to be
 	 * implementations
 	 */
@@ -127,7 +123,6 @@ public @interface EnableDatastoreRepositories {
 	 * Configures the name of the
 	 * {@link org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate} bean to
 	 * be used by default with the repositories detected.
-	 *
 	 * @return the name of the Datastore template class
 	 */
 	String datastoreTemplateRef() default "datastoreTemplate";
@@ -136,8 +131,8 @@ public @interface EnableDatastoreRepositories {
 	 * Configures the name of the
 	 * {@link org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext}
 	 * bean to be used by default with the repositories detected.
-	 *
 	 * @return the name of the Datastore mapping context class
 	 */
 	String datastoreMappingContextRef() default "datastoreMappingContext";
+
 }

@@ -38,4 +38,5 @@ public class HelloController {
 	public MyAppProperties json() {
 		return this.sampleConfig;
 	}
+
 }

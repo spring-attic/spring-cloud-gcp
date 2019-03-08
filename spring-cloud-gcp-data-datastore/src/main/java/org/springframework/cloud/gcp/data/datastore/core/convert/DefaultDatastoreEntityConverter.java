@@ -46,10 +46,10 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter {
+
 	private DatastoreMappingContext mappingContext;
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
@@ -58,10 +58,12 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory));
+		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(),
+				objectToKeyFactory));
 	}
 
-	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext, ReadWriteConversions conversions) {
+	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
+			ReadWriteConversions conversions) {
 		this.mappingContext = mappingContext;
 		this.conversions = conversions;
 
@@ -86,8 +88,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		for (String field : fieldNames) {
 			result.put(this.conversions.convertOnRead(field, null, keyType),
 					propertyValueProvider.getPropertyValue(field,
-							EmbeddedType.of(componentType),
-							componentType));
+							EmbeddedType.of(componentType), componentType));
 		}
 		return result;
 	}
@@ -102,76 +103,97 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				.getPersistentEntity(aClass);
 
 		if (ostensiblePersistentEntity == null) {
-			throw new DatastoreDataException("Unable to convert Datastore Entity to " + aClass);
+			throw new DatastoreDataException(
+					"Unable to convert Datastore Entity to " + aClass);
 		}
 
-		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
+				entity, this.conversions);
 
-		DatastorePersistentEntity<?> persistentEntity = getDiscriminationPersistentEntity(ostensiblePersistentEntity,
-				propertyValueProvider);
+		DatastorePersistentEntity<?> persistentEntity = getDiscriminationPersistentEntity(
+				ostensiblePersistentEntity, propertyValueProvider);
 
-		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
-				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
+		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider = new PersistentEntityParameterValueProvider<>(
+				persistentEntity, propertyValueProvider, null);
 
-		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
+		EntityInstantiator instantiator = this.instantiators
+				.getInstantiatorFor(persistentEntity);
 		Object instance;
 		try {
-			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
-			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
-			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
-				// if a property is a constructor argument, it was already computed on instantiation
-				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
-					Object value = propertyValueProvider
-							.getPropertyValue(datastorePersistentProperty);
-					accessor.setProperty(datastorePersistentProperty, value);
-				}
-			});
+			instance = instantiator.createInstance(persistentEntity,
+					parameterValueProvider);
+			PersistentPropertyAccessor accessor = persistentEntity
+					.getPropertyAccessor(instance);
+			persistentEntity
+					.doWithColumnBackedProperties((datastorePersistentProperty) -> {
+						// if a property is a constructor argument, it was already
+						// computed on instantiation
+						if (!persistentEntity
+								.isConstructorArgument(datastorePersistentProperty)) {
+							Object value = propertyValueProvider
+									.getPropertyValue(datastorePersistentProperty);
+							accessor.setProperty(datastorePersistentProperty, value);
+						}
+					});
 		}
 		catch (DatastoreDataException ex) {
-			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", ex);
+			throw new DatastoreDataException(
+					"Unable to read " + persistentEntity.getName() + " entity", ex);
 		}
 
 		return (R) instance;
 	}
 
-	private DatastorePersistentEntity getDiscriminationPersistentEntity(DatastorePersistentEntity ostensibleEntity,
+	private DatastorePersistentEntity getDiscriminationPersistentEntity(
+			DatastorePersistentEntity ostensibleEntity,
 			EntityPropertyValueProvider propertyValueProvider) {
 		if (ostensibleEntity.getDiscriminationFieldName() == null) {
 			return ostensibleEntity;
 		}
 
-		Set<Class> members = DatastoreMappingContext.getDiscriminationFamily(ostensibleEntity.getType());
-		Optional<DatastorePersistentEntity> persistentEntity = members == null ? Optional.empty()
-				: members.stream().map(x -> (DatastorePersistentEntity) this.mappingContext.getPersistentEntity(x))
-						.filter(x -> x != null && isDiscriminationFieldMatch(x, propertyValueProvider)).findFirst();
+		Set<Class> members = DatastoreMappingContext
+				.getDiscriminationFamily(ostensibleEntity.getType());
+		Optional<DatastorePersistentEntity> persistentEntity = members == null
+				? Optional.empty()
+				: members.stream()
+						.map(x -> (DatastorePersistentEntity) this.mappingContext
+								.getPersistentEntity(x))
+						.filter(x -> x != null
+								&& isDiscriminationFieldMatch(x, propertyValueProvider))
+						.findFirst();
 
 		return persistentEntity.orElse(ostensibleEntity);
 	}
 
 	private boolean isDiscriminationFieldMatch(DatastorePersistentEntity entity,
 			EntityPropertyValueProvider propertyValueProvider) {
-		return ((String[]) propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(),
-				EmbeddedType.NOT_EMBEDDED,
-				ClassTypeInformation.from(String[].class)))[0].equals(entity.getDiscriminatorValue());
+		return ((String[]) propertyValueProvider.getPropertyValue(
+				entity.getDiscriminationFieldName(), EmbeddedType.NOT_EMBEDDED,
+				ClassTypeInformation.from(String[].class)))[0]
+						.equals(entity.getDiscriminatorValue());
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void write(Object source, BaseEntity.Builder sink) {
-		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
+		DatastorePersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(source.getClass());
 
 		String discriminationFieldName = persistentEntity.getDiscriminationFieldName();
-		List<String> discriminationValues = persistentEntity.getCompatibleDiscriminationValues();
+		List<String> discriminationValues = persistentEntity
+				.getCompatibleDiscriminationValues();
 		if (!discriminationValues.isEmpty() || discriminationFieldName != null) {
-			sink.set(discriminationFieldName,
-					discriminationValues.stream().map(StringValue::of).collect(Collectors.toList()));
+			sink.set(discriminationFieldName, discriminationValues.stream()
+					.map(StringValue::of).collect(Collectors.toList()));
 		}
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
 				(DatastorePersistentProperty persistentProperty) -> {
 					try {
 						Object val = accessor.getProperty(persistentProperty);
-						Value convertedVal = this.conversions.convertOnWrite(val, persistentProperty);
+						Value convertedVal = this.conversions.convertOnWrite(val,
+								persistentProperty);
 
 						if (persistentProperty.isUnindexed()) {
 							ValueBuilder valueBuilder = convertedVal.toBuilder();
@@ -182,10 +204,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 					}
 					catch (DatastoreDataException ex) {
 						throw new DatastoreDataException(
-								"Unable to write "
-										+ persistentEntity.kindName() + "." + persistentProperty.getFieldName(),
+								"Unable to write " + persistentEntity.kindName() + "."
+										+ persistentProperty.getFieldName(),
 								ex);
 					}
 				});
 	}
+
 }

@@ -64,13 +64,15 @@ import static org.mockito.Mockito.times;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 public class SpannerTemplateTransactionManagerTests {
+
 	private static final List<Mutation> INSERT_MUTATION = Arrays
 			.asList(Mutation.newInsertBuilder("custom_test_table").build());
 
 	private static final List<Mutation> UPSERT_MUTATION = Arrays
 			.asList(Mutation.newInsertOrUpdateBuilder("custom_test_table").build());
 
-	private static final Mutation DELETE_MUTATION = Mutation.delete("custom_test_table", Key.of("1"));
+	private static final Mutation DELETE_MUTATION = Mutation.delete("custom_test_table",
+			Key.of("1"));
 
 	private static final Statement DML_STATEMENT = Statement.of("update statement here");
 
@@ -100,35 +102,24 @@ public class SpannerTemplateTransactionManagerTests {
 	public void setUp() {
 		Mockito.when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.transactionManager = Mockito.spy(TransactionManager.class);
-		Mockito.doAnswer(
-				(invocation) -> {
-					this.transactionState.set(TransactionManager.TransactionState.STARTED);
-					return this.transactionContext;
-				})
-				.when(this.transactionManager)
-				.begin();
+		Mockito.doAnswer((invocation) -> {
+			this.transactionState.set(TransactionManager.TransactionState.STARTED);
+			return this.transactionContext;
+		}).when(this.transactionManager).begin();
 
-		Mockito.doAnswer(
-				(invocation) -> {
-					this.transactionState.set(
-							TransactionManager.TransactionState.ROLLED_BACK);
-					return null;
-				})
-				.when(this.transactionManager)
-				.rollback();
-		Mockito.doAnswer(
-				(invocation) -> {
-					this.transactionState.set(
-							TransactionManager.TransactionState.COMMITTED);
-					return null;
-				})
-				.when(this.transactionManager)
-				.commit();
+		Mockito.doAnswer((invocation) -> {
+			this.transactionState.set(TransactionManager.TransactionState.ROLLED_BACK);
+			return null;
+		}).when(this.transactionManager).rollback();
+		Mockito.doAnswer((invocation) -> {
+			this.transactionState.set(TransactionManager.TransactionState.COMMITTED);
+			return null;
+		}).when(this.transactionManager).commit();
 		Mockito.doAnswer((invocation) -> this.transactionState.get())
-				.when(this.transactionManager)
-				.getState();
+				.when(this.transactionManager).getState();
 
-		Mockito.when(this.databaseClient.transactionManager()).thenReturn(this.transactionManager);
+		Mockito.when(this.databaseClient.transactionManager())
+				.thenReturn(this.transactionManager);
 		Mockito.when(this.transactionManager.begin()).thenReturn(this.transactionContext);
 	}
 
@@ -141,18 +132,18 @@ public class SpannerTemplateTransactionManagerTests {
 		Mockito.verify(this.transactionManager, times(1)).commit();
 		Mockito.verify(this.transactionManager, times(0)).rollback();
 
-		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
+		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1
+																			// transaction
 
 		Mockito.verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
+		Mockito.verify(this.transactionContext, times(1)).read(eq("custom_test_table"),
+				eq(KeySet.singleKey(Key.of("abc"))), Mockito.any(Iterable.class),
+				Mockito.any());
 		Mockito.verify(this.transactionContext, times(1))
-				.read(
-						eq("custom_test_table"),
-						eq(KeySet.singleKey(Key.of("abc"))),
-						Mockito.any(Iterable.class),
-						Mockito.any());
-		Mockito.verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
+				.buffer(Arrays.asList(DELETE_MUTATION));
 		Mockito.verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
-		Mockito.verify(this.transactionContext, times(1)).executeUpdate(eq(DML_STATEMENT));
+		Mockito.verify(this.transactionContext, times(1))
+				.executeUpdate(eq(DML_STATEMENT));
 	}
 
 	@Test
@@ -171,16 +162,15 @@ public class SpannerTemplateTransactionManagerTests {
 		Mockito.verify(this.transactionManager, times(1)).begin();
 		Mockito.verify(this.transactionManager, times(0)).commit();
 		Mockito.verify(this.transactionManager, times(1)).rollback();
-		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
+		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1
+																			// transaction
 
 		Mockito.verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
+		Mockito.verify(this.transactionContext, times(1)).read(eq("custom_test_table"),
+				eq(KeySet.singleKey(Key.of("abc"))), Mockito.any(Iterable.class),
+				Mockito.any());
 		Mockito.verify(this.transactionContext, times(1))
-				.read(
-						eq("custom_test_table"),
-						eq(KeySet.singleKey(Key.of("abc"))),
-						Mockito.any(Iterable.class),
-						Mockito.any());
-		Mockito.verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
+				.buffer(Arrays.asList(DELETE_MUTATION));
 		Mockito.verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
 	}
 
@@ -193,30 +183,34 @@ public class SpannerTemplateTransactionManagerTests {
 		Mockito.verify(this.transactionManager, Mockito.never()).begin();
 		Mockito.verify(this.transactionManager, Mockito.never()).commit();
 		Mockito.verify(this.transactionManager, Mockito.never()).rollback();
-		Mockito.verify(this.databaseClient, Mockito.never()).transactionManager(); // only 1 transaction
+		Mockito.verify(this.databaseClient, Mockito.never()).transactionManager(); // only
+																					// 1
+																					// transaction
 
-		Mockito.verify(this.transactionContext, Mockito.never()).buffer(Mockito.any(List.class));
 		Mockito.verify(this.transactionContext, Mockito.never())
-				.read(Mockito.anyString(), Mockito.any(KeySet.class), Mockito.any(Iterable.class), Mockito.any());
+				.buffer(Mockito.any(List.class));
+		Mockito.verify(this.transactionContext, Mockito.never()).read(Mockito.anyString(),
+				Mockito.any(KeySet.class), Mockito.any(Iterable.class), Mockito.any());
 	}
 
 	@Test
 	public void readOnlySaveTest() {
-		this.expectedException
-				.expectMessage("Spanner transaction cannot apply mutations because it is in readonly mode");
+		this.expectedException.expectMessage(
+				"Spanner transaction cannot apply mutations because it is in readonly mode");
 		this.transactionalService.writingInReadOnly(new TestEntity());
 	}
 
 	@Test
 	public void readOnlyDeleteTest() {
-		this.expectedException
-				.expectMessage("Spanner transaction cannot apply mutations because it is in readonly mode");
+		this.expectedException.expectMessage(
+				"Spanner transaction cannot apply mutations because it is in readonly mode");
 		this.transactionalService.deleteInReadOnly(new TestEntity());
 	}
 
 	@Test
 	public void readOnlyDmlTest() {
-		this.expectedException.expectMessage("Spanner transaction cannot execute DML because it is in readonly mode");
+		this.expectedException.expectMessage(
+				"Spanner transaction cannot execute DML because it is in readonly mode");
 		this.transactionalService.dmlInReadOnly();
 	}
 
@@ -230,20 +224,27 @@ public class SpannerTemplateTransactionManagerTests {
 		@Bean
 		public SpannerTemplate spannerTemplate(DatabaseClient databaseClient) {
 			SpannerMappingContext mappingContext = new SpannerMappingContext();
-			SpannerEntityProcessor objectMapper = Mockito.mock(SpannerEntityProcessor.class);
-			SpannerMutationFactory mutationFactory = Mockito.mock(SpannerMutationFactory.class);
-			Mockito.when(mutationFactory.insert(Mockito.any(TestEntity.class))).thenReturn(INSERT_MUTATION);
-			Mockito.when(mutationFactory.upsert(Mockito.any(TestEntity.class), Mockito.any()))
+			SpannerEntityProcessor objectMapper = Mockito
+					.mock(SpannerEntityProcessor.class);
+			SpannerMutationFactory mutationFactory = Mockito
+					.mock(SpannerMutationFactory.class);
+			Mockito.when(mutationFactory.insert(Mockito.any(TestEntity.class)))
+					.thenReturn(INSERT_MUTATION);
+			Mockito.when(
+					mutationFactory.upsert(Mockito.any(TestEntity.class), Mockito.any()))
 					.thenReturn(UPSERT_MUTATION);
-			Mockito.when(mutationFactory.delete(Mockito.any(TestEntity.class))).thenReturn(DELETE_MUTATION);
-			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(mappingContext, objectMapper, true);
+			Mockito.when(mutationFactory.delete(Mockito.any(TestEntity.class)))
+					.thenReturn(DELETE_MUTATION);
+			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(mappingContext,
+					objectMapper, true);
 
-			return new SpannerTemplate(
-					databaseClient, mappingContext, objectMapper, mutationFactory, schemaUtils);
+			return new SpannerTemplate(databaseClient, mappingContext, objectMapper,
+					mutationFactory, schemaUtils);
 		}
 
 		@Bean
-		public SpannerTransactionManager spannerTransactionManager(DatabaseClient databaseClient) {
+		public SpannerTransactionManager spannerTransactionManager(
+				DatabaseClient databaseClient) {
 			return new SpannerTransactionManager(databaseClient);
 		}
 
@@ -251,12 +252,14 @@ public class SpannerTemplateTransactionManagerTests {
 		TransactionalService transactionalService() {
 			return new TransactionalService();
 		}
+
 	}
 
 	/**
 	 * A mock transactional service to execute methods annotated as transactional.
 	 */
 	public static class TransactionalService {
+
 		@Autowired
 		SpannerTemplate spannerTemplate;
 
@@ -302,10 +305,12 @@ public class SpannerTemplateTransactionManagerTests {
 		public void dmlInReadOnly() {
 			this.spannerTemplate.executeDmlStatement(Statement.of("fake"));
 		}
+
 	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
+
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
@@ -325,5 +330,7 @@ public class SpannerTemplateTransactionManagerTests {
 		List<Integer> integerList;
 
 		double[] doubles;
+
 	}
+
 }

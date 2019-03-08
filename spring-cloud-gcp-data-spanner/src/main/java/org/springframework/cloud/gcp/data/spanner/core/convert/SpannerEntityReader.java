@@ -38,4 +38,5 @@ interface SpannerEntityReader extends EntityReader<Object, Struct> {
 	default <R> R read(Class<R> type, Struct source) {
 		return read(type, source, null, false);
 	}
+
 }

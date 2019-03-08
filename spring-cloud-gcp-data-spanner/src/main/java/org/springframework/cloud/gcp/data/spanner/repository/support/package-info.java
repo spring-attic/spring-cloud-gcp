@@ -1,4 +1,5 @@
 /**
- * Support classes for creating implementations for user-defined Spring Data Cloud Spanner repositories.
+ * Support classes for creating implementations for user-defined Spring Data Cloud Spanner
+ * repositories.
  */
 package org.springframework.cloud.gcp.data.spanner.repository.support;

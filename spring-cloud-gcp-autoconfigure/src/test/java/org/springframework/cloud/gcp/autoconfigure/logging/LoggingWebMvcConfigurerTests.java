@@ -40,8 +40,8 @@ public class LoggingWebMvcConfigurerTests {
 
 	@Test
 	public void testAddInterceptors() {
-		LoggingWebMvcConfigurer adapter =
-				new LoggingWebMvcConfigurer(this.interceptor, () -> "remission");
+		LoggingWebMvcConfigurer adapter = new LoggingWebMvcConfigurer(this.interceptor,
+				() -> "remission");
 		TestInterceptorRegistry registry = new TestInterceptorRegistry();
 
 		adapter.addInterceptors(registry);
@@ -54,9 +54,11 @@ public class LoggingWebMvcConfigurerTests {
 	 * Test interceptor registry that makes interceptors list accessible.
 	 */
 	private static class TestInterceptorRegistry extends InterceptorRegistry {
+
 		public List<Object> doGetInterceptors() {
 			return super.getInterceptors();
 		}
+
 	}
 
 }

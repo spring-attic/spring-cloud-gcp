@@ -31,4 +31,5 @@ public interface MultipleValueBinder {
 	 * @return a value-binder object that then accepts the value to bind.
 	 */
 	ValueBinder set(String fieldName);
+
 }

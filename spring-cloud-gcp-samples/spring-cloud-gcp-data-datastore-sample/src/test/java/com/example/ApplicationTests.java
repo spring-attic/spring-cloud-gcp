@@ -97,26 +97,22 @@ public class ApplicationTests {
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
-		assertThat(singersAsc)
-				.as("Verify ASC order")
-				.containsExactly(johnDoe, janeDoe, richardRoe);
+		assertThat(singersAsc).as("Verify ASC order").containsExactly(johnDoe, janeDoe,
+				richardRoe);
 
 		List<Singer> singersDesc = getSingers("/singers?sort=lastName,DESC");
-		assertThat(singersDesc)
-				.as("Verify DESC order")
-				.containsExactly(richardRoe, johnDoe, janeDoe);
+		assertThat(singersDesc).as("Verify DESC order").containsExactly(richardRoe,
+				johnDoe, janeDoe);
 
-		sendRequest("/singers", "{\"singerId\": \"singerFrodo\", \"firstName\":" +
-						" \"Frodo\", \"lastName\": \"Baggins\"}",
-				HttpMethod.POST);
+		sendRequest("/singers", "{\"singerId\": \"singerFrodo\", \"firstName\":"
+				+ " \"Frodo\", \"lastName\": \"Baggins\"}", HttpMethod.POST);
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 4);
 
 		List<Singer> singersAfterInsertion = getSingers("/singers?sort=lastName,ASC");
-		assertThat(singersAfterInsertion)
-				.as("Verify post")
-				.containsExactly(frodoBaggins, johnDoe, janeDoe, richardRoe);
+		assertThat(singersAfterInsertion).as("Verify post").containsExactly(frodoBaggins,
+				johnDoe, janeDoe, richardRoe);
 
 		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
 
@@ -124,12 +120,10 @@ public class ApplicationTests {
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 3);
 
 		List<Singer> singersAfterDeletion = getSingers("/singers?sort=lastName,ASC");
-		assertThat(singersAfterDeletion)
-				.as("Verify Delete")
-				.containsExactly(frodoBaggins, janeDoe, richardRoe);
+		assertThat(singersAfterDeletion).as("Verify Delete").containsExactly(frodoBaggins,
+				janeDoe, richardRoe);
 
-		assertThat(baos.toString())
-				.as("Verify relationships saved in transaction")
+		assertThat(baos.toString()).as("Verify relationships saved in transaction")
 				.contains("Relationship links "
 						+ "were saved between a singer, bands, and instruments in a single transaction: "
 						+ "Singer{singerId='singer2', firstName='Jane', lastName='Doe', "
@@ -142,24 +136,22 @@ public class ApplicationTests {
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("recorder", "cow bell");
 
-		assertThat(
-				this.singerRepository.findById("singer2").get().getBands().stream()
-						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("General Band", "Big Bland Band");
+		assertThat(this.singerRepository.findById("singer2").get().getBands().stream()
+				.map(Band::getName).collect(Collectors.toList()))
+						.containsExactlyInAnyOrder("General Band", "Big Bland Band");
 
 		assertThat(
 				this.singerRepository.findById("singer3").get().getPersonalInstruments()
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("triangle", "marimba");
 
-		assertThat(
-				this.singerRepository.findById("singer3").get().getBands().stream()
-						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
+		assertThat(this.singerRepository.findById("singer3").get().getBands().stream()
+				.map(Band::getName).collect(Collectors.toList()))
+						.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
 
-		assertThat(baos.toString()).contains("Query by example\n" +
-				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +
-				"albums=[], firstBand=null, bands=, personalInstrument");
+		assertThat(baos.toString()).contains("Query by example\n"
+				+ "Singer{singerId='singer1', firstName='John', lastName='Doe', "
+				+ "albums=[], firstBand=null, bands=, personalInstrument");
 
 		assertThat(baos.toString()).contains("This concludes the sample.");
 	}
@@ -188,4 +180,5 @@ public class ApplicationTests {
 				(String) som.get("firstName"), (String) som.get("lastName"), null))
 				.collect(Collectors.toList());
 	}
+
 }

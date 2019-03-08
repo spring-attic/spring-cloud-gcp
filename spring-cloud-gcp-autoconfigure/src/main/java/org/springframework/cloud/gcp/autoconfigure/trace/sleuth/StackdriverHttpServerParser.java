@@ -23,11 +23,14 @@ import brave.http.HttpServerParser;
 /**
  * An {@link HttpServerParser} that fills information for Stackdriver Trace.
  *
- * <p>Based on {@link org.springframework.cloud.sleuth.instrument.web.SleuthHttpServerParser}.
+ * <p>
+ * Based on
+ * {@link org.springframework.cloud.sleuth.instrument.web.SleuthHttpServerParser}.
  *
  * @author Ray Tsang
  */
 public class StackdriverHttpServerParser extends HttpServerParser {
+
 	private final StackdriverHttpClientParser clientParser;
 
 	public StackdriverHttpServerParser() {
@@ -35,8 +38,7 @@ public class StackdriverHttpServerParser extends HttpServerParser {
 	}
 
 	@Override
-	protected <Req> String spanName(HttpAdapter<Req, ?> adapter,
-			Req req) {
+	protected <Req> String spanName(HttpAdapter<Req, ?> adapter, Req req) {
 		return this.clientParser.spanName(adapter, req);
 	}
 
@@ -51,4 +53,5 @@ public class StackdriverHttpServerParser extends HttpServerParser {
 			SpanCustomizer customizer) {
 		this.clientParser.response(adapter, res, error, customizer);
 	}
+
 }

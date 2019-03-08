@@ -43,7 +43,6 @@ import static org.mockito.Mockito.when;
  * Unit tests for the {@link CloudVisionTemplate}.
  *
  * @author Daniel Zou
- *
  * @since 1.1
  */
 public class CloudVisionTemplateTests {
@@ -53,7 +52,8 @@ public class CloudVisionTemplateTests {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	// Resource representing a fake image blob
-	private static final Resource FAKE_IMAGE = new ByteArrayResource("fake_image".getBytes());
+	private static final Resource FAKE_IMAGE = new ByteArrayResource(
+			"fake_image".getBytes());
 
 	private ImageAnnotatorClient imageAnnotatorClient;
 
@@ -67,8 +67,9 @@ public class CloudVisionTemplateTests {
 
 	@Test
 	public void testEmptyClientResponseError() {
-		when(this.imageAnnotatorClient.batchAnnotateImages(any(BatchAnnotateImagesRequest.class)))
-				.thenReturn(BatchAnnotateImagesResponse.getDefaultInstance());
+		when(this.imageAnnotatorClient
+				.batchAnnotateImages(any(BatchAnnotateImagesRequest.class)))
+						.thenReturn(BatchAnnotateImagesResponse.getDefaultInstance());
 
 		this.expectedException.expect(CloudVisionException.class);
 		this.expectedException.expectMessage(
@@ -80,19 +81,16 @@ public class CloudVisionTemplateTests {
 	@Test
 	public void testExtractTextError() {
 		AnnotateImageResponse response = AnnotateImageResponse.newBuilder()
-				.setError(
-						Status.newBuilder()
-								.setCode(Code.INTERNAL.value())
-								.setMessage("Error Message from Vision API."))
+				.setError(Status.newBuilder().setCode(Code.INTERNAL.value())
+						.setMessage("Error Message from Vision API."))
 				.build();
 
 		BatchAnnotateImagesResponse responseBatch = BatchAnnotateImagesResponse
-				.newBuilder()
-				.addResponses(response)
-				.build();
+				.newBuilder().addResponses(response).build();
 
-		when(this.imageAnnotatorClient.batchAnnotateImages(any(BatchAnnotateImagesRequest.class)))
-				.thenReturn(responseBatch);
+		when(this.imageAnnotatorClient
+				.batchAnnotateImages(any(BatchAnnotateImagesRequest.class)))
+						.thenReturn(responseBatch);
 
 		this.expectedException.expect(CloudVisionException.class);
 		this.expectedException.expectMessage("Error Message from Vision API.");
@@ -103,12 +101,14 @@ public class CloudVisionTemplateTests {
 	@Test
 	public void testIOError() {
 		this.expectedException.expect(CloudVisionException.class);
-		this.expectedException.expectMessage("Failed to read image bytes from provided resource.");
+		this.expectedException
+				.expectMessage("Failed to read image bytes from provided resource.");
 
 		this.cloudVisionTemplate.analyzeImage(new BadResource(), Type.LABEL_DETECTION);
 	}
 
 	private static final class BadResource extends AbstractResource {
+
 		@Override
 		public String getDescription() {
 			return "bad resource";
@@ -118,6 +118,7 @@ public class CloudVisionTemplateTests {
 		public InputStream getInputStream() throws IOException {
 			throw new IOException("Failed to open resource.");
 		}
+
 	}
 
 }

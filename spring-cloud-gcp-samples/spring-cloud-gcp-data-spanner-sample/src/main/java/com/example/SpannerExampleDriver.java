@@ -53,11 +53,13 @@ public class SpannerExampleDriver {
 	@Profile("!test")
 	ApplicationRunner applicationRunner() {
 		return (args) -> {
-			if (!args.containsOption("spanner_repository") && !args.containsOption("spanner_template")) {
-				throw new IllegalArgumentException("To run the Spanner example, please specify "
-						+ " -Dspring-boot.run.arguments=--spanner_repository to run the Spanner repository"
-						+ " example or -Dspring-boot.run.arguments=--spanner_template to"
-						+ " run the Spanner template example.");
+			if (!args.containsOption("spanner_repository")
+					&& !args.containsOption("spanner_template")) {
+				throw new IllegalArgumentException(
+						"To run the Spanner example, please specify "
+								+ " -Dspring-boot.run.arguments=--spanner_repository to run the Spanner repository"
+								+ " example or -Dspring-boot.run.arguments=--spanner_template to"
+								+ " run the Spanner template example.");
 			}
 
 			if (args.containsOption("spanner_repository")) {
@@ -70,4 +72,5 @@ public class SpannerExampleDriver {
 			}
 		};
 	}
+
 }

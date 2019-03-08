@@ -62,8 +62,8 @@ public class GoogleConfigPropertySourceLocatorTest {
 		this.gcpConfigProperties = mock(GcpConfigProperties.class);
 		when(this.gcpConfigProperties.getName()).thenReturn("test");
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(true);
-		org.springframework.cloud.gcp.core.Credentials configCredentials =
-				mock(org.springframework.cloud.gcp.core.Credentials.class);
+		org.springframework.cloud.gcp.core.Credentials configCredentials = mock(
+				org.springframework.cloud.gcp.core.Credentials.class);
 		when(this.gcpConfigProperties.getCredentials()).thenReturn(configCredentials);
 		when(this.gcpConfigProperties.getProfile()).thenReturn("default");
 		this.expectedProperties = new HashMap<>();
@@ -76,27 +76,36 @@ public class GoogleConfigPropertySourceLocatorTest {
 
 	@Test
 	public void locateReturnsMapPropertySource() throws Exception {
-		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
+		GoogleConfigEnvironment googleConfigEnvironment = mock(
+				GoogleConfigEnvironment.class);
 		when(googleConfigEnvironment.getConfig()).thenReturn(this.expectedProperties);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
-				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
-		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator).getRemoteEnvironment();
-		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
+		this.googleConfigPropertySourceLocator = spy(
+				new GoogleConfigPropertySourceLocator(this.projectIdProvider,
+						this.credentialsProvider, this.gcpConfigProperties));
+		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator)
+				.getRemoteEnvironment();
+		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator
+				.locate(new StandardEnvironment());
 		assertThat(propertySource.getName()).isEqualTo("spring-cloud-gcp");
 		assertThat(propertySource.getProperty("property-int")).isEqualTo(10);
 		assertThat(propertySource.getProperty("property-bool")).isEqualTo(true);
-		assertThat(this.googleConfigPropertySourceLocator.getProjectId()).isEqualTo("projectid");
+		assertThat(this.googleConfigPropertySourceLocator.getProjectId())
+				.isEqualTo("projectid");
 	}
 
 	@Test
 	public void locateReturnsMapPropertySource_disabled() throws Exception {
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(false);
-		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
+		GoogleConfigEnvironment googleConfigEnvironment = mock(
+				GoogleConfigEnvironment.class);
 		when(googleConfigEnvironment.getConfig()).thenReturn(this.expectedProperties);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
-				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
-		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator).getRemoteEnvironment();
-		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
+		this.googleConfigPropertySourceLocator = spy(
+				new GoogleConfigPropertySourceLocator(this.projectIdProvider,
+						this.credentialsProvider, this.gcpConfigProperties));
+		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator)
+				.getRemoteEnvironment();
+		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator
+				.locate(new StandardEnvironment());
 		assertThat(propertySource.getName()).isEqualTo("spring-cloud-gcp");
 		assertThat(((MapPropertySource) propertySource).getPropertyNames()).isEmpty();
 	}
@@ -104,8 +113,9 @@ public class GoogleConfigPropertySourceLocatorTest {
 	@Test
 	public void disabledPropertySourceReturnsNull() throws Exception {
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(false);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
-				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
+		this.googleConfigPropertySourceLocator = spy(
+				new GoogleConfigPropertySourceLocator(this.projectIdProvider,
+						this.credentialsProvider, this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
 	}
@@ -113,8 +123,9 @@ public class GoogleConfigPropertySourceLocatorTest {
 	@Test
 	public void disabledPropertySourceAvoidChecks() throws IOException {
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(false);
-		this.googleConfigPropertySourceLocator =
-				spy(new GoogleConfigPropertySourceLocator(null, null, this.gcpConfigProperties));
+		this.googleConfigPropertySourceLocator = spy(
+				new GoogleConfigPropertySourceLocator(null, null,
+						this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
 	}
@@ -123,9 +134,11 @@ public class GoogleConfigPropertySourceLocatorTest {
 	public void testProjectIdInConfigProperties() throws IOException {
 		when(this.gcpConfigProperties.getProjectId()).thenReturn("pariah");
 		this.googleConfigPropertySourceLocator = new GoogleConfigPropertySourceLocator(
-				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties
-		);
+				this.projectIdProvider, this.credentialsProvider,
+				this.gcpConfigProperties);
 
-		assertThat(this.googleConfigPropertySourceLocator.getProjectId()).isEqualTo("pariah");
+		assertThat(this.googleConfigPropertySourceLocator.getProjectId())
+				.isEqualTo("pariah");
 	}
+
 }

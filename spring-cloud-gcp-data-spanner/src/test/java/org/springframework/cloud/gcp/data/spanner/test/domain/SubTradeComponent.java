@@ -72,4 +72,5 @@ public class SubTradeComponent {
 	public void setCommitTimestamp(Timestamp commitTimestamp) {
 		this.commitTimestamp = commitTimestamp;
 	}
+
 }

@@ -76,8 +76,8 @@ public class SpannerSchemaUtilsTests {
 				+ "primitiveDoubleField FLOAT64 , bigDoubleField FLOAT64 , bigLongField INT64 , "
 				+ "primitiveIntField INT64 , bigIntField INT64 , bytes BYTES(MAX) , "
 				+ "bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
-				+ "doubles ARRAY<FLOAT64> , commitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true) ) " +
-				"PRIMARY KEY ( id , id_2 , id3 )";
+				+ "doubles ARRAY<FLOAT64> , commitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true) ) "
+				+ "PRIMARY KEY ( id , id_2 , id3 )";
 
 		assertThat(this.spannerSchemaUtils.getCreateTableDdlString(TestEntity.class))
 				.isEqualTo(ddlResult);
@@ -85,63 +85,55 @@ public class SpannerSchemaUtilsTests {
 
 	@Test
 	public void createDdlString() {
-		assertColumnDdl(String.class, null,
-				"id", OptionalLong.empty(),
-				"id STRING(MAX)");
+		assertColumnDdl(String.class, null, "id", OptionalLong.empty(), "id STRING(MAX)");
 	}
 
 	@Test
 	public void createDdlStringCustomLength() {
-		assertColumnDdl(String.class, null,
-				"id", OptionalLong.of(333L),
+		assertColumnDdl(String.class, null, "id", OptionalLong.of(333L),
 				"id STRING(333)");
 	}
 
 	@Test
 	public void createDdlBytesMax() {
-		assertColumnDdl(ByteArray.class, null,
-				"bytes", OptionalLong.empty(),
+		assertColumnDdl(ByteArray.class, null, "bytes", OptionalLong.empty(),
 				"bytes BYTES(MAX)");
 	}
 
 	@Test
 	public void createDdlBytesCustomLength() {
-		assertColumnDdl(ByteArray.class, null,
-				"bytes", OptionalLong.of(333L),
+		assertColumnDdl(ByteArray.class, null, "bytes", OptionalLong.of(333L),
 				"bytes BYTES(333)");
 	}
 
 	@Test
 	public void ddlForListOfByteArray() {
-		assertColumnDdl(List.class, ByteArray.class,
-				"bytesList", OptionalLong.of(111L),
+		assertColumnDdl(List.class, ByteArray.class, "bytesList", OptionalLong.of(111L),
 				"bytesList ARRAY<BYTES(111)>");
 	}
 
 	@Test
 	public void ddlForDoubleArray() {
-		assertColumnDdl(double[].class, null,
-				"doubles", OptionalLong.of(111L),
+		assertColumnDdl(double[].class, null, "doubles", OptionalLong.of(111L),
 				"doubles ARRAY<FLOAT64>");
 	}
 
 	@Test
 	public void ddlForListOfListOfIntegers() {
-		assertColumnDdl(List.class, Integer.class,
-				"integerList", OptionalLong.empty(),
+		assertColumnDdl(List.class, Integer.class, "integerList", OptionalLong.empty(),
 				"integerList ARRAY<INT64>");
 	}
 
 	@Test
 	public void ddlForListOfListOfDoubles() {
-		assertColumnDdl(List.class, Double.class,
-				"doubleList", OptionalLong.empty(),
+		assertColumnDdl(List.class, Double.class, "doubleList", OptionalLong.empty(),
 				"doubleList ARRAY<FLOAT64>");
 	}
 
 	private void assertColumnDdl(Class clazz, Class innerClazz, String name,
 			OptionalLong length, String expectedDDL) {
-		SpannerPersistentProperty spannerPersistentProperty = mock(SpannerPersistentProperty.class);
+		SpannerPersistentProperty spannerPersistentProperty = mock(
+				SpannerPersistentProperty.class);
 
 		// @formatter:off
 		Mockito.<Class>when(spannerPersistentProperty.getType()).thenReturn(clazz);
@@ -150,10 +142,8 @@ public class SpannerSchemaUtilsTests {
 
 		when(spannerPersistentProperty.getColumnName()).thenReturn(name);
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
-		assertThat(
-				this.spannerSchemaUtils.getColumnDdlString(
-						spannerPersistentProperty, this.spannerEntityProcessor))
-								.isEqualTo(expectedDDL);
+		assertThat(this.spannerSchemaUtils.getColumnDdlString(spannerPersistentProperty,
+				this.spannerEntityProcessor)).isEqualTo(expectedDDL);
 	}
 
 	@Test
@@ -164,11 +154,8 @@ public class SpannerSchemaUtilsTests {
 		t.embeddedColumns.id2 = "2";
 		t.id3 = 3L;
 
-		Key expectedKey = Key.newBuilder()
-				.append(t.id)
-				.appendObject(t.embeddedColumns.id2)
-				.append(t.id3)
-				.build();
+		Key expectedKey = Key.newBuilder().append(t.id)
+				.appendObject(t.embeddedColumns.id2).append(t.id3).build();
 
 		assertThat(this.spannerSchemaUtils.getKey(t)).isEqualTo(expectedKey);
 	}
@@ -194,14 +181,13 @@ public class SpannerSchemaUtilsTests {
 	public void getDropDdlHierarchyTest() {
 		List<String> dropStrings = this.spannerSchemaUtils
 				.getDropTableDdlStringsForInterleavedHierarchy(ParentEntity.class);
-		assertThat(dropStrings).containsExactly(
-				"DROP TABLE grand_child_test_table",
-				"DROP TABLE child_test_table",
-				"DROP TABLE parent_test_table");
+		assertThat(dropStrings).containsExactly("DROP TABLE grand_child_test_table",
+				"DROP TABLE child_test_table", "DROP TABLE parent_test_table");
 	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
+
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
@@ -238,18 +224,22 @@ public class SpannerSchemaUtilsTests {
 
 		double[] doubles;
 
-		// this is intentionally a double to test that it is forced to be TIMESTAMP on Spanner
+		// this is intentionally a double to test that it is forced to be TIMESTAMP on
+		// Spanner
 		// anyway
 		@Column(spannerCommitTimestamp = true)
 		double commitTimestamp;
+
 	}
 
 	private static class EmbeddedColumns {
+
 		@PrimaryKey
 		@Column(name = "id_2")
 		String id2;
 
 		ByteArray bytes2;
+
 	}
 
 	@Table(name = "parent_test_table")
@@ -273,10 +263,12 @@ public class SpannerSchemaUtilsTests {
 
 		@Interleaved
 		List<ChildEntity> childEntities2;
+
 	}
 
 	@Table(name = "child_test_table")
 	private static class ChildEntity {
+
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
@@ -292,10 +284,12 @@ public class SpannerSchemaUtilsTests {
 
 		@Interleaved
 		List<GrandChildEntity> childEntities2;
+
 	}
 
 	@Table(name = "grand_child_test_table")
 	private static class GrandChildEntity {
+
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
@@ -307,5 +301,7 @@ public class SpannerSchemaUtilsTests {
 
 		@PrimaryKey(keyOrder = 4)
 		String id4;
+
 	}
+
 }

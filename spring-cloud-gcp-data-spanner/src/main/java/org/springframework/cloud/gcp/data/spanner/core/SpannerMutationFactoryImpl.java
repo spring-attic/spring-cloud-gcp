@@ -42,7 +42,6 @@ import org.springframework.util.Assert;
  * Factory that generates mutations for writing to Spanner.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
@@ -55,8 +54,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	/**
 	 * Constructor.
-	 * @param spannerEntityProcessor the object mapper used to convert between objects and Spanner
-	 * data types.
+	 * @param spannerEntityProcessor the object mapper used to convert between objects and
+	 * Spanner data types.
 	 * @param spannerMappingContext the mapping context used to get metadata from entity
 	 * types.
 	 * @param spannerSchemaUtils the schema utility to use
@@ -195,4 +194,5 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		}
 		return builder;
 	}
+
 }

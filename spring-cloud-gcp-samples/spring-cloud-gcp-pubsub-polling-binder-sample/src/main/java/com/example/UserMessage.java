@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
  * A user message for the sample app.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 public class UserMessage {
@@ -45,7 +44,6 @@ public class UserMessage {
 	public String getBody() {
 		return this.body;
 	}
-
 
 	public String getUsername() {
 		return this.username;

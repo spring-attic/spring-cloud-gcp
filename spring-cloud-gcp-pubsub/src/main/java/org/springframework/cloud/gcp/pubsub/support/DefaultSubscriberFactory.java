@@ -88,8 +88,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be
-	 * used by each executor.
+	 * Set the provider for the subscribers' executor. Useful to specify the number of
+	 * threads to be used by each executor.
 	 * @param executorProvider the executor provider to set
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
@@ -113,7 +113,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Set the provider for the HTTP headers to be added to the subscribers' REST API calls.
+	 * Set the provider for the HTTP headers to be added to the subscribers' REST API
+	 * calls.
 	 * @param headerProvider the header provider to set
 	 */
 	public void setHeaderProvider(HeaderProvider headerProvider) {
@@ -129,8 +130,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Set the flow control for the subscribers, including the behaviour for when the flow limits
-	 * are hit.
+	 * Set the flow control for the subscribers, including the behaviour for when the flow
+	 * limits are hit.
 	 * @param flowControlSettings the flow control settings to set
 	 */
 	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
@@ -171,15 +172,17 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the retry settings for the generated subscriber stubs.
-	 * @param subscriberStubRetrySettings parameters for retrying pull requests when they fail,
-	 * including jitter logic, timeout, and exponential backoff
+	 * @param subscriberStubRetrySettings parameters for retrying pull requests when they
+	 * fail, including jitter logic, timeout, and exponential backoff
 	 */
-	public void setSubscriberStubRetrySettings(RetrySettings subscriberStubRetrySettings) {
+	public void setSubscriberStubRetrySettings(
+			RetrySettings subscriberStubRetrySettings) {
 		this.subscriberStubRetrySettings = subscriberStubRetrySettings;
 	}
 
 	@Override
-	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
+	public Subscriber createSubscriber(String subscriptionName,
+			MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
 				ProjectSubscriptionName.of(this.projectId, subscriptionName), receiver);
 
@@ -223,9 +226,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			Boolean returnImmediately) {
 		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
 
-		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscription(
-						ProjectSubscriptionName.of(this.projectId, subscriptionName).toString());
+		PullRequest.Builder pullRequestBuilder = PullRequest.newBuilder().setSubscription(
+				ProjectSubscriptionName.of(this.projectId, subscriptionName).toString());
 
 		if (maxMessages != null) {
 			pullRequestBuilder.setMaxMessages(maxMessages);
@@ -240,7 +242,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public SubscriberStub createSubscriberStub() {
-		SubscriberStubSettings.Builder subscriberStubSettings = SubscriberStubSettings.newBuilder();
+		SubscriberStubSettings.Builder subscriberStubSettings = SubscriberStubSettings
+				.newBuilder();
 
 		if (this.credentialsProvider != null) {
 			subscriberStubSettings.setCredentialsProvider(this.credentialsProvider);
@@ -267,8 +270,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		}
 
 		if (this.subscriberStubRetrySettings != null) {
-			subscriberStubSettings.pullSettings().setRetrySettings(
-					this.subscriberStubRetrySettings);
+			subscriberStubSettings.pullSettings()
+					.setRetrySettings(this.subscriberStubRetrySettings);
 		}
 
 		try {

@@ -32,4 +32,5 @@ public class PubSubException extends NestedRuntimeException {
 	public PubSubException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
+
 }

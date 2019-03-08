@@ -35,7 +35,6 @@ import static org.mockito.Mockito.verify;
  * Tests for channel binder.
  *
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -60,13 +59,14 @@ public class PubSubMessageChannelBinderTests {
 
 	@Before
 	public void before() {
-		this.binder = new PubSubMessageChannelBinder(new String[0], this.channelProvisioner, this.pubSubTemplate,
-				this.properties);
+		this.binder = new PubSubMessageChannelBinder(new String[0],
+				this.channelProvisioner, this.pubSubTemplate, this.properties);
 	}
 
 	@Test
 	public void testAfterUnbindConsumer() {
-		this.binder.afterUnbindConsumer(this.consumerDestination, "group1", this.consumerProperties);
+		this.binder.afterUnbindConsumer(this.consumerDestination, "group1",
+				this.consumerProperties);
 
 		verify(this.channelProvisioner).afterUnbindConsumer(this.consumerDestination);
 	}

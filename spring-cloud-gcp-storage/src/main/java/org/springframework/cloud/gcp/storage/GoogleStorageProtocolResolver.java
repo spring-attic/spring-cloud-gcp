@@ -59,8 +59,8 @@ public class GoogleStorageProtocolResolver
 	}
 
 	@Override
-	public void postProcessBeanFactory(
-			ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
+			throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
@@ -95,8 +95,7 @@ public class GoogleStorageProtocolResolver
 			return getGoogleStorageProtocolResolverSettings();
 		}
 		catch (NoSuchBeanDefinitionException ex) {
-			return GoogleStorageProtocolResolverSettings
-					.DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS;
+			return GoogleStorageProtocolResolverSettings.DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS;
 		}
 	}
 
@@ -108,4 +107,5 @@ public class GoogleStorageProtocolResolver
 		return new GoogleStorageResource(getStorage(), location,
 				getSettings().isAutoCreateFiles());
 	}
+
 }

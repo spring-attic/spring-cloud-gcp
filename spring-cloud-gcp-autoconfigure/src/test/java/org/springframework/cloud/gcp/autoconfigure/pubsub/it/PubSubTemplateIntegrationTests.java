@@ -66,13 +66,14 @@ import static org.awaitility.Awaitility.await;
 public class PubSubTemplateIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
+			.withPropertyValues(
+					"spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 
 	@BeforeClass
 	public static void enableTests() {
-			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
@@ -85,8 +86,7 @@ public class PubSubTemplateIntegrationTests {
 			String subscriptionName = "zatoichi_" + UUID.randomUUID();
 
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
-			assertThat(pubSubAdmin.getSubscription(subscriptionName))
-					.isNull();
+			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNull();
 			pubSubAdmin.createTopic(topicName);
 			pubSubAdmin.createSubscription(subscriptionName, topicName);
 
@@ -96,16 +96,18 @@ public class PubSubTemplateIntegrationTests {
 			pubSubTemplate.publish(topicName, "tatatatata", headers).get();
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
-			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("tatatatata"));
+			assertThat(pubsubMessage.getData())
+					.isEqualTo(ByteString.copyFromUtf8("tatatatata"));
 			assertThat(pubsubMessage.getAttributesCount()).isEqualTo(2);
-			assertThat(pubsubMessage.getAttributesOrThrow("cactuar")).isEqualTo("tonberry");
+			assertThat(pubsubMessage.getAttributesOrThrow("cactuar"))
+					.isEqualTo("tonberry");
 			assertThat(pubsubMessage.getAttributesOrThrow("fujin")).isEqualTo("raijin");
 
 			assertThat(pubSubAdmin.getTopic(topicName)).isNotNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull();
 			assertThat(pubSubAdmin.listTopics().stream()
-					.filter((topic) -> topic.getName().endsWith(topicName)).toArray().length)
-							.isEqualTo(1);
+					.filter((topic) -> topic.getName().endsWith(topicName))
+					.toArray().length).isEqualTo(1);
 			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
 					(subscription) -> subscription.getName().endsWith(subscriptionName))
 					.toArray().length).isEqualTo(1);
@@ -114,8 +116,8 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNull();
 			assertThat(pubSubAdmin.listTopics().stream()
-					.filter((topic) -> topic.getName().endsWith(topicName)).toArray().length)
-					.isEqualTo(0);
+					.filter((topic) -> topic.getName().endsWith(topicName))
+					.toArray().length).isEqualTo(0);
 			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
 					(subscription) -> subscription.getName().endsWith(subscriptionName))
 					.toArray().length).isEqualTo(0);
@@ -150,21 +152,24 @@ public class PubSubTemplateIntegrationTests {
 			List<AcknowledgeablePubsubMessage> ackableMessages = new ArrayList<>();
 			Set<String> messagesSet = new HashSet<>();
 			for (int i = 0; i < 5 && messagesSet.size() < 3; i++) {
-				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
+				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate
+						.pull(subscriptionName, 4, false);
 				ackableMessages.addAll(newMessages);
-				messagesSet.addAll(newMessages.stream()
-						.map((message) -> message.getPubsubMessage().getData().toStringUtf8())
+				messagesSet.addAll(newMessages.stream().map(
+						(message) -> message.getPubsubMessage().getData().toStringUtf8())
 						.collect(Collectors.toList()));
 			}
 
-			assertThat(messagesSet.size()).as("check that we received all the messages").isEqualTo(3);
+			assertThat(messagesSet.size()).as("check that we received all the messages")
+					.isEqualTo(3);
 
 			ackableMessages.forEach((message) -> {
-				if (message.getPubsubMessage().getData().toStringUtf8().equals("message1")) {
-					message.ack(); //sync call
+				if (message.getPubsubMessage().getData().toStringUtf8()
+						.equals("message1")) {
+					message.ack(); // sync call
 				}
 				else {
-					message.nack(); //sync call
+					message.nack(); // sync call
 				}
 			});
 
@@ -179,7 +184,8 @@ public class PubSubTemplateIntegrationTests {
 				messagesCount += ackableMessages.size();
 				tries--;
 			}
-			assertThat(messagesCount).as("check that we get both nacked messages back").isEqualTo(2);
+			assertThat(messagesCount).as("check that we get both nacked messages back")
+					.isEqualTo(2);
 
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
@@ -188,14 +194,14 @@ public class PubSubTemplateIntegrationTests {
 
 	@Test
 	public void testPubSubTemplateLoadsMessageConverter() {
-		this.contextRunner
-				.withUserConfiguration(JsonPayloadTestConfiguration.class)
+		this.contextRunner.withUserConfiguration(JsonPayloadTestConfiguration.class)
 				.run((context) -> {
 					PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 					PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
 					String topicName = "json-payload-topic" + UUID.randomUUID();
-					String subscriptionName = "json-payload-subscription" + UUID.randomUUID();
+					String subscriptionName = "json-payload-subscription"
+							+ UUID.randomUUID();
 					pubSubAdmin.createTopic(topicName);
 					pubSubAdmin.createSubscription(subscriptionName, topicName, 10);
 
@@ -203,9 +209,9 @@ public class PubSubTemplateIntegrationTests {
 					pubSubTemplate.publish(topicName, user);
 
 					await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
-						List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages =
-								pubSubTemplate.pullAndConvert(
-										subscriptionName, 1, true, TestUser.class);
+						List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages = pubSubTemplate
+								.pullAndConvert(subscriptionName, 1, true,
+										TestUser.class);
 						assertThat(messages).hasSize(1);
 
 						TestUser receivedTestUser = messages.get(0).getPayload();
@@ -228,6 +234,7 @@ public class PubSubTemplateIntegrationTests {
 		public PubSubMessageConverter pubSubMessageConverter() {
 			return new JacksonPubSubMessageConverter(new ObjectMapper());
 		}
+
 	}
 
 	/**
@@ -240,9 +247,12 @@ public class PubSubTemplateIntegrationTests {
 		public final String password;
 
 		@JsonCreator
-		TestUser(@JsonProperty("username") String username, @JsonProperty("password") String password) {
+		TestUser(@JsonProperty("username") String username,
+				@JsonProperty("password") String password) {
 			this.username = username;
 			this.password = password;
 		}
+
 	}
+
 }

@@ -32,7 +32,6 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 public class SpannerQueryOptions implements Serializable {
@@ -85,9 +84,9 @@ public class SpannerQueryOptions implements Serializable {
 		return this.allowPartialRead;
 	}
 
-	public SpannerQueryOptions setAllowPartialRead(
-			boolean allowPartialRead) {
+	public SpannerQueryOptions setAllowPartialRead(boolean allowPartialRead) {
 		this.allowPartialRead = allowPartialRead;
 		return this;
 	}
+
 }

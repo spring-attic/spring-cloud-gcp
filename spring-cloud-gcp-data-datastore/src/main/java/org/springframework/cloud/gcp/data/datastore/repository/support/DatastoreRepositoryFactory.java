@@ -46,7 +46,6 @@ import org.springframework.util.Assert;
  * Repository factory for Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreRepositoryFactory extends RepositoryFactorySupport
@@ -122,8 +121,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 			@Override
 			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
 					T parameters, Object[] parameterValues) {
-				StandardEvaluationContext evaluationContext = (StandardEvaluationContext)
-						evaluationContextProvider
+				StandardEvaluationContext evaluationContext = (StandardEvaluationContext) evaluationContextProvider
 						.getEvaluationContext(parameters, parameterValues);
 				evaluationContext.setRootObject(
 						DatastoreRepositoryFactory.this.applicationContext);

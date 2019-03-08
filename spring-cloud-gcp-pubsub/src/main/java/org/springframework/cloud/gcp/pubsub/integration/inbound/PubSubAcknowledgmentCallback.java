@@ -24,13 +24,14 @@ import org.springframework.util.Assert;
 /**
  * Pub/Sub specific implementation of {@link AcknowledgmentCallback}.
  *
- * <p>{@link AcknowledgmentCallback#isAcknowledged()} is implemented for semantic accuracy
+ * <p>
+ * {@link AcknowledgmentCallback#isAcknowledged()} is implemented for semantic accuracy
  * only, since in Pub/Sub acknowledging a message more than once is not an error.
- * <p>{@link AcknowledgmentCallback#noAutoAck()} is not implemented; the correct way to
+ * <p>
+ * {@link AcknowledgmentCallback#noAutoAck()} is not implemented; the correct way to
  * enable manual acking is through configuring {@link PubSubMessageSource}.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 public class PubSubAcknowledgmentCallback implements AcknowledgmentCallback {
@@ -41,7 +42,8 @@ public class PubSubAcknowledgmentCallback implements AcknowledgmentCallback {
 
 	private boolean acknowledged;
 
-	public PubSubAcknowledgmentCallback(AcknowledgeablePubsubMessage message, AckMode ackMode) {
+	public PubSubAcknowledgmentCallback(AcknowledgeablePubsubMessage message,
+			AckMode ackMode) {
 		Assert.notNull(message, "message to be acknowledged cannot be null");
 		Assert.notNull(ackMode, "ackMode cannot be null");
 		this.message = message;
@@ -50,7 +52,9 @@ public class PubSubAcknowledgmentCallback implements AcknowledgmentCallback {
 
 	/**
 	 * In {@link AckMode#AUTO_ACK} mode, nacking cannot be done through this callback.
-	 * <p>Use {@link org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders#ORIGINAL_MESSAGE}
+	 * <p>
+	 * Use
+	 * {@link org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders#ORIGINAL_MESSAGE}
 	 * to nack instead.
 	 */
 	@Override
@@ -73,4 +77,5 @@ public class PubSubAcknowledgmentCallback implements AcknowledgmentCallback {
 	public boolean isAcknowledged() {
 		return this.acknowledged;
 	}
+
 }

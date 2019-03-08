@@ -37,7 +37,6 @@ import org.springframework.data.repository.config.XmlRepositoryConfigurationSour
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerRepositoryConfigurationExtension
@@ -85,4 +84,5 @@ public class SpannerRepositoryConfigurationExtension
 		ParsingUtils.setPropertyReference(builder, element, "spanner-mapping-context-ref",
 				"spannerMappingContext");
 	}
+
 }

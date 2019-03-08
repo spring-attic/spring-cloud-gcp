@@ -82,8 +82,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Before
 	public void setup() {
 		this.writeConverter = new SpannerWriteConverter();
-		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(new SpannerMappingContext(),
-				this.writeConverter);
+		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(
+				new SpannerMappingContext(), this.writeConverter);
 	}
 
 	@Test
@@ -119,7 +119,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		t.bytesList = new ArrayList<>();
 		t.bytesList.add(t.bytes);
 
-		// this property will be ignored in write mapping because it is a child relationship. no
+		// this property will be ignored in write mapping because it is a child
+		// relationship. no
 		// exception will result even though it is an unsupported type for writing.
 		t.childTestEntities = new ArrayList<>();
 		t.childTestEntities.add(new ChildTestEntity());
@@ -249,7 +250,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
 		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
 		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
-		verify(intField2Binder, times(1)).to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
+		verify(intField2Binder, times(1))
+				.to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
 		verify(longFieldBinder, times(1)).to(eq(String.valueOf(t.longField)));
 		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
 		verify(doubleArrayFieldBinder, times(1)).to("3.33,3.33,3.33");
@@ -265,7 +267,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
 		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
 
-		// the positive value set earlier must not be passed to Spanner. it must be replaced by
+		// the positive value set earlier must not be passed to Spanner. it must be
+		// replaced by
 		// the dummy value.
 		verify(commitTimestampBinder, times(1)).to(eq(Value.COMMIT_TIMESTAMP));
 
@@ -289,8 +292,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 				.thenReturn(null);
 		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
 
-		this.spannerEntityWriter.write(t, writeBuilder::set,
-				Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("dateField", "doubleList"))));
+		this.spannerEntityWriter.write(t, writeBuilder::set, Collections.unmodifiableSet(
+				new HashSet<String>(Arrays.asList("dateField", "doubleList"))));
 		verify(dateFieldBinder, times(1)).to((Date) isNull());
 		verify(doubleListFieldBinder, times(1))
 				.toFloat64Array((Iterable<Double>) isNull());
@@ -328,7 +331,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Test
 	public void writeUnsupportedTypeIterableTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
+		this.expectedEx
+				.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
@@ -338,8 +342,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Test
 	public void writeIncompatibleTypeTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unsupported mapping for type: " +
-				"class org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities$TestEntity");
+		this.expectedEx.expectMessage("Unsupported mapping for type: "
+				+ "class org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities$TestEntity");
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
@@ -363,7 +367,8 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Test
 	public void testUserSetUnconvertableColumnType() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unsupported mapping for type: class java.lang.Boolean");
+		this.expectedEx
+				.expectMessage("Unsupported mapping for type: class java.lang.Boolean");
 		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
@@ -373,8 +378,11 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	 * A test type that cannot be converted.
 	 */
 	static class UserSetUnconvertableColumnType {
+
 		@PrimaryKey
 		@Column(spannerType = TypeCode.DATE)
 		boolean id;
+
 	}
+
 }

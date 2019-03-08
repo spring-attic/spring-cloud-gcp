@@ -37,7 +37,8 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnMissingBean({ SpannerRepositoryFactoryBean.class,
 		SpannerRepositoryConfigurationExtension.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
-@Import({SpannerRepositoriesAutoConfigureRegistrar.class})
+@Import({ SpannerRepositoriesAutoConfigureRegistrar.class })
 @AutoConfigureBefore(GcpSpannerAutoConfiguration.class)
 public class SpannerRepositoriesAutoConfiguration {
+
 }

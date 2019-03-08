@@ -44,7 +44,8 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class, DatastoreTransactionManagerAutoConfiguration.class,
+					GcpContextAutoConfiguration.class,
+					DatastoreTransactionManagerAutoConfiguration.class,
 					DatastoreRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
@@ -54,7 +55,8 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
 		this.contextRunner.run((context) -> {
-			DatastoreOptions datastoreOptions = context.getBean(Datastore.class).getOptions();
+			DatastoreOptions datastoreOptions = context.getBean(Datastore.class)
+					.getOptions();
 			assertThat(datastoreOptions.getProjectId()).isEqualTo("test-project");
 			assertThat(datastoreOptions.getNamespace()).isEqualTo("testNamespace");
 			assertThat(datastoreOptions.getHost()).isEqualTo("localhost:8081");
@@ -64,22 +66,30 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testDatastoreEmulatorCredentialsConfig() {
 		this.contextRunner.run((context) -> {
-			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
-			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
+			CredentialsProvider defaultCredentialsProvider = context
+					.getBean(CredentialsProvider.class);
+			assertThat(defaultCredentialsProvider)
+					.isNotInstanceOf(NoCredentialsProvider.class);
 
-			DatastoreOptions datastoreOptions = context.getBean(Datastore.class).getOptions();
-			assertThat(datastoreOptions.getCredentials()).isInstanceOf(NoCredentials.class);
+			DatastoreOptions datastoreOptions = context.getBean(Datastore.class)
+					.getOptions();
+			assertThat(datastoreOptions.getCredentials())
+					.isInstanceOf(NoCredentials.class);
 		});
 	}
 
 	@Test
 	public void testDatastoreOperationsCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
+		this.contextRunner
+				.run((context) -> assertThat(context.getBean(DatastoreOperations.class))
+						.isNotNull());
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+		this.contextRunner
+				.run((context) -> assertThat(context.getBean(TestRepository.class))
+						.isNotNull());
 	}
 
 	@Test
@@ -103,5 +113,7 @@ public class GcpDatastoreAutoConfigurationTests {
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
 		}
+
 	}
+
 }

@@ -36,11 +36,13 @@ import org.springframework.integration.metadata.SimpleMetadataStore;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
+public class GcsStreamingMessageSource
+		extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 
 	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
 		super(template, null);
-		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsStreamingMessageSource"));
+		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(),
+				"gcsStreamingMessageSource"));
 	}
 
 	@Override
@@ -50,18 +52,19 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 
 	@Override
 	public void setRemoteFileSeparator(String remoteFileSeparator) {
-		throw new UnsupportedOperationException("Google Cloud Storage doesn't support separators other than '/'.");
+		throw new UnsupportedOperationException(
+				"Google Cloud Storage doesn't support separators other than '/'.");
 	}
 
 	@Override
-	protected List<AbstractFileInfo<BlobInfo>> asFileInfoList(Collection<BlobInfo> collection) {
-		return collection.stream()
-				.map(GcsFileInfo::new)
-				.collect(Collectors.toList());
+	protected List<AbstractFileInfo<BlobInfo>> asFileInfoList(
+			Collection<BlobInfo> collection) {
+		return collection.stream().map(GcsFileInfo::new).collect(Collectors.toList());
 	}
 
 	@Override
 	protected boolean isDirectory(BlobInfo blobInfo) {
 		return blobInfo.isDirectory();
 	}
+
 }

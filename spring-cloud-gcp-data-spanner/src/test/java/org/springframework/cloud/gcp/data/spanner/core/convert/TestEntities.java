@@ -44,6 +44,7 @@ public class TestEntities {
 	 */
 	@Table(name = "custom_test_table")
 	static class TestEntity {
+
 		@PrimaryKey
 		String id;
 
@@ -70,7 +71,8 @@ public class TestEntities {
 		@Column(spannerType = TypeCode.STRING)
 		double[] doubleArray;
 
-		// int is not a native Cloud Spanner type, so this will utilize custom conversions.
+		// int is not a native Cloud Spanner type, so this will utilize custom
+		// conversions.
 		int intField;
 
 		List<Double> doubleList;
@@ -104,18 +106,21 @@ public class TestEntities {
 		 * A enum used to test conversion and storage.
 		 */
 		enum Color {
-			WHITE,
-			BLACK
+
+			WHITE, BLACK
+
 		}
 
 		@Column(spannerCommitTimestamp = true)
 		Timestamp commitTimestamp;
+
 	}
 
 	/**
 	 * A test entity that acts as a child of another entity.
 	 */
 	static class ChildTestEntity {
+
 		@PrimaryKey
 		String id;
 
@@ -128,12 +133,14 @@ public class TestEntities {
 
 		@PrimaryKey(keyOrder = 4)
 		String id5;
+
 	}
 
 	/**
 	 * A test class that holds key components while being embedded.
 	 */
 	static class TestEmbeddedColumns {
+
 		@PrimaryKey
 		String id2;
 
@@ -141,6 +148,7 @@ public class TestEntities {
 		String id3;
 
 		int intField2;
+
 	}
 
 	/**
@@ -148,10 +156,12 @@ public class TestEntities {
 	 */
 	@Table(name = "faulty_test_table")
 	static class FaultyTestEntity {
+
 		@PrimaryKey
 		String id;
 
 		TestEntity fieldWithUnsupportedType;
+
 	}
 
 	/**
@@ -159,10 +169,12 @@ public class TestEntities {
 	 */
 	@Table(name = "faulty_test_table_2")
 	static class FaultyTestEntity2 {
+
 		@PrimaryKey
 		String id;
 
 		List<TestEntity> listWithUnsupportedInnerType;
+
 	}
 
 	/**
@@ -170,10 +182,12 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity")
 	static class OuterTestEntity {
+
 		@PrimaryKey
 		String id;
 
 		List<InnerTestEntity> innerTestEntities;
+
 	}
 
 	/**
@@ -181,10 +195,12 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity")
 	static class OuterTestHoldingStructsEntity {
+
 		@PrimaryKey
 		String id;
 
 		List<Struct> innerStructs;
+
 	}
 
 	/**
@@ -192,10 +208,12 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity")
 	static class OuterTestHoldingStructEntity {
+
 		@PrimaryKey
 		String id;
 
 		Struct innerStruct;
+
 	}
 
 	/**
@@ -203,10 +221,12 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity_flat")
 	static class OuterTestEntityFlat {
+
 		@PrimaryKey
 		String id;
 
 		List<Integer> innerLengths;
+
 	}
 
 	/**
@@ -214,40 +234,48 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity_flat_faulty")
 	static class OuterTestEntityFlatFaulty {
+
 		@PrimaryKey
 		String id;
 
 		Integer innerLengths;
+
 	}
 
 	/**
 	 * A test entity that tests a single property without a value.
 	 */
 	static class InnerTestEntity {
+
 		@PrimaryKey
 		String value;
 
 		String missingColumnValue;
+
 	}
 
 	/**
 	 * A test class to test Spring Data's constructor support.
 	 */
 	static class SimpleConstructorTester {
+
 		@PrimaryKey
 		final String id;
 
 		SimpleConstructorTester(String id) {
 			this.id = id;
 		}
+
 	}
 
 	/**
 	 * A class with a list that doesn't have an explicit param type.
 	 */
 	static class TestEntityWithListWithZeroTypeArgs {
+
 		@PrimaryKey
 		List zeroArgsListOfObjects;
+
 	}
 
 	/**
@@ -255,22 +283,27 @@ public class TestEntities {
 	 */
 	@Table(name = "outer_test_entity")
 	static class OuterTestEntityWithConstructor {
+
 		@PrimaryKey
 		String id;
 
 		List<InnerTestEntity> innerTestEntities;
 
-		OuterTestEntityWithConstructor(String id, List<InnerTestEntity> innerTestEntities) {
+		OuterTestEntityWithConstructor(String id,
+				List<InnerTestEntity> innerTestEntities) {
 			this.id = id;
 			this.innerTestEntities = innerTestEntities;
 		}
+
 	}
 
 	/**
-	 * A test class with a partial constructor meant to test Spring Data's constructor support.
+	 * A test class with a partial constructor meant to test Spring Data's constructor
+	 * support.
 	 */
 	@Table(name = "custom_test_table")
 	static class PartialConstructor {
+
 		@PrimaryKey
 		String id;
 
@@ -289,5 +322,7 @@ public class TestEntities {
 			this.stringField = stringField;
 			this.booleanField = booleanField;
 		}
+
 	}
+
 }

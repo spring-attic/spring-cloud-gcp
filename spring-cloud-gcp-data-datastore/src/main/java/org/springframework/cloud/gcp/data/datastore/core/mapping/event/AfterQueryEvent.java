@@ -31,9 +31,8 @@ public class AfterQueryEvent extends ReadEvent {
 
 	/**
 	 * Constructor.
-	 *
 	 * @param results A list of results from the read operation where each item was mapped
-	 *     from a Cloud Datastore entity.
+	 * from a Cloud Datastore entity.
 	 * @param query The query run on Cloud Datastore.
 	 */
 	public AfterQueryEvent(Iterable results, Query query) {
@@ -66,4 +65,5 @@ public class AfterQueryEvent extends ReadEvent {
 	public int hashCode() {
 		return Objects.hash(getResults(), getQuery());
 	}
+
 }

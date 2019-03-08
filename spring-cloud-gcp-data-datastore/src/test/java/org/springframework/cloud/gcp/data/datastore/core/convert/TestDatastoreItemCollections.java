@@ -32,6 +32,7 @@ import org.springframework.util.CollectionUtils;
  * @author Dmitry Solomakha
  */
 public class TestDatastoreItemCollections {
+
 	private List<Integer> intList;
 
 	private ComparableBeanContextSupport beanContext;
@@ -44,7 +45,8 @@ public class TestDatastoreItemCollections {
 
 	private List<byte[]> listByteArray;
 
-	public TestDatastoreItemCollections(List<Integer> intList, ComparableBeanContextSupport beanContext, String[] stringArray,
+	public TestDatastoreItemCollections(List<Integer> intList,
+			ComparableBeanContextSupport beanContext, String[] stringArray,
 			boolean[] boolArray, byte[][] bytes, List<byte[]> listByteArray) {
 		this.intList = intList;
 		this.beanContext = beanContext;
@@ -87,12 +89,12 @@ public class TestDatastoreItemCollections {
 			return false;
 		}
 		TestDatastoreItemCollections that = (TestDatastoreItemCollections) o;
-		return Objects.equals(getIntList(), that.getIntList()) &&
-				Objects.equals(getBeanContext(), that.getBeanContext()) &&
-				Arrays.equals(getStringArray(), that.getStringArray()) &&
-				Arrays.equals(getBoolArray(), that.getBoolArray()) &&
-				equal(getBytes(), that.getBytes()) &&
-				equal(getListByteArray(), that.getListByteArray());
+		return Objects.equals(getIntList(), that.getIntList())
+				&& Objects.equals(getBeanContext(), that.getBeanContext())
+				&& Arrays.equals(getStringArray(), that.getStringArray())
+				&& Arrays.equals(getBoolArray(), that.getBoolArray())
+				&& equal(getBytes(), that.getBytes())
+				&& equal(getListByteArray(), that.getListByteArray());
 	}
 
 	@Override
@@ -130,11 +132,12 @@ public class TestDatastoreItemCollections {
 	}
 
 	/**
-	 * BeanContextSupport does not provide an equals() implementation.
-	 * This subclass overrides {@code equals/hashCode} and keeps a simple list of values
-	 * to enable test verification.
+	 * BeanContextSupport does not provide an equals() implementation. This subclass
+	 * overrides {@code equals/hashCode} and keeps a simple list of values to enable test
+	 * verification.
 	 */
 	static class ComparableBeanContextSupport extends BeanContextSupport {
+
 		private Set<Object> values = new HashSet<>();
 
 		@Override
@@ -157,5 +160,7 @@ public class TestDatastoreItemCollections {
 			// Abides by hashCode contract, while being perfectly useless.
 			return 1;
 		}
+
 	}
+
 }

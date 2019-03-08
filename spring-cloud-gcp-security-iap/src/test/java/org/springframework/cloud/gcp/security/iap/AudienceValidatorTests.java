@@ -33,10 +33,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
- * Spring context needed to exercise {@link AudienceValidator}'s {@code afterPropertiesSet()}.
+ * Spring context needed to exercise {@link AudienceValidator}'s
+ * {@code afterPropertiesSet()}.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 public class AudienceValidatorTests {
@@ -85,9 +85,12 @@ public class AudienceValidatorTests {
 	 */
 	@Configuration
 	static class TestConfiguration {
+
 		@Bean
 		AudienceValidator audienceValidator() {
 			return new AudienceValidator(() -> "cats");
 		}
+
 	}
+
 }

@@ -31,11 +31,11 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
 /**
- * Determines the type of the user's custom-defined Query Methods and instantiates their implementations.
+ * Determines the type of the user's custom-defined Query Methods and instantiates their
+ * implementations.
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
@@ -68,8 +68,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-	SpannerQueryMethod createQueryMethod(Method method,
-			RepositoryMetadata metadata, ProjectionFactory factory) {
+	SpannerQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
+			ProjectionFactory factory) {
 		return new SpannerQueryMethod(method, metadata, factory,
 				this.spannerMappingContext);
 	}
@@ -79,7 +79,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 			ProjectionFactory factory, NamedQueries namedQueries) {
 		SpannerQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
 		Class<?> entityType = getEntityType(queryMethod);
-		boolean isDml = queryMethod.getQueryAnnotation() != null && queryMethod.getQueryAnnotation().dmlStatement();
+		boolean isDml = queryMethod.getQueryAnnotation() != null
+				&& queryMethod.getQueryAnnotation().dmlStatement();
 
 		if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryMethod.getQueryAnnotation().value();
@@ -105,4 +106,5 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		return new PartTreeSpannerQuery<>(entityType, queryMethod, this.spannerTemplate,
 				this.spannerMappingContext);
 	}
+
 }

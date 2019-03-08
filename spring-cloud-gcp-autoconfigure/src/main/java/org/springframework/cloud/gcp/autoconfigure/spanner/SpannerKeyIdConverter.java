@@ -65,8 +65,8 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(type);
 
-		return persistentEntity != null
-				&& persistentEntity.getIdProperty() != null
+		return persistentEntity != null && persistentEntity.getIdProperty() != null
 				&& persistentEntity.getIdProperty().getActualType().equals(Key.class);
 	}
+
 }

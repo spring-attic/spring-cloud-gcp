@@ -29,7 +29,6 @@ public abstract class GcpPubSubHeaders {
 
 	/**
 	 * The ack header text.
-	 *
 	 * @deprecated as of 1.1, use {@link #ORIGINAL_MESSAGE} instead.
 	 */
 	@Deprecated
@@ -44,4 +43,5 @@ public abstract class GcpPubSubHeaders {
 	 * The original message header text.
 	 */
 	public static final String ORIGINAL_MESSAGE = PREFIX + "original_message";
+
 }

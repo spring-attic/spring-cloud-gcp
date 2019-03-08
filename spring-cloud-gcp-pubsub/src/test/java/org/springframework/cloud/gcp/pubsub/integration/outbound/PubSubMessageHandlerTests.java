@@ -72,15 +72,12 @@ public class PubSubMessageHandlerTests {
 	@Before
 	public void setUp() {
 		this.message = new GenericMessage<byte[]>("testPayload".getBytes(),
-				new MapBuilder<String, Object>()
-						.put("key1", "value1")
-						.put("key2", "value2")
-						.build());
+				new MapBuilder<String, Object>().put("key1", "value1")
+						.put("key2", "value2").build());
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
 		future.set("benfica");
-		when(this.pubSubTemplate.publish(eq("testTopic"),
-				eq("testPayload".getBytes()), isA(Map.class)))
-				.thenReturn(future);
+		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload".getBytes()),
+				isA(Map.class))).thenReturn(future);
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
 	}
@@ -88,21 +85,19 @@ public class PubSubMessageHandlerTests {
 	@Test
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
-		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"), eq("testPayload".getBytes()), isA(Map.class));
+		verify(this.pubSubTemplate, times(1)).publish(eq("testTopic"),
+				eq("testPayload".getBytes()), isA(Map.class));
 	}
 
 	@Test
 	public void testPublishDynamicTopic() {
 		Message<?> dynamicMessage = new GenericMessage<byte[]>("testPayload".getBytes(),
-				new MapBuilder<String, Object>()
-						.put("key1", "value1")
-						.put("key2", "value2")
-						.put(GcpPubSubHeaders.TOPIC, "dynamicTopic")
+				new MapBuilder<String, Object>().put("key1", "value1")
+						.put("key2", "value2").put(GcpPubSubHeaders.TOPIC, "dynamicTopic")
 						.build());
 		this.adapter.handleMessage(dynamicMessage);
-		verify(this.pubSubTemplate, times(1))
-			.publish(eq("dynamicTopic"),	eq("testPayload".getBytes()), isA(Map.class));
+		verify(this.pubSubTemplate, times(1)).publish(eq("dynamicTopic"),
+				eq("testPayload".getBytes()), isA(Map.class));
 	}
 
 	@Test
@@ -112,23 +107,23 @@ public class PubSubMessageHandlerTests {
 		this.adapter.setPublishTimeoutExpression(timeout);
 
 		this.adapter.handleMessage(this.message);
-		verify(timeout, times(1)).getValue(
-				eq(null), eq(this.message), eq(Long.class));
+		verify(timeout, times(1)).getValue(eq(null), eq(this.message), eq(Long.class));
 	}
 
 	@Test
 	public void testPublishCallback() {
-		ListenableFutureCallback<String> callbackSpy = spy(new ListenableFutureCallback<String>() {
-			@Override
-			public void onFailure(Throwable ex) {
+		ListenableFutureCallback<String> callbackSpy = spy(
+				new ListenableFutureCallback<String>() {
+					@Override
+					public void onFailure(Throwable ex) {
 
-			}
+					}
 
-			@Override
-			public void onSuccess(String result) {
+					@Override
+					public void onSuccess(String result) {
 
-			}
-		});
+					}
+				});
 
 		this.adapter.setPublishCallback(callbackSpy);
 
@@ -227,4 +222,5 @@ public class PubSubMessageHandlerTests {
 
 		this.adapter.setHeaderMapper(null);
 	}
+
 }

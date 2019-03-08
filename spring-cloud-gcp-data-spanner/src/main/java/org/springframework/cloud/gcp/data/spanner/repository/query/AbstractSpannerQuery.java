@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
@@ -30,9 +29,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
  * Base abstract class for Spanner Query Methods.
  *
  * @param <T> the return type of the Query Method
- *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
@@ -86,9 +83,8 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	}
 
 	Class getReturnedSimpleConvertableItemType() {
-		Class itemType = this.queryMethod.isCollectionQuery()
-				? this.queryMethod.getResultProcessor().getReturnedType()
-						.getReturnedType()
+		Class itemType = this.queryMethod.isCollectionQuery() ? this.queryMethod
+				.getResultProcessor().getReturnedType().getReturnedType()
 				: this.queryMethod.getReturnedObjectType();
 
 		// If the user has configured converters that can handle the item type, then it is
@@ -96,7 +92,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		// to not be an entity type.
 		return (itemType == void.class) ? null
 				: this.spannerTemplate.getSpannerEntityProcessor()
-				.getCorrespondingSpannerJavaType(itemType, false);
+						.getCorrespondingSpannerJavaType(itemType, false);
 	}
 
 	Object processRawObjectForProjection(Object object) {
@@ -117,4 +113,5 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	}
 
 	protected abstract List executeRawResult(Object[] parameters);
+
 }

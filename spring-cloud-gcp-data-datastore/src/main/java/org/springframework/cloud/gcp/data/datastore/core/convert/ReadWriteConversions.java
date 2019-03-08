@@ -29,7 +29,6 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface ReadWriteConversions {
@@ -87,4 +86,5 @@ public interface ReadWriteConversions {
 	 * @param datastoreEntityConverter the DatastoreEntityConverter.
 	 */
 	void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter);
+
 }

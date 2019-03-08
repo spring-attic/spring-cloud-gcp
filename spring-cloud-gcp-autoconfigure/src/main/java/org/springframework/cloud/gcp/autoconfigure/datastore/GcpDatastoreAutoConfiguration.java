@@ -50,7 +50,6 @@ import org.springframework.context.annotation.Configuration;
  * Provides Spring Data classes to use with Cloud Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 @Configuration
@@ -116,7 +115,8 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions,
+	public ReadWriteConversions datastoreReadWriteConversions(
+			DatastoreCustomConversions customConversions,
 			ObjectToKeyFactory objectToKeyFactory) {
 		return new TwoStepsConversions(customConversions, objectToKeyFactory);
 	}
@@ -135,15 +135,20 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
+	public DatastoreEntityConverter datastoreEntityConverter(
+			DatastoreMappingContext datastoreMappingContext,
 			ReadWriteConversions conversions) {
 		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreTemplate datastoreTemplate(Datastore datastore, DatastoreMappingContext datastoreMappingContext,
-			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
-		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
+	public DatastoreTemplate datastoreTemplate(Datastore datastore,
+			DatastoreMappingContext datastoreMappingContext,
+			DatastoreEntityConverter datastoreEntityConverter,
+			ObjectToKeyFactory objectToKeyFactory) {
+		return new DatastoreTemplate(datastore, datastoreEntityConverter,
+				datastoreMappingContext, objectToKeyFactory);
 	}
+
 }

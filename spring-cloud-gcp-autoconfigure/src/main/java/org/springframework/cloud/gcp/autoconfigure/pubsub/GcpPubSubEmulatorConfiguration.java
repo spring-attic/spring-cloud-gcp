@@ -30,8 +30,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * If <code>spring.cloud.gcp.pubsub.emulator-host</code> is set, spring stream will connect
- * to a running pub/sub emulator.
+ * If <code>spring.cloud.gcp.pubsub.emulator-host</code> is set, spring stream will
+ * connect to a running pub/sub emulator.
  *
  * @author Andreas Berger
  */
@@ -43,11 +43,12 @@ public class GcpPubSubEmulatorConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
+	public TransportChannelProvider transportChannelProvider(
+			GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget(gcpPubSubProperties.getEmulatorHost())
-				.usePlaintext(true)
+				.forTarget(gcpPubSubProperties.getEmulatorHost()).usePlaintext(true)
 				.build();
 		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
 	}
+
 }

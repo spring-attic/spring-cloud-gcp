@@ -38,6 +38,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SpannerTemplateExample {
+
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplateExample.class);
 
 	@Autowired
@@ -58,7 +59,8 @@ public class SpannerTemplateExample {
 
 		this.spannerOperations.insert(trader);
 
-		Trade t = new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
+		Trade t = new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "template_trader1",
+				Arrays.asList(99.0, 101.00));
 
 		this.spannerOperations.insert(t);
 
@@ -91,4 +93,5 @@ public class SpannerTemplateExample {
 					this.spannerSchemaUtils.getCreateTableDdlString(Trader.class)), true);
 		}
 	}
+
 }

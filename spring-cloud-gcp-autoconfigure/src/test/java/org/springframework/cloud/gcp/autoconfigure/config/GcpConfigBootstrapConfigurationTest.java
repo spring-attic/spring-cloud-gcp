@@ -33,7 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GcpConfigBootstrapConfigurationTest {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class));
+			.withConfiguration(
+					AutoConfigurations.of(GcpConfigBootstrapConfiguration.class));
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {
@@ -52,9 +53,9 @@ public class GcpConfigBootstrapConfigurationTest {
 				"spring.profiles.active=prod",
 				"spring.cloud.gcp.config.timeoutMillis=120000",
 				"spring.cloud.gcp.config.enabled=false",
-				"spring.cloud.gcp.config.project-id=pariah")
-				.run((context) -> {
-					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
+				"spring.cloud.gcp.config.project-id=pariah").run((context) -> {
+					GcpConfigProperties config = context
+							.getBean(GcpConfigProperties.class);
 					assertThat(config.getName()).isEqualTo("myapp");
 					assertThat(config.getProfile()).isEqualTo("prod");
 					assertThat(config.getTimeoutMillis()).isEqualTo(120000);
@@ -62,4 +63,5 @@ public class GcpConfigBootstrapConfigurationTest {
 					assertThat(config.getProjectId()).isEqualTo("pariah");
 				});
 	}
+
 }

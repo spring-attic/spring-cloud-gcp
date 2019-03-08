@@ -26,13 +26,13 @@ import org.springframework.data.auditing.AuditingHandler;
  * @author Chengyuan Zhao
  * @since 1.2
  */
-public class SpannerAuditingEventListener implements ApplicationListener<BeforeSaveEvent> {
+public class SpannerAuditingEventListener
+		implements ApplicationListener<BeforeSaveEvent> {
 
 	private final AuditingHandler handler;
 
 	/**
 	 * Constructor.
-	 *
 	 * @param spannerAuditingHandler the auditing handler to set auditing properties.
 	 */
 	public SpannerAuditingEventListener(AuditingHandler spannerAuditingHandler) {
@@ -43,4 +43,5 @@ public class SpannerAuditingEventListener implements ApplicationListener<BeforeS
 	public void onApplicationEvent(BeforeSaveEvent event) {
 		event.getTargetEntities().forEach(this.handler::markModified);
 	}
+
 }

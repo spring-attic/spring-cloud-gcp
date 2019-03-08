@@ -29,7 +29,6 @@ import org.springframework.data.convert.ThreeTenBackPortConverters;
  * Value object to capture custom conversion. {@link DatastoreCustomConversions}
  *
  * @author Dmitry Solomakha
- *
  * @since 1.1
  */
 public class DatastoreCustomConversions extends CustomConversions {
@@ -45,8 +44,8 @@ public class DatastoreCustomConversions extends CustomConversions {
 		converters.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 
-		STORE_CONVERSIONS =
-				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);
+		STORE_CONVERSIONS = StoreConversions.of(DatastoreNativeTypes.HOLDER,
+				STORE_CONVERTERS);
 	}
 
 	public DatastoreCustomConversions() {

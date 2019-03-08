@@ -81,21 +81,26 @@ public class GcpPubSubEmulatorConfigurationTests {
 					"spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds=23",
 					"spring.cloud.gcp.pubsub.publisher.batching.enabled=true")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
-					GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class));
+					GcpContextAutoConfiguration.class, GcpPubSubAutoConfiguration.class));
 
 	@Test
 	public void testEmulatorConfig() {
 		this.contextRunner.run((context) -> {
-			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
-			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
+			CredentialsProvider defaultCredentialsProvider = context
+					.getBean(CredentialsProvider.class);
+			assertThat(defaultCredentialsProvider)
+					.isNotInstanceOf(NoCredentialsProvider.class);
 
-			TopicAdminSettings topicAdminSettings = context.getBean(TopicAdminSettings.class);
-			CredentialsProvider credentialsProvider = topicAdminSettings.getCredentialsProvider();
+			TopicAdminSettings topicAdminSettings = context
+					.getBean(TopicAdminSettings.class);
+			CredentialsProvider credentialsProvider = topicAdminSettings
+					.getCredentialsProvider();
 			assertThat(credentialsProvider).isInstanceOf(NoCredentialsProvider.class);
 
-			TransportChannelProvider transportChannelProvider = context.getBean(TransportChannelProvider.class);
-			assertThat(transportChannelProvider).isInstanceOf(FixedTransportChannelProvider.class);
+			TransportChannelProvider transportChannelProvider = context
+					.getBean(TransportChannelProvider.class);
+			assertThat(transportChannelProvider)
+					.isInstanceOf(FixedTransportChannelProvider.class);
 		});
 	}
 
@@ -104,11 +109,12 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			GcpPubSubProperties gcpPubSubProperties = context
 					.getBean(GcpPubSubProperties.class);
-			assertThat(gcpPubSubProperties.getSubscriber().getPullEndpoint()).isEqualTo("fake-endpoint");
-			assertThat((int) gcpPubSubProperties.getSubscriber().getParallelPullCount()).isEqualTo(333);
+			assertThat(gcpPubSubProperties.getSubscriber().getPullEndpoint())
+					.isEqualTo("fake-endpoint");
+			assertThat((int) gcpPubSubProperties.getSubscriber().getParallelPullCount())
+					.isEqualTo(333);
 			assertThat(gcpPubSubProperties.getSubscriber().getMaxAckExtensionPeriod())
-					.as("max-ack-extension-period should be set to 1")
-					.isEqualTo(1);
+					.as("max-ack-extension-period should be set to 1").isEqualTo(1);
 		});
 	}
 
@@ -153,7 +159,8 @@ public class GcpPubSubEmulatorConfigurationTests {
 					.getBean("subscriberFlowControlSettings", FlowControlSettings.class);
 			assertThat(settings.getMaxOutstandingElementCount()).isEqualTo(17);
 			assertThat(settings.getMaxOutstandingRequestBytes()).isEqualTo(18);
-			assertThat(settings.getLimitExceededBehavior()).isEqualTo(LimitExceededBehavior.Ignore);
+			assertThat(settings.getLimitExceededBehavior())
+					.isEqualTo(LimitExceededBehavior.Ignore);
 		});
 	}
 
@@ -162,8 +169,10 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			BatchingSettings settings = context.getBean("publisherBatchSettings",
 					BatchingSettings.class);
-			assertThat(settings.getFlowControlSettings().getMaxOutstandingElementCount()).isEqualTo(19);
-			assertThat(settings.getFlowControlSettings().getMaxOutstandingRequestBytes()).isEqualTo(20);
+			assertThat(settings.getFlowControlSettings().getMaxOutstandingElementCount())
+					.isEqualTo(19);
+			assertThat(settings.getFlowControlSettings().getMaxOutstandingRequestBytes())
+					.isEqualTo(20);
 			assertThat(settings.getFlowControlSettings().getLimitExceededBehavior())
 					.isEqualTo(LimitExceededBehavior.Ignore);
 			assertThat(settings.getElementCountThreshold()).isEqualTo(21);
@@ -172,4 +181,5 @@ public class GcpPubSubEmulatorConfigurationTests {
 			assertThat(settings.getIsEnabled()).isTrue();
 		});
 	}
+
 }

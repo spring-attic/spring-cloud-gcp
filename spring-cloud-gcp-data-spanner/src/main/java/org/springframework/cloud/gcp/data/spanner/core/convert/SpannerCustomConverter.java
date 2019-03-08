@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
- *
  * @since 1.1
  */
 public abstract class SpannerCustomConverter {
@@ -43,9 +42,10 @@ public abstract class SpannerCustomConverter {
 	 * @param conversionService if null, then {@link DefaultConversionService} is used.
 	 */
 	SpannerCustomConverter(CustomConversions customConversions,
-																GenericConversionService conversionService) {
+			GenericConversionService conversionService) {
 		Assert.notNull(customConversions, "Valid custom conversions are required!");
-		this.conversionService = (conversionService != null) ? conversionService : new DefaultConversionService();
+		this.conversionService = (conversionService != null) ? conversionService
+				: new DefaultConversionService();
 
 		customConversions.registerConvertersIn(this.conversionService);
 	}
@@ -61,13 +61,11 @@ public abstract class SpannerCustomConverter {
 	public <T> T convert(Object sourceValue, Class<T> targetType) {
 		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		Class<T> boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
-		return boxedTargetType.isAssignableFrom(boxedSourceType)
-						? (T) sourceValue
-						: this.conversionService.convert(sourceValue, boxedTargetType);
+		return boxedTargetType.isAssignableFrom(boxedSourceType) ? (T) sourceValue
+				: this.conversionService.convert(sourceValue, boxedTargetType);
 	}
 
-	static CustomConversions getCustomConversions(
-					Collection<Converter> converters) {
+	static CustomConversions getCustomConversions(Collection<Converter> converters) {
 		return new CustomConversions(CustomConversions.StoreConversions.NONE, converters);
 	}
 

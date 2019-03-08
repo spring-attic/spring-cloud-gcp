@@ -24,20 +24,19 @@ import com.google.cloud.spanner.Type.Code;
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
- * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity}
- * to be stored in a Google Cloud Spanner table.
+ * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity} to be
+ * stored in a Google Cloud Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface SpannerPersistentProperty
 		extends PersistentProperty<SpannerPersistentProperty> {
 
 	/**
-	 * Gets the name of the column in the Google Cloud Spanner table mapped to this property.
-	 *
+	 * Gets the name of the column in the Google Cloud Spanner table mapped to this
+	 * property.
 	 * @return the name of the column.
 	 */
 	String getColumnName();
@@ -63,10 +62,10 @@ public interface SpannerPersistentProperty
 	OptionalLong getMaxColumnLength();
 
 	/**
-	 * True if property corresponds to a column a Cloud Spanner
-	 * table or child entities stored in Cloud Spanner.
-	 * False otherwise.
-	 * @return true if this property will be mapped to and from Cloud Spanner. False otherwise.
+	 * True if property corresponds to a column a Cloud Spanner table or child entities
+	 * stored in Cloud Spanner. False otherwise.
+	 * @return true if this property will be mapped to and from Cloud Spanner. False
+	 * otherwise.
 	 */
 	boolean isMapped();
 
@@ -78,8 +77,8 @@ public interface SpannerPersistentProperty
 
 	/**
 	 * True if property is a collection of child entities. False otherwise.
-	 * @return true if property is a collection of child entities corresponding to an interleaved
-	 * child table. False otherwise.
+	 * @return true if property is a collection of child entities corresponding to an
+	 * interleaved child table. False otherwise.
 	 */
 	boolean isInterleaved();
 
@@ -92,9 +91,9 @@ public interface SpannerPersistentProperty
 	boolean isGenerateSchemaNotNull();
 
 	/**
-	 * If the column is a Cloud Spanner commit timestamp auto-populating column. This property
-	 * is always stored in Cloud Spanner as a Timestamp, and will update based on the latest
-	 * commit.
+	 * If the column is a Cloud Spanner commit timestamp auto-populating column. This
+	 * property is always stored in Cloud Spanner as a Timestamp, and will update based on
+	 * the latest commit.
 	 * @return {@code true} if the property is an auto-populated commit timestamp.
 	 * {@code false} otherwise.
 	 */
@@ -113,4 +112,5 @@ public interface SpannerPersistentProperty
 	 * @return {@code true} if the property is lazily-fetched. {@code false} otherwise.
 	 */
 	boolean isLazyInterleaved();
+
 }

@@ -38,7 +38,6 @@ import static org.junit.Assume.assumeThat;
  * These tests verifies that the pubsub-integration-sample works.
  *
  * @author Dmitry Solomakha
- *
  * @since 1.1
  */
 public class SampleAppIntegrationTest {
@@ -70,12 +69,12 @@ public class SampleAppIntegrationTest {
 	@Test
 	public void testSample() throws Exception {
 
-		SpringApplicationBuilder sender = new SpringApplicationBuilder(SenderApplication.class)
-				.properties("server.port=8082");
+		SpringApplicationBuilder sender = new SpringApplicationBuilder(
+				SenderApplication.class).properties("server.port=8082");
 		sender.run();
 
-		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.class)
-				.properties("server.port=8081");
+		SpringApplicationBuilder receiver = new SpringApplicationBuilder(
+				ReceiverApplication.class).properties("server.port=8081");
 		receiver.run();
 
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
@@ -83,7 +82,8 @@ public class SampleAppIntegrationTest {
 		map.add("message", message);
 		map.add("times", 1);
 
-		this.restTemplate.postForObject("http://localhost:8082/postMessage", map, String.class);
+		this.restTemplate.postForObject("http://localhost:8082/postMessage", map,
+				String.class);
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
@@ -95,4 +95,5 @@ public class SampleAppIntegrationTest {
 		}
 		assertThat(messageReceived).isTrue();
 	}
+
 }

@@ -32,8 +32,7 @@ import org.springframework.cloud.stream.binder.Spy;
  * @author Elena Felder
  */
 public class PubSubMessageChannelBinderEmulatorTests extends
-		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
-				ExtendedProducerProperties<PubSubProducerProperties>> {
+		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>, ExtendedProducerProperties<PubSubProducerProperties>> {
 
 	/**
 	 * The emulator instance, shared across tests.

@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Configuration;
  * @author Jisha Abubaker
  * @author João André Martins
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 @Configuration
@@ -45,5 +44,5 @@ public class GcpConfigBootstrapConfiguration {
 		return new GoogleConfigPropertySourceLocator(new DefaultGcpProjectIdProvider(),
 				new DefaultCredentialsProvider(configProperties), configProperties);
 	}
-}
 
+}

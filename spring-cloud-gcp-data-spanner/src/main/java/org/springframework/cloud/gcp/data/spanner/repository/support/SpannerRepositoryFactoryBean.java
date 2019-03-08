@@ -26,19 +26,18 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
 /**
- * Spanner Repository Factory Bean used to create factories that ultimately create repository implementations.
+ * Spanner Repository Factory Bean used to create factories that ultimately create
+ * repository implementations.
  *
  * @param <S> the entity type of the repository
  * @param <ID> the id type of the entity
  * @param <T> the repository type
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> extends
-		RepositoryFactoryBeanSupport<T, S, ID> implements
-		ApplicationContextAware {
+		RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
 
 	private SpannerMappingContext spannerMappingContext;
 
@@ -47,8 +46,8 @@ public class SpannerRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> ex
 	private ApplicationContext applicationContext;
 
 	/**
-	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository interface.
-	 *
+	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository
+	 * interface.
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	SpannerRepositoryFactoryBean(Class<T> repositoryInterface) {
@@ -67,14 +66,15 @@ public class SpannerRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> ex
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
 		SpannerRepositoryFactory spannerRepositoryFactory = new SpannerRepositoryFactory(
-				this.spannerMappingContext,
-				this.spannerTemplate);
+				this.spannerMappingContext, this.spannerTemplate);
 		spannerRepositoryFactory.setApplicationContext(this.applicationContext);
 		return spannerRepositoryFactory;
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
 		this.applicationContext = applicationContext;
 	}
+
 }

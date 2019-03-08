@@ -87,7 +87,8 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void getSpannerOperationsTest() {
 		assertThat(this.template).isSameAs(
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class).getSpannerTemplate());
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+						.getSpannerTemplate());
 	}
 
 	@Test
@@ -140,7 +141,8 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void saveAllNullEntityTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("A non-null list of entities is required for saving.");
+		this.expectedEx
+				.expectMessage("A non-null list of entities is required for saving.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.saveAll(null);
 	}
@@ -148,7 +150,8 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void saveTest() {
 		Object ob = new Object();
-		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).save(ob)).isEqualTo(ob);
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.save(ob)).isEqualTo(ob);
 		verify(this.template, times(1)).upsert(eq(ob));
 	}
 
@@ -157,8 +160,7 @@ public class SpannerRepositoryImplTests {
 		Object ob = new Object();
 		Object ob2 = new Object();
 		Iterable<Object> ret = new SimpleSpannerRepository<Object, Key>(this.template,
-				Object.class)
-				.saveAll(Arrays.asList(ob, ob2));
+				Object.class).saveAll(Arrays.asList(ob, ob2));
 		assertThat(ret).containsExactlyInAnyOrder(ob, ob2);
 		verify(this.template, times(1)).upsertAll(eq(Arrays.asList(ob, ob2)));
 	}
@@ -168,15 +170,16 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findById(A_KEY).get())
-				.isEqualTo(ret);
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.findById(A_KEY).get()).isEqualTo(ret);
 		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
 	}
 
 	@Test
 	public void findByIdKeyWritingThrowsAnException() {
 		this.expectedEx.expect(SpannerDataException.class);
-		when(this.entityProcessor.convertToKey(any())).thenThrow(SpannerDataException.class);
+		when(this.entityProcessor.convertToKey(any()))
+				.thenThrow(SpannerDataException.class);
 		new SimpleSpannerRepository<Object, Object[]>(this.template, Object.class)
 				.findById(new Object[] {});
 	}
@@ -194,7 +197,8 @@ public class SpannerRepositoryImplTests {
 	public void existsByIdTestNotFound() {
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), (Key) any())).thenReturn(null);
-		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).existsById(A_KEY)).isFalse();
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.existsById(A_KEY)).isFalse();
 	}
 
 	@Test
@@ -239,13 +243,17 @@ public class SpannerRepositoryImplTests {
 	public void findAllByIdTest() {
 		List<Key> unconvertedKey = Arrays.asList(Key.of("key1"), Key.of("key2"));
 
-		when(this.entityProcessor.convertToKey(eq(Key.of("key1")))).thenReturn(Key.of("key1"));
-		when(this.entityProcessor.convertToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
-		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer((invocation) -> {
-			KeySet keys = invocation.getArgument(1);
-			assertThat(keys.getKeys()).containsExactlyInAnyOrder(Key.of("key2"), Key.of("key1"));
-			return null;
-		});
+		when(this.entityProcessor.convertToKey(eq(Key.of("key1"))))
+				.thenReturn(Key.of("key1"));
+		when(this.entityProcessor.convertToKey(eq(Key.of("key2"))))
+				.thenReturn(Key.of("key2"));
+		when(this.template.read(eq(Object.class), (KeySet) any()))
+				.thenAnswer((invocation) -> {
+					KeySet keys = invocation.getArgument(1);
+					assertThat(keys.getKeys()).containsExactlyInAnyOrder(Key.of("key2"),
+							Key.of("key1"));
+					return null;
+				});
 
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.findAllById(unconvertedKey);
@@ -287,22 +295,22 @@ public class SpannerRepositoryImplTests {
 					return f.apply(this.template);
 				});
 
-		Object object =
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.performReadOnlyTransaction((repo) -> "test");
+		Object object = new SimpleSpannerRepository<Object, Key>(this.template,
+				Object.class).performReadOnlyTransaction((repo) -> "test");
 		assertThat(object).isEqualTo("test");
 	}
 
 	@Test
 	public void readWriteTransactionTest() {
-		when(this.template.performReadWriteTransaction(any())).thenAnswer((invocation) -> {
-			Function<SpannerTemplate, String> f = invocation.getArgument(0);
-			return f.apply(this.template);
-		});
+		when(this.template.performReadWriteTransaction(any()))
+				.thenAnswer((invocation) -> {
+					Function<SpannerTemplate, String> f = invocation.getArgument(0);
+					return f.apply(this.template);
+				});
 
-		Object object =
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.performReadWriteTransaction((repo) -> "test");
+		Object object = new SimpleSpannerRepository<Object, Key>(this.template,
+				Object.class).performReadWriteTransaction((repo) -> "test");
 		assertThat(object).isEqualTo("test");
 	}
+
 }

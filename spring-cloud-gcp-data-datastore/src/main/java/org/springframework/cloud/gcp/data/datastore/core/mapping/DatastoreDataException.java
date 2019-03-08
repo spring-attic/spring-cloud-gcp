@@ -22,7 +22,6 @@ import org.springframework.dao.DataAccessException;
  * Exceptions that are created by Spring Data Cloud Datastore.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreDataException extends DataAccessException {

@@ -30,7 +30,6 @@ import org.springframework.core.env.Environment;
  * @author Jisha Abubaker
  * @author João André Martins
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
@@ -48,8 +47,8 @@ public class GcpConfigProperties implements CredentialsSupplier {
 	private String name;
 
 	/**
-	 * Comma-delimited string of profiles under which the app is running.
-	 * Gets its default value from the {@code spring.profiles.active} property, falling back on the
+	 * Comma-delimited string of profiles under which the app is running. Gets its default
+	 * value from the {@code spring.profiles.active} property, falling back on the
 	 * {@code spring.profiles.default} property.
 	 */
 	private String profile;
@@ -68,7 +67,8 @@ public class GcpConfigProperties implements CredentialsSupplier {
 	 * Overrides the GCP OAuth2 credentials specified in the Core module.
 	 */
 	@NestedConfigurationProperty
-	private final Credentials credentials = new Credentials(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
+	private final Credentials credentials = new Credentials(
+			GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
 
 	public GcpConfigProperties(Environment environment) {
 		if (this.profile == null) {

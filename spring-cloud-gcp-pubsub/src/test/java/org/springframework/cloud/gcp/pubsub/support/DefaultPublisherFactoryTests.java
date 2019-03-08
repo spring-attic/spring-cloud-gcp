@@ -54,8 +54,10 @@ public class DefaultPublisherFactoryTests {
 
 		assertThat(factory.getCache().size()).isEqualTo(1);
 		assertThat(publisher).isEqualTo(factory.getCache().get("testTopic"));
-		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo("testTopic");
-		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo("projectId");
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic())
+				.isEqualTo("testTopic");
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject())
+				.isEqualTo("projectId");
 	}
 
 	@Test
@@ -71,4 +73,5 @@ public class DefaultPublisherFactoryTests {
 		this.expectedException.expectMessage("The project ID can't be null or empty.");
 		new DefaultPublisherFactory(() -> null);
 	}
+
 }

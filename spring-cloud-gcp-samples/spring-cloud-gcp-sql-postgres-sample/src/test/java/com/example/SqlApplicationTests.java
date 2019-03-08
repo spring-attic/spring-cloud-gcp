@@ -43,14 +43,13 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class }, properties = {
-		"spring.cloud.gcp.sql.database-name=code_samples_test_db",
-		"spring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testpostgres",
-		"spring.datasource.username=postgres",
-		"spring.datasource.password=test",
-		"spring.datasource.continue-on-error=true",
-		"spring.datasource.initialization-mode=always"
-})
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		SqlApplication.class }, properties = {
+				"spring.cloud.gcp.sql.database-name=code_samples_test_db",
+				"spring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testpostgres",
+				"spring.datasource.username=postgres", "spring.datasource.password=test",
+				"spring.datasource.continue-on-error=true",
+				"spring.datasource.initialization-mode=always" })
 public class SqlApplicationTests {
 
 	@Autowired
@@ -74,8 +73,8 @@ public class SqlApplicationTests {
 
 	@Test
 	public void testSqlRowsAccess() {
-		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
-				"/getTuples", HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+		ResponseEntity<List<String>> result = this.testRestTemplate.exchange("/getTuples",
+				HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
 				});
 
 		assertThat(result.getBody()).containsExactlyInAnyOrder(
@@ -83,4 +82,5 @@ public class SqlApplicationTests {
 				"[jonas@example.com, Jonas, Goncalves]",
 				"[fejsa@example.com, Ljubomir, Fejsa]");
 	}
+
 }

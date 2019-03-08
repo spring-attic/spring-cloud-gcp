@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +26,7 @@ import java.util.Objects;
  * @author Dmitry Solomakha
  */
 class TestItemUnsupportedFields {
+
 	private String stringField;
 
 	private NewType unsupportedField;
@@ -56,8 +56,8 @@ class TestItemUnsupportedFields {
 			return false;
 		}
 		TestItemUnsupportedFields that = (TestItemUnsupportedFields) o;
-		return Objects.equals(getStringField(), that.getStringField()) &&
-				Objects.equals(getUnsupportedField(), that.getUnsupportedField());
+		return Objects.equals(getStringField(), that.getStringField())
+				&& Objects.equals(getUnsupportedField(), that.getUnsupportedField());
 	}
 
 	@Override
@@ -70,6 +70,7 @@ class TestItemUnsupportedFields {
 	 * A test new type.
 	 */
 	static class NewType {
+
 		boolean val;
 
 		NewType(boolean val) {
@@ -97,12 +98,14 @@ class TestItemUnsupportedFields {
 
 			return Objects.hash(isVal());
 		}
+
 	}
 
 	/**
 	 * A test type of collection of unsupported types.
 	 */
 	static class CollectionOfUnsupportedTypes {
+
 		List<NewType> unsupportedElts = new ArrayList<>();
 
 		public List<NewType> getUnsupportedElts() {
@@ -125,5 +128,7 @@ class TestItemUnsupportedFields {
 		public int hashCode() {
 			return Objects.hash(getUnsupportedElts());
 		}
+
 	}
+
 }

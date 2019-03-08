@@ -58,8 +58,9 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 /**
  * Default implementation of {@link PubSubSubscriberOperations}.
  *
- * <p>The main Google Cloud Pub/Sub integration component for consuming
- * messages from subscriptions asynchronously or by pulling.
+ * <p>
+ * The main Google Cloud Pub/Sub integration component for consuming messages from
+ * subscriptions asynchronously or by pulling.
  *
  * A custom {@link Executor} can be injected to control per-subscription batch
  * parallelization in acknowledgement and deadline operations.
@@ -70,7 +71,6 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Chengyuan Zhao
  * @author Doug Hoard
  * @author Elena Felder
- *
  * @since 1.1
  */
 public class PubSubSubscriberTemplate
@@ -82,15 +82,15 @@ public class PubSubSubscriberTemplate
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
-	private final ExecutorService defaultAckExecutor = Executors.newSingleThreadExecutor();
+	private final ExecutorService defaultAckExecutor = Executors
+			.newSingleThreadExecutor();
 
 	private Executor ackExecutor = this.defaultAckExecutor;
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor.
-	 *
-	 * @param subscriberFactory the {@link Subscriber} factory
-	 *                          to subscribe to subscriptions or pull messages.
+	 * @param subscriberFactory the {@link Subscriber} factory to subscribe to
+	 * subscriptions or pull messages.
 	 */
 	public PubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
 		Assert.notNull(subscriberFactory, "The subscriberFactory can't be null.");
@@ -104,7 +104,8 @@ public class PubSubSubscriberTemplate
 	}
 
 	public void setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
-		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+		Assert.notNull(pubSubMessageConverter,
+				"The pubSubMessageConverter can't be null.");
 
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
@@ -120,8 +121,8 @@ public class PubSubSubscriberTemplate
 		Assert.hasText(subscription, "The subscription can't be null or empty.");
 		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
 
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
+		Subscriber subscriber = this.subscriberFactory.createSubscriber(subscription,
+				messageReceiver);
 		subscriber.startAsync();
 		return subscriber;
 	}
@@ -131,70 +132,76 @@ public class PubSubSubscriberTemplate
 			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
 		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
 
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription,
-						(message, ackReplyConsumer) -> messageConsumer.accept(
-								new PushedAcknowledgeablePubsubMessage(
-										ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(), subscription),
-										message,
-										ackReplyConsumer)));
+		Subscriber subscriber = this.subscriberFactory
+				.createSubscriber(subscription,
+						(message,
+								ackReplyConsumer) -> messageConsumer
+										.accept(new PushedAcknowledgeablePubsubMessage(
+												ProjectSubscriptionName.of(
+														this.subscriberFactory
+																.getProjectId(),
+														subscription),
+												message, ackReplyConsumer)));
 		subscriber.startAsync();
 		return subscriber;
 	}
 
 	@Override
 	public <T> Subscriber subscribeAndConvert(String subscription,
-			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer,
+			Class<T> payloadType) {
 		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
 
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription,
-						(message, ackReplyConsumer) -> messageConsumer.accept(
-								new ConvertedPushedAcknowledgeablePubsubMessage<>(
-										ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(), subscription),
-										message,
-										this.getMessageConverter().fromPubSubMessage(message, payloadType),
-										ackReplyConsumer)));
+		Subscriber subscriber = this.subscriberFactory.createSubscriber(subscription,
+				(message, ackReplyConsumer) -> messageConsumer
+						.accept(new ConvertedPushedAcknowledgeablePubsubMessage<>(
+								ProjectSubscriptionName.of(
+										this.subscriberFactory.getProjectId(),
+										subscription),
+								message, this.getMessageConverter().fromPubSubMessage(
+										message, payloadType),
+								ackReplyConsumer)));
 		subscriber.startAsync();
 		return subscriber;
 	}
 
 	/**
 	 * Pulls messages synchronously, on demand, using the pull request in argument.
-	 *
 	 * @param pullRequest pull request containing the subscription name
-	 * @return the list of {@link AcknowledgeablePubsubMessage} containing the ack ID, subscription
-	 * and acknowledger
+	 * @return the list of {@link AcknowledgeablePubsubMessage} containing the ack ID,
+	 * subscription and acknowledger
 	 */
 	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
-						.map((message) -> new PulledAcknowledgeablePubsubMessage(
-								ProjectSubscriptionName.of(
-										this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
-								message.getMessage(),
-								message.getAckId()))
-						.collect(Collectors.toList());
+				.map((message) -> new PulledAcknowledgeablePubsubMessage(
+						ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(),
+								pullRequest.getSubscription()),
+						message.getMessage(), message.getAckId()))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<AcknowledgeablePubsubMessage> pull(
-			String subscription, Integer maxMessages, Boolean returnImmediately) {
+	public List<AcknowledgeablePubsubMessage> pull(String subscription,
+			Integer maxMessages, Boolean returnImmediately) {
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
 	}
 
 	@Override
-	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
-			Boolean returnImmediately, Class<T> payloadType) {
-		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
+	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(
+			String subscription, Integer maxMessages, Boolean returnImmediately,
+			Class<T> payloadType) {
+		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription,
+				maxMessages, returnImmediately);
 
-		return ackableMessages.stream().map(
-				(m) -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
-						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
-		).collect(Collectors.toList());
+		return ackableMessages.stream()
+				.map((m) -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
+						this.pubSubMessageConverter
+								.fromPubSubMessage(m.getPubsubMessage(), payloadType)))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -206,8 +213,8 @@ public class PubSubSubscriberTemplate
 			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
 		}
 
-		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
-				subscription, maxMessages, returnImmediately);
+		PullRequest pullRequest = this.subscriberFactory.createPullRequest(subscription,
+				maxMessages, returnImmediately);
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
@@ -215,7 +222,8 @@ public class PubSubSubscriberTemplate
 			ack(ackableMessages);
 		}
 
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
+		return ackableMessages.stream()
+				.map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
 	}
 
@@ -231,25 +239,28 @@ public class PubSubSubscriberTemplate
 	}
 
 	/**
-	 * Acknowledge messages in per-subscription batches.
-	 * If any batch fails, the returned Future is marked as failed.
-	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
-	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * Acknowledge messages in per-subscription batches. If any batch fails, the returned
+	 * Future is marked as failed. If multiple batches fail, the returned Future will
+	 * contain whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different
+	 * subscriptions.
 	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
 	public ListenableFuture<Void> ack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
+		Assert.notEmpty(acknowledgeablePubsubMessages,
+				"The acknowledgeablePubsubMessages can't be empty.");
 
 		return doBatchedAsyncOperation(acknowledgeablePubsubMessages, this::ack);
 	}
 
 	/**
-	 * Nack messages in per-subscription batches.
-	 * If any batch fails, the returned Future is marked as failed.
-	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
-	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * Nack messages in per-subscription batches. If any batch fails, the returned Future
+	 * is marked as failed. If multiple batches fail, the returned Future will contain
+	 * whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different
+	 * subscriptions.
 	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
@@ -259,22 +270,25 @@ public class PubSubSubscriberTemplate
 	}
 
 	/**
-	 * Modify multiple messages' ack deadline in per-subscription batches.
-	 * If any batch fails, the returned Future is marked as failed.
-	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
-	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * Modify multiple messages' ack deadline in per-subscription batches. If any batch
+	 * fails, the returned Future is marked as failed. If multiple batches fail, the
+	 * returned Future will contain whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different
+	 * subscriptions.
 	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
 	public ListenableFuture<Void> modifyAckDeadline(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
-		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
-
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds) {
+		Assert.notEmpty(acknowledgeablePubsubMessages,
+				"The acknowledgeablePubsubMessages can't be empty.");
+		Assert.isTrue(ackDeadlineSeconds >= 0,
+				"The ackDeadlineSeconds must not be negative.");
 
 		return doBatchedAsyncOperation(acknowledgeablePubsubMessages,
-				(String subscriptionName, List<String> ackIds) ->
-						modifyAckDeadline(subscriptionName, ackIds, ackDeadlineSeconds));
+				(String subscriptionName, List<String> ackIds) -> modifyAckDeadline(
+						subscriptionName, ackIds, ackDeadlineSeconds));
 	}
 
 	/**
@@ -287,32 +301,33 @@ public class PubSubSubscriberTemplate
 
 	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
 		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-				.addAllAckIds(ackIds)
-				.setSubscription(subscriptionName)
-				.build();
+				.addAllAckIds(ackIds).setSubscription(subscriptionName).build();
 		return this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
 	}
 
-	private ApiFuture<Empty> modifyAckDeadline(
-			String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
-		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(ackDeadlineSeconds)
-				.addAllAckIds(ackIds)
-				.setSubscription(subscriptionName)
-				.build();
+	private ApiFuture<Empty> modifyAckDeadline(String subscriptionName,
+			Collection<String> ackIds, int ackDeadlineSeconds) {
+		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest
+				.newBuilder().setAckDeadlineSeconds(ackDeadlineSeconds)
+				.addAllAckIds(ackIds).setSubscription(subscriptionName).build();
 
-		return this.subscriberStub.modifyAckDeadlineCallable().futureCall(modifyAckDeadlineRequest);
+		return this.subscriberStub.modifyAckDeadlineCallable()
+				.futureCall(modifyAckDeadlineRequest);
 	}
 
 	/**
-	 * Perform Pub/Sub operations (ack/nack/modifyAckDeadline) in per-subscription batches.
-	 * <p>The returned {@link ListenableFuture} will complete when either all batches completes successfully or when at
-	 * least one fails.</p>
+	 * Perform Pub/Sub operations (ack/nack/modifyAckDeadline) in per-subscription
+	 * batches.
 	 * <p>
-	 * In case of multiple batch failures, which exception will be in the final {@link ListenableFuture} is
-	 * non-deterministic.
+	 * The returned {@link ListenableFuture} will complete when either all batches
+	 * completes successfully or when at least one fails.
 	 * </p>
-	 * @param acknowledgeablePubsubMessages messages, could be from different subscriptions.
+	 * <p>
+	 * In case of multiple batch failures, which exception will be in the final
+	 * {@link ListenableFuture} is non-deterministic.
+	 * </p>
+	 * @param acknowledgeablePubsubMessages messages, could be from different
+	 * subscriptions.
 	 * @param asyncOperation specific Pub/Sub operation to perform.
 	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
@@ -320,23 +335,26 @@ public class PubSubSubscriberTemplate
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			BiFunction<String, List<String>, ApiFuture<Empty>> asyncOperation) {
 
-		Map<ProjectSubscriptionName, List<String>> groupedMessages
-				= acknowledgeablePubsubMessages.stream()
-				.collect(
-						Collectors.groupingBy(
-								AcknowledgeablePubsubMessage::getProjectSubscriptionName,
-								Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
+		Map<ProjectSubscriptionName, List<String>> groupedMessages = acknowledgeablePubsubMessages
+				.stream()
+				.collect(Collectors.groupingBy(
+						AcknowledgeablePubsubMessage::getProjectSubscriptionName,
+						Collectors.mapping(AcknowledgeablePubsubMessage::getAckId,
+								Collectors.toList())));
 
-		Assert.state(groupedMessages.keySet().stream().map(ProjectSubscriptionName::getProject).distinct().count() == 1,
+		Assert.state(
+				groupedMessages.keySet().stream().map(ProjectSubscriptionName::getProject)
+						.distinct().count() == 1,
 				"The project id of all messages must match.");
 
-		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
+		SettableListenableFuture<Void> settableListenableFuture = new SettableListenableFuture<>();
 		int numExpectedFutures = groupedMessages.size();
 		AtomicInteger numCompletedFutures = new AtomicInteger();
 
 		groupedMessages.forEach((ProjectSubscriptionName psName, List<String> ackIds) -> {
 
-			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.getSubscription(), ackIds);
+			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.getSubscription(),
+					ackIds);
 
 			ApiFutures.addCallback(ackApiFuture, new ApiFutureCallback<Empty>() {
 				@Override
@@ -353,7 +371,8 @@ public class PubSubSubscriberTemplate
 					if (throwable != null) {
 						settableListenableFuture.setException(throwable);
 					}
-					else if (numCompletedFutures.incrementAndGet() == numExpectedFutures) {
+					else if (numCompletedFutures
+							.incrementAndGet() == numExpectedFutures) {
 						settableListenableFuture.set(null);
 					}
 				}
@@ -385,15 +404,18 @@ public class PubSubSubscriberTemplate
 		public PubsubMessage getPubsubMessage() {
 			return this.message;
 		}
+
 	}
 
-	private class PulledAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage
+	private class PulledAcknowledgeablePubsubMessage
+			extends AbstractBasicAcknowledgeablePubsubMessage
 			implements AcknowledgeablePubsubMessage {
 
 		private final String ackId;
 
-		PulledAcknowledgeablePubsubMessage(ProjectSubscriptionName projectSubscriptionName,
-				PubsubMessage message, String ackId) {
+		PulledAcknowledgeablePubsubMessage(
+				ProjectSubscriptionName projectSubscriptionName, PubsubMessage message,
+				String ackId) {
 			super(projectSubscriptionName, message);
 			this.ackId = ackId;
 		}
@@ -415,25 +437,28 @@ public class PubSubSubscriberTemplate
 
 		@Override
 		public ListenableFuture<Void> modifyAckDeadline(int ackDeadlineSeconds) {
-			return PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
+			return PubSubSubscriberTemplate.this
+					.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
 		}
 
 		@Override
 		public String toString() {
-			return "PulledAcknowledgeablePubsubMessage{" +
-					"projectId='" + getProjectSubscriptionName().getProject() + '\'' +
-					", subscriptionName='" + getProjectSubscriptionName().getSubscription() + '\'' +
-					", message=" + getPubsubMessage() +
-					", ackId='" + this.ackId + '\'' +
-					'}';
+			return "PulledAcknowledgeablePubsubMessage{" + "projectId='"
+					+ getProjectSubscriptionName().getProject() + '\''
+					+ ", subscriptionName='"
+					+ getProjectSubscriptionName().getSubscription() + '\'' + ", message="
+					+ getPubsubMessage() + ", ackId='" + this.ackId + '\'' + '}';
 		}
+
 	}
 
-	private static class PushedAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage {
+	private static class PushedAcknowledgeablePubsubMessage
+			extends AbstractBasicAcknowledgeablePubsubMessage {
 
 		private final AckReplyConsumer ackReplyConsumer;
 
-		PushedAcknowledgeablePubsubMessage(ProjectSubscriptionName projectSubscriptionName, PubsubMessage message,
+		PushedAcknowledgeablePubsubMessage(
+				ProjectSubscriptionName projectSubscriptionName, PubsubMessage message,
 				AckReplyConsumer ackReplyConsumer) {
 			super(projectSubscriptionName, message);
 			this.ackReplyConsumer = ackReplyConsumer;
@@ -471,21 +496,25 @@ public class PubSubSubscriberTemplate
 
 		@Override
 		public String toString() {
-			return "PushedAcknowledgeablePubsubMessage{" +
-					"projectId='" + getProjectSubscriptionName().getProject() + '\'' +
-					", subscriptionName='" + getProjectSubscriptionName().getSubscription() + '\'' +
-					", message=" + getPubsubMessage() +
-					'}';
+			return "PushedAcknowledgeablePubsubMessage{" + "projectId='"
+					+ getProjectSubscriptionName().getProject() + '\''
+					+ ", subscriptionName='"
+					+ getProjectSubscriptionName().getSubscription() + '\'' + ", message="
+					+ getPubsubMessage() + '}';
 		}
+
 	}
 
-	private class ConvertedPulledAcknowledgeablePubsubMessage<T> extends PulledAcknowledgeablePubsubMessage
+	private class ConvertedPulledAcknowledgeablePubsubMessage<T>
+			extends PulledAcknowledgeablePubsubMessage
 			implements ConvertedAcknowledgeablePubsubMessage<T> {
 
 		private final T payload;
 
-		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message, T payload) {
-			super(message.getProjectSubscriptionName(), message.getPubsubMessage(), message.getAckId());
+		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message,
+				T payload) {
+			super(message.getProjectSubscriptionName(), message.getPubsubMessage(),
+					message.getAckId());
 
 			this.payload = payload;
 		}
@@ -494,15 +523,18 @@ public class PubSubSubscriberTemplate
 		public T getPayload() {
 			return this.payload;
 		}
+
 	}
 
-	private static class ConvertedPushedAcknowledgeablePubsubMessage<T> extends PushedAcknowledgeablePubsubMessage
+	private static class ConvertedPushedAcknowledgeablePubsubMessage<T>
+			extends PushedAcknowledgeablePubsubMessage
 			implements ConvertedBasicAcknowledgeablePubsubMessage<T> {
 
 		private final T payload;
 
-		ConvertedPushedAcknowledgeablePubsubMessage(ProjectSubscriptionName projectSubscriptionName,
-				PubsubMessage message, T payload, AckReplyConsumer ackReplyConsumer) {
+		ConvertedPushedAcknowledgeablePubsubMessage(
+				ProjectSubscriptionName projectSubscriptionName, PubsubMessage message,
+				T payload, AckReplyConsumer ackReplyConsumer) {
 			super(projectSubscriptionName, message, ackReplyConsumer);
 			this.payload = payload;
 		}
@@ -511,6 +543,7 @@ public class PubSubSubscriberTemplate
 		public T getPayload() {
 			return this.payload;
 		}
+
 	}
 
 }

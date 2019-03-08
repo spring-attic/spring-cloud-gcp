@@ -51,6 +51,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 public class SimpleDatastoreRepositoryTests {
+
 	/**
 	 * used to check exception messages and types.
 	 */
@@ -138,31 +139,35 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void runTransactionCallableTest() {
-		when(this.datastoreTemplate.performTransaction(any())).thenAnswer((invocation) -> {
-			Function<DatastoreOperations, String> f = invocation.getArgument(0);
-			return f.apply(this.datastoreTemplate);
-		});
+		when(this.datastoreTemplate.performTransaction(any()))
+				.thenAnswer((invocation) -> {
+					Function<DatastoreOperations, String> f = invocation.getArgument(0);
+					return f.apply(this.datastoreTemplate);
+				});
 
-		String result = new SimpleDatastoreRepository<Object, String>(this.datastoreTemplate, Object.class)
-				.performTransaction((repo) -> "test");
+		String result = new SimpleDatastoreRepository<Object, String>(
+				this.datastoreTemplate, Object.class)
+						.performTransaction((repo) -> "test");
 		assertThat(result).isEqualTo("test");
 	}
 
 	@Test
 	public void findAllPageableAsc() {
-		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
+		this.simpleDatastoreRepository
+				.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
 
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"))));
+				eq(new DatastoreQueryOptions(5, 0,
+						new Sort(Sort.Direction.ASC, "property1"))));
 	}
 
 	@Test
 	public void findAllPageableDesc() {
-		this.simpleDatastoreRepository.findAll(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
+		this.simpleDatastoreRepository.findAll(
+				PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
 				eq(new DatastoreQueryOptions(5, 5,
-						Sort.by(
-								new Sort.Order(Sort.Direction.DESC, "property1"),
+						Sort.by(new Sort.Order(Sort.Direction.DESC, "property1"),
 								new Sort.Order(Sort.Direction.DESC, "property2")))));
 	}
 
@@ -187,22 +192,21 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example = Example.of(new Object());
 		Sort sort = Sort.by("id");
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1, 2))
-				.when(this.datastoreTemplate).queryByExample(same(example),
-						eq(new DatastoreQueryOptions(2, 2, sort)));
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2)).when(this.datastoreTemplate)
+				.queryByExample(same(example), eq(new DatastoreQueryOptions(2, 2, sort)));
 
 		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3, 4, 5))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
 
-
-		Page<Object> result = this.simpleDatastoreRepository.findAll(example, PageRequest.of(1, 2, sort));
+		Page<Object> result = this.simpleDatastoreRepository.findAll(example,
+				PageRequest.of(1, 2, sort));
 		assertThat(result).containsExactly(1, 2);
 		assertThat(result.getTotalElements()).isEqualTo(5);
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
 				eq(new DatastoreQueryOptions(2, 2, sort)));
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example),
+				isNull());
 	}
-
 
 	@Test
 	public void findAllByExamplePageNull() {
@@ -217,10 +221,9 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example = Example.of(new Object());
 		Sort sort = Sort.by("id");
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1))
-				.when(this.datastoreTemplate).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(1, null, null)));
-
+		doAnswer((invocationOnMock) -> Arrays.asList(1)).when(this.datastoreTemplate)
+				.queryByExample(same(example),
+						eq(new DatastoreQueryOptions(1, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.findOne(example).get()).isEqualTo(1);
 
@@ -232,24 +235,28 @@ public class SimpleDatastoreRepositoryTests {
 	public void existsByExampleTrue() {
 		Example<Object> example2 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1))
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		doAnswer((invocationOnMock) -> Arrays.asList(1)).when(this.datastoreTemplate)
+				.keyQueryByExample(same(example2),
+						eq(new DatastoreQueryOptions(1, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+				eq(new DatastoreQueryOptions(1, null, null)));
 	}
 
 	@Test
 	public void existsByExampleFalse() {
 		Example<Object> example2 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> Arrays.asList())
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		doAnswer((invocationOnMock) -> Arrays.asList()).when(this.datastoreTemplate)
+				.keyQueryByExample(same(example2),
+						eq(new DatastoreQueryOptions(1, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(false);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+				eq(new DatastoreQueryOptions(1, null, null)));
 	}
 
 	@Test
@@ -261,31 +268,33 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.count(example2)).isEqualTo(3);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), isNull());
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+				isNull());
 	}
 
 	@Test
 	public void countByExampleZero() {
 		Example<Object> example1 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> new ArrayList<>())
-				.when(this.datastoreTemplate).keyQueryByExample(same(example1), isNull());
+		doAnswer((invocationOnMock) -> new ArrayList<>()).when(this.datastoreTemplate)
+				.keyQueryByExample(same(example1), isNull());
 
 		assertThat(this.simpleDatastoreRepository.count(example1)).isEqualTo(0);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example1), isNull());
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example1),
+				isNull());
 	}
 
 	@Test
 	public void findAllSortAsc() {
-		this.simpleDatastoreRepository.findAll(Sort.by(
-				new Sort.Order(Sort.Direction.DESC, "property1"),
-				new Sort.Order(Sort.Direction.ASC, "property2")));
+		this.simpleDatastoreRepository
+				.findAll(Sort.by(new Sort.Order(Sort.Direction.DESC, "property1"),
+						new Sort.Order(Sort.Direction.ASC, "property2")));
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
 				eq(new DatastoreQueryOptions(null, null,
-						Sort.by(
-								new Sort.Order(Sort.Direction.DESC, "property1"),
+						Sort.by(new Sort.Order(Sort.Direction.DESC, "property1"),
 								new Sort.Order(Sort.Direction.ASC, "property2")))));
 
 	}
+
 }

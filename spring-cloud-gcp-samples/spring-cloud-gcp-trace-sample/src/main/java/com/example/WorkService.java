@@ -30,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Service
 public class WorkService {
+
 	private static final Log LOGGER = LogFactory.getLog(WorkService.class);
 
 	private final RestTemplate restTemplate;
@@ -46,4 +47,5 @@ public class WorkService {
 		}
 		LOGGER.info("finished busy work");
 	}
+
 }

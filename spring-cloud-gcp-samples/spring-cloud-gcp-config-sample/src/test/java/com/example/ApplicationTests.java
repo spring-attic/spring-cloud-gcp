@@ -38,9 +38,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Mike Eltsufin
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { Application.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {
+		Application.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class ApplicationTests {
+
 	@Autowired
 	private MockMvc mvc;
 
@@ -56,4 +58,5 @@ public class ApplicationTests {
 				.andExpect(content().json("{'queueSize':200,'featureXEnabled':true}"));
 
 	}
+
 }

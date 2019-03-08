@@ -29,14 +29,16 @@ import org.springframework.integration.file.remote.synchronizer.AbstractInboundF
  * @author João André Martins
  * @author Chengyuan Zhao
  */
-public class GcsInboundFileSynchronizingMessageSource extends AbstractInboundFileSynchronizingMessageSource<BlobInfo> {
+public class GcsInboundFileSynchronizingMessageSource
+		extends AbstractInboundFileSynchronizingMessageSource<BlobInfo> {
 
-	public GcsInboundFileSynchronizingMessageSource(GcsInboundFileSynchronizer synchronizer) {
+	public GcsInboundFileSynchronizingMessageSource(
+			GcsInboundFileSynchronizer synchronizer) {
 		super(synchronizer);
 	}
 
-	public GcsInboundFileSynchronizingMessageSource(GcsInboundFileSynchronizer synchronizer,
-			Comparator<File> comparator) {
+	public GcsInboundFileSynchronizingMessageSource(
+			GcsInboundFileSynchronizer synchronizer, Comparator<File> comparator) {
 		super(synchronizer, comparator);
 	}
 
@@ -44,4 +46,5 @@ public class GcsInboundFileSynchronizingMessageSource extends AbstractInboundFil
 	public String getComponentType() {
 		return "gcp:gcs-inbound-channel-adapter";
 	}
+
 }

@@ -25,13 +25,12 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Cloud Spanner specific interface for a {@link MutablePersistentEntity} stored in a Cloud
- * Spanner table.
+ * Cloud Spanner specific interface for a {@link MutablePersistentEntity} stored in a
+ * Cloud Spanner table.
  *
  * @param <T> the underlying persistent entity type
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface SpannerPersistentEntity<T> extends
@@ -71,8 +70,8 @@ public interface SpannerPersistentEntity<T> extends
 	SpannerMappingContext getSpannerMappingContext();
 
 	/**
-	 * Gets a SpannerEntityWriter that can be used to create Cloud Spanner keys from one or
-	 * more persistent properties.
+	 * Gets a SpannerEntityWriter that can be used to create Cloud Spanner keys from one
+	 * or more persistent properties.
 	 * @return a SpannerEntityWriter.
 	 */
 	SpannerEntityWriter getSpannerEntityWriter();
@@ -84,18 +83,16 @@ public interface SpannerPersistentEntity<T> extends
 	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s
 	 * contained in this {@link SpannerPersistentProperty} that are collections of child
 	 * entities.
-	 *
 	 * @param handler must not be {@literal null}.
 	 */
-	void doWithInterleavedProperties(
-			PropertyHandler<SpannerPersistentProperty> handler);
+	void doWithInterleavedProperties(PropertyHandler<SpannerPersistentProperty> handler);
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s
 	 * contained in this {@link SpannerPersistentProperty} that are stored as columns in
 	 * the table for this entity.
-	 *
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithColumnBackedProperties(PropertyHandler<SpannerPersistentProperty> handler);
+
 }

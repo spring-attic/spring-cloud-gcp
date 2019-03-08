@@ -108,9 +108,8 @@ public class SqlSpannerQueryTests {
 
 	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml) {
 		return new SqlSpannerQuery<Trade>(Trade.class, this.queryMethod,
-				this.spannerTemplate,
-				sql, this.evaluationContextProvider, this.expressionParser,
-				new SpannerMappingContext(), isDml);
+				this.spannerTemplate, sql, this.evaluationContextProvider,
+				this.expressionParser, new SpannerMappingContext(), isDml);
 	}
 
 	@Test
@@ -126,7 +125,8 @@ public class SqlSpannerQueryTests {
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
+		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM "
+				+ "trades@{index=fakeindex}"
 				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
@@ -136,14 +136,12 @@ public class SqlSpannerQueryTests {
 				+ "ORDER BY COLA ASC , COLB DESC LIMIT 10 OFFSET 30";
 
 		Object[] params = new Object[] { "BUY", this.pageable, "abcd", "abc123", 8.88,
-				3.33, "blahblah",
-				1.11, 2.22, Struct.newBuilder().set("symbol").to("ABCD").set("action")
-						.to("BUY").build(),
+				3.33, "blahblah", 1.11, 2.22, Struct.newBuilder().set("symbol").to("ABCD")
+						.set("action").to("BUY").build(),
 				new SymbolAction("ABCD", "BUY") };
 
 		String[] paramNames = new String[] { "tag0", "ignoredPageable", "tag1", "tag2",
-				"tag3", "tag4",
-				"tag5", "tag6", "tag7", "tag8", "tag9" };
+				"tag3", "tag4", "tag5", "tag6", "tag7", "tag8", "tag9" };
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -184,7 +182,8 @@ public class SqlSpannerQueryTests {
 			Map<String, Value> paramMap = statement.getParameters();
 
 			assertThat(paramMap.get("tag0").getString()).isEqualTo(params[0]);
-			//params[1] is this.pageable that is ignored, hence no synthetic tag is created for it
+			// params[1] is this.pageable that is ignored, hence no synthetic tag is
+			// created for it
 			assertThat(paramMap.get("tag1").getString()).isEqualTo(params[2]);
 			assertThat(paramMap.get("tag2").getString()).isEqualTo(params[3]);
 			assertThat(paramMap.get("tag3").getFloat64()).isEqualTo(params[4]);
@@ -273,10 +272,8 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = spy(createQuery(sql, true));
 
-		doReturn(long.class).when(sqlSpannerQuery)
-				.getReturnedSimpleConvertableItemType();
-		doReturn(null).when(sqlSpannerQuery).convertToSimpleReturnType(any(),
-				any());
+		doReturn(long.class).when(sqlSpannerQuery).getReturnedSimpleConvertableItemType();
+		doReturn(null).when(sqlSpannerQuery).convertToSimpleReturnType(any(), any());
 
 		sqlSpannerQuery.execute(new Object[] {});
 
@@ -284,6 +281,7 @@ public class SqlSpannerQueryTests {
 	}
 
 	private static class SymbolAction {
+
 		String symbol;
 
 		String action;
@@ -292,10 +290,12 @@ public class SqlSpannerQueryTests {
 			this.symbol = s;
 			this.action = a;
 		}
+
 	}
 
 	@Table(name = "trades")
 	private static class Trade {
+
 		@PrimaryKey
 		String id;
 
@@ -310,5 +310,7 @@ public class SqlSpannerQueryTests {
 
 		@Column(name = "trader_id")
 		String traderId;
+
 	}
+
 }

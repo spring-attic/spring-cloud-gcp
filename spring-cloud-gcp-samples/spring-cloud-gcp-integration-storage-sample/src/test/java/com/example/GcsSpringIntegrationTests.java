@@ -52,8 +52,9 @@ import static org.junit.Assume.assumeThat;
  * This test uploads a file to Google Cloud Storage and verifies that it was received in
  * the local directory specified in application-test.properties.
  *
- * To run this test locally, first specify the buckets and local directory used by sample in
- * java/com/example/resources/application.properties. Then, run: mvn -Dit.storage=true test.
+ * To run this test locally, first specify the buckets and local directory used by sample
+ * in java/com/example/resources/application.properties. Then, run: mvn -Dit.storage=true
+ * test.
  *
  * @author Daniel Zou
  */
@@ -98,24 +99,24 @@ public class GcsSpringIntegrationTests {
 	@Test
 	public void testFilePropagatedToLocalDirectory() {
 		BlobId blobId = BlobId.of(this.cloudInputBucket, TEST_FILE_NAME);
-		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain")
+				.build();
 		this.storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
 
-		Awaitility.await().atMost(15, TimeUnit.SECONDS)
-				.untilAsserted(() -> {
-					Path outputFile = Paths.get(this.outputFolder + "/" + TEST_FILE_NAME);
-					assertThat(Files.exists(outputFile)).isTrue();
-					assertThat(Files.isRegularFile(outputFile)).isTrue();
+		Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+			Path outputFile = Paths.get(this.outputFolder + "/" + TEST_FILE_NAME);
+			assertThat(Files.exists(outputFile)).isTrue();
+			assertThat(Files.isRegularFile(outputFile)).isTrue();
 
-					String firstLine = Files.lines(outputFile).findFirst().get();
-					assertThat(firstLine).isEqualTo("Hello World!");
+			String firstLine = Files.lines(outputFile).findFirst().get();
+			assertThat(firstLine).isEqualTo("Hello World!");
 
-					List<String> blobNamesInOutputBucket = new ArrayList<>();
-					this.storage.list(this.cloudOutputBucket).iterateAll()
-							.forEach((b) -> blobNamesInOutputBucket.add(b.getName()));
+			List<String> blobNamesInOutputBucket = new ArrayList<>();
+			this.storage.list(this.cloudOutputBucket).iterateAll()
+					.forEach((b) -> blobNamesInOutputBucket.add(b.getName()));
 
-					assertThat(blobNamesInOutputBucket).contains(TEST_FILE_NAME);
-				});
+			assertThat(blobNamesInOutputBucket).contains(TEST_FILE_NAME);
+		});
 	}
 
 	private void cleanupCloudStorage() {
@@ -133,4 +134,5 @@ public class GcsSpringIntegrationTests {
 		}
 		Files.deleteIfExists(Paths.get(this.outputFolder));
 	}
+
 }

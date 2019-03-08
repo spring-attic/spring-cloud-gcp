@@ -70,7 +70,6 @@ public class SpannerMappingContextTests {
 		verify(mockEntity, times(1)).setApplicationContext(eq(applicationContext));
 	}
 
-
 	@Test
 	public void testApplicationContextIsNotSet() {
 		SpannerPersistentEntityImpl mockEntity = mock(SpannerPersistentEntityImpl.class);
@@ -81,13 +80,12 @@ public class SpannerMappingContextTests {
 		verifyZeroInteractions(mockEntity);
 	}
 
-
 	private SpannerMappingContext createSpannerMappingContextWith(
 			SpannerPersistentEntityImpl mockEntity) {
 		return new SpannerMappingContext() {
 			@Override
 			@SuppressWarnings("unchecked")
-			protected  SpannerPersistentEntityImpl constructPersistentEntity(
+			protected SpannerPersistentEntityImpl constructPersistentEntity(
 					TypeInformation typeInformation) {
 				return mockEntity;
 			}

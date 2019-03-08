@@ -61,16 +61,20 @@ public class DatastorePersistentPropertyImplTests {
 								assertThat(property.getType()).isEqualTo(String.class);
 							}
 							else if (property.getFieldName().equals("doubleList")) {
-								assertThat(property.getComponentType()).isEqualTo(Double.class);
+								assertThat(property.getComponentType())
+										.isEqualTo(Double.class);
 								assertThat(property.isCollectionLike()).isTrue();
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
-								assertThat(property.getEmbeddedType()).isEqualTo(EmbeddedType.EMBEDDED_ENTITY);
+								assertThat(property.getEmbeddedType())
+										.isEqualTo(EmbeddedType.EMBEDDED_ENTITY);
 							}
 							else if (property.getFieldName().equals("embeddedMap")) {
-								assertThat(property.getEmbeddedType()).isEqualTo(EmbeddedType.EMBEDDED_MAP);
-								assertThat(property.getTypeInformation().getTypeArguments().get(1).getType())
-										.isEqualTo(String.class);
+								assertThat(property.getEmbeddedType())
+										.isEqualTo(EmbeddedType.EMBEDDED_MAP);
+								assertThat(property.getTypeInformation()
+										.getTypeArguments().get(1).getType())
+												.isEqualTo(String.class);
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
 								assertThat(property.isDescendants()).isTrue();
@@ -88,18 +92,22 @@ public class DatastorePersistentPropertyImplTests {
 	@Test
 	public void testAssociations() {
 		this.datastoreMappingContext.getPersistentEntity(TestEntity.class)
-				.doWithProperties((PropertyHandler<DatastorePersistentProperty>) (prop) -> {
-					assertThat(prop).isSameAs(
-							((DatastorePersistentPropertyImpl) prop).createAssociation().getInverse());
-					assertThat(((DatastorePersistentPropertyImpl) prop).createAssociation().getObverse()).isNull();
-				});
+				.doWithProperties(
+						(PropertyHandler<DatastorePersistentProperty>) (prop) -> {
+							assertThat(prop)
+									.isSameAs(((DatastorePersistentPropertyImpl) prop)
+											.createAssociation().getInverse());
+							assertThat(((DatastorePersistentPropertyImpl) prop)
+									.createAssociation().getObverse()).isNull();
+						});
 	}
 
 	@Test
 	public void referenceDescendantAnnotatedTest() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("Property cannot be annotated both @Descendants and " +
-				"@Reference: subEntity");
+		this.expectedException
+				.expectMessage("Property cannot be annotated both @Descendants and "
+						+ "@Reference: subEntity");
 		this.datastoreMappingContext
 				.getPersistentEntity(DescendantReferenceAnnotatedEntity.class);
 	}
@@ -107,8 +115,9 @@ public class DatastorePersistentPropertyImplTests {
 	@Test
 	public void fieldDescendantAnnotatedTest() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("Property cannot be annotated as @Field if it is " +
-				"annotated @Descendants or @Reference: name");
+		this.expectedException
+				.expectMessage("Property cannot be annotated as @Field if it is "
+						+ "annotated @Descendants or @Reference: name");
 		this.datastoreMappingContext
 				.getPersistentEntity(DescendantFieldAnnotatedEntity.class);
 	}
@@ -116,14 +125,16 @@ public class DatastorePersistentPropertyImplTests {
 	@Test
 	public void fieldReferenceAnnotatedTest() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("Property cannot be annotated as @Field if it is " +
-				"annotated @Descendants or @Reference: name");
+		this.expectedException
+				.expectMessage("Property cannot be annotated as @Field if it is "
+						+ "annotated @Descendants or @Reference: name");
 		this.datastoreMappingContext
 				.getPersistentEntity(FieldReferenceAnnotatedEntity.class);
 	}
 
 	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
+
 		@Id
 		String id;
 
@@ -148,6 +159,7 @@ public class DatastorePersistentPropertyImplTests {
 
 		@Reference
 		TestSubEntity linkedEntityRef;
+
 	}
 
 	@Entity
@@ -156,24 +168,33 @@ public class DatastorePersistentPropertyImplTests {
 	}
 
 	private static class UntypedListEntity {
+
 		List untypedList;
+
 	}
 
 	private static class DescendantReferenceAnnotatedEntity {
+
 		@Descendants
 		@Reference
 		TestSubEntity[] subEntity;
+
 	}
 
 	private static class FieldReferenceAnnotatedEntity {
+
 		@Field(name = "name")
 		@Reference
 		TestSubEntity[] subEntity;
+
 	}
 
 	private static class DescendantFieldAnnotatedEntity {
+
 		@Descendants
 		@Field(name = "name")
 		TestSubEntity[] subEntity;
+
 	}
+
 }

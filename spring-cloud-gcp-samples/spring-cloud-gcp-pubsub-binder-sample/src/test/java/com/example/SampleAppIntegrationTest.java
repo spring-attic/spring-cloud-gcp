@@ -42,7 +42,6 @@ import static org.junit.Assume.assumeThat;
  * These tests verifies that the pubsub-binder-sample works.
  *
  * @author Dmitry Solomakha
- *
  * @since 1.1
  */
 @RunWith(SpringRunner.class)
@@ -89,7 +88,8 @@ public class SampleAppIntegrationTest {
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains("New message received from testUserName: " + message + " at ")) {
+			if (baos.toString().contains(
+					"New message received from testUserName: " + message + " at ")) {
 				messageReceived = true;
 				break;
 			}
@@ -97,4 +97,5 @@ public class SampleAppIntegrationTest {
 		}
 		assertThat(messageReceived).isTrue();
 	}
+
 }

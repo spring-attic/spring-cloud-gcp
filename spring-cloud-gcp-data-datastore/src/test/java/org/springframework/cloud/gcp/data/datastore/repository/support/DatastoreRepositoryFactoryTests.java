@@ -74,9 +74,10 @@ public class DatastoreRepositoryFactoryTests {
 	@Test
 	public void getEntityInformationNotAvailableTest() {
 		this.expectedException.expect(MappingException.class);
-		this.expectedException.expectMessage("Could not lookup mapping metadata for domain class: " +
-				"org.springframework.cloud.gcp.data.datastore.repository.support." +
-				"DatastoreRepositoryFactoryTests$TestEntity");
+		this.expectedException
+				.expectMessage("Could not lookup mapping metadata for domain class: "
+						+ "org.springframework.cloud.gcp.data.datastore.repository.support."
+						+ "DatastoreRepositoryFactoryTests$TestEntity");
 		DatastoreRepositoryFactory factory = new DatastoreRepositoryFactory(
 				mock(DatastoreMappingContext.class), this.datastoreTemplate);
 		factory.getEntityInformation(TestEntity.class);
@@ -100,10 +101,13 @@ public class DatastoreRepositoryFactoryTests {
 
 	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
+
 		@Id
 		String id;
 
 		@Field(name = "custom_col")
 		String something;
+
 	}
+
 }

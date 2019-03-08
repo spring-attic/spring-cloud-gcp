@@ -45,7 +45,6 @@ import static org.mockito.Mockito.when;
  * Tests for Pub/Sub provisioner.
  *
  * @author Mike Eltsufin
- *
  * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -72,18 +71,19 @@ public class PubSubChannelProvisionerTests {
 	@Before
 	public void setup() {
 		when(this.pubSubAdminMock.getSubscription(any())).thenReturn(null);
-		doAnswer((invocation) ->
-			Subscription.newBuilder()
-					.setName("projects/test-project/subscriptions/" + invocation.getArgument(0))
-					.setTopic("projects/test-project/topics/" + invocation.getArgument(1)).build()
-		).when(this.pubSubAdminMock).createSubscription(any(), any());
-		doAnswer((invocation) ->
-				Topic.newBuilder().setName("projects/test-project/topics/" + invocation.getArgument(0)).build()
-		).when(this.pubSubAdminMock).getTopic(any());
+		doAnswer((invocation) -> Subscription.newBuilder()
+				.setName("projects/test-project/subscriptions/"
+						+ invocation.getArgument(0))
+				.setTopic("projects/test-project/topics/" + invocation.getArgument(1))
+				.build()).when(this.pubSubAdminMock).createSubscription(any(), any());
+		doAnswer((invocation) -> Topic.newBuilder()
+				.setName("projects/test-project/topics/" + invocation.getArgument(0))
+				.build()).when(this.pubSubAdminMock).getTopic(any());
 		when(this.properties.getExtension()).thenReturn(this.pubSubConsumerProperties);
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(true);
 
-		this.pubSubChannelProvisioner = new PubSubChannelProvisioner(this.pubSubAdminMock);
+		this.pubSubChannelProvisioner = new PubSubChannelProvisioner(
+				this.pubSubAdminMock);
 	}
 
 	@Test
@@ -122,10 +122,12 @@ public class PubSubChannelProvisionerTests {
 	@Test
 	public void testProvisionConsumerDestination_wrongTopicException() {
 		this.expectedEx.expect(ProvisioningException.class);
-		this.expectedEx.expectMessage("Existing 'topic_A.group_A' subscription is for a different topic 'topic_B'.");
+		this.expectedEx.expectMessage(
+				"Existing 'topic_A.group_A' subscription is for a different topic 'topic_B'.");
 
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(false);
-		when(this.pubSubAdminMock.getSubscription("topic_A.group_A")).thenReturn(Subscription.newBuilder().setTopic("topic_B").build());
+		when(this.pubSubAdminMock.getSubscription("topic_A.group_A"))
+				.thenReturn(Subscription.newBuilder().setTopic("topic_B").build());
 
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", "group_A", this.properties);
@@ -143,7 +145,8 @@ public class PubSubChannelProvisionerTests {
 
 		assertThat(result.getName()).matches(subscriptionNameRegex);
 
-		verify(this.pubSubAdminMock).createSubscription(matches(subscriptionNameRegex), eq("topic_A"));
+		verify(this.pubSubAdminMock).createSubscription(matches(subscriptionNameRegex),
+				eq("topic_A"));
 	}
 
 	@Test
@@ -176,4 +179,5 @@ public class PubSubChannelProvisionerTests {
 
 		verify(this.pubSubAdminMock, never()).deleteSubscription(result.getName());
 	}
+
 }

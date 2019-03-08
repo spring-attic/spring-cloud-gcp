@@ -58,15 +58,11 @@ import static org.mockito.Mockito.when;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
-		classes = {
-				PubSubBindingsTestConfiguration.class,
-				BindingServiceConfiguration.class
-		},
-		properties = {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {
+		PubSubBindingsTestConfiguration.class,
+		BindingServiceConfiguration.class }, properties = {
 				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
-				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
-		})
+				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false" })
 public class PubSubExtendedBindingsPropertiesTests {
 
 	@Autowired
@@ -74,12 +70,16 @@ public class PubSubExtendedBindingsPropertiesTests {
 
 	@Test
 	public void testExtendedPropertiesOverrideDefaults() {
-		BinderFactory binderFactory = this.context.getBeanFactory().getBean(BinderFactory.class);
-		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub",
-				MessageChannel.class);
+		BinderFactory binderFactory = this.context.getBeanFactory()
+				.getBean(BinderFactory.class);
+		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory
+				.getBinder("pubsub", MessageChannel.class);
 
-		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
-		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
+		assertThat(
+				binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources())
+						.isFalse();
+		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources())
+				.isTrue();
 	}
 
 	/**
@@ -92,12 +92,12 @@ public class PubSubExtendedBindingsPropertiesTests {
 		@Bean
 		public PubSubAdmin pubSubAdmin() {
 			PubSubAdmin pubSubAdminMock = Mockito.mock(PubSubAdmin.class);
-			when(pubSubAdminMock.createSubscription(anyString(), anyString())).thenReturn(
-					Subscription.getDefaultInstance());
-			when(pubSubAdminMock.getSubscription(anyString())).thenReturn(
-					Subscription.getDefaultInstance());
-			when(pubSubAdminMock.getTopic(anyString())).thenReturn(
-					Topic.getDefaultInstance());
+			when(pubSubAdminMock.createSubscription(anyString(), anyString()))
+					.thenReturn(Subscription.getDefaultInstance());
+			when(pubSubAdminMock.getSubscription(anyString()))
+					.thenReturn(Subscription.getDefaultInstance());
+			when(pubSubAdminMock.getTopic(anyString()))
+					.thenReturn(Topic.getDefaultInstance());
 			return pubSubAdminMock;
 		}
 
@@ -112,8 +112,7 @@ public class PubSubExtendedBindingsPropertiesTests {
 			when(subscriberFactory.createSubscriber(anyString(), any()))
 					.thenReturn(Mockito.mock(Subscriber.class));
 
-			return new PubSubTemplate(
-					new PubSubPublisherTemplate(publisherFactory),
+			return new PubSubTemplate(new PubSubPublisherTemplate(publisherFactory),
 					new PubSubSubscriberTemplate(subscriberFactory));
 		}
 
@@ -131,9 +130,12 @@ public class PubSubExtendedBindingsPropertiesTests {
 		 * interface for testing.
 		 */
 		interface CustomTestSink extends Sink {
+
 			@Input("custom-in")
 			SubscribableChannel customIn();
-		}
-	}
-}
 
+		}
+
+	}
+
+}

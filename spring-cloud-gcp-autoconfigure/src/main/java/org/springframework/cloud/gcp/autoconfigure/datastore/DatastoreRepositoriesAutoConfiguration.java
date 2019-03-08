@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Import;
  * {@link org.springframework.cloud.gcp.data.datastore.repository.config.EnableDatastoreRepositories}.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 @Configuration
@@ -42,4 +41,5 @@ import org.springframework.context.annotation.Import;
 @Import({ DatastoreRepositoriesAutoConfigureRegistrar.class })
 @AutoConfigureBefore(GcpDatastoreAutoConfiguration.class)
 public class DatastoreRepositoriesAutoConfiguration {
+
 }

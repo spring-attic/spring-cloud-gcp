@@ -26,7 +26,8 @@ import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.context.annotation.Conditional;
 
 /**
- * {@link Conditional} that matches based on GCP environment in which the application currently runs.
+ * {@link Conditional} that matches based on GCP environment in which the application
+ * currently runs.
  *
  * Supported environments are enumerated in {@link GcpEnvironment}.
  *
@@ -45,4 +46,5 @@ public @interface ConditionalOnGcpEnvironment {
 	 * @return an array of GCP Environments.
 	 */
 	GcpEnvironment[] value();
+
 }

@@ -37,18 +37,19 @@ import org.springframework.data.annotation.QueryAnnotation;
 @Documented
 @QueryAnnotation
 public @interface Query {
+
 	/**
-	 * Takes a Cloud Spanner SQL string to define the actual query to be executed. This one will
-	 * take precedence over the method name then.
-	 *
+	 * Takes a Cloud Spanner SQL string to define the actual query to be executed. This
+	 * one will take precedence over the method name then.
 	 * @return the SQL Cloud Spanner query string.
 	 */
 	String value() default "";
 
 	/**
 	 * Indicates if the annotated Query Method is a DML statement or an SQL statement.
-	 * @return {@code false} if the query method is a read-only SQL query. {@code true} if the
-	 * query method is executed as a DML query.
+	 * @return {@code false} if the query method is a read-only SQL query. {@code true} if
+	 * the query method is executed as a DML query.
 	 */
 	boolean dmlStatement() default false;
+
 }

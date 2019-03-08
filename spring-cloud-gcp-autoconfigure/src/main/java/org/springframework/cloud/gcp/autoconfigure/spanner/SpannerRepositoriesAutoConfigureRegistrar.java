@@ -24,8 +24,8 @@ import org.springframework.cloud.gcp.data.spanner.repository.config.SpannerRepos
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
- * {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * used to auto-configure Spring Data JPA Repositories.
+ * {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar} used to
+ * auto-configure Spring Data JPA Repositories.
  *
  * @author João André Martins
  */
@@ -51,4 +51,5 @@ public class SpannerRepositoriesAutoConfigureRegistrar
 	private static class EnableSpannerRepositoriesConfiguration {
 
 	}
+
 }

@@ -34,9 +34,10 @@ import java.lang.annotation.Target;
 public @interface DiscriminatorField {
 
 	/**
-	 * The name of the field that holds the value that distinguishes which subclass an entity
-	 * maps to.
+	 * The name of the field that holds the value that distinguishes which subclass an
+	 * entity maps to.
 	 * @return the name of the column.
 	 */
 	String field();
+
 }

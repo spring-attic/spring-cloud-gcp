@@ -54,8 +54,7 @@ public class Trade {
 	}
 
 	public Trade(String tradeId, String action, Double price, Double shares,
-			String symbol, String traderId,
-			List<Double> curve) {
+			String symbol, String traderId, List<Double> curve) {
 		this.tradeId = tradeId;
 		this.action = action;
 		this.price = price;
@@ -123,14 +122,10 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "Trade{" +
-				"tradeId=" + this.tradeId +
-				", traderId='" + this.traderId + '\'' +
-				", action='" + this.action + '\'' +
-				", price=" + this.price +
-				", shares=" + this.shares +
-				", symbol='" + this.symbol + '\'' +
-				", curve=" + this.curve +
-				'}';
+		return "Trade{" + "tradeId=" + this.tradeId + ", traderId='" + this.traderId
+				+ '\'' + ", action='" + this.action + '\'' + ", price=" + this.price
+				+ ", shares=" + this.shares + ", symbol='" + this.symbol + '\''
+				+ ", curve=" + this.curve + '}';
 	}
+
 }

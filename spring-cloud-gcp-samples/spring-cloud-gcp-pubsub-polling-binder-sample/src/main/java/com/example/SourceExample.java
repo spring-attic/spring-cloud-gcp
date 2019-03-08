@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
  * HTTP request, and sends it to a PubSub topic.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 @EnableBinding(Source.class)
@@ -45,7 +44,8 @@ public class SourceExample {
 	public UserMessage sendMessage(@RequestParam("messageBody") String messageBody,
 			@RequestParam("username") String username) {
 
-		UserMessage userMessage = new UserMessage(messageBody, username, LocalDateTime.now());
+		UserMessage userMessage = new UserMessage(messageBody, username,
+				LocalDateTime.now());
 		this.source.output().send(new GenericMessage<>(userMessage));
 		return userMessage;
 	}

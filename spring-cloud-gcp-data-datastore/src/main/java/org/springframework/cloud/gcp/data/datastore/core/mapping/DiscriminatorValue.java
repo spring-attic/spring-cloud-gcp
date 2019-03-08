@@ -39,4 +39,5 @@ public @interface DiscriminatorValue {
 	 * @return the value that corresponds to the annotated subclass.
 	 */
 	String value();
+
 }

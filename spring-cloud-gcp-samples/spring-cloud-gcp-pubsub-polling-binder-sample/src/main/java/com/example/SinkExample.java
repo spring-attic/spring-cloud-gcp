@@ -33,7 +33,6 @@ import org.springframework.scheduling.annotation.Scheduled;
  * Example of a sink for the sample app.
  *
  * @author Elena Felder
- *
  * @since 1.2
  */
 @EnableBinding(PollableSink.class)
@@ -49,19 +48,24 @@ public class SinkExample {
 	@Scheduled(fixedRate = 1000)
 	public void poller() {
 
-		destIn.poll(this.messageHandler, ParameterizedTypeReference.forType(UserMessage.class));
+		destIn.poll(this.messageHandler,
+				ParameterizedTypeReference.forType(UserMessage.class));
 	}
 
 	static class PolledMessageHandler implements MessageHandler {
+
 		@Override
 		public void handleMessage(Message<?> message) {
-			AcknowledgeablePubsubMessage ackableMessage = (AcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+			AcknowledgeablePubsubMessage ackableMessage = (AcknowledgeablePubsubMessage) message
+					.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 			ackableMessage.ack();
 
 			UserMessage userMessage = (UserMessage) message.getPayload();
-			LOGGER.info("New message received from " + userMessage.getUsername() + " via polling: " + userMessage.getBody() +
-					" at " + userMessage.getCreatedAt());
+			LOGGER.info("New message received from " + userMessage.getUsername()
+					+ " via polling: " + userMessage.getBody() + " at "
+					+ userMessage.getCreatedAt());
 		}
+
 	}
 
 }

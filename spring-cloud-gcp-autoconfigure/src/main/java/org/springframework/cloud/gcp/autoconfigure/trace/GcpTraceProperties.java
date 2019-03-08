@@ -42,7 +42,8 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	 * Overrides the GCP OAuth2 credentials specified in the Core module.
 	 */
 	@NestedConfigurationProperty
-	private final Credentials credentials = new Credentials(GcpScope.TRACE_APPEND.getUrl());
+	private final Credentials credentials = new Credentials(
+			GcpScope.TRACE_APPEND.getUrl());
 
 	/**
 	 * Number of threads to be used by the Trace executor.
@@ -75,13 +76,14 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	private Integer maxOutboundSize;
 
 	/**
-	 * Waits for the channel to be ready in case of a transient failure. Defaults to failing fast
-	 * in that case.
+	 * Waits for the channel to be ready in case of a transient failure. Defaults to
+	 * failing fast in that case.
 	 */
 	private Boolean waitForReady;
 
 	/**
-	 * Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace.
+	 * Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver
+	 * Trace.
 	 */
 	private int messageTimeout = 1;
 
@@ -160,4 +162,5 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	public void setMessageTimeout(int messageTimeout) {
 		this.messageTimeout = messageTimeout;
 	}
+
 }

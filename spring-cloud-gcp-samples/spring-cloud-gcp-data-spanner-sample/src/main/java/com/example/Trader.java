@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  */
 @Table(name = "traders")
 public class Trader {
+
 	@PrimaryKey
 	@Column(name = "trader_id")
 	private String traderId;
@@ -72,10 +73,8 @@ public class Trader {
 
 	@Override
 	public String toString() {
-		return "Trader{" +
-				"traderId='" + this.traderId + '\'' +
-				", firstName='" + this.firstName + '\'' +
-				", lastName='" + this.lastName + '\'' +
-				'}';
+		return "Trader{" + "traderId='" + this.traderId + '\'' + ", firstName='"
+				+ this.firstName + '\'' + ", lastName='" + this.lastName + '\'' + '}';
 	}
+
 }

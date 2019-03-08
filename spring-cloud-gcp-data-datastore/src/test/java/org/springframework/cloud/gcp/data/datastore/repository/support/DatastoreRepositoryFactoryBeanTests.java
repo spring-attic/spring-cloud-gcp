@@ -55,4 +55,5 @@ public class DatastoreRepositoryFactoryBeanTests {
 				.createRepositoryFactory();
 		assertThat(factory.getClass()).isEqualTo(DatastoreRepositoryFactory.class);
 	}
+
 }

@@ -72,22 +72,23 @@ import org.springframework.context.annotation.Primary;
  * @author Tim Ysewyn
  */
 @Configuration
-@EnableConfigurationProperties(
-		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
-@ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
+@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class,
+		SleuthProperties.class })
+@ConditionalOnProperty(value = { "spring.sleuth.enabled",
+		"spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
 	/**
-	 * Stackdriver reporter bean name. Name of the bean matters for supporting multiple tracing
-	 * systems.
+	 * Stackdriver reporter bean name. Name of the bean matters for supporting multiple
+	 * tracing systems.
 	 */
 	public static final String REPORTER_BEAN_NAME = "stackdriverReporter";
 
 	/**
-	 * Stackdriver sender bean name. Name of the bean matters for supporting multiple tracing
-	 * systems.
+	 * Stackdriver sender bean name. Name of the bean matters for supporting multiple
+	 * tracing systems.
 	 */
 	public static final String SENDER_BEAN_NAME = "stackdriverSender";
 
@@ -95,23 +96,23 @@ public class StackdriverTraceAutoConfiguration {
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
+	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(
+			this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpTraceProperties gcpTraceProperties) throws IOException {
 		this.finalProjectIdProvider = (gcpTraceProperties.getProjectId() != null)
-				? gcpTraceProperties::getProjectId
-				: gcpProjectIdProvider;
-		this.finalCredentialsProvider =
-				gcpTraceProperties.getCredentials().hasKey()
-						? new DefaultCredentialsProvider(gcpTraceProperties)
-						: credentialsProvider;
+				? gcpTraceProperties::getProjectId : gcpProjectIdProvider;
+		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().hasKey()
+				? new DefaultCredentialsProvider(gcpTraceProperties)
+				: credentialsProvider;
 	}
 
 	@Bean
 	@Primary
-	public SleuthProperties stackdriverSleuthProperties(SleuthProperties sleuthProperties) {
+	public SleuthProperties stackdriverSleuthProperties(
+			SleuthProperties sleuthProperties) {
 		sleuthProperties.setSupportsJoin(false);
 		sleuthProperties.setTraceId128(true);
 		return sleuthProperties;
@@ -120,16 +121,15 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "traceExecutorProvider")
 	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties) {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
+		return FixedExecutorProvider.create(Executors
+				.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
 	}
 
 	@Bean(destroyMethod = "shutdownNow")
 	@ConditionalOnMissingBean(name = "stackdriverSenderChannel")
 	public ManagedChannel stackdriverSenderChannel() {
 		return ManagedChannelBuilder.forTarget("cloudtrace.googleapis.com")
-				.userAgent(this.headerProvider.getUserAgent())
-				.build();
+				.userAgent(this.headerProvider.getUserAgent()).build();
 	}
 
 	@Bean(REPORTER_BEAN_NAME)
@@ -150,9 +150,8 @@ public class StackdriverTraceAutoConfiguration {
 			@Qualifier("stackdriverSenderChannel") ManagedChannel channel)
 			throws IOException {
 		CallOptions callOptions = CallOptions.DEFAULT
-				.withCallCredentials(
-						MoreCallCredentials.from(
-								this.finalCredentialsProvider.getCredentials()))
+				.withCallCredentials(MoreCallCredentials
+						.from(this.finalCredentialsProvider.getCredentials()))
 				.withExecutor(executorProvider.getExecutor());
 
 		if (traceProperties.getAuthority() != null) {
@@ -164,15 +163,18 @@ public class StackdriverTraceAutoConfiguration {
 		}
 
 		if (traceProperties.getDeadlineMs() != null) {
-			callOptions = callOptions.withDeadlineAfter(traceProperties.getDeadlineMs(), TimeUnit.MILLISECONDS);
+			callOptions = callOptions.withDeadlineAfter(traceProperties.getDeadlineMs(),
+					TimeUnit.MILLISECONDS);
 		}
 
 		if (traceProperties.getMaxInboundSize() != null) {
-			callOptions = callOptions.withMaxInboundMessageSize(traceProperties.getMaxInboundSize());
+			callOptions = callOptions
+					.withMaxInboundMessageSize(traceProperties.getMaxInboundSize());
 		}
 
 		if (traceProperties.getMaxOutboundSize() != null) {
-			callOptions = callOptions.withMaxOutboundMessageSize(traceProperties.getMaxOutboundSize());
+			callOptions = callOptions
+					.withMaxOutboundMessageSize(traceProperties.getMaxOutboundSize());
 		}
 
 		if (traceProperties.isWaitForReady() != null) {
@@ -186,8 +188,7 @@ public class StackdriverTraceAutoConfiguration {
 
 		return StackdriverSender.newBuilder(channel)
 				.projectId(this.finalProjectIdProvider.getProjectId())
-				.callOptions(callOptions)
-				.build();
+				.callOptions(callOptions).build();
 	}
 
 	@Bean
@@ -202,12 +203,14 @@ public class StackdriverTraceAutoConfiguration {
 	@Configuration
 	@ConditionalOnClass(RefreshScope.class)
 	protected static class RefreshScopedProbabilityBasedSamplerConfiguration {
+
 		@Bean
 		@RefreshScope
 		@ConditionalOnMissingBean
 		public Sampler defaultTraceSampler(SamplerProperties config) {
 			return new ProbabilityBasedSampler(config);
 		}
+
 	}
 
 	/**
@@ -216,35 +219,37 @@ public class StackdriverTraceAutoConfiguration {
 	@Configuration
 	@ConditionalOnMissingClass("org.springframework.cloud.context.config.annotation.RefreshScope")
 	protected static class NonRefreshScopeProbabilityBasedSamplerConfiguration {
+
 		@Bean
 		@ConditionalOnMissingBean
 		public Sampler defaultTraceSampler(SamplerProperties config) {
 			return new ProbabilityBasedSampler(config);
 		}
+
 	}
 
 	/**
 	 * Configuration for Sleuth.
 	 */
 	@Configuration
-	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
-			havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(name = "spring.sleuth.http.enabled", havingValue = "true", matchIfMissing = true)
 	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
 	public static class StackdriverTraceHttpAutoconfiguration {
+
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
-				havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
 		HttpClientParser stackdriverHttpClientParser() {
 			return new StackdriverHttpClientParser();
 		}
 
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
-				havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
 		HttpServerParser stackdriverHttpServerParser() {
 			return new StackdriverHttpServerParser();
 		}
+
 	}
+
 }

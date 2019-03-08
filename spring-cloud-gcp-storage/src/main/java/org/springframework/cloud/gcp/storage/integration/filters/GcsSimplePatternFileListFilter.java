@@ -26,7 +26,8 @@ import org.springframework.integration.file.filters.AbstractSimplePatternFileLis
  * @author João André Martins
  * @author Chengyuan Zhao
  */
-public class GcsSimplePatternFileListFilter extends AbstractSimplePatternFileListFilter<BlobInfo> {
+public class GcsSimplePatternFileListFilter
+		extends AbstractSimplePatternFileListFilter<BlobInfo> {
 
 	public GcsSimplePatternFileListFilter(String path) {
 		super(path);
@@ -41,4 +42,5 @@ public class GcsSimplePatternFileListFilter extends AbstractSimplePatternFileLis
 	protected boolean isDirectory(BlobInfo blobInfo) {
 		return blobInfo.isDirectory();
 	}
+
 }

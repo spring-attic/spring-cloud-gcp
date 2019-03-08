@@ -43,15 +43,17 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * This verifies the sample application for using GCP Storage with Spring Resource abstractions.
+ * This verifies the sample application for using GCP Storage with Spring Resource
+ * abstractions.
  *
- * To run the test, set the gcs-resource-test-bucket property in application.properties to the name
- * of your bucket and run: mvn test -Dit.storage
+ * To run the test, set the gcs-resource-test-bucket property in application.properties to
+ * the name of your bucket and run: mvn test -Dit.storage
  *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { GcsApplication.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		GcsApplication.class })
 public class GcsApplicationTests {
 
 	@Autowired
@@ -83,20 +85,20 @@ public class GcsApplicationTests {
 	@Test
 	public void testGcsResourceIsLoaded() {
 		BlobId blobId = BlobId.of(this.bucketName, "my-file.txt");
-		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain")
+				.build();
 		this.storage.create(blobInfo, "Good Morning!".getBytes(StandardCharsets.UTF_8));
 
-		Awaitility.await().atMost(15, TimeUnit.SECONDS)
-				.untilAsserted(() -> {
-					String result = this.testRestTemplate.getForObject("/", String.class);
-					assertThat(result).isEqualTo("Good Morning!\n");
-				});
+		Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+			String result = this.testRestTemplate.getForObject("/", String.class);
+			assertThat(result).isEqualTo("Good Morning!\n");
+		});
 
 		this.testRestTemplate.postForObject("/", "Good Night!", String.class);
-		Awaitility.await().atMost(15, TimeUnit.SECONDS)
-				.untilAsserted(() -> {
-					String result = this.testRestTemplate.getForObject("/", String.class);
-					assertThat(result).isEqualTo("Good Night!\n");
-				});
+		Awaitility.await().atMost(15, TimeUnit.SECONDS).untilAsserted(() -> {
+			String result = this.testRestTemplate.getForObject("/", String.class);
+			assertThat(result).isEqualTo("Good Night!\n");
+		});
 	}
+
 }

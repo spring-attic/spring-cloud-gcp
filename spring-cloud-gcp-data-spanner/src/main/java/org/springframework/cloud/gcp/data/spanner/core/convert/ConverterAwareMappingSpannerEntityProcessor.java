@@ -38,10 +38,10 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
- *
  * @since 1.1
  */
-public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntityProcessor {
+public class ConverterAwareMappingSpannerEntityProcessor
+		implements SpannerEntityProcessor {
 
 	private final ConverterAwareMappingSpannerEntityReader entityReader;
 
@@ -51,19 +51,23 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 
 	private final SpannerWriteConverter writeConverter;
 
-	public ConverterAwareMappingSpannerEntityProcessor(SpannerMappingContext spannerMappingContext) {
+	public ConverterAwareMappingSpannerEntityProcessor(
+			SpannerMappingContext spannerMappingContext) {
 		this(spannerMappingContext, null, null);
 	}
 
-	public ConverterAwareMappingSpannerEntityProcessor(SpannerMappingContext spannerMappingContext,
+	public ConverterAwareMappingSpannerEntityProcessor(
+			SpannerMappingContext spannerMappingContext,
 			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 
 		this.readConverter = new SpannerReadConverter(readConverters);
-		this.entityReader = new ConverterAwareMappingSpannerEntityReader(spannerMappingContext, this.readConverter);
+		this.entityReader = new ConverterAwareMappingSpannerEntityReader(
+				spannerMappingContext, this.readConverter);
 		this.writeConverter = new SpannerWriteConverter(writeConverters);
-		this.entityWriter = new ConverterAwareMappingSpannerEntityWriter(spannerMappingContext, this.writeConverter);
+		this.entityWriter = new ConverterAwareMappingSpannerEntityWriter(
+				spannerMappingContext, this.writeConverter);
 	}
 
 	@Override
@@ -76,10 +80,9 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 			Set<String> includeColumns, boolean allowMissingColumns) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
-			result.add(this.entityReader.read(entityClass,
-					resultSet.getCurrentRowAsStruct(),
-					includeColumns,
-					allowMissingColumns));
+			result.add(
+					this.entityReader.read(entityClass, resultSet.getCurrentRowAsStruct(),
+							includeColumns, allowMissingColumns));
 		}
 		resultSet.close();
 		return result;
@@ -88,33 +91,37 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns) {
-		return mapToList(resultSet, entityClass,
-				(includeColumns.length == 0) ? null
-						: new HashSet<>(Arrays.asList(includeColumns)),
-				false);
+		return mapToList(resultSet, entityClass, (includeColumns.length == 0) ? null
+				: new HashSet<>(Arrays.asList(includeColumns)), false);
 	}
 
 	@Override
-	public Class<?> getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType) {
+	public Class<?> getCorrespondingSpannerJavaType(Class originalType,
+			boolean isIterableInnerType) {
 		Class<?> compatible;
 		if (isIterableInnerType) {
-			if (ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.keySet()
-					.contains(originalType)) {
+			if (ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
+					.keySet().contains(originalType)) {
 				return originalType;
 			}
-			compatible = ConverterAwareMappingSpannerEntityWriter.findFirstCompatibleSpannerMultupleItemNativeType(
-					(spannerType) -> canHandlePropertyTypeForArrayRead(originalType, spannerType)
-							&& this.writeConverter.canConvert(originalType, spannerType));
+			compatible = ConverterAwareMappingSpannerEntityWriter
+					.findFirstCompatibleSpannerMultupleItemNativeType(
+							(spannerType) -> canHandlePropertyTypeForArrayRead(
+									originalType, spannerType)
+									&& this.writeConverter.canConvert(originalType,
+											spannerType));
 		}
 		else {
-			if (ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet()
-					.contains(originalType)) {
+			if (ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+					.keySet().contains(originalType)) {
 				return originalType;
 			}
 			compatible = ConverterAwareMappingSpannerEntityWriter
 					.findFirstCompatibleSpannerSingleItemNativeType(
-							(spannerType) -> canHandlePropertyTypeForSingularRead(originalType, spannerType)
-									&& this.writeConverter.canConvert(originalType, spannerType));
+							(spannerType) -> canHandlePropertyTypeForSingularRead(
+									originalType, spannerType)
+									&& this.writeConverter.canConvert(originalType,
+											spannerType));
 		}
 		return compatible;
 	}
@@ -172,7 +179,8 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	}
 
 	@Override
-	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns, boolean allowMissingColumns) {
+	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
+			boolean allowMissingColumns) {
 		return this.entityReader.read(type, source, includeColumns, allowMissingColumns);
 	}
 
@@ -185,4 +193,5 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public SpannerReadConverter getReadConverter() {
 		return this.readConverter;
 	}
+
 }

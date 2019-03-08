@@ -29,4 +29,5 @@ public interface TradeProjection {
 
 	@Value("#{target.symbol + ' ' + target.action}")
 	String getSymbolAndAction();
+
 }

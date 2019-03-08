@@ -23,21 +23,22 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
  * @author Chengyuan Zhao
  */
 public enum DatabaseType {
+
 	/**
 	 * MySQL constants.
 	 */
-	MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?"
-			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-			+ "&cloudSqlInstance=%s"
-			+ "&useSSL=false"),
+	MYSQL("com.mysql.jdbc.Driver",
+			"jdbc:mysql://google/%s?"
+					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+					+ "&cloudSqlInstance=%s" + "&useSSL=false"),
 
 	/**
 	 * Postgresql constants.
 	 */
-	POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://google/%s?"
-			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
-			+ "&cloudSqlInstance=%s"
-			+ "&useSSL=false");
+	POSTGRESQL("org.postgresql.Driver",
+			"jdbc:postgresql://google/%s?"
+					+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
+					+ "&cloudSqlInstance=%s" + "&useSSL=false");
 
 	private final String jdbcDriverName;
 
@@ -55,4 +56,5 @@ public enum DatabaseType {
 	public String getJdbcUrlTemplate() {
 		return this.jdbcUrlTemplate;
 	}
+
 }

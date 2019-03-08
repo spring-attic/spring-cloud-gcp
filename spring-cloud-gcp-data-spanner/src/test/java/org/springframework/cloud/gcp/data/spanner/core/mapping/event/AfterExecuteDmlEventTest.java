@@ -30,13 +30,18 @@ public class AfterExecuteDmlEventTest {
 
 	@Test
 	public void equalsHashcodeTest() {
-		AfterExecuteDmlEvent afterExecuteDmlEventa1 = new AfterExecuteDmlEvent(Statement.of("a"), 1L);
-		AfterExecuteDmlEvent afterExecuteDmlEventa1x = new AfterExecuteDmlEvent(Statement.of("a"), 1L);
+		AfterExecuteDmlEvent afterExecuteDmlEventa1 = new AfterExecuteDmlEvent(
+				Statement.of("a"), 1L);
+		AfterExecuteDmlEvent afterExecuteDmlEventa1x = new AfterExecuteDmlEvent(
+				Statement.of("a"), 1L);
 
-		AfterExecuteDmlEvent afterExecuteDmlEventa2 = new AfterExecuteDmlEvent(Statement.of("a"), 2L);
+		AfterExecuteDmlEvent afterExecuteDmlEventa2 = new AfterExecuteDmlEvent(
+				Statement.of("a"), 2L);
 
-		AfterExecuteDmlEvent afterExecuteDmlEventb1 = new AfterExecuteDmlEvent(Statement.of("b"), 1L);
-		AfterExecuteDmlEvent afterExecuteDmlEventb2 = new AfterExecuteDmlEvent(Statement.of("b"), 2L);
+		AfterExecuteDmlEvent afterExecuteDmlEventb1 = new AfterExecuteDmlEvent(
+				Statement.of("b"), 1L);
+		AfterExecuteDmlEvent afterExecuteDmlEventb2 = new AfterExecuteDmlEvent(
+				Statement.of("b"), 2L);
 
 		assertThat(afterExecuteDmlEventa1).isEqualTo(afterExecuteDmlEventa1);
 		assertThat(afterExecuteDmlEventa1).isEqualTo(afterExecuteDmlEventa1x);
@@ -46,11 +51,16 @@ public class AfterExecuteDmlEventTest {
 		assertThat(afterExecuteDmlEventa1).isNotEqualTo(null);
 		assertThat(afterExecuteDmlEventa1).isNotEqualTo(new Object());
 
-		assertThat(afterExecuteDmlEventa1.hashCode()).isEqualTo(afterExecuteDmlEventa1.hashCode());
-		assertThat(afterExecuteDmlEventa1.hashCode()).isEqualTo(afterExecuteDmlEventa1x.hashCode());
-		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventa2.hashCode());
-		assertThat(afterExecuteDmlEventb1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
-		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
+		assertThat(afterExecuteDmlEventa1.hashCode())
+				.isEqualTo(afterExecuteDmlEventa1.hashCode());
+		assertThat(afterExecuteDmlEventa1.hashCode())
+				.isEqualTo(afterExecuteDmlEventa1x.hashCode());
+		assertThat(afterExecuteDmlEventa1.hashCode())
+				.isNotEqualTo(afterExecuteDmlEventa2.hashCode());
+		assertThat(afterExecuteDmlEventb1.hashCode())
+				.isNotEqualTo(afterExecuteDmlEventb2.hashCode());
+		assertThat(afterExecuteDmlEventa1.hashCode())
+				.isNotEqualTo(afterExecuteDmlEventb2.hashCode());
 	}
 
 }

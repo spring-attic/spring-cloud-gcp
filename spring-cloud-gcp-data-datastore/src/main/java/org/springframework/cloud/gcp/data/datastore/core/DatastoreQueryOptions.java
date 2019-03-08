@@ -60,13 +60,14 @@ public class DatastoreQueryOptions {
 			return false;
 		}
 		DatastoreQueryOptions that = (DatastoreQueryOptions) o;
-		return Objects.equals(getLimit(), that.getLimit()) &&
-				Objects.equals(getOffset(), that.getOffset()) &&
-				Objects.equals(getSort(), that.getSort());
+		return Objects.equals(getLimit(), that.getLimit())
+				&& Objects.equals(getOffset(), that.getOffset())
+				&& Objects.equals(getSort(), that.getSort());
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(getLimit(), getOffset(), getSort());
 	}
+
 }

@@ -23,7 +23,6 @@ import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 
-
 /**
  * A test entity object that has fields of many different types to test features.
  *
@@ -31,6 +30,7 @@ import com.google.cloud.datastore.LatLng;
  * @author Chengyuan Zhao
  */
 class TestDatastoreItem {
+
 	private Duration durationField;
 
 	private String stringField;
@@ -155,6 +155,9 @@ class TestDatastoreItem {
 	 * An enum used to test conversion and storage.
 	 */
 	enum Color {
+
 		WHITE, BLACK
+
 	}
+
 }

@@ -20,7 +20,6 @@ package org.springframework.cloud.gcp.security.iap;
  * Interface to allow customized audience strings.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 public interface AudienceProvider {

@@ -77,8 +77,7 @@ public class DatastoreQueryLookupStrategyTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(1);
 		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
@@ -106,4 +105,5 @@ public class DatastoreQueryLookupStrategyTests {
 				.createQueryMethod(any(), any(), any());
 		return spannerQueryLookupStrategy;
 	}
+
 }

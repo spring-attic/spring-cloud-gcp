@@ -46,9 +46,8 @@ public class CloudVisionAutoConfiguration {
 
 	private final CredentialsProvider credentialsProvider;
 
-	public CloudVisionAutoConfiguration(
-			CloudVisionProperties properties, CredentialsProvider credentialsProvider)
-			throws IOException {
+	public CloudVisionAutoConfiguration(CloudVisionProperties properties,
+			CredentialsProvider credentialsProvider) throws IOException {
 
 		if (properties.getCredentials().hasKey()) {
 			this.credentialsProvider = new DefaultCredentialsProvider(properties);
@@ -60,12 +59,15 @@ public class CloudVisionAutoConfiguration {
 
 	/**
 	 * Configure the Cloud Vision API client {@link ImageAnnotatorClient}. The
-	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides
-	 * the GCP credentials, required to authenticate and authorize Vision API calls.
-	 * <p>Cloud Vision API client implements {@link AutoCloseable}, which is automatically
+	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that
+	 * provides the GCP credentials, required to authenticate and authorize Vision API
+	 * calls.
+	 * <p>
+	 * Cloud Vision API client implements {@link AutoCloseable}, which is automatically
 	 * honored by Spring bean lifecycle.
-	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
-	 * to produce a singleton and re-using the client object for multiple requests.
+	 * <p>
+	 * Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's
+	 * better to produce a singleton and re-using the client object for multiple requests.
 	 * @return a Cloud Vision API client
 	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
 	 */
@@ -74,7 +76,8 @@ public class CloudVisionAutoConfiguration {
 	public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
 		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
-				.setHeaderProvider(new UserAgentHeaderProvider(CloudVisionAutoConfiguration.class))
+				.setHeaderProvider(
+						new UserAgentHeaderProvider(CloudVisionAutoConfiguration.class))
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);
@@ -82,7 +85,8 @@ public class CloudVisionAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public CloudVisionTemplate cloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
+	public CloudVisionTemplate cloudVisionTemplate(
+			ImageAnnotatorClient imageAnnotatorClient) {
 		return new CloudVisionTemplate(imageAnnotatorClient);
 	}
 

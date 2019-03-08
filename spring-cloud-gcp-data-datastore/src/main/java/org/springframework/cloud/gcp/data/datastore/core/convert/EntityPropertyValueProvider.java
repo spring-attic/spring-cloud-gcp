@@ -30,16 +30,17 @@ import org.springframework.data.util.TypeInformation;
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
-public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
+public class EntityPropertyValueProvider
+		implements PropertyValueProvider<DatastorePersistentProperty> {
+
 	private final BaseEntity entity;
 
 	private final ReadWriteConversions conversion;
 
-
-	public EntityPropertyValueProvider(BaseEntity entity, ReadWriteConversions readWriteConversions) {
+	public EntityPropertyValueProvider(BaseEntity entity,
+			ReadWriteConversions readWriteConversions) {
 		if (entity == null) {
 			throw new DatastoreDataException("A non-null entity is required");
 		}
@@ -58,7 +59,8 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType, TypeInformation targetTypeInformation) {
+	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType,
+			TypeInformation targetTypeInformation) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
 		}
@@ -71,4 +73,5 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			throw new DatastoreDataException("Unable to read property " + fieldName, ex);
 		}
 	}
+
 }

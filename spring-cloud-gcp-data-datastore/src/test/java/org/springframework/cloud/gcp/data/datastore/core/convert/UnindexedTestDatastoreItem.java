@@ -24,6 +24,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
  * @author Dmitry Solomakha
  */
 public class UnindexedTestDatastoreItem {
+
 	private long indexedField;
 
 	@Unindexed
@@ -44,4 +45,5 @@ public class UnindexedTestDatastoreItem {
 	public void setUnindexedField(long unindexedField) {
 		this.unindexedField = unindexedField;
 	}
+
 }

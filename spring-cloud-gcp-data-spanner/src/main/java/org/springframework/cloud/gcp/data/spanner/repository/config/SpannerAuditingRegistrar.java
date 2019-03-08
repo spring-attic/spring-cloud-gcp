@@ -45,18 +45,22 @@ public class SpannerAuditingRegistrar extends AuditingBeanDefinitionRegistrarSup
 	}
 
 	@Override
-	protected void registerAuditListenerBeanDefinition(BeanDefinition auditingHandlerDefinition,
-			BeanDefinitionRegistry registry) {
+	protected void registerAuditListenerBeanDefinition(
+			BeanDefinition auditingHandlerDefinition, BeanDefinitionRegistry registry) {
 		Class<?> listenerClass = SpannerAuditingEventListener.class;
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(listenerClass)
+		BeanDefinitionBuilder builder = BeanDefinitionBuilder
+				.rootBeanDefinition(listenerClass)
 				.addConstructorArgReference(AUDITING_HANDLER_BEAN_NAME);
 
-		registerInfrastructureBeanWithId(builder.getRawBeanDefinition(), listenerClass.getName(), registry);
+		registerInfrastructureBeanWithId(builder.getRawBeanDefinition(),
+				listenerClass.getName(), registry);
 	}
 
 	@Override
-	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(AuditingConfiguration configuration) {
-		BeanDefinitionBuilder builder = configureDefaultAuditHandlerAttributes(configuration,
+	protected BeanDefinitionBuilder getAuditHandlerBeanDefinitionBuilder(
+			AuditingConfiguration configuration) {
+		BeanDefinitionBuilder builder = configureDefaultAuditHandlerAttributes(
+				configuration,
 				BeanDefinitionBuilder.rootBeanDefinition(AuditingHandler.class));
 		return builder.addConstructorArgReference(MAPPING_CONTEXT_BEAN_NAME);
 	}
@@ -65,4 +69,5 @@ public class SpannerAuditingRegistrar extends AuditingBeanDefinitionRegistrarSup
 	protected String getAuditingHandlerBeanName() {
 		return AUDITING_HANDLER_BEAN_NAME;
 	}
+
 }

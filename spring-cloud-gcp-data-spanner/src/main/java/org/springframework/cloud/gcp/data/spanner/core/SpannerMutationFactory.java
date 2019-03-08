@@ -28,16 +28,15 @@ import com.google.cloud.spanner.Mutation;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public interface SpannerMutationFactory {
 
 	/**
-	 * Stores an object and its interleaved child properties in Cloud Spanner.
-	 * There will be 1 mutation for each entity corresponding to a row in Cloud Spanner. If there
-	 * are no interleaved children then the returned list will contain the single mutation for the
-	 * given object.
+	 * Stores an object and its interleaved child properties in Cloud Spanner. There will
+	 * be 1 mutation for each entity corresponding to a row in Cloud Spanner. If there are
+	 * no interleaved children then the returned list will contain the single mutation for
+	 * the given object.
 	 * @param object the object to store.
 	 * @return the mutation operations which will store the object and its children.
 	 */
@@ -100,4 +99,5 @@ public interface SpannerMutationFactory {
 	 * @return the delete mutation.
 	 */
 	Mutation delete(Class entityClass, Key key);
+
 }

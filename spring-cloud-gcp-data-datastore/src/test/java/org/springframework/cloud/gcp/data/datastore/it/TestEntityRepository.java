@@ -96,4 +96,5 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	@Nullable
 	TestEntity getByColor(String color);
+
 }

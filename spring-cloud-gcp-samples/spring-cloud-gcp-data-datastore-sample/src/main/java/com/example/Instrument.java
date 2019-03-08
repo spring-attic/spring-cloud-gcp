@@ -64,4 +64,5 @@ public class Instrument {
 	public int hashCode() {
 		return Objects.hash(this.type);
 	}
+
 }

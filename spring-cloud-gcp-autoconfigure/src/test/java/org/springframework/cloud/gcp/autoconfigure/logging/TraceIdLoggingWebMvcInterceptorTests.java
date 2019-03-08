@@ -23,7 +23,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 /**
  * Tests the trace id logging web mvc interceptor.
  *
@@ -38,8 +37,8 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
-	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+	private TraceIdLoggingWebMvcInterceptor interceptor = new TraceIdLoggingWebMvcInterceptor(
+			new XCloudTraceIdExtractor());
 
 	@Test
 	public void testPreHandle() throws Exception {
@@ -61,4 +60,5 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId()).isNull();
 	}
+
 }

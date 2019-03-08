@@ -53,36 +53,42 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  * Autoconfiguration for extracting pre-authenticated user identity from
  * <a href="https://cloud.google.com/iap/">Google Cloud IAP</a> header.
  *
- * <p>Provides:
+ * <p>
+ * Provides:
  * <ul>
- *   <li>a custom {@link BearerTokenResolver} extracting identity from {@code x-goog-iap-jwt-assertion} header
- *   <li>an ES256 web registry-based JWT token decoder bean with the following standard validations:
- *     <ul>
- *         <li>Issue time
- *         <li>Expiration time
- *         <li>Issuer
- *         <li>Audience (this validation is only enabled if running on AppEngine, or if a custom
- *         audience is provided through {@code spring.cloud.gcp.security.iap.audience} property)
- *     </ul>
+ * <li>a custom {@link BearerTokenResolver} extracting identity from
+ * {@code x-goog-iap-jwt-assertion} header
+ * <li>an ES256 web registry-based JWT token decoder bean with the following standard
+ * validations:
+ * <ul>
+ * <li>Issue time
+ * <li>Expiration time
+ * <li>Issuer
+ * <li>Audience (this validation is only enabled if running on AppEngine, or if a custom
+ * audience is provided through {@code spring.cloud.gcp.security.iap.audience} property)
  * </ul>
- * <p>If a custom {@link WebSecurityConfigurerAdapter} is present, it must add {@code .oauth2ResourceServer().jwt()}
- * customization to {@link org.springframework.security.config.annotation.web.builders.HttpSecurity} object. If no
- * custom {@link WebSecurityConfigurerAdapter} is found,
- * Spring Boot's default {@code OAuth2ResourceServerWebSecurityConfiguration} will add this customization.
+ * </ul>
+ * <p>
+ * If a custom {@link WebSecurityConfigurerAdapter} is present, it must add
+ * {@code .oauth2ResourceServer().jwt()} customization to
+ * {@link org.springframework.security.config.annotation.web.builders.HttpSecurity}
+ * object. If no custom {@link WebSecurityConfigurerAdapter} is found, Spring Boot's
+ * default {@code OAuth2ResourceServerWebSecurityConfiguration} will add this
+ * customization.
  *
  * @author Elena Felder
- *
  * @since 1.1
  */
 @Configuration
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.iap.enabled", matchIfMissing = true)
-@ConditionalOnClass({AudienceValidator.class})
+@ConditionalOnClass({ AudienceValidator.class })
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(IapAuthenticationProperties.class)
 public class IapAuthenticationAutoConfiguration {
 
-	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(IapAuthenticationAutoConfiguration.class);
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -93,14 +99,17 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("spring.cloud.gcp.security.iap.audience")
-	public AudienceProvider propertyBasedAudienceProvider(IapAuthenticationProperties properties) {
+	public AudienceProvider propertyBasedAudienceProvider(
+			IapAuthenticationProperties properties) {
 		return properties::getAudience;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnGcpEnvironment({GcpEnvironment.APP_ENGINE_FLEXIBLE, GcpEnvironment.APP_ENGINE_STANDARD})
-	public AudienceProvider appEngineBasedAudienceProvider(GcpProjectIdProvider projectIdProvider) {
+	@ConditionalOnGcpEnvironment({ GcpEnvironment.APP_ENGINE_FLEXIBLE,
+			GcpEnvironment.APP_ENGINE_STANDARD })
+	public AudienceProvider appEngineBasedAudienceProvider(
+			GcpProjectIdProvider projectIdProvider) {
 		return new AppEngineAudienceProvider(projectIdProvider);
 	}
 
@@ -112,8 +121,8 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "iapJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(IapAuthenticationProperties properties,
-			AudienceValidator audienceValidator) {
+	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(
+			IapAuthenticationProperties properties, AudienceValidator audienceValidator) {
 
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
@@ -121,7 +130,8 @@ public class IapAuthenticationAutoConfiguration {
 		validators.add(audienceValidator);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Audience configured for IAP JWT validation: " + audienceValidator.getAudience());
+			LOGGER.info("Audience configured for IAP JWT validation: "
+					+ audienceValidator.getAudience());
 		}
 
 		return new DelegatingOAuth2TokenValidator<>(validators);
@@ -132,10 +142,11 @@ public class IapAuthenticationAutoConfiguration {
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties,
 			@Qualifier("iapJwtDelegatingValidator") DelegatingOAuth2TokenValidator<Jwt> validator) {
 
-		NimbusJwtDecoderJwkSupport jwkSupport
-				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
+		NimbusJwtDecoderJwkSupport jwkSupport = new NimbusJwtDecoderJwkSupport(
+				properties.getRegistry(), properties.getAlgorithm());
 		jwkSupport.setJwtValidator(validator);
 
 		return jwkSupport;
 	}
+
 }

@@ -40,4 +40,5 @@ public class PubSubProducerDestination implements ProducerDestination {
 	public String getNameForPartition(int partition) {
 		return this.name + "-" + partition;
 	}
+
 }

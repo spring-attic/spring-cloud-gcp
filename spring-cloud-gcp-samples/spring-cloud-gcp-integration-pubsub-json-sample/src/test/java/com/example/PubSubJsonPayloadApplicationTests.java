@@ -45,7 +45,8 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = {
+		PubSubJsonPayloadApplication.class })
 public class PubSubJsonPayloadApplicationTests {
 
 	@Autowired
@@ -61,23 +62,20 @@ public class PubSubJsonPayloadApplicationTests {
 
 	@Test
 	public void testReceivesJsonPayload() {
-		Map<String, String> params = new MapBuilder<String, String>()
-				.put("name", "Bob")
-				.put("age", "25")
-				.build();
+		Map<String, String> params = new MapBuilder<String, String>().put("name", "Bob")
+				.put("age", "25").build();
 
-		this.testRestTemplate.postForObject(
-				"/createPerson?name={name}&age={age}", null, String.class, params);
+		this.testRestTemplate.postForObject("/createPerson?name={name}&age={age}", null,
+				String.class, params);
 
 		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
 			ResponseEntity<List<Person>> response = this.testRestTemplate.exchange(
-					"/listPersons",
-					HttpMethod.GET,
-					null,
+					"/listPersons", HttpMethod.GET, null,
 					new ParameterizedTypeReference<List<Person>>() {
 					});
 
 			assertThat(response.getBody()).containsExactly(new Person("Bob", 25));
 		});
 	}
+
 }

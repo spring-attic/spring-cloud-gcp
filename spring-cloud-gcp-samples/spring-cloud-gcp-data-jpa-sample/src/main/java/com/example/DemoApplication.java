@@ -47,12 +47,12 @@ public class DemoApplication {
 
 			Stream.of(new House("111 8th Av., NYC"),
 					new House("636 Avenue of the Americas, NYC"),
-					new House("White House"),
-					new House("Pentagon"))
+					new House("White House"), new House("Pentagon"))
 					.forEach(houseRepository::save);
 
 			LOGGER.info("Number of houses is " + houseRepository.count());
 			houseRepository.findAll().forEach((house) -> LOGGER.info(house.getAddress()));
 		};
 	}
+
 }

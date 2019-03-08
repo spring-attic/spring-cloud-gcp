@@ -44,7 +44,8 @@ import org.springframework.util.Assert;
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
-	private static final Log LOGGER = LogFactory.getLog(PubSubInboundChannelAdapter.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(PubSubInboundChannelAdapter.class);
 
 	private final String subscriptionName;
 
@@ -58,8 +59,11 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private Class<?> payloadType = byte[].class;
 
-	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
-		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
+	public PubSubInboundChannelAdapter(
+			PubSubSubscriberOperations pubSubSubscriberOperations,
+			String subscriptionName) {
+		Assert.notNull(pubSubSubscriberOperations,
+				"Pub/Sub subscriber template can't be null.");
 		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
@@ -79,13 +83,16 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	/**
-	 * Set the desired type of the payload of the {@link org.springframework.messaging.Message} constructed by
-	 * converting the incoming Pub/Sub message. The channel adapter will use the
-	 * {@link org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter} configured for
-	 * {@link PubSubSubscriberOperations#subscribeAndConvert(String, java.util.function.Consumer, Class)}. The default
-	 * payload type is {@code byte[].class}.
-	 * @param payloadType the type of the payload of the {@link org.springframework.messaging.Message} produced by the
-	 * 				adapter. Cannot be set to null.
+	 * Set the desired type of the payload of the
+	 * {@link org.springframework.messaging.Message} constructed by converting the
+	 * incoming Pub/Sub message. The channel adapter will use the
+	 * {@link org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter}
+	 * configured for
+	 * {@link PubSubSubscriberOperations#subscribeAndConvert(String, java.util.function.Consumer, Class)}.
+	 * The default payload type is {@code byte[].class}.
+	 * @param payloadType the type of the payload of the
+	 * {@link org.springframework.messaging.Message} produced by the adapter. Cannot be
+	 * set to null.
 	 */
 	public void setPayloadType(Class<?> payloadType) {
 		Assert.notNull(payloadType, "The payload type cannot be null.");
@@ -93,7 +100,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	/**
-	 * Set the header mapper to map headers from incoming {@link com.google.pubsub.v1.PubsubMessage} into
+	 * Set the header mapper to map headers from incoming
+	 * {@link com.google.pubsub.v1.PubsubMessage} into
 	 * {@link org.springframework.messaging.Message}.
 	 * @param headerMapper the header mapper
 	 */
@@ -121,8 +129,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	@SuppressWarnings("deprecation")
 	private void consumeMessage(ConvertedBasicAcknowledgeablePubsubMessage<?> message) {
-		Map<String, Object> messageHeaders =
-				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
+		Map<String, Object> messageHeaders = this.headerMapper
+				.toHeaders(message.getPubsubMessage().getAttributesMap());
 
 		// Send the original message downstream so that the user can decide on when to
 		// ack/nack, or just have access to the original message for any other reason.
@@ -133,23 +141,23 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, new AckReplyConsumer() {
 				@Override
 				public void ack() {
-					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to ack.");
+					LOGGER.warn(
+							"ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to ack.");
 					message.ack();
 				}
 
 				@Override
 				public void nack() {
-					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to nack.");
+					LOGGER.warn(
+							"ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to nack.");
 					message.nack();
 				}
 			});
 		}
 
 		try {
-			sendMessage(getMessageBuilderFactory()
-					.withPayload(message.getPayload())
-					.copyHeaders(messageHeaders)
-					.build());
+			sendMessage(getMessageBuilderFactory().withPayload(message.getPayload())
+					.copyHeaders(messageHeaders).build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {

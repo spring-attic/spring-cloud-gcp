@@ -32,9 +32,8 @@ public class AfterFindByKeyEvent extends ReadEvent {
 
 	/**
 	 * Constructor.
-	 *
 	 * @param results A list of results from the read operation where each item was mapped
-	 *     from a Cloud Datastore entity.
+	 * from a Cloud Datastore entity.
 	 * @param keys The Keys that were attempted to be read.
 	 */
 	public AfterFindByKeyEvent(Iterable results, Set<Key> keys) {
@@ -67,4 +66,5 @@ public class AfterFindByKeyEvent extends ReadEvent {
 	public int hashCode() {
 		return Objects.hash(getResults(), getTargetKeys());
 	}
+
 }

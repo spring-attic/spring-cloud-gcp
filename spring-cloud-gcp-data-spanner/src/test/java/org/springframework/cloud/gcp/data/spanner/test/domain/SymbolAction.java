@@ -47,4 +47,5 @@ public class SymbolAction {
 	public void setAction(String action) {
 		this.action = action;
 	}
+
 }

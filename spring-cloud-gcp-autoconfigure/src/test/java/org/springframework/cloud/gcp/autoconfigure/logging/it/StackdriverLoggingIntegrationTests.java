@@ -61,14 +61,13 @@ import static org.awaitility.Awaitility.await;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-@SpringBootTest(
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = {"spring.main.banner-mode=off"}
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+		"spring.main.banner-mode=off" })
 @RunWith(SpringRunner.class)
 public class StackdriverLoggingIntegrationTests {
 
-	private static final Log LOGGER = LogFactory.getLog(StackdriverLoggingIntegrationTests.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(StackdriverLoggingIntegrationTests.class);
 
 	@Autowired
 	private GcpProjectIdProvider projectIdProvider;
@@ -90,26 +89,26 @@ public class StackdriverLoggingIntegrationTests {
 	public void test() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("x-cloud-trace-context", "everything-zen");
-		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
-				"/", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange("/",
+				HttpMethod.GET, new HttpEntity<>(headers), String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
 		CredentialsProvider credentialsProvider = this.credentialsProvider;
 		Logging logClient = LoggingOptions.newBuilder()
-				.setCredentials(credentialsProvider.getCredentials())
-				.build().getService();
+				.setCredentials(credentialsProvider.getCredentials()).build()
+				.getService();
 
 		await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
-			Page<LogEntry> page = logClient.listLogEntries(
-					Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
-							+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
+			Page<LogEntry> page = logClient.listLogEntries(Logging.EntryListOption.filter(
+					"textPayload:\"#$%^&" + NOW + "\" AND" + " logName=\"projects/"
+							+ this.projectIdProvider.getProjectId()
 							+ "/logs/spring.log\""));
 
 			assertThat(page.getValues()).hasSize(1);
 
 			LogEntry entry = page.getValues().iterator().next();
-			assertThat(entry.getTrace()).matches(
-					"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
+			assertThat(entry.getTrace()).matches("projects/"
+					+ this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
 			assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
 		});
 	}
@@ -118,13 +117,9 @@ public class StackdriverLoggingIntegrationTests {
 	 * web-app used for integration tests.
 	 */
 	@RestController
-	@SpringBootApplication(exclude = {
-			GcpCloudSqlAutoConfiguration.class,
-			GcpStorageAutoConfiguration.class,
-			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class,
-			IapAuthenticationAutoConfiguration.class
-	})
+	@SpringBootApplication(exclude = { GcpCloudSqlAutoConfiguration.class,
+			GcpStorageAutoConfiguration.class, DataSourceAutoConfiguration.class,
+			SecurityAutoConfiguration.class, IapAuthenticationAutoConfiguration.class })
 	static class LoggingApplication {
 
 		@GetMapping("/")
@@ -132,5 +127,7 @@ public class StackdriverLoggingIntegrationTests {
 			LOGGER.error("#$%^&" + NOW);
 			return "Log sent.";
 		}
+
 	}
+
 }

@@ -37,7 +37,6 @@ import org.springframework.data.repository.config.XmlRepositoryConfigurationSour
  * Datastore templates.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreRepositoryConfigurationExtension
@@ -85,4 +84,5 @@ public class DatastoreRepositoryConfigurationExtension
 		ParsingUtils.setPropertyReference(builder, element,
 				"datastore-mapping-context-ref", "datastoreMappingContext");
 	}
+
 }

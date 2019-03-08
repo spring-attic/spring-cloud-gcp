@@ -57,11 +57,13 @@ public class AfterExecuteDmlEvent extends ExecuteDmlEvent {
 			return false;
 		}
 		AfterExecuteDmlEvent that = (AfterExecuteDmlEvent) o;
-		return getStatement().equals(that.getStatement()) && getNumberOfRowsAffected() == that.getNumberOfRowsAffected();
+		return getStatement().equals(that.getStatement())
+				&& getNumberOfRowsAffected() == that.getNumberOfRowsAffected();
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(getStatement().hashCode(), getNumberOfRowsAffected());
 	}
+
 }

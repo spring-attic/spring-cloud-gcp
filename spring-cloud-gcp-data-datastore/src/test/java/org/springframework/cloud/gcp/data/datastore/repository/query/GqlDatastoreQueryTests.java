@@ -81,22 +81,25 @@ public class GqlDatastoreQueryTests {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
-		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null);
-		when(this.datastoreTemplate.getDatastoreEntityConverter()).thenReturn(this.datastoreEntityConverter);
-		when(this.datastoreEntityConverter.getConversions()).thenReturn(this.readWriteConversions);
+		this.readWriteConversions = new TwoStepsConversions(
+				new DatastoreCustomConversions(), null);
+		when(this.datastoreTemplate.getDatastoreEntityConverter())
+				.thenReturn(this.datastoreEntityConverter);
+		when(this.datastoreEntityConverter.getConversions())
+				.thenReturn(this.readWriteConversions);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
 	private GqlDatastoreQuery<Trade> createQuery(String gql) {
 		return new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
-				this.datastoreTemplate, gql, this.evaluationContextProvider, new DatastoreMappingContext());
+				this.datastoreTemplate, gql, this.evaluationContextProvider,
+				new DatastoreMappingContext());
 	}
 
 	@Test
 	public void compoundNameConventionTest() {
 
-		String gql = "SELECT * FROM "
-				+ "|org.springframework.cloud.gcp.data.datastore."
+		String gql = "SELECT * FROM " + "|org.springframework.cloud.gcp.data.datastore."
 				+ "repository.query.GqlDatastoreQueryTests$Trade|"
 				+ " WHERE price=:#{#tag6 * -1} AND price<>:#{#tag6 * -1} OR "
 				+ "price<>:#{#tag7 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
@@ -112,11 +115,14 @@ public class GqlDatastoreQueryTests {
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
 
 		Object[] params = new Object[] { "BUY", "abcd",
-				// this is an array param of the non-natively supported type and will need conversion
-				new int[] { 1, 2 },
-				new double[] { 8.88, 9.99 },
-				3, // this parameter is a simple int, which is not a directly supported type and uses
-					// conversions
+				// this is an array param of the non-natively supported type and will need
+				// conversion
+				new int[] { 1, 2 }, new double[] { 8.88, 9.99 }, 3, // this parameter is a
+																	// simple int, which
+																	// is not a directly
+																	// supported type and
+																	// uses
+																	// conversions
 				"blahblah", 1.11, 2.22 };
 
 		String[] paramNames = new String[] { "tag0", "tag1", "tag2", "tag3", "tag4",
@@ -124,8 +130,7 @@ public class GqlDatastoreQueryTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
 		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
@@ -158,27 +163,31 @@ public class GqlDatastoreQueryTests {
 			assertThat(paramMap.get("tag1").get()).isEqualTo(params[1]);
 
 			// custom conversion is expected to have been used in this param
-			assertThat((long) ((LongValue) (((List) paramMap.get("tag2").get()).get(0))).get()).isEqualTo(1L);
-			assertThat((long) ((LongValue) (((List) paramMap.get("tag2").get()).get(1))).get()).isEqualTo(2L);
+			assertThat((long) ((LongValue) (((List) paramMap.get("tag2").get()).get(0)))
+					.get()).isEqualTo(1L);
+			assertThat((long) ((LongValue) (((List) paramMap.get("tag2").get()).get(1)))
+					.get()).isEqualTo(2L);
 
-			double actual = ((DoubleValue) (((List) paramMap.get("tag3").get()).get(0))).get();
+			double actual = ((DoubleValue) (((List) paramMap.get("tag3").get()).get(0)))
+					.get();
 			assertThat(actual).isEqualTo(((double[]) params[3])[0], DELTA);
 
 			actual = ((DoubleValue) (((List) paramMap.get("tag3").get()).get(1))).get();
 			assertThat(actual).isEqualTo(((double[]) params[3])[1], DELTA);
 
-			// 3L is expected even though 3 int was the original param due to custom conversions
+			// 3L is expected even though 3 int was the original param due to custom
+			// conversions
 			assertThat(paramMap.get("tag4").get()).isEqualTo(3L);
 			assertThat(paramMap.get("tag5").get()).isEqualTo(params[5]);
 			assertThat(paramMap.get("tag6").get()).isEqualTo(params[6]);
 			assertThat(paramMap.get("tag7").get()).isEqualTo(params[7]);
 
-			assertThat((double) paramMap.get("SpELtag1").get()).isEqualTo(-1 * (double) params[6],
-					DELTA);
-			assertThat((double) paramMap.get("SpELtag2").get()).isEqualTo(-1 * (double) params[6],
-					DELTA);
-			assertThat((double) paramMap.get("SpELtag3").get()).isEqualTo(-1 * (double) params[7],
-					DELTA);
+			assertThat((double) paramMap.get("SpELtag1").get())
+					.isEqualTo(-1 * (double) params[6], DELTA);
+			assertThat((double) paramMap.get("SpELtag2").get())
+					.isEqualTo(-1 * (double) params[6], DELTA);
+			assertThat((double) paramMap.get("SpELtag3").get())
+					.isEqualTo(-1 * (double) params[7], DELTA);
 
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
@@ -187,12 +196,13 @@ public class GqlDatastoreQueryTests {
 
 		gqlDatastoreQuery.execute(params);
 
-		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(any(), eq(Trade.class));
+		verify(this.datastoreTemplate, times(1)).queryKeysOrEntities(any(),
+				eq(Trade.class));
 	}
 
 	@Entity(name = "trades")
 	private static class Trade {
+
 		@Id
 		String id;
 
@@ -207,5 +217,7 @@ public class GqlDatastoreQueryTests {
 
 		@Field(name = "trader_id")
 		String traderId;
+
 	}
+
 }

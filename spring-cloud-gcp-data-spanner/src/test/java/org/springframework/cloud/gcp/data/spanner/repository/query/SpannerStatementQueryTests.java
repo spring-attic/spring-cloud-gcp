@@ -73,9 +73,12 @@ public class SpannerStatementQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.spannerTemplate = mock(SpannerTemplate.class);
-		SpannerEntityProcessor spannerEntityProcessor = mock(SpannerEntityProcessor.class);
-		when(this.spannerTemplate.getSpannerEntityProcessor()).thenReturn(spannerEntityProcessor);
-		when(spannerEntityProcessor.getWriteConverter()).thenReturn(new SpannerWriteConverter());
+		SpannerEntityProcessor spannerEntityProcessor = mock(
+				SpannerEntityProcessor.class);
+		when(this.spannerTemplate.getSpannerEntityProcessor())
+				.thenReturn(spannerEntityProcessor);
+		when(spannerEntityProcessor.getWriteConverter())
+				.thenReturn(new SpannerWriteConverter());
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
 
@@ -92,29 +95,38 @@ public class SpannerStatementQueryTests {
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
 		this.partTreeSpannerQuery = spy(createQuery());
 
-		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123",
-				8, // an int is not a natively supported type, and is intentionally used to use custom
-					// converters
-				3.33, "ignored",
-				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
+		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8, // an int
+																				// is not
+																				// a
+																				// natively
+																				// supported
+																				// type,
+																				// and is
+																				// intentionally
+																				// used to
+																				// use
+																				// custom
+																				// converters
+				3.33, "ignored", "ignored", "blahblah", "ignored", "ignored", 1.11,
+				2.22, };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
 				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
-					String expectedQuery =
-							"SELECT DISTINCT shares , trader_id , ticker , price , action , id "
-									+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
-									+ "AND ticker=@tag1 ) OR "
-									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
-									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3";
+					String expectedQuery = "SELECT DISTINCT shares , trader_id , ticker , price , action , id "
+							+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
+							+ "AND ticker=@tag1 ) OR "
+							+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
+							+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
+							+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3";
 
 					assertThat(statement.getSql()).isEqualTo(expectedQuery);
 
 					Map<String, Value> paramMap = statement.getParameters();
 
-					assertThat(paramMap.get("tag0").getString()).isEqualTo(params[0].toString());
+					assertThat(paramMap.get("tag0").getString())
+							.isEqualTo(params[0].toString());
 					assertThat(paramMap.get("tag1").getString()).isEqualTo(params[1]);
 					assertThat(paramMap.get("tag2").getString()).isEqualTo(params[2]);
 					assertThat(paramMap.get("tag3").getInt64()).isEqualTo(8L);
@@ -150,8 +162,8 @@ public class SpannerStatementQueryTests {
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenReturn(Collections.singletonList(1L));
 
-		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8.88, 3.33, "ignored",
-				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
+		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8.88, 3.33,
+				"ignored", "ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenAnswer((invocation) -> {
@@ -168,7 +180,8 @@ public class SpannerStatementQueryTests {
 
 					Map<String, Value> paramMap = statement.getParameters();
 
-					assertThat(paramMap.get("tag0").getString()).isEqualTo(params[0].toString());
+					assertThat(paramMap.get("tag0").getString())
+							.isEqualTo(params[0].toString());
 					assertThat(paramMap.get("tag1").getString()).isEqualTo(params[1]);
 					assertThat(paramMap.get("tag2").getString()).isEqualTo(params[2]);
 					assertThat(paramMap.get("tag3").getFloat64()).isEqualTo(params[3]);
@@ -197,7 +210,8 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void unspecifiedParametersTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("The number of tags does not match the number of params.");
+		this.expectedEx
+				.expectMessage("The number of tags does not match the number of params.");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
@@ -212,15 +226,17 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void unsupportedParamTypeTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
-		this.expectedEx.expectMessage("is not a supported type: class org.springframework." +
-				"cloud.gcp.data.spanner.repository.query.SpannerStatementQueryTests$Trade");
+		this.expectedEx
+				.expectMessage("is not a supported type: class org.springframework."
+						+ "cloud.gcp.data.spanner.repository.query.SpannerStatementQueryTests$Trade");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
 		// This parameter is an unsupported type for Spanner SQL.
-		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, new Trade(), "ignored", };
+		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, new Trade(),
+				"ignored", };
 
 		this.partTreeSpannerQuery.execute(params);
 	}
@@ -228,8 +244,8 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void unSupportedPredicateTest() {
 		this.expectedEx.expect(UnsupportedOperationException.class);
-		this.expectedEx.expectMessage("The statement type: BETWEEN (2): [IsBetween, " +
-				"Between] is not supported.");
+		this.expectedEx.expectMessage("The statement type: BETWEEN (2): [IsBetween, "
+				+ "Between] is not supported.");
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
@@ -237,6 +253,7 @@ public class SpannerStatementQueryTests {
 
 	@Table(name = "trades")
 	private static class Trade {
+
 		@PrimaryKey
 		String id;
 
@@ -253,8 +270,11 @@ public class SpannerStatementQueryTests {
 		String traderId;
 
 		enum Action {
-			BUY,
-			SELL
+
+			BUY, SELL
+
 		}
+
 	}
+
 }

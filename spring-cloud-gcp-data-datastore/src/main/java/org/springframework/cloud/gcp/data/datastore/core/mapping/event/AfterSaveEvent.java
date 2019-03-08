@@ -26,14 +26,16 @@ import com.google.cloud.datastore.Entity;
  * @author Chengyuan Zhao
  */
 public class AfterSaveEvent extends SaveEvent {
+
 	/**
 	 * Constructor.
-	 *
 	 * @param datastoreEntities The Cloud Datastore entities that are being saved. These
-	 *     include any referenced or descendant entities of the original entities being saved.
-	 * @param javaEntities The original Java entities being saved. Each entity may result in
+	 * include any referenced or descendant entities of the original entities being saved.
+	 * @param javaEntities The original Java entities being saved. Each entity may result
+	 * in
 	 */
 	public AfterSaveEvent(List<Entity> datastoreEntities, List javaEntities) {
 		super(datastoreEntities, javaEntities);
 	}
+
 }

@@ -95,7 +95,8 @@ public class SpannerTemplateAuditingTests {
 		}
 
 		@Bean
-		public SpannerTemplate spannerTemplate(SpannerMappingContext spannerMappingContext) {
+		public SpannerTemplate spannerTemplate(
+				SpannerMappingContext spannerMappingContext) {
 			SpannerEntityProcessor objectMapper = mock(SpannerEntityProcessor.class);
 			SpannerMutationFactory mutationFactory = mock(SpannerMutationFactory.class);
 
@@ -108,20 +109,23 @@ public class SpannerTemplateAuditingTests {
 						return UPSERT_MUTATION;
 					});
 
-			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(spannerMappingContext, objectMapper, true);
+			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(spannerMappingContext,
+					objectMapper, true);
 
-			return new SpannerTemplate(
-					mock(DatabaseClient.class), spannerMappingContext, objectMapper, mutationFactory, schemaUtils);
+			return new SpannerTemplate(mock(DatabaseClient.class), spannerMappingContext,
+					objectMapper, mutationFactory, schemaUtils);
 		}
 
 		@Bean
 		public AuditorAware<String> auditorProvider() {
 			return () -> Optional.of("test_user");
 		}
+
 	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
+
 		@PrimaryKey
 		String id;
 
@@ -130,5 +134,7 @@ public class SpannerTemplateAuditingTests {
 
 		@LastModifiedDate
 		DateTime lastTouched;
+
 	}
+
 }

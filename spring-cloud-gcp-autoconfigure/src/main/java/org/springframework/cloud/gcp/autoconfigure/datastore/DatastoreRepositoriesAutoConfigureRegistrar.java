@@ -27,7 +27,6 @@ import org.springframework.data.repository.config.RepositoryConfigurationExtensi
  * Used to auto-configure Spring Data Cloud Datastore Repositories.
  *
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class DatastoreRepositoriesAutoConfigureRegistrar
@@ -52,4 +51,5 @@ public class DatastoreRepositoriesAutoConfigureRegistrar
 	private static class EnableDatastoreRepositoriesConfiguration {
 
 	}
+
 }

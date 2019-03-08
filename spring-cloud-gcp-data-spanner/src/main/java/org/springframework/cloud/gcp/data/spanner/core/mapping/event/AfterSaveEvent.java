@@ -27,15 +27,17 @@ import com.google.cloud.spanner.Mutation;
  * @author Chengyuan Zhao
  */
 public class AfterSaveEvent extends SaveEvent {
+
 	/**
 	 * Constructor.
-	 *
 	 * @param source the mutations for the event initially occurred. (never {@code null})
 	 * @param targetEntities the target entities that need to be mutated. This may be
-	 *     {@code null} depending on the original request.
+	 * {@code null} depending on the original request.
 	 * @param includeProperties the set of properties to include in the save operation.
 	 */
-	public AfterSaveEvent(List<Mutation> source, Iterable targetEntities, Set<String> includeProperties) {
+	public AfterSaveEvent(List<Mutation> source, Iterable targetEntities,
+			Set<String> includeProperties) {
 		super(source, targetEntities, includeProperties);
 	}
+
 }

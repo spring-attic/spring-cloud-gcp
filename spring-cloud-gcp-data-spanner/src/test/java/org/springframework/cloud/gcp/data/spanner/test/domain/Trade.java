@@ -113,7 +113,8 @@ public class Trade {
 				&& Objects.equals(this.symbol, trade.symbol)
 				&& Objects.equals(this.tradeTime, trade.tradeTime)
 				&& Objects.equals(this.traderId, trade.traderId)
-				// java Date contains the time of day, but Cloud Spanner Date is only specific
+				// java Date contains the time of day, but Cloud Spanner Date is only
+				// specific
 				// to the day.
 				&& Objects.equals(DateUtil.truncateTime(this.tradeDate),
 						DateUtil.truncateTime(trade.tradeDate));
@@ -123,8 +124,8 @@ public class Trade {
 	public int hashCode() {
 		return Objects.hash(this.tradeDetail.id, this.age, this.action,
 				this.tradeDetail.price, this.tradeDetail.shares, this.symbol,
-				this.tradeTime, DateUtil.truncateTime(this.tradeDate),
-				this.traderId, this.executionTimes);
+				this.tradeTime, DateUtil.truncateTime(this.tradeDate), this.traderId,
+				this.executionTimes);
 	}
 
 	public String getId() {
@@ -211,10 +212,10 @@ public class Trade {
 	public String toString() {
 		return "Trade{" + "id='" + this.tradeDetail.id + '\'' + ", action='" + this.action
 				+ '\'' + ", age=" + this.age + ", price=" + this.tradeDetail.price
-				+ ", shares=" + this.tradeDetail.shares + ", symbol='"
-				+ this.symbol + ", tradeTime="
-				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
-				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
+				+ ", shares=" + this.tradeDetail.shares + ", symbol='" + this.symbol
+				+ ", tradeTime=" + this.tradeTime + ", tradeDate='"
+				+ DateUtil.truncateTime(this.tradeDate) + '\'' + ", traderId='"
+				+ this.traderId + '\'' + '}';
 	}
 
 	public Date getTradeDate() {
@@ -232,4 +233,5 @@ public class Trade {
 	public void setExecutionTimes(List<Instant> executionTimes) {
 		this.executionTimes = executionTimes;
 	}
+
 }

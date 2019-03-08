@@ -62,7 +62,8 @@ public class GcsInboundFileSynchronizerTests {
 	@Autowired
 	private Storage gcs;
 
-	private static final Log LOGGER = LogFactory.getLog(GcsInboundFileSynchronizerTests.class);
+	private static final Log LOGGER = LogFactory
+			.getLog(GcsInboundFileSynchronizerTests.class);
 
 	@After
 	@Before
@@ -90,11 +91,13 @@ public class GcsInboundFileSynchronizerTests {
 	@Test
 	public void testCopyFiles() throws Exception {
 		File localDirectory = new File("test");
-		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(this.gcs);
+		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(
+				this.gcs);
 		synchronizer.setRemoteDirectory("test-bucket");
 		synchronizer.setBeanFactory(mock(BeanFactory.class));
 
-		GcsInboundFileSynchronizingMessageSource adapter = new GcsInboundFileSynchronizingMessageSource(synchronizer);
+		GcsInboundFileSynchronizingMessageSource adapter = new GcsInboundFileSynchronizingMessageSource(
+				synchronizer);
 		adapter.setAutoCreateLocalDirectory(true);
 		adapter.setLocalDirectory(localDirectory);
 		adapter.setBeanFactory(mock(BeanFactory.class));
@@ -105,11 +108,13 @@ public class GcsInboundFileSynchronizerTests {
 
 		Message<File> message = adapter.receive();
 		assertThat(message.getPayload().getName()).isEqualTo("legend of heroes");
-		assertThat(Files.readAllBytes(message.getPayload().toPath())).isEqualTo("estelle".getBytes());
+		assertThat(Files.readAllBytes(message.getPayload().toPath()))
+				.isEqualTo("estelle".getBytes());
 
 		message = adapter.receive();
 		assertThat(message.getPayload().getName()).isEqualTo("trails in the sky");
-		assertThat(Files.readAllBytes(message.getPayload().toPath())).isEqualTo("joshua".getBytes());
+		assertThat(Files.readAllBytes(message.getPayload().toPath()))
+				.isEqualTo("joshua".getBytes());
 
 		message = adapter.receive();
 		assertThat(message).isNull();
@@ -138,11 +143,12 @@ public class GcsInboundFileSynchronizerTests {
 					.readAllBytes(eq("test-bucket"), eq("trails in the sky"));
 
 			willAnswer((invocation) -> new PageImpl<>(null, null,
-					Stream.of(blob1, blob2)
-							.collect(Collectors.toList())))
-					.given(gcsMock).list("test-bucket");
+					Stream.of(blob1, blob2).collect(Collectors.toList()))).given(gcsMock)
+							.list("test-bucket");
 
 			return gcsMock;
 		}
+
 	}
+
 }

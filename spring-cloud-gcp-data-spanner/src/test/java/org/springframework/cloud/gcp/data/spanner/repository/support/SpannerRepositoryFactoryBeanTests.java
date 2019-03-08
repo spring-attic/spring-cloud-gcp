@@ -35,8 +35,7 @@ import static org.mockito.Mockito.mock;
  */
 public class SpannerRepositoryFactoryBeanTests {
 
-	private SpannerRepositoryFactoryBean<SpannerRepository<Object, Key>, Object, Key>
-			spannerRepositoryFactoryBean;
+	private SpannerRepositoryFactoryBean<SpannerRepository<Object, Key>, Object, Key> spannerRepositoryFactoryBean;
 
 	private SpannerMappingContext spannerMappingContext;
 
@@ -60,4 +59,5 @@ public class SpannerRepositoryFactoryBeanTests {
 				.createRepositoryFactory();
 		assertThat(factory).isInstanceOf(SpannerRepositoryFactory.class);
 	}
+
 }

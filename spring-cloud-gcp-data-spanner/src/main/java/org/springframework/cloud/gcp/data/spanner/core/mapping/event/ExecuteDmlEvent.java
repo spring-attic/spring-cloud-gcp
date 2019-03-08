@@ -59,4 +59,5 @@ public class ExecuteDmlEvent extends ApplicationEvent {
 	public int hashCode() {
 		return getStatement().hashCode();
 	}
+
 }

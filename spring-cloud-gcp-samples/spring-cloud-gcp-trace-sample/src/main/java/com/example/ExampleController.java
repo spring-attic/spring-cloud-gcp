@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class ExampleController {
+
 	private static final Log LOGGER = LogFactory.getLog(ExampleController.class);
 
 	private final WorkService workService;
@@ -56,4 +57,5 @@ public class ExampleController {
 		LOGGER.info("meeting took " + duration + "ms");
 		return "meeting finished in " + duration + "ms";
 	}
+
 }

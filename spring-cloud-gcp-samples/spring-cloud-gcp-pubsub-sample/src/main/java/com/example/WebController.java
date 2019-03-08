@@ -74,7 +74,8 @@ public class WebController {
 
 	@GetMapping("/postMessage")
 	public RedirectView publish(@RequestParam("topicName") String topicName,
-			@RequestParam("message") String message, @RequestParam("count") int messageCount) {
+			@RequestParam("message") String message,
+			@RequestParam("count") int messageCount) {
 		for (int i = 0; i < messageCount; i++) {
 			this.pubSubTemplate.publish(topicName, message);
 		}
@@ -85,7 +86,8 @@ public class WebController {
 	@GetMapping("/pull")
 	public RedirectView pull(@RequestParam("subscription1") String subscriptionName) {
 
-		Collection<AcknowledgeablePubsubMessage> messages = this.pubSubTemplate.pull(subscriptionName, 10, true);
+		Collection<AcknowledgeablePubsubMessage> messages = this.pubSubTemplate
+				.pull(subscriptionName, 10, true);
 
 		if (messages.isEmpty()) {
 			return buildStatusView("No messages available for retrieval.");
@@ -95,7 +97,8 @@ public class WebController {
 		try {
 			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(messages);
 			ackFuture.get();
-			returnView = buildStatusView(String.format("Pulled and acked %s message(s)", messages.size()));
+			returnView = buildStatusView(
+					String.format("Pulled and acked %s message(s)", messages.size()));
 		}
 		catch (Exception ex) {
 			LOGGER.warn("Acking failed.", ex);
@@ -106,13 +109,14 @@ public class WebController {
 	}
 
 	@GetMapping("/multipull")
-	public RedirectView multipull(
-			@RequestParam("subscription1") String subscriptionName1,
+	public RedirectView multipull(@RequestParam("subscription1") String subscriptionName1,
 			@RequestParam("subscription2") String subscriptionName2) {
 
 		Set<AcknowledgeablePubsubMessage> mixedSubscriptionMessages = new HashSet<>();
-		mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName1, 1000, true));
-		mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName2, 1000, true));
+		mixedSubscriptionMessages
+				.addAll(this.pubSubTemplate.pull(subscriptionName1, 1000, true));
+		mixedSubscriptionMessages
+				.addAll(this.pubSubTemplate.pull(subscriptionName2, 1000, true));
 
 		if (mixedSubscriptionMessages.isEmpty()) {
 			return buildStatusView("No messages available for retrieval.");
@@ -120,10 +124,11 @@ public class WebController {
 
 		RedirectView returnView;
 		try {
-			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(mixedSubscriptionMessages);
+			ListenableFuture<Void> ackFuture = this.pubSubTemplate
+					.ack(mixedSubscriptionMessages);
 			ackFuture.get();
-			returnView = buildStatusView(
-					String.format("Pulled and acked %s message(s)", mixedSubscriptionMessages.size()));
+			returnView = buildStatusView(String.format("Pulled and acked %s message(s)",
+					mixedSubscriptionMessages.size()));
 		}
 		catch (Exception ex) {
 			LOGGER.warn("Acking failed.", ex);
@@ -135,11 +140,13 @@ public class WebController {
 
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
-		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
-			LOGGER.info("Message received from " + subscriptionName + " subscription: "
-					+ message.getPubsubMessage().getData().toStringUtf8());
-			message.ack();
-		});
+		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName,
+				(message) -> {
+					LOGGER.info("Message received from " + subscriptionName
+							+ " subscription: "
+							+ message.getPubsubMessage().getData().toStringUtf8());
+					message.ack();
+				});
 
 		this.allSubscribers.add(subscriber);
 		return buildStatusView("Subscribed.");
@@ -153,7 +160,8 @@ public class WebController {
 	}
 
 	@PostMapping("/deleteSubscription")
-	public RedirectView deleteSubscription(@RequestParam("subscription") String subscriptionName) {
+	public RedirectView deleteSubscription(
+			@RequestParam("subscription") String subscriptionName) {
 		this.pubSubAdmin.deleteSubscription(subscriptionName);
 
 		return buildStatusView("Subscription deleted successfully.");
@@ -164,4 +172,5 @@ public class WebController {
 		view.addStaticAttribute("statusMessage", statusMessage);
 		return view;
 	}
+
 }

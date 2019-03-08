@@ -30,6 +30,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
  * @author Chengyuan Zhao
  */
 public class TestItemWithEmbeddedEntity {
+
 	private int intField;
 
 	private EmbeddedEntity embeddedEntityField;
@@ -86,9 +87,10 @@ public class TestItemWithEmbeddedEntity {
 							item.embeddedEntityMapListOfEmbeddedEntities.get(key));
 		}
 
-		return this.intField == item.intField &&
-				Objects.equals(this.embeddedEntityField, item.embeddedEntityField) &&
-				Objects.equals(this.listOfEmbeddedEntities, item.listOfEmbeddedEntities)
+		return this.intField == item.intField
+				&& Objects.equals(this.embeddedEntityField, item.embeddedEntityField)
+				&& Objects.equals(this.listOfEmbeddedEntities,
+						item.listOfEmbeddedEntities)
 				&& this.embeddedMapSimpleValues.equals(item.embeddedMapSimpleValues)
 				&& this.embeddedEntityMapEmbeddedEntity
 						.equals(item.embeddedEntityMapEmbeddedEntity)
@@ -98,7 +100,8 @@ public class TestItemWithEmbeddedEntity {
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
+		return Objects.hash(this.intField, this.embeddedEntityField,
+				this.listOfEmbeddedEntities);
 	}
 
 	public Map<String, Map<Long, Map<String, String>>> getNestedEmbeddedMaps() {
@@ -119,6 +122,7 @@ public class TestItemWithEmbeddedEntity {
 	 */
 	@Entity
 	public static class EmbeddedEntity {
+
 		String stringField;
 
 		public EmbeddedEntity(String stringField) {
@@ -142,5 +146,7 @@ public class TestItemWithEmbeddedEntity {
 
 			return Objects.hash(this.stringField);
 		}
+
 	}
+
 }

@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
- *
  * @since 1.1
  */
 public class SpannerPersistentPropertyImpl
@@ -53,7 +52,6 @@ public class SpannerPersistentPropertyImpl
 
 	/**
 	 * Creates a new {@link SpannerPersistentPropertyImpl}.
-	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs
 	 * @param simpleTypeHolder the type holder
@@ -64,8 +62,7 @@ public class SpannerPersistentPropertyImpl
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
-		this.fieldNamingStrategy = (fieldNamingStrategy != null)
-				? fieldNamingStrategy
+		this.fieldNamingStrategy = (fieldNamingStrategy != null) ? fieldNamingStrategy
 				: PropertyNameFieldNamingStrategy.INSTANCE;
 	}
 
@@ -88,10 +85,8 @@ public class SpannerPersistentPropertyImpl
 	/**
 	 * Gets the name of the column in the Cloud Spanner table mapped to this property. The
 	 * column name is resolved using the {@link FieldNamingStrategy} passed in to the
-	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity,
-	 * SimpleTypeHolder, FieldNamingStrategy)}
+	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity, SimpleTypeHolder, FieldNamingStrategy)}
 	 * constructor. This is by default the by default
-	 *
 	 * @return the name of the column.
 	 * @throws MappingException if the resolution fails
 	 */
@@ -123,7 +118,8 @@ public class SpannerPersistentPropertyImpl
 		List<TypeInformation<?>> typeParams = ti.getTypeArguments();
 		if (typeParams.size() != 1) {
 			throw new SpannerDataException("in field '" + getColumnName()
-					+ "': Unsupported number of type parameters found: " + typeParams.size()
+					+ "': Unsupported number of type parameters found: "
+					+ typeParams.size()
 					+ " Only collections of exactly 1 type parameter are supported.");
 		}
 		return typeParams.get(0).getType();
@@ -131,8 +127,7 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public OptionalInt getPrimaryKeyOrder() {
-		PrimaryKey annotation = findAnnotation(
-				PrimaryKey.class);
+		PrimaryKey annotation = findAnnotation(PrimaryKey.class);
 		if (annotation == null) {
 			return OptionalInt.empty();
 		}
@@ -206,4 +201,5 @@ public class SpannerPersistentPropertyImpl
 
 		return null;
 	}
+
 }

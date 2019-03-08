@@ -33,9 +33,11 @@ public class CloudVisionProperties implements CredentialsSupplier {
 
 	// Overrides the GCP OAuth2 credentials specified in the Core module.
 	@NestedConfigurationProperty
-	private final Credentials credentials = new Credentials(GcpScope.CLOUD_VISION.getUrl());
+	private final Credentials credentials = new Credentials(
+			GcpScope.CLOUD_VISION.getUrl());
 
 	public Credentials getCredentials() {
 		return this.credentials;
 	}
+
 }

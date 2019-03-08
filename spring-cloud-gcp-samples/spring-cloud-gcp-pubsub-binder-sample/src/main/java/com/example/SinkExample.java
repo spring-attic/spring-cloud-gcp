@@ -35,7 +35,8 @@ public class SinkExample {
 
 	@StreamListener(Sink.INPUT)
 	public void handleMessage(UserMessage userMessage) {
-		LOGGER.info("New message received from " + userMessage.getUsername() + ": " + userMessage.getBody() +
-				" at " + userMessage.getCreatedAt());
+		LOGGER.info("New message received from " + userMessage.getUsername() + ": "
+				+ userMessage.getBody() + " at " + userMessage.getCreatedAt());
 	}
+
 }
