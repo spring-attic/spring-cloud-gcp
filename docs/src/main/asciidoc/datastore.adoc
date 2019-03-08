@@ -1134,6 +1134,21 @@ Spring Data Cloud Spanner publishes events extending the Spring Framework's `App
 | `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
 |===
 
+=== Spring Boot Actuator Support
+
+==== Cloud Datastore Health Indicator
+
+If you are using Spring Boot Actuator, you can take advantage of the Cloud Datastore health indicator called `datastore`.
+The health indicator will verify whether Cloud Datastore is up and accessible by your application.
+To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
 
 === Sample
 

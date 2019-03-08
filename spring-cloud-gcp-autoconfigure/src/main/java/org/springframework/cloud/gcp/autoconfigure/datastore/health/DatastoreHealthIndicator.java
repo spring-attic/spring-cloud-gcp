@@ -16,20 +16,18 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
-
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Query;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 /**
- * A simple implementation of a {@link HealthIndicator} returning status information for Google
- * Cloud Datastore.
+ * A simple implementation of a {@link HealthIndicator} returning status information for
+ * Google Cloud Datastore.
  *
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
@@ -39,8 +37,6 @@ import org.springframework.util.Assert;
  */
 @Component
 public class DatastoreHealthIndicator extends AbstractHealthIndicator {
-
-	private static final Status DATASTORE_HEALTH = new Status("DATASTORE_HEALTH");
 
 	private final Datastore datastore;
 
