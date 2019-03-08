@@ -5,7 +5,7 @@
 http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
 
-Maven coordinates for this module only, using Spring Cloud GCP BOM:
+Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----
@@ -403,6 +403,22 @@ A table may have multiple child tables.
 
 On updating or inserting an object to Cloud Spanner, all of its referenced children objects are also updated or inserted in the same request, respectively.
 On read, all of the interleaved child rows are also all read.
+
+===== Lazy Fetch
+
+`@Interleaved` properties are retrieved eagerly by default, but can be fetched lazily for performance in both read and write:
+
+[source,java]
+----
+@Interleaved(lazy = true)
+List<Album> albums;
+----
+
+Lazily-fetched interleaved properties are retrieved upon the first interaction with the property.
+If a property marked for lazy fetching is never retrieved, then it is also skipped when saving the parent entity.
+
+If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.
+
 
 ==== Supported Types
 
@@ -1252,6 +1268,80 @@ public void createTable(SpannerPersistentEntity entity) {
 ----
 
 Schemas can be generated for entire object hierarchies with interleaved relationships and composite keys.
+
+=== Events
+
+Spring Data Cloud Spanner publishes events extending the Spring Framework's `ApplicationEvent` to the context that can be received by `ApplicationListener` beans you register.
+
+[options="header"]
+|===
+| Type| Description | Contents
+| `AfterReadEvent`|Published immediately after entities are read by key from Cloud Spanner by `SpannerTemplate`| The entities loaded. The read options and key-set originally specified for the load operation.
+| `AfterQueryEvent`|Published immediately after entities are read by query from Cloud Spanner by `SpannerTemplate`| The entities loaded. The query options and query statement originally specified for the load operation.
+| `BeforeExecuteDmlEvent`|Published immediately before DML statements are executed by `SpannerTemplate`| The DML statement to execute.
+| `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
+| `BeforeSaveEvent`|Published immediately before upsert/update/insert operations are executed by `SpannerTemplate`| The mutations to be sent to Cloud Spanner, the entities to be saved, and optionally the properties in those entities to save.
+| `AfterSaveEvent`|Published immediately after upsert/update/insert operations are executed by `SpannerTemplate`| The mutations sent to Cloud Spanner, the entities to be saved, and optionally the properties in those entities to save.
+| `BeforeDeleteEvent`|Published immediately before delete operations are executed by `SpannerTemplate`| The mutations to be sent to Cloud Spanner. The target entities, keys, or entity type originally specified for the delete operation.
+| `AfterDeleteEvent`|Published immediately after delete operations are executed by `SpannerTemplate`| The mutations sent to Cloud Spanner. The target entities, keys, or entity type originally specified for the delete operation.
+|===
+
+
+=== Auditing
+
+Spring Data Cloud Spanner supports the `@LastModifiedDate` and `@LastModifiedBy` auditing annotations for properties:
+
+[source,java]
+----
+@Table
+public class SimpleEntity {
+    @PrimaryKey
+    String id;
+
+    @LastModifiedBy
+    String lastUser;
+
+    @LastModifiedDate
+    DateTime lastTouched;
+}
+----
+
+Upon insert, update, or save, these properties will be set automatically by the framework before mutations are generated and saved to Cloud Spanner.
+
+To take advantage of these features, add the `@EnableSpannerAuditing` annotation to your configuration class and provide a bean for an `AuditorAware<A>` implementation where the type `A` is the desired property type annotated by `@LastModifiedBy`:
+
+[source,java]
+----
+@Configuration
+@EnableSpannerAuditing
+public class Config {
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of("YOUR_USERNAME_HERE");
+    }
+}
+----
+
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModofiedBy` and can be of any type.
+One alternative is to use Spring Security's `User` type:
+
+[source,java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public Optional<User> getCurrentAuditor() {
+
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
+  }
+}
+----
+
+You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableSpannerAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
 
 === Sample
 

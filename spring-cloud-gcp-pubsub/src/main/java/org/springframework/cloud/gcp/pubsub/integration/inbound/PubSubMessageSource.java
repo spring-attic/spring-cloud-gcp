@@ -47,7 +47,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	private final PubSubSubscriberOperations pubSubSubscriberOperations;
 
-	private AckMode ackMode = AckMode.MANUAL;
+	private AckMode ackMode = AckMode.AUTO;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 

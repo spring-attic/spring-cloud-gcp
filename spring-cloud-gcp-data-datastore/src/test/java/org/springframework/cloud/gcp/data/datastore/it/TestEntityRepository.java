@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.datastore.Key;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.Nullable;
 
 /**
  * A repository for testing Query Methods that uses many advanced features.
@@ -90,4 +92,8 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	Slice<TestEntity> findByColor(String color, Pageable pageable);
 
+	Optional<TestEntity> findFirstByColor(String color);
+
+	@Nullable
+	TestEntity getByColor(String color);
 }

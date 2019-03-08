@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 
@@ -65,16 +66,28 @@ public class GcpDatastoreAutoConfiguration {
 
 	private final Credentials credentials;
 
+	private final String emulatorHost;
+
 	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
-		this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
-				? new DefaultCredentialsProvider(gcpDatastoreProperties)
-				: credentialsProvider).getCredentials();
+
 		this.projectId = (gcpDatastoreProperties.getProjectId() != null)
 				? gcpDatastoreProperties.getProjectId()
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();
+
+		if (gcpDatastoreProperties.getEmulatorHost() == null) {
+			this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
+					? new DefaultCredentialsProvider(gcpDatastoreProperties)
+					: credentialsProvider).getCredentials();
+		}
+		else {
+			// Use empty credentials with Datastore Emulator.
+			this.credentials = NoCredentials.getInstance();
+		}
+
+		this.emulatorHost = gcpDatastoreProperties.getEmulatorHost();
 	}
 
 	@Bean
@@ -87,6 +100,11 @@ public class GcpDatastoreAutoConfiguration {
 		if (this.namespace != null) {
 			builder.setNamespace(this.namespace);
 		}
+
+		if (emulatorHost != null) {
+			builder.setHost(emulatorHost);
+		}
+
 		return builder.build().getService();
 	}
 

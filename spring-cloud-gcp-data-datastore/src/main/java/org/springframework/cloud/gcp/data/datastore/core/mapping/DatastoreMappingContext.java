@@ -17,6 +17,11 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -45,6 +50,10 @@ public class DatastoreMappingContext extends
 
 	private ApplicationContext applicationContext;
 
+	// Maps a given class to the set of other classes with which it shares the same Datastore
+	// Kind and that are subclasses of the given class.
+	private static final Map<Class, Set<Class>> discriminationFamilies = new ConcurrentHashMap<>();
+
 	public DatastoreMappingContext() {
 
 	}
@@ -55,9 +64,42 @@ public class DatastoreMappingContext extends
 		this.applicationContext = applicationContext;
 	}
 
+	/**
+	 * Registers in the DatastoreMappingContext that two classes are discriminated from the
+	 * same Datastore Kind.
+	 * @param parentClass the superclass.
+	 * @param subClass the subclass.
+	 */
+	public static void addDiscriminationClassConnection(Class parentClass, Class subClass) {
+		Set<Class> setParent = discriminationFamilies.computeIfAbsent(parentClass, unused -> new HashSet<>());
+		Set<Class> setSubClass = discriminationFamilies.computeIfAbsent(subClass, unused -> new HashSet<>());
+		setParent.add(subClass);
+
+		setSubClass.forEach(x -> {
+			if (!discriminationFamilies.get(parentClass).contains(x)) {
+				addDiscriminationClassConnection(parentClass, x);
+			}
+		});
+		Class grandParent = parentClass.getSuperclass();
+		if (grandParent != null) {
+			addDiscriminationClassConnection(grandParent, subClass);
+		}
+	}
+
+	/**
+	 * Get the set of other classes that share the same underlying Datastore Kind and that are
+	 * subclasses of the given class.
+	 * @param aClass the class to look up.
+	 * @return a {@code Set} of other classes that share the same Kind that are subclasses.
+	 * Will be {@code null} if this class is not discriminated from a set of other classes.
+	 */
+	public static Set<Class> getDiscriminationFamily(Class aClass) {
+		return discriminationFamilies.get(aClass);
+	}
+
 	protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
 			TypeInformation<T> typeInformation) {
-		return new DatastorePersistentEntityImpl<>(typeInformation);
+		return new DatastorePersistentEntityImpl<>(typeInformation, this);
 	}
 
 	@Override

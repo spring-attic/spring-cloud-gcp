@@ -50,12 +50,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterReadEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -166,10 +173,12 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
+		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options), entityClass,
 				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
+		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
+		return entities;
 	}
 
 	@Override
@@ -181,15 +190,16 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
 			}
 		}
+		maybeEmitEvent(new AfterQueryEvent(result, statement, options));
 		return result;
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
-		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
-				options != null && options.isAllowPartialRead());
+		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
+		maybeEmitEvent(new AfterQueryEvent(entitites, statement, options));
+		return entitites;
 	}
 
 	@Override
@@ -219,87 +229,106 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void insert(Object object) {
-		applyMutations(this.mutationFactory.insert(object));
+		applySaveMutations(() -> this.mutationFactory.insert(object), Collections.singletonList(object), null);
 	}
+
 
 	@Override
 	public void insertAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects, this.mutationFactory::insert));
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
 	}
 
 	@Override
 	public void update(Object object) {
-		applyMutations(this.mutationFactory.update(object, null));
+		applySaveMutations(() -> this.mutationFactory.update(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void updateAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects,
-						(x) -> this.mutationFactory.update(x, null)));
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.update(x, null)), objects, null);
 	}
 
 	@Override
 	public void update(Object object, String... includeProperties) {
-		applyMutations(
-				this.mutationFactory.update(object,
-						(includeProperties.length == 0) ? null
-								: new HashSet<>(Arrays.asList(includeProperties))));
+		Set<String> incl = (includeProperties.length == 0) ? null
+				: new HashSet<>(Arrays.asList(includeProperties));
+		applySaveMutations(() -> this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void update(Object object, Set<String> includeProperties) {
-		applyMutations(this.mutationFactory.update(object, includeProperties));
+		applySaveMutations(() -> this.mutationFactory.update(object, includeProperties),
+				Collections.singletonList(object),
+				includeProperties);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applyMutations(this.mutationFactory.upsert(object, null));
+		applySaveMutations(() -> this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void upsertAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects,
-						(x) -> this.mutationFactory.upsert(x, null)));
+		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.upsert(x, null)), objects, null);
 	}
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
-		applyMutations(
-				this.mutationFactory.upsert(object,
-						(includeProperties.length == 0) ? null
-								: new HashSet<>(Arrays.asList(includeProperties))));
+		Set<String> incl = (includeProperties.length == 0) ? null : new HashSet<>(Arrays.asList(includeProperties));
+		applySaveMutations(() -> this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void upsert(Object object, Set<String> includeProperties) {
-		applyMutations(this.mutationFactory.upsert(object, includeProperties));
+		applySaveMutations(() -> this.mutationFactory.upsert(object, includeProperties),
+				Collections.singletonList(object),
+				includeProperties);
+	}
+
+	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier, Iterable entities,
+			Set<String> includeProperties) {
+		maybeEmitEvent(new BeforeSaveEvent(entities, includeProperties));
+		List<Mutation> mutations = mutationsSupplier.get();
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterSaveEvent(mutations, entities, includeProperties));
 	}
 
 	@Override
 	public void delete(Object entity) {
-		applyMutations(Collections.singletonList(this.mutationFactory.delete(entity)));
+		applyDeleteMutations(Collections.singletonList(entity),
+				Collections.singletonList(this.mutationFactory.delete(entity)));
 	}
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		applyMutations(
-				(Collection<Mutation>) StreamSupport.stream(objects.spliterator(), false)
-						.map(this.mutationFactory::delete).collect(Collectors.toList()));
+		applyDeleteMutations(objects, (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+				.map(this.mutationFactory::delete).collect(Collectors.toList()));
+	}
+
+	private void applyDeleteMutations(Iterable objects, List<Mutation> mutations) {
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, objects, null, null));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, objects, null, null));
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutations(
+		applyDeleteMutations(entityClass, KeySet.newBuilder().addKey(key).build(),
 				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutations(Collections
+		applyDeleteMutations(entityClass, keys, Collections
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
+	}
+
+	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
@@ -418,7 +447,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				: getReadContext();
 
 		if (options == null) {
-			resultSet = getReadContext().read(tableName, keys, columns);
+			resultSet = readContext.read(tableName, keys, columns);
 		}
 		else if (options.getIndex() != null) {
 			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
@@ -475,6 +504,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		});
 	}
 
+	private <T> List<T> queryAndResolveChildren(Class<T> entityClass, Statement statement,
+			SpannerQueryOptions options) {
+		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
+				(options != null) ? options.getIncludeProperties() : null,
+				options != null && options.isAllowPartialRead());
+	}
+
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
 			Class<T> entityClass, Set<String> includeProperties,
 			boolean allowMissingColumns) {
@@ -504,18 +540,23 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
+
+					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
+							SpannerStatementQueryExecutor.getChildrenRowsQuery(
+									this.spannerSchemaUtils.getKey(entity),
+									childPersistentEntity),
+							null);
+
 					accessor.setProperty(spannerPersistentProperty,
-							query(childType,
-									SpannerStatementQueryExecutor.getChildrenRowsQuery(
-											this.spannerSchemaUtils.getKey(entity),
-											childPersistentEntity),
-									null));
+							spannerPersistentProperty.isLazyInterleaved()
+									? ConversionUtils.wrapSimpleLazyProxy(getChildrenEntitiesFunc, List.class)
+									: getChildrenEntitiesFunc.get());
 				});
 	}
 
-	private Collection<Mutation> getMutationsForMultipleObjects(Iterable it,
+	private List<Mutation> getMutationsForMultipleObjects(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
-		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
+		return (List<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap((x) -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}

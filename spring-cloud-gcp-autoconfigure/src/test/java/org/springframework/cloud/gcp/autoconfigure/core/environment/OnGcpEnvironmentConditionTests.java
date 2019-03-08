@@ -89,8 +89,7 @@ public class OnGcpEnvironmentConditionTests {
 	public void testExceptionThrownWhenWrongAttributeType() {
 
 		this.expectedException.expect(ClassCastException.class);
-		this.expectedException.expectMessage("java.lang.String cannot be cast to " +
-				"[Lorg.springframework.cloud.gcp.core.GcpEnvironment;");
+		this.expectedException.expectMessage("java.lang.String cannot be cast");
 
 		setUpAnnotationValue("invalid type");
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
