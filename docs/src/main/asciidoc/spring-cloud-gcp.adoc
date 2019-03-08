@@ -25,8 +25,6 @@ Spring Cloud GCP lets you leverage the power and simplicity of the Spring Framew
 - Use Spring Security via Google Cloud IAP
 - Analyze your images for text, objects, and other content with Google Cloud Vision
 
-include::dependency-management.adoc[]
-
 include::getting-started.adoc[]
 
 include::core.adoc[]

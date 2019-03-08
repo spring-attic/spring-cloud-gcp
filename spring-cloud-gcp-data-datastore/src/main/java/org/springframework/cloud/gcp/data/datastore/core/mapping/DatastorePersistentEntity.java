@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.List;
+
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -33,8 +35,8 @@ public interface DatastorePersistentEntity<T> extends
 		MutablePersistentEntity<T, DatastorePersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Gets the name of the Datastore Entity.
-	 * @return the name of the Entity.
+	 * Gets the name of the Datastore Kind.
+	 * @return the name of the Datastore Kind that stores these entities.
 	 */
 	String kindName();
 
@@ -44,6 +46,25 @@ public interface DatastorePersistentEntity<T> extends
 	 * @return the ID property.
 	 */
 	DatastorePersistentProperty getIdPropertyOrFail();
+
+	/**
+	 * Get the name of the field for subtype discrimination if there is one.
+	 * @return the name of the discrimination field. {@code null} if this persistent entity
+	 * doesn't have one.
+	 */
+	String getDiscriminationFieldName();
+
+	/**
+	 * Get the discrimination value corresponding to this persistent entity type.
+	 * @return the value or {@code null} if there is no value for this type.
+	 */
+	String getDiscriminatorValue();
+
+	/**
+	 * Get the discrimination values corresponding to this persistent entity ad its supertypes.
+	 * @return the list of values where the first item is this entity's discrimination value
+	 */
+	List<String> getCompatibleDiscriminationValues();
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all

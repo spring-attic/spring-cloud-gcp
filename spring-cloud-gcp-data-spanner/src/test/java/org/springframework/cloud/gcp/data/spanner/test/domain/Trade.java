@@ -65,8 +65,18 @@ public class Trade {
 	@Interleaved
 	private List<SubTrade> subTrades;
 
+	/**
+	 * Partial constructor. Intentionally tests a field that is left null sometimes.
+	 * @param symbol the symbol.
+	 * @param executionTimes the list of execution times.
+	 */
+	public Trade(String symbol, List<Instant> executionTimes) {
+		this.symbol = symbol;
+		this.executionTimes = executionTimes;
+	}
+
 	public static Trade aTrade() {
-		Trade t = new Trade();
+		Trade t = new Trade("ABCD", new ArrayList<>());
 		String tradeId = UUID.randomUUID().toString();
 		String traderId = UUID.randomUUID().toString();
 
@@ -74,14 +84,12 @@ public class Trade {
 
 		t.tradeDetail.id = tradeId;
 		t.age = 8;
-		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
 		t.tradeTime = Instant.ofEpochSecond(333);
 		t.tradeDate = Date.from(t.tradeTime);
 		t.tradeDetail.price = 100.0;
 		t.tradeDetail.shares = 12345.6;
-		t.executionTimes = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
 			t.executionTimes.add(Instant.ofEpochSecond(i));
 		}
