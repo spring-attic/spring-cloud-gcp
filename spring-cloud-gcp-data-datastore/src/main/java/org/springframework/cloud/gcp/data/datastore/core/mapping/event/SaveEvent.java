@@ -19,10 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping.event;
 import java.util.List;
 import java.util.Objects;
 
-import com.google.cloud.datastore.Entity;
-
 import org.springframework.context.ApplicationEvent;
-import org.springframework.util.Assert;
 
 /**
  * An event published when entities are saved to Cloud Datastore.
@@ -31,36 +28,22 @@ import org.springframework.util.Assert;
  */
 public class SaveEvent extends ApplicationEvent {
 
-	private final List javaEntities;
-
 	/**
 	 * Constructor.
 	 *
-	 * @param datastoreEntities The Cloud Datastore entities that are being saved. These
-	 *     include any referenced or descendant entities of the original entities being saved.
-	 * @param javaEntities The original Java entities being saved. Each entity may result in
+	 * @param entities The original Java entities being saved. Each entity may result in
 	 *     multiple Datastore entities being saved due to relationships.
 	 */
-	public SaveEvent(List<Entity> datastoreEntities, List javaEntities) {
-		super(datastoreEntities);
-		Assert.notNull(javaEntities, "The entities being saved must not be null.");
-		this.javaEntities = javaEntities;
-	}
-
-	/**
-	 * Get the Cloud Datastore entities that were saved.
-	 * @return The entities that were saved in Cloud Datastore.
-	 */
-	public List<Entity> getDatastoreEntities() {
-		return (List<Entity>) getSource();
+	public SaveEvent(List entities) {
+		super(entities);
 	}
 
 	/**
 	 * Get the original Java objects that were saved.
 	 * @return The original Java objects that were saved to Cloud Datastore.
 	 */
-	public List getJavaEntities() {
-		return this.javaEntities;
+	public List getTargetEntities() {
+		return (List) getSource();
 	}
 
 	@Override
@@ -72,12 +55,11 @@ public class SaveEvent extends ApplicationEvent {
 			return false;
 		}
 		SaveEvent that = (SaveEvent) o;
-		return getDatastoreEntities().containsAll(that.getDatastoreEntities())
-				&& Objects.equals(getJavaEntities(), that.getJavaEntities());
+		return Objects.equals(getTargetEntities(), that.getTargetEntities());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getDatastoreEntities(), getJavaEntities());
+		return Objects.hash(getTargetEntities());
 	}
 }

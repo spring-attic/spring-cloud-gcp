@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
+import org.joda.time.DateTime;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -147,15 +148,20 @@ public class ApplicationTests {
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("General Band", "Big Bland Band");
 
+		Singer singer3 = this.singerRepository.findById("singer3").get();
+
 		assertThat(
-				this.singerRepository.findById("singer3").get().getPersonalInstruments()
+				singer3.getPersonalInstruments()
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("triangle", "marimba");
 
 		assertThat(
-				this.singerRepository.findById("singer3").get().getBands().stream()
+				singer3.getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
+
+		assertThat(singer3.getLastModifiedTime())
+				.isGreaterThan(DateTime.parse("2000-01-01"));
 
 		assertThat(baos.toString()).contains("Query by example\n" +
 				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +
