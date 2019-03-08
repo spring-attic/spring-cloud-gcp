@@ -24,49 +24,47 @@ import org.springframework.util.Assert;
  * @author João André Martins
  * @author Chengyuan Zhao
  */
-public final class StackdriverTraceConstants {
-
-	private StackdriverTraceConstants() { }
+public interface StackdriverTraceConstants {
 
 	/**
 	 * The JSON field name for the log level (severity).
 	 */
-	public static final String SEVERITY_ATTRIBUTE = "severity";
+	String SEVERITY_ATTRIBUTE = "severity";
 
 	/**
 	 * The JSON field name for the seconds of the timestamp.
 	 */
-	public static final String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
+	String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
 
 	/**
 	 * The JSON field name for the nanos of the timestamp.
 	 */
-	public static final String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
+	String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
 
 	/**
 	 * The JSON field name for the span-id.
 	 */
-	public static final String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
+	String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
 
 	/**
 	 * The JSON field name for the trace-id.
 	 */
-	public static final String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
+	String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
 
 	/**
 	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at.
 	 */
-	public static final String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
+	String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
 
 	/**
 	 * The name of the MDC parameter, Spring Sleuth is storing the span id at.
 	 */
-	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
+	String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
 
 	/**
 	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at.
 	 */
-	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
+	String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
 	/**
 	 * Composes the full trace name as expected by the Google Developers Console log viewer, to
@@ -75,7 +73,7 @@ public final class StackdriverTraceConstants {
 	 * @param traceId the trace ID
 	 * @return the trace name in the "projects/[GCP_PROJECT_ID]/trace/[TRACE_ID]" format
 	 */
-	public static String composeFullTraceName(String projectId, String traceId) {
+	static String composeFullTraceName(String projectId, String traceId) {
 		Assert.notNull(projectId, "The project ID can't be null.");
 		Assert.notNull(traceId, "The trace ID can't be null.");
 		return "projects/" + projectId + "/traces/" + traceId;
