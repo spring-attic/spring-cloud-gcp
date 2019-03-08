@@ -21,18 +21,12 @@ import com.google.auth.Credentials;
 import com.google.cloud.datastore.Datastore;
 import org.junit.Test;
 
-import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreRepositoriesAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.TestRepository;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -57,7 +51,6 @@ public class DatastoreHealthIndicatorAutoConfigurationTests {
 					"spring.cloud.gcp.datastore.namespace-id=testNamespace",
 					"management.health.datastore.enabled=true");
 
-
 	@Test
 	public void testDatastoreCreated() {
 		this.contextRunner.run((context) -> assertThat(context.getBean(Datastore.class)).isNotNull());
@@ -71,7 +64,7 @@ public class DatastoreHealthIndicatorAutoConfigurationTests {
 	/**
 	 * Spring Boot config for tests.
 	 */
-	@AutoConfigurationPackage
+	@Configuration
 	static class TestConfiguration {
 
 		@Bean

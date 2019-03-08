@@ -42,7 +42,7 @@ public class DatastoreHealthIndicator extends AbstractHealthIndicator {
 
 	private static final Status DATASTORE_HEALTH = new Status("DATASTORE_HEALTH");
 
-	private Datastore datastore;
+	private final Datastore datastore;
 
 	/**
 	 * DatastoreHealthIndicator constructor.
