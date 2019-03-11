@@ -69,8 +69,8 @@ public class GcpConfigBootstrapConfigurationTest {
 	@Test
 	public void testConfigurationDisabled() {
 		this.contextRunner.run((context) -> {
-					assertThatThrownBy(() -> context.getBean(GcpConfigProperties.class)).isInstanceOf(
-							NoSuchBeanDefinitionException.class);
-				});
+			assertThatThrownBy(() -> context.getBean(GcpConfigProperties.class)).isInstanceOf(
+					NoSuchBeanDefinitionException.class);
+		});
 	}
 }
