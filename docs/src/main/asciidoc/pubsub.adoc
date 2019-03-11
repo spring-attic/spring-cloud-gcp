@@ -168,8 +168,12 @@ Flux<AcknowledgeablePubsubMessage> flux
 ----
 
 The `Flux` then represents an infinite stream of GCP Pub/Sub messages coming in through the specified subscription.
+For unlimited demand, the Pub/Sub subscription will be polled regularly, at intervals determined by `pollingPeriodMs` parameter passed in when creating the `Flux`.
+For bounded demand, the `pollingPeriodMs` parameter is unused.
+Instead, as many messages as possible (up to the requested number) are delivered immediately, with the remaining messages delivered as they become available.
+
 The full range of Project Reactor operations can be applied to the stream.
-For example, the infinite stream can become a finite one with `limitRequest` operation:
+For example, if you only want to fetch 5 messages, you can use `limitRequest` operation to turn the infinite stream into a finite one:
 
 [source,java]
 ----

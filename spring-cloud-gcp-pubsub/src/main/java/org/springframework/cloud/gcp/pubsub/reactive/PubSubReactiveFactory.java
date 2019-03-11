@@ -42,7 +42,7 @@ public final class PubSubReactiveFactory {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubReactiveFactory.class);
 
-	private PubSubSubscriberOperations subscriberOperations;
+	private final PubSubSubscriberOperations subscriberOperations;
 
 	/**
 	 * Instantiate `PubSubReactiveFactory` capable of generating subscription-based streams.
@@ -65,17 +65,17 @@ public final class PubSubReactiveFactory {
 	 * with remaining demand being fulfilled in the future.
 	 * Pub/Sub timeout will cause a retry with the same demand.
 	 * @param subscriptionName subscription from which to retrieve messages.
-	 * @param pollingPeriod how frequently to poll the source subscription in case of unlimited demand.
+	 * @param pollingPeriodMs how frequently to poll the source subscription in case of unlimited demand, in milliseconds.
 	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
 	 */
-	public Flux<AcknowledgeablePubsubMessage> createPolledFlux(String subscriptionName, long pollingPeriod) {
+	public Flux<AcknowledgeablePubsubMessage> createPolledFlux(String subscriptionName, long pollingPeriodMs) {
 
 		return Flux.create(sink -> {
 			sink.onRequest((numRequested) -> {
 				if (numRequested == Long.MAX_VALUE) {
 					// unlimited demand
 					Disposable task = Schedulers.single().schedulePeriodically(
-							new PubSubNonBlockingUnlimitedDemandPullTask(subscriptionName, sink), 0, pollingPeriod, TimeUnit.MILLISECONDS);
+							new PubSubNonBlockingUnlimitedDemandPullTask(subscriptionName, sink), 0, pollingPeriodMs, TimeUnit.MILLISECONDS);
 					sink.onCancel(task::dispose);
 				}
 				else {
