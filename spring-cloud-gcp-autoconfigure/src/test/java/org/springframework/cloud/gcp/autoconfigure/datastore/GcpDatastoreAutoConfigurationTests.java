@@ -28,6 +28,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicator;
+import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.annotation.Bean;
@@ -39,13 +41,16 @@ import static org.mockito.Mockito.mock;
  * Tests for Datastore auto-config.
  *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public class GcpDatastoreAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class, DatastoreTransactionManagerAutoConfiguration.class,
-					DatastoreRepositoriesAutoConfiguration.class))
+					GcpContextAutoConfiguration.class,
+					DatastoreTransactionManagerAutoConfiguration.class,
+					DatastoreRepositoriesAutoConfiguration.class,
+					DatastoreHealthIndicatorAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace=testNamespace",
@@ -91,6 +96,11 @@ public class GcpDatastoreAutoConfigurationTests {
 			assertThat(transactionManager)
 					.isInstanceOf(DatastoreTransactionManager.class);
 		});
+	}
+
+	@Test
+	public void testDatastoreHealthIndicatorNotCreated() {
+		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreHealthIndicator.class)).isNull());
 	}
 
 	/**
