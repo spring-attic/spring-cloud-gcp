@@ -16,13 +16,15 @@
 
 package org.springframework.cloud.gcp.autoconfigure.config;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
-import org.springframework.core.env.Environment;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -34,7 +36,7 @@ import org.springframework.core.env.Environment;
  * @since 1.1
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties implements CredentialsSupplier {
+public class GcpConfigProperties implements CredentialsSupplier, ApplicationContextAware {
 
 	/**
 	 * Enables Spring Cloud GCP Config.
@@ -69,22 +71,6 @@ public class GcpConfigProperties implements CredentialsSupplier {
 	 */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
-
-	public GcpConfigProperties(Environment environment) {
-		if (this.profile == null) {
-			String[] profiles = environment.getActiveProfiles();
-			if (profiles.length == 0) {
-				profiles = environment.getDefaultProfiles();
-			}
-
-			if (profiles.length > 0) {
-				this.profile = profiles[profiles.length - 1];
-			}
-			else {
-				this.profile = "default";
-			}
-		}
-	}
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -130,4 +116,20 @@ public class GcpConfigProperties implements CredentialsSupplier {
 		return this.credentials;
 	}
 
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		if (this.profile == null) {
+			String[] profiles = applicationContext.getEnvironment().getActiveProfiles();
+			if (profiles.length == 0) {
+				profiles = applicationContext.getEnvironment().getDefaultProfiles();
+			}
+
+			if (profiles.length > 0) {
+				this.profile = profiles[profiles.length - 1];
+			}
+			else {
+				this.profile = "default";
+			}
+		}
+	}
 }
