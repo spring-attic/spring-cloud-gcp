@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -68,9 +69,8 @@ public class GcpConfigBootstrapConfigurationTest {
 
 	@Test
 	public void testConfigurationDisabled() {
-		this.contextRunner.run((context) -> {
-			assertThatThrownBy(() -> context.getBean(GcpConfigProperties.class)).isInstanceOf(
-					NoSuchBeanDefinitionException.class);
-		});
+		this.contextRunner.run((context) ->
+				assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() ->
+						context.getBean(GcpConfigProperties.class)));
 	}
 }

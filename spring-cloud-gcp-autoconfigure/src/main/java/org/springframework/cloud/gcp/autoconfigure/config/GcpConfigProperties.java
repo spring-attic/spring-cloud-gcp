@@ -24,7 +24,8 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -36,7 +37,7 @@ import org.springframework.context.ApplicationContextAware;
  * @since 1.1
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties implements CredentialsSupplier, ApplicationContextAware {
+public class GcpConfigProperties implements CredentialsSupplier, EnvironmentAware {
 
 	/**
 	 * Enables Spring Cloud GCP Config.
@@ -116,12 +117,11 @@ public class GcpConfigProperties implements CredentialsSupplier, ApplicationCont
 		return this.credentials;
 	}
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	@Override public void setEnvironment(Environment environment) {
 		if (this.profile == null) {
-			String[] profiles = applicationContext.getEnvironment().getActiveProfiles();
+			String[] profiles = environment.getActiveProfiles();
 			if (profiles.length == 0) {
-				profiles = applicationContext.getEnvironment().getDefaultProfiles();
+				profiles = environment.getDefaultProfiles();
 			}
 
 			if (profiles.length > 0) {
