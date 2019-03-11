@@ -16,25 +16,44 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
- * Represents the parsed OCR output for a document.
+ * Represents the parsed OCR content for an entire document.
  *
  * @author Daniel Zou
  */
 public class DocumentOcrResultSet {
 
-	private final List<Blob> pageBlobs;
+	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-(\\d+)-to-(\\d+)\\.json");
 
-	DocumentOcrResultSet(List<Blob> pages) {
-		this.pageBlobs = pages;
+	private final TreeMap<Integer, OcrPageRange> ocrPageRanges;
+
+	private final int pageCount;
+
+	DocumentOcrResultSet(Collection<Blob> pages) {
+		this.ocrPageRanges = new TreeMap<>();
+
+		for (Blob blob : pages) {
+			OcrPageRange pageRange = extractPageRange(blob);
+			ocrPageRanges.put(pageRange.startPage, pageRange);
+		}
+
+		this.pageCount = this.ocrPageRanges.values().stream()
+				.mapToInt(range -> range.endPage)
+				.max()
+				.orElse(0);
 	}
 
 	/**
@@ -43,29 +62,35 @@ public class DocumentOcrResultSet {
 	 * @return number of pages in the document
 	 */
 	public int getPageCount() {
-		return this.pageBlobs.size();
+		return this.pageCount;
 	}
 
 	/**
 	 * Retrieves the parsed OCR information of the page at index {@code pageNumber} of the
-	 * document. All page numbers are 0-indexed.
+	 * document. All page numbers are 1-indexed.
 	 *
-	 * <p>This returns a TextAnnotation object which is Google Cloud Vision's representation of a
+	 * <p>
+	 * This returns a TextAnnotation object which is Google Cloud Vision's representation of a
 	 * page of a document. For more information on reading this object, see:
 	 * https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.TextAnnotation
 	 *
 	 * @param pageNumber the zero-indexed page number of the document
 	 * @return the {@link TextAnnotation} representing the page of the document
-	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be parsed
+	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be
+	 *     parsed
 	 *
 	 */
 	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
-		if (pageNumber >= getPageCount()) {
+		if (pageNumber > this.pageCount || pageNumber <= 0) {
 			throw new IndexOutOfBoundsException("Page number out of bounds: " + pageNumber);
 		}
 
-		Blob pageBlob = this.pageBlobs.get(pageNumber);
-		return DocumentOcrTemplate.parseJsonBlob(pageBlob);
+		OcrPageRange ocrPageRange = this.ocrPageRanges.floorEntry(pageNumber).getValue();
+
+		List<TextAnnotation> documentPages = DocumentOcrTemplate.parseJsonBlob(ocrPageRange.blob);
+		int offsetIdx = pageNumber - ocrPageRange.startPage;
+
+		return documentPages.get(offsetIdx);
 	}
 
 	/**
@@ -77,11 +102,15 @@ public class DocumentOcrResultSet {
 	public Iterator<TextAnnotation> getAllPages() {
 		return new Iterator<TextAnnotation>() {
 
-			int currentPage = 0;
+			private final Iterator<OcrPageRange> pageRangeIterator = ocrPageRanges.values().iterator();
+
+			private int offset = 0;
+
+			private List<TextAnnotation> currentPageRange = Collections.EMPTY_LIST;
 
 			@Override
 			public boolean hasNext() {
-				return currentPage < getPageCount();
+				return pageRangeIterator.hasNext() || offset < currentPageRange.size();
 			}
 
 			@Override
@@ -90,15 +119,55 @@ public class DocumentOcrResultSet {
 					throw new NoSuchElementException("No more pages left in DocumentOcrResultSet.");
 				}
 
-				try {
-					TextAnnotation result = getPage(currentPage);
-					currentPage++;
-					return result;
+				if (offset >= currentPageRange.size()) {
+					OcrPageRange pageRange = pageRangeIterator.next();
+					offset = 0;
+
+					try {
+						currentPageRange = DocumentOcrTemplate.parseJsonBlob(pageRange.blob);
+					}
+					catch (InvalidProtocolBufferException e) {
+						throw new RuntimeException(
+								"Failed to parse OCR output from JSON output file "
+										+ pageRange.blob.getName(),
+								e);
+					}
 				}
-				catch (InvalidProtocolBufferException e) {
-					throw new RuntimeException("Failed to process over document result set.", e);
-				}
+
+				TextAnnotation result = currentPageRange.get(offset);
+				offset++;
+				return result;
 			}
 		};
+	}
+
+	private static OcrPageRange extractPageRange(Blob blob) {
+		Matcher matcher = OUTPUT_PAGE_PATTERN.matcher(blob.getName());
+		boolean success = matcher.find();
+
+		if (success) {
+			int startPage = Integer.parseInt(matcher.group(1));
+			int endPage = Integer.parseInt(matcher.group(2));
+			return new OcrPageRange(blob, startPage, endPage);
+		}
+		else {
+			throw new IllegalArgumentException(
+					"Cannot create a DocumentOcrResultSet with blob: " + blob.getName()
+							+ " Blob name does not contain suffix: output-#-to-#.json");
+		}
+	}
+
+	private static class OcrPageRange {
+		private final Blob blob;
+
+		private final int startPage;
+
+		private final int endPage;
+
+		OcrPageRange(Blob blob, int startPage, int endPage) {
+			this.blob = blob;
+			this.startPage = startPage;
+			this.endPage = endPage;
+		}
 	}
 }
