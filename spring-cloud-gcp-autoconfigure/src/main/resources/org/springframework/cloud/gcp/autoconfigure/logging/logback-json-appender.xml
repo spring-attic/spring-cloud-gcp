@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- DEPRECATED!!! PLEASE USE "org/springframework/cloud/gcp/logging/logback-json-appender.xml" -->
+
 <!--
 Stackdriver json-log format provided for import.
 -->
@@ -7,7 +10,7 @@ Stackdriver json-log format provided for import.
 
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.springframework.cloud.gcp.autoconfigure.logging.StackdriverJsonLayout">
+            <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
                 <projectId>${projectId}</projectId>
 
                 <!--<includeTraceId>true</includeTraceId>-->

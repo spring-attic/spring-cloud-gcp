@@ -38,6 +38,7 @@
 		<module>spring-cloud-gcp-security-iap</module>
 		<module>spring-cloud-gcp-vision</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>
+		<module>spring-cloud-gcp-logging</module>
 	</modules>
 
 	<properties>
