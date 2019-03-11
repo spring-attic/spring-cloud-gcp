@@ -1255,6 +1255,22 @@ class SpringSecurityAuditorAware implements AuditorAware<User> {
 
 You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableDatastoreAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
 
+=== Spring Boot Actuator Support
+
+==== Cloud Datastore Health Indicator
+
+If you are using Spring Boot Actuator, you can take advantage of the Cloud Datastore health indicator called `datastore`.
+The health indicator will verify whether Cloud Datastore is up and accessible by your application.
+To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
+
 === Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample[Simple Spring Boot Application] and more advanced https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] are provided to show how to use the Spring Data Cloud Datastore starter and template.
