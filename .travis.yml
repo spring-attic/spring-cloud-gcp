@@ -3,10 +3,6 @@ git:
   depth: 9999999
 jdk:
   - oraclejdk8
-env:
-  global:
-    - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
-    - GOOGLE_CLOUD_PROJECT=spring-cloud-gcp-ci
 branches:
   only:
     - master
@@ -40,7 +36,7 @@ before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
-      INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
+      export INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
           -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true -Dit.kotlin=true
           -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
           -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
@@ -49,8 +45,9 @@ before_install:
           -Dgcs-read-bucket=gcp-storage-bucket-sample-input
           -Dgcs-write-bucket=gcp-storage-bucket-sample-output
           -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
+      export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
+      export GOOGLE_CLOUD_PROJECT=spring-cloud-gcp-ci;
     fi;
-    export INTEGRATION_TEST_FLAGS;
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update --quiet
