@@ -154,7 +154,7 @@ Please refer to our https://github.com/spring-cloud/spring-cloud-gcp/tree/master
 
 It is also possible to acquire a reactive stream backed by a subscription.
 To do so, a Project Reactor dependency (`io.projectreactor:reactor-core`) must be added to the project.
-The combination PubSub starter and Project Reactor dependencies will then make a `PubSubReactiveFactory` bean available, which can then be used to get a `Publisher`.
+The combination of the Pub/Sub starter and the Project Reactor dependencies will then make a `PubSubReactiveFactory` bean available, which can then be used to get a `Publisher`.
 
 [source,java]
 ----
