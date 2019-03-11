@@ -16,14 +16,12 @@
 
 package org.springframework.cloud.gcp.autoconfigure.config;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 
@@ -117,7 +115,8 @@ public class GcpConfigProperties implements CredentialsSupplier, EnvironmentAwar
 		return this.credentials;
 	}
 
-	@Override public void setEnvironment(Environment environment) {
+	@Override
+	public void setEnvironment(Environment environment) {
 		if (this.profile == null) {
 			String[] profiles = environment.getActiveProfiles();
 			if (profiles.length == 0) {
