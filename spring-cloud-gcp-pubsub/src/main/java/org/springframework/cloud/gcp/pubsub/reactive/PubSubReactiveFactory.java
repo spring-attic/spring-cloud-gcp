@@ -103,11 +103,10 @@ public final class PubSubReactiveFactory {
 		 * @param block whether to wait for the first message to become available
 		 * @return number of messages retrieved
 		 */
-		protected int pullToSink(long demand, boolean block) {
-			int numMessagesToPull = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
+		protected int pullToSink(int demand, boolean block) {
 
-			List<AcknowledgeablePubsubMessage> messages =  PubSubReactiveFactory.this.subscriberOperations.pull(
-					this.subscriptionName, numMessagesToPull, !block);
+			List<AcknowledgeablePubsubMessage> messages =
+					PubSubReactiveFactory.this.subscriberOperations.pull(this.subscriptionName, demand, !block);
 
 			if (!this.sink.isCancelled()) {
 				messages.forEach(sink::next);
@@ -138,7 +137,8 @@ public final class PubSubReactiveFactory {
 
 			while (demand > 0 && !this.sink.isCancelled()) {
 				try {
-					demand -= pullToSink(demand, true);
+					int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
+					demand -= pullToSink(intDemand, true);
 				}
 				catch (DeadlineExceededException e) {
 					LOGGER.trace("Blocking pull timed out due to empty subscription " + this.subscriptionName + "; retrying.");
