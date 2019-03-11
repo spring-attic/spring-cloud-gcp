@@ -35,11 +35,11 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.1
  */
 @Configuration
+@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(GcpConfigProperties.class)
 public class GcpConfigBootstrapConfiguration {
 
 	@Bean
-	@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true")
 	public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator(
 			GcpConfigProperties configProperties) throws IOException {
 		return new GoogleConfigPropertySourceLocator(new DefaultGcpProjectIdProvider(),
