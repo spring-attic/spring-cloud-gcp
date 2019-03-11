@@ -59,7 +59,7 @@ public class DatastoreHealthIndicatorTests {
 	public void testdoHealthCheckDown() throws Exception {
 		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
 
-		when(datastore.run(any())).thenThrow(new RuntimeException("Datastore id down!!!"));
+		when(datastore.run(any())).thenThrow(new RuntimeException("Cloud Datastore is down!!!"));
 
 		Health.Builder builder = new Health.Builder();
 
@@ -79,7 +79,7 @@ public class DatastoreHealthIndicatorTests {
 	public void testUnhealthy() {
 		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
 
-		when(datastore.run(any())).thenThrow(new RuntimeException("Datastore id down!!!"));
+		when(datastore.run(any())).thenThrow(new RuntimeException("Cloud Datastore is down!!!"));
 
 		assertThat(datastoreHealthIndicator.health().getStatus()).isEqualTo(Status.DOWN);
 	}

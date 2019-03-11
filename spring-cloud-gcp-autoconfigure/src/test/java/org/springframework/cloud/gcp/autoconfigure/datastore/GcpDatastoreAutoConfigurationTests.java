@@ -24,6 +24,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 import org.junit.Test;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -35,6 +36,7 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionMan
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -54,7 +56,8 @@ public class GcpDatastoreAutoConfigurationTests {
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace=testNamespace",
-					"spring.cloud.gcp.datastore.emulator-host=localhost:8081");
+					"spring.cloud.gcp.datastore.emulator-host=localhost:8081",
+					"management.health.datastore.enabled=false");
 
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
@@ -100,7 +103,8 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreHealthIndicatorNotCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreHealthIndicator.class)).isNull());
+		this.contextRunner.run((context) -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> context.getBean(DatastoreHealthIndicator.class)));
 	}
 
 	/**
