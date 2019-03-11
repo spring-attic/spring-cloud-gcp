@@ -1323,7 +1323,7 @@ public class Config {
 }
 ----
 
-The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModofiedBy` and can be of any type.
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModifiedBy` and can be of any type.
 One alternative is to use Spring Security's `User` type:
 
 [source,java]

@@ -16,10 +16,18 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
@@ -51,9 +59,9 @@ public class DatastorePersistentEntityImpl<T>
 
 	private final Entity kind;
 
-	private final DiscriminationField discriminationField;
+	private final DiscriminatorField discriminatorField;
 
-	private final DiscriminationValue discriminationValue;
+	private final DiscriminatorValue discriminatorValue;
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
@@ -74,8 +82,8 @@ public class DatastorePersistentEntityImpl<T>
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.context = new StandardEvaluationContext();
 		this.kind = findAnnotation(Entity.class);
-		this.discriminationField = findAnnotation(DiscriminationField.class);
-		this.discriminationValue = findAnnotation(DiscriminationValue.class);
+		this.discriminatorField = findAnnotation(DiscriminatorField.class);
+		this.discriminatorValue = findAnnotation(DiscriminatorValue.class);
 		this.classBasedKindName = this.hasTableName() ? this.kind.name()
 				: StringUtils.uncapitalize(rawType.getSimpleName());
 		this.kindNameExpression = detectExpression();
@@ -99,11 +107,11 @@ public class DatastorePersistentEntityImpl<T>
 
 	@Override
 	public String kindName() {
-		if (this.discriminationValue != null && this.discriminationField == null) {
+		if (this.discriminatorValue != null && this.discriminatorField == null) {
 			throw new DatastoreDataException(
 					"This class expects a discrimination field but none are designated: " + getType());
 		}
-		else if (this.discriminationValue != null && getType().getSuperclass() != Object.class) {
+		else if (this.discriminatorValue != null && getType().getSuperclass() != Object.class) {
 			return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
 					.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity()
 							.kindName();
@@ -123,13 +131,70 @@ public class DatastorePersistentEntityImpl<T>
 	}
 
 	@Override
-	public String getDiscriminationFieldName() {
-		return this.discriminationField == null ? null : this.discriminationField.field();
+	public void verify() {
+		super.verify();
+		initializeSubclassEntities();
+		addEntityToDiscriminationFamily();
+		checkDiscriminationValues();
+	}
+
+	private void checkDiscriminationValues() {
+		Set<Class> otherMembers = DatastoreMappingContext.getDiscriminationFamily(getType());
+		if (otherMembers != null) {
+			for (Class other : otherMembers) {
+				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getPersistentEntity(other);
+				if (getDiscriminatorValue() != null
+						&& getDiscriminatorValue().equals(persistentEntity.getDiscriminatorValue())) {
+					throw new DatastoreDataException(
+							"More than one class in an inheritance hierarchy has the same DiscriminatorValue: "
+									+ getType() + " and " + other);
+				}
+			}
+		}
+
+	}
+
+	private void addEntityToDiscriminationFamily() {
+		Class parentClass = getType().getSuperclass();
+		DatastorePersistentEntity parentEntity = parentClass != Object.class
+				? this.datastoreMappingContext.getPersistentEntity(parentClass)
+				: null;
+		if (parentEntity != null && parentEntity.getDiscriminationFieldName() != null) {
+			if (!parentEntity.getDiscriminationFieldName().equals(getDiscriminationFieldName())) {
+				throw new DatastoreDataException(
+						"This class and its super class both have discrimination fields but they are different fields: "
+								+ getType() + " and " + parentClass);
+			}
+			DatastoreMappingContext.addDiscriminationClassConnection(parentClass, getType());
+		}
 	}
 
 	@Override
-	public String getDiscriminationValue() {
-		return this.discriminationValue == null ? null : this.discriminationValue.value();
+	public String getDiscriminationFieldName() {
+		return this.discriminatorField == null ? null : this.discriminatorField.field();
+	}
+
+	@Override
+	public List<String> getCompatibleDiscriminationValues() {
+		if (this.discriminatorValue == null) {
+			return Collections.emptyList();
+		}
+		else {
+			List<String> compatibleValues = new LinkedList<>();
+			compatibleValues.add(this.discriminatorValue.value());
+			DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext
+					.getPersistentEntity(getType().getSuperclass());
+			if (persistentEntity != null) {
+				List<String> compatibleDiscriminationValues = persistentEntity.getCompatibleDiscriminationValues();
+				compatibleValues.addAll(compatibleDiscriminationValues);
+			}
+			return compatibleValues;
+		}
+	}
+
+	@Override
+	public String getDiscriminatorValue() {
+		return this.discriminatorValue == null ? null : this.discriminatorValue.value();
 	}
 
 	@Override
@@ -164,10 +229,23 @@ public class DatastorePersistentEntityImpl<T>
 
 	/* This method is used by subclass persistent entities to get the superclass Kind name. */
 	private DatastorePersistentEntity getDiscriminationSuperclassPersistentEntity() {
-		if (this.discriminationField != null) {
+		if (this.discriminatorField != null) {
 			return this;
 		}
 		return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
 				.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity();
+	}
+
+	private void initializeSubclassEntities() {
+		ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
+		provider.addIncludeFilter(new AssignableTypeFilter(getType()));
+		for (BeanDefinition component : provider.findCandidateComponents(getType().getPackage().getName())) {
+			try {
+				this.datastoreMappingContext.getPersistentEntity(Class.forName(component.getBeanClassName()));
+			}
+			catch (ClassNotFoundException ex) {
+				throw new DatastoreDataException("Could not find expected subclass for this entity: " + getType(), ex);
+			}
+		}
 	}
 }

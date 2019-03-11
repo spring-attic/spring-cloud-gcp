@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.storage;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -72,29 +71,6 @@ public class GoogleStorageLocation {
 	}
 
 	/**
-	 * Constructs a {@link GoogleStorageLocation} based on the provided {@code bucketName} and
-	 * {@code pathToFile}.
-	 *
-	 * @param bucketName name of the Google Storage bucket
-	 * @param pathToFile path to the file or folder in the bucket; set as null if
-	 *    the location is to the bucket itself.
-	 */
-	public GoogleStorageLocation(String bucketName, @Nullable String pathToFile) {
-		try {
-			this.bucketName = bucketName;
-			this.blobName = pathToFile;
-
-			pathToFile = (pathToFile == null) ? "" : pathToFile;
-			this.uri = new URI(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
-		}
-		catch (URISyntaxException e) {
-			String errorMessage = String.format(
-					"Invalid location provided. bucketName: %s, pathToFile: %s", bucketName, pathToFile);
-			throw new IllegalArgumentException(errorMessage, e);
-		}
-	}
-
-	/**
 	 * Check if the location references a bucket and not a blob.
 	 * @return if the location describes a bucket
 	 */
@@ -108,6 +84,14 @@ public class GoogleStorageLocation {
 	 */
 	public boolean isFile() {
 		return this.blobName != null && !this.blobName.endsWith("/");
+	}
+
+	/**
+	 * Returns whether this {@link GoogleStorageLocation} represents a folder.
+	 * @return true if the location describes a folder
+	 */
+	public boolean isFolder() {
+		return this.blobName != null && this.blobName.endsWith("/");
 	}
 
 	/**
@@ -154,7 +138,7 @@ public class GoogleStorageLocation {
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
 	public static GoogleStorageLocation forBucket(String bucketName) {
-		return new GoogleStorageLocation(bucketName, null);
+		return new GoogleStorageLocation(String.format(GCS_URI_FORMAT, bucketName, ""));
 	}
 
 	/**
@@ -164,7 +148,8 @@ public class GoogleStorageLocation {
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
 	public static GoogleStorageLocation forFile(String bucketName, String pathToFile) {
-		return new GoogleStorageLocation(bucketName, pathToFile);
+		Assert.notNull(pathToFile, "The path to a Google Storage file must not be null.");
+		return new GoogleStorageLocation(String.format(GCS_URI_FORMAT, bucketName, pathToFile));
 	}
 
 	/**
@@ -175,10 +160,11 @@ public class GoogleStorageLocation {
 	 * @return the {@link GoogleStorageLocation} to the location.
 	 */
 	public static GoogleStorageLocation forFolder(String bucketName, String pathToFolder) {
+		Assert.notNull(pathToFolder, "The path to a Google Storage folder must not be null.");
 		if (!pathToFolder.endsWith("/")) {
 			pathToFolder += "/";
 		}
-		return new GoogleStorageLocation(bucketName, pathToFolder);
+		return new GoogleStorageLocation(String.format(GCS_URI_FORMAT, bucketName, pathToFolder));
 	}
 
 	@Override

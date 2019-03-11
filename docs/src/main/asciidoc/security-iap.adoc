@@ -14,13 +14,21 @@ The following claims are validated automatically:
  * Issuer
  * Audience
 
-The audience (`"aud"`) validation is automatically configured when the application is running on App Engine Standard or App Engine Flexible.
-For other runtime environments, a custom audience must be provided through `spring.cloud.gcp.security.iap.audience` property.
-The custom property, if specified, overrides the automatic App Engine audience detection.
+The _audience_ (`"aud"` claim) validation string is automatically determined when the application is running on App Engine Standard or App Engine Flexible.
+This functionality relies on Cloud Resource Manager API to retrieve project details, so the following setup is needed:
 
-IMPORTANT: There is no automatic audience string configuration for Compute Engine or Kubernetes Engine.
-To use the IAP starter on GCE/GKE, find the Audience string per instructions in the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in the `spring.cloud.gcp.security.iap.audience` property.
-Otherwise, the application will fail to start with `No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available` message.
+* Enable Cloud Resource Manager API in https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com[GCP Console].
+* Make sure your application has `resourcemanager.projects.get` permission.
+
+App Engine automatic _audience_ determination can be overridden by using `spring.cloud.gcp.security.iap.audience` property.
+
+For Compute Engine or Kubernetes Engine `spring.cloud.gcp.security.iap.audience` property *must* be provided, as the _audience_ string depends on the specific Backend Services setup and cannot be inferred automatically.
+To determine the _audience_ value, follow directions in IAP https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide.
+If `spring.cloud.gcp.security.iap.audience` is not provided, the application will fail to start the following message:
+
+```
+No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available.
+```
 
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.

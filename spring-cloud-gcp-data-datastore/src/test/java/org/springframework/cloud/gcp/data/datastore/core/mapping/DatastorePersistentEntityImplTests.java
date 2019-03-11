@@ -142,9 +142,27 @@ public class DatastorePersistentEntityImplTests {
 		assertThat(a1.getDiscriminationFieldName()).isEqualTo("type_disc_col");
 		assertThat(a2.getDiscriminationFieldName()).isEqualTo("type_disc_col");
 
-		assertThat(base.getDiscriminationValue()).isNull();
-		assertThat(a1.getDiscriminationValue()).isEqualTo("A1");
-		assertThat(a2.getDiscriminationValue()).isEqualTo("A2");
+		assertThat(base.getDiscriminatorValue()).isNull();
+		assertThat(a1.getDiscriminatorValue()).isEqualTo("A1");
+		assertThat(a2.getDiscriminatorValue()).isEqualTo("A2");
+
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(TestEntity.class))
+				.containsExactlyInAnyOrder(SubA1TestEntity.class, SubA2TestEntity.class);
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
+				.containsExactlyInAnyOrder(SubA2TestEntity.class);
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA2TestEntity.class)).isEmpty();
+
+		assertThat(this.datastoreMappingContext.getDiscriminationFamily(SubA1TestEntity.class))
+				.isNotEqualTo(this.datastoreMappingContext.getDiscriminationFamily(DiscrimEntityA.class));
+	}
+
+	@Test
+	public void testConflictingDiscriminationFieldNames() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("This class and its super class both have " +
+				"discrimination fields but they are different fields: ");
+
+		this.datastoreMappingContext.getPersistentEntity(DiscrimEntityB.class);
 	}
 
 	@Test
@@ -155,8 +173,29 @@ public class DatastorePersistentEntityImplTests {
 		this.datastoreMappingContext.getPersistentEntity(TestEntityNoSuperclass.class).kindName();
 	}
 
+	@Entity
+	@DiscriminatorField(field = "colA")
+	@DiscriminatorValue("a")
+	private static class DiscrimEntityA {
+
+	}
+
+	@Entity
+	@DiscriminatorField(field = "colA")
+	@DiscriminatorValue("c")
+	private static class DiscrimEntityC extends DiscrimEntityA {
+
+	}
+
+	@Entity
+	@DiscriminatorField(field = "colB")
+	@DiscriminatorValue("b")
+	private static class DiscrimEntityB extends DiscrimEntityA {
+
+	}
+
 	@Entity(name = "custom_test_kind")
-	@DiscriminationField(field = "type_disc_col")
+	@DiscriminatorField(field = "type_disc_col")
 	private static class TestEntity {
 		@Id
 		String id;
@@ -169,7 +208,7 @@ public class DatastorePersistentEntityImplTests {
 	}
 
 	@Entity
-	@DiscriminationValue("A1")
+	@DiscriminatorValue("A1")
 	private static class SubA1TestEntity extends TestEntity {
 
 		@Field(name = "type_disc_col")
@@ -177,13 +216,13 @@ public class DatastorePersistentEntityImplTests {
 	}
 
 	@Entity
-	@DiscriminationValue("A2")
+	@DiscriminatorValue("A2")
 	private static class SubA2TestEntity extends SubA1TestEntity {
 
 	}
 
 	@Entity
-	@DiscriminationValue("N/A")
+	@DiscriminatorValue("N/A")
 	private static class TestEntityNoSuperclass {
 		@Id
 		String id;
