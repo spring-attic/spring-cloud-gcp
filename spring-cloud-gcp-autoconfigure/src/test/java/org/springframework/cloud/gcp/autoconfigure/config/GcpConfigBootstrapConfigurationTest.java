@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import org.junit.Test;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * Tests for Config bootstrap configuration.
@@ -37,12 +39,13 @@ public class GcpConfigBootstrapConfigurationTest {
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {
-		this.contextRunner.run((context) -> {
-			GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
-			assertThat(config.getName()).isEqualTo("application");
-			assertThat(config.getProfile()).isEqualTo("default");
-			assertThat(config.getTimeoutMillis()).isEqualTo(60000);
-			assertThat(config.isEnabled()).isFalse();
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.config.enabled=true")
+				.run((context) -> {
+					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
+					assertThat(config.getName()).isEqualTo("application");
+					assertThat(config.getProfile()).isEqualTo("default");
+					assertThat(config.getTimeoutMillis()).isEqualTo(60000);
+					assertThat(config.isEnabled()).isTrue();
 		});
 	}
 
@@ -51,15 +54,22 @@ public class GcpConfigBootstrapConfigurationTest {
 		this.contextRunner.withPropertyValues("spring.application.name=myapp",
 				"spring.profiles.active=prod",
 				"spring.cloud.gcp.config.timeoutMillis=120000",
-				"spring.cloud.gcp.config.enabled=false",
+				"spring.cloud.gcp.config.enabled=true",
 				"spring.cloud.gcp.config.project-id=pariah")
 				.run((context) -> {
 					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
 					assertThat(config.getName()).isEqualTo("myapp");
 					assertThat(config.getProfile()).isEqualTo("prod");
 					assertThat(config.getTimeoutMillis()).isEqualTo(120000);
-					assertThat(config.isEnabled()).isFalse();
+					assertThat(config.isEnabled()).isTrue();
 					assertThat(config.getProjectId()).isEqualTo("pariah");
 				});
+	}
+
+	@Test
+	public void testConfigurationDisabled() {
+		this.contextRunner.run((context) ->
+				assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() ->
+						context.getBean(GcpConfigProperties.class)));
 	}
 }
