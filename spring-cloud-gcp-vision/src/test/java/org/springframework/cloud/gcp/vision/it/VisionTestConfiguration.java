@@ -59,7 +59,7 @@ public class VisionTestConfiguration {
 	public DocumentOcrTemplate documentOcrTemplate(
 			ImageAnnotatorClient imageAnnotatorClient, Storage storage) {
 
-		return new DocumentOcrTemplate(imageAnnotatorClient, storage, Runnable::run,2);
+		return new DocumentOcrTemplate(imageAnnotatorClient, storage, Runnable::run, 2);
 	}
 
 	@Bean
