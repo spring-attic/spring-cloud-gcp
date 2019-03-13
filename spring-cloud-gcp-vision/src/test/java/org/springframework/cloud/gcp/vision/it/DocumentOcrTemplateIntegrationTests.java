@@ -49,10 +49,10 @@ public class DocumentOcrTemplateIntegrationTests {
 
 	@BeforeClass
 	public static void prepare() {
-		assumeThat(System.getProperty("it.vision"))
-				.as("Vision Sample integration tests are disabled. "
-						+ "Please use '-Dit.vision=true' to enable them.")
-				.isEqualTo("true");
+		// assumeThat(System.getProperty("it.vision"))
+		// 		.as("Vision Sample integration tests are disabled. "
+		// 				+ "Please use '-Dit.vision=true' to enable them.")
+		// 		.isEqualTo("true");
 	}
 
 	@Test
@@ -64,8 +64,9 @@ public class DocumentOcrTemplateIntegrationTests {
 		GoogleStorageLocation outputLocationPrefix = GoogleStorageLocation.forFile(
 				"vision-integration-test-bucket", "it_output/test-");
 
-		ListenableFuture<DocumentOcrResultSet> result = this.documentOcrTemplate.runOcrForDocument(document,
-				outputLocationPrefix, 2);
+		ListenableFuture<DocumentOcrResultSet> result = this.documentOcrTemplate.runOcrForDocument(
+				document,
+				outputLocationPrefix);
 
 		DocumentOcrResultSet ocrPages = result.get(5, TimeUnit.MINUTES);
 
@@ -94,9 +95,9 @@ public class DocumentOcrTemplateIntegrationTests {
 		GoogleStorageLocation ocrOutputPrefix = GoogleStorageLocation.forFolder(
 				"vision-integration-test-bucket", "json_output_set/");
 
-		DocumentOcrResultSet result = this.documentOcrTemplate.parseOcrOutputFileSet(ocrOutputPrefix);
+		DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFileSet(ocrOutputPrefix);
 
-		String text = result.getPage(1).getText();
+		String text = result.getPage(2).getText();
 		assertThat(text).contains("Hello World. Is mayonnaise an instrument?");
 	}
 
@@ -104,11 +105,11 @@ public class DocumentOcrTemplateIntegrationTests {
 	public void testParseOcrFile() throws InvalidProtocolBufferException {
 		GoogleStorageLocation ocrOutputFile = GoogleStorageLocation.forFile(
 				"vision-integration-test-bucket",
-				"json_output_set/test_output-1-to-1.json");
+				"json_output_set/test_output-2-to-2.json");
 
-		List<TextAnnotation> pages = this.documentOcrTemplate.parseOcrOutputFile(ocrOutputFile);
+		DocumentOcrResultSet pages = this.documentOcrTemplate.readOcrOutputFile(ocrOutputFile);
 
-		String text = pages.get(0).getText();
+		String text = pages.getPage(2).getText();
 		assertThat(text).contains("Hello World. Is mayonnaise an instrument?");
 	}
 }

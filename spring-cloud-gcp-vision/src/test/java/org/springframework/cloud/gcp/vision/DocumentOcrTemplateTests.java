@@ -41,7 +41,11 @@ public class DocumentOcrTemplateTests {
 	public void setupDocumentTemplateMocks() {
 		this.storage = Mockito.mock(Storage.class);
 		this.imageAnnotatorClient = Mockito.mock(ImageAnnotatorClient.class);
-		this.documentOcrTemplate = new DocumentOcrTemplate(imageAnnotatorClient, storage);
+		this.documentOcrTemplate = new DocumentOcrTemplate(
+				imageAnnotatorClient,
+				storage,
+				Runnable::run,
+				10);
 	}
 
 	@Test
@@ -49,11 +53,11 @@ public class DocumentOcrTemplateTests {
 		GoogleStorageLocation folder = GoogleStorageLocation.forFolder(
 				"bucket", "path/to/folder/");
 
-		assertThatThrownBy(() -> this.documentOcrTemplate.runOcrForDocument(folder, folder, 1))
+		assertThatThrownBy(() -> this.documentOcrTemplate.runOcrForDocument(folder, folder))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Provided document location is not a valid file location");
 
-		assertThatThrownBy(() -> this.documentOcrTemplate.parseOcrOutputFile(folder))
+		assertThatThrownBy(() -> this.documentOcrTemplate.readOcrOutputFile(folder))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("Provided jsonOutputFile location is not a valid file location");
 	}

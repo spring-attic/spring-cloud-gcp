@@ -16,12 +16,16 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import com.google.cloud.vision.v1.TextAnnotation;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import com.google.cloud.storage.Blob;
+import java.util.List;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
@@ -35,5 +39,31 @@ public class DocumentOcrResultSetTests {
 		assertThatThrownBy(() -> new DocumentOcrResultSet(Collections.singletonList(blob)))
 				.hasMessageContaining("Cannot create a DocumentOcrResultSet with blob: ")
 				.isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	public void testBlobRangeChecks() {
+		Blob blob1 = Mockito.mock(Blob.class);
+		when(blob1.getName()).thenReturn("blob-output-1-to-3.json");
+
+		Blob blob2 = Mockito.mock(Blob.class);
+		when(blob2.getName()).thenReturn("blob-output-4-to-6.json");
+
+		ArrayList<Blob> blobs = new ArrayList<>();
+		blobs.add(blob1);
+		blobs.add(blob2);
+
+		DocumentOcrResultSet documentOcrResultSet = new DocumentOcrResultSet(blobs);
+
+		assertThat(documentOcrResultSet.getMinPage()).isEqualTo(1);
+		assertThat(documentOcrResultSet.getMaxPage()).isEqualTo(6);
+
+		assertThatThrownBy(() -> documentOcrResultSet.getPage(0))
+				.hasMessageContaining("Page number out of bounds")
+				.isInstanceOf(IndexOutOfBoundsException.class);
+
+		assertThatThrownBy(() -> documentOcrResultSet.getPage(8))
+				.hasMessageContaining("Page number out of bounds")
+				.isInstanceOf(IndexOutOfBoundsException.class);
 	}
 }

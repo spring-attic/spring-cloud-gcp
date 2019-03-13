@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.vision;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -67,11 +68,19 @@ public class DocumentOcrTemplate {
 
 	private final Storage storage;
 
+	private final Executor executor;
+
+	private final int jsonOutputBatchSize;
+
 	public DocumentOcrTemplate(
 			ImageAnnotatorClient imageAnnotatorClient,
-			Storage storage) {
+			Storage storage,
+			Executor executor,
+			int jsonOutputBatchSize) {
 		this.imageAnnotatorClient = imageAnnotatorClient;
 		this.storage = storage;
+		this.executor = executor;
+		this.jsonOutputBatchSize = jsonOutputBatchSize;
 	}
 
 	/**
@@ -97,17 +106,13 @@ public class DocumentOcrTemplate {
 	 * @param document The {@link GoogleStorageLocation} of the document to run OCR processing
 	 * @param outputFilePathPrefix The {@link GoogleStorageLocation} of a file, folder, or a
 	 *     bucket describing the path for which all output files shall be saved under
-	 * @param jsonBatchSize The number of document pages to include in each JSON OCR output
-	 *     file [1, 100]. For example, 10 means that one JSON OCR output file is produced for
-	 *     every 10 pages of the document.
 	 *
 	 * @return A {@link ListenableFuture} allowing you to register callbacks or wait for the
 	 * completion of the operation.
 	 */
 	public ListenableFuture<DocumentOcrResultSet> runOcrForDocument(
 			GoogleStorageLocation document,
-			GoogleStorageLocation outputFilePathPrefix,
-			int jsonBatchSize) {
+			GoogleStorageLocation outputFilePathPrefix) {
 
 		Assert.isTrue(
 				document.isFile(),
@@ -129,7 +134,7 @@ public class DocumentOcrTemplate {
 
 		OutputConfig outputConfig = OutputConfig.newBuilder()
 				.setGcsDestination(gcsDestination)
-				.setBatchSize(jsonBatchSize)
+				.setBatchSize(this.jsonOutputBatchSize)
 				.build();
 
 		AsyncAnnotateFileRequest request = AsyncAnnotateFileRequest.newBuilder()
@@ -153,7 +158,7 @@ public class DocumentOcrTemplate {
 	 *     OCR output
 	 * @return A {@link DocumentOcrResultSet} describing the OCR content of a document
 	 */
-	public DocumentOcrResultSet parseOcrOutputFileSet(GoogleStorageLocation jsonOutputFilePathPrefix) {
+	public DocumentOcrResultSet readOcrOutputFileSet(GoogleStorageLocation jsonOutputFilePathPrefix) {
 		String nonNullPrefix = (jsonOutputFilePathPrefix.getBlobName() == null)
 				? ""
 				: jsonOutputFilePathPrefix.getBlobName();
@@ -183,8 +188,7 @@ public class DocumentOcrTemplate {
 	 * @throws InvalidProtocolBufferException if the JSON file cannot be deserialized into a
 	 *     {@link TextAnnotation} object
 	 */
-	public List<TextAnnotation> parseOcrOutputFile(GoogleStorageLocation jsonFile)
-			throws InvalidProtocolBufferException {
+	public DocumentOcrResultSet readOcrOutputFile(GoogleStorageLocation jsonFile) {
 		if (!jsonFile.isFile()) {
 			throw new IllegalArgumentException(
 					"Provided jsonOutputFile location is not a valid file location: " + jsonFile);
@@ -192,7 +196,7 @@ public class DocumentOcrTemplate {
 
 		Blob jsonOutputBlob = this.storage.get(
 				BlobId.of(jsonFile.getBucketName(), jsonFile.getBlobName()));
-		return parseJsonBlob(jsonOutputBlob);
+		return new DocumentOcrResultSet(Collections.singletonList(jsonOutputBlob));
 	}
 
 	static List<TextAnnotation> parseJsonBlob(Blob blob) throws InvalidProtocolBufferException {
@@ -228,9 +232,9 @@ public class DocumentOcrTemplate {
 						.getUri();
 
 				GoogleStorageLocation outputFolderLocation = new GoogleStorageLocation(outputLocationUri);
-				result.set(parseOcrOutputFileSet(outputFolderLocation));
+				result.set(readOcrOutputFileSet(outputFolderLocation));
 			}
-		}, Runnable::run);
+		}, this.executor);
 
 		return result;
 	}
