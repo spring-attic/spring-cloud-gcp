@@ -111,6 +111,7 @@ public class PubSubSubscriberTemplate
 
 	public void setAckExecutor(Executor ackExecutor) {
 		Assert.notNull(ackExecutor, "ackExecutor can't be null.");
+		this.defaultAckExecutor.shutdown();
 		this.ackExecutor = ackExecutor;
 	}
 
