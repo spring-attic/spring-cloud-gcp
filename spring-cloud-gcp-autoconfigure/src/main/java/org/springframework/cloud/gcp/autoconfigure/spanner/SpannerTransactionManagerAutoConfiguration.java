@@ -22,10 +22,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -46,16 +46,15 @@ public class SpannerTransactionManagerAutoConfiguration {
 	 * Config settings.
 	 */
 	@Configuration
-	@ConditionalOnSingleCandidate(DatabaseClient.class)
 	static class DatabaseClientTransactionManagerConfiguration {
 
-		private final DatabaseClient databaseClient;
+		private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
 
 		private final TransactionManagerCustomizers transactionManagerCustomizers;
 
-		DatabaseClientTransactionManagerConfiguration(DatabaseClient databaseClient,
+		DatabaseClientTransactionManagerConfiguration(DatabaseUtilityProvider<DatabaseClient> databaseClientProvider,
 				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
-			this.databaseClient = databaseClient;
+			this.databaseClientProvider = databaseClientProvider;
 			this.transactionManagerCustomizers = transactionManagerCustomizers
 					.getIfAvailable();
 		}
@@ -64,7 +63,7 @@ public class SpannerTransactionManagerAutoConfiguration {
 		@ConditionalOnMissingBean(PlatformTransactionManager.class)
 		public SpannerTransactionManager spannerTransactionManager() {
 			SpannerTransactionManager transactionManager = new SpannerTransactionManager(
-					this.databaseClient);
+					this.databaseClientProvider);
 			if (this.transactionManagerCustomizers != null) {
 				this.transactionManagerCustomizers.customize(transactionManager);
 			}

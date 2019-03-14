@@ -26,6 +26,7 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.Statement;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -43,7 +44,7 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 
 	private ReadOnlyTransaction readOnlyTransaction;
 
-	ReadOnlyTransactionSpannerTemplate(DatabaseClient databaseClient,
+	ReadOnlyTransactionSpannerTemplate(DatabaseUtilityProvider<DatabaseClient> databaseClient,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,

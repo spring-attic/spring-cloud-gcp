@@ -111,8 +111,8 @@ public class SpannerTemplateAuditingTests {
 
 			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(spannerMappingContext, objectMapper, true);
 
-			return new SpannerTemplate(
-					mock(DatabaseClient.class), spannerMappingContext, objectMapper, mutationFactory, schemaUtils);
+			return new SpannerTemplate(() -> mock(DatabaseClient.class),
+					spannerMappingContext, objectMapper, mutationFactory, schemaUtils);
 		}
 
 		@Bean

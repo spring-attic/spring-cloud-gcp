@@ -71,7 +71,7 @@ public class SpannerDatabaseAdminTemplateTests {
 		this.mockDatabasePage = mock(Page.class);
 		this.databaseId = DatabaseId.of("fakeproject", "fakeinstance", "fakedb");
 		this.spannerDatabaseAdminTemplate = new SpannerDatabaseAdminTemplate(
-				this.databaseAdminClient, this.databaseClient, this.databaseId);
+				this.databaseAdminClient, () -> this.databaseClient, () -> this.databaseId);
 		this.ddlList = new ArrayList<>();
 		this.ddlList.add("describe Something");
 

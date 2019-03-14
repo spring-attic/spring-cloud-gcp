@@ -32,6 +32,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
@@ -50,10 +51,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * @since 1.1
  */
 public class SpannerTransactionManager extends AbstractPlatformTransactionManager {
-	private final DatabaseClient databaseClient;
+	private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
 
-	public SpannerTransactionManager(final DatabaseClient databaseClient) {
-		this.databaseClient = databaseClient;
+	public SpannerTransactionManager(final DatabaseUtilityProvider databaseClientProvider) {
+		this.databaseClientProvider = databaseClientProvider;
 	}
 
 	protected Tx getCurrentTX() {
@@ -77,7 +78,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		// create a new one if current is not there
 		tx = new Tx();
-		tx.transactionManager = this.databaseClient.transactionManager();
+		tx.transactionManager = this.databaseClientProvider.get().transactionManager();
 		logger.debug(tx + " create; state = " + tx.transactionManager.getState());
 		return tx;
 	}
@@ -96,7 +97,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		Tx tx = (Tx) transactionObject;
 		if (transactionDefinition.isReadOnly()) {
-			final ReadContext targetTransactionContext = this.databaseClient
+			final ReadContext targetTransactionContext = this.databaseClientProvider.get()
 					.readOnlyTransaction();
 
 			tx.transactionContext = new TransactionContext() {
