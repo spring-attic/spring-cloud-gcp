@@ -16,13 +16,14 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
-import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -58,7 +59,7 @@ public class SpannerTemplateAuditingTests {
 	private static final List<Mutation> UPSERT_MUTATION = Arrays
 			.asList(Mutation.newInsertOrUpdateBuilder("custom_test_table").build());
 
-	private static final DateTime LONG_AGO = DateTime.parse("2000-01-01");
+	private static final LocalDateTime LONG_AGO = LocalDate.parse("2000-01-01").atStartOfDay();
 
 	@Autowired
 	SpannerTemplate spannerTemplate;
@@ -103,7 +104,7 @@ public class SpannerTemplateAuditingTests {
 					.thenAnswer(invocation -> {
 						TestEntity testEntity = invocation.getArgument(0);
 						assertThat(testEntity.lastTouched).isNotNull();
-						assertThat(testEntity.lastTouched).isGreaterThan(LONG_AGO);
+						assertThat(testEntity.lastTouched).isAfter(LONG_AGO);
 						assertThat(testEntity.lastUser).isEqualTo("test_user");
 						return UPSERT_MUTATION;
 					});
@@ -129,6 +130,6 @@ public class SpannerTemplateAuditingTests {
 		String lastUser;
 
 		@LastModifiedDate
-		DateTime lastTouched;
+		LocalDateTime lastTouched;
 	}
 }

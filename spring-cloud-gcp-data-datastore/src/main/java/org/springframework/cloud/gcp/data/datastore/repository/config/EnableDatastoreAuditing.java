@@ -66,7 +66,7 @@ public @interface EnableDatastoreAuditing {
 
 	/**
 	 * Configures a {@link DateTimeProvider} bean name that allows customizing the
-	 * {@link org.joda.time.DateTime} to be used for setting creation and modification dates.
+	 * {@link java.time.LocalDateTime} to be used for setting creation and modification dates.
 	 *
 	 * @return the name of the custom time provider. If blank then one will be looked up bean
 	 * type.
