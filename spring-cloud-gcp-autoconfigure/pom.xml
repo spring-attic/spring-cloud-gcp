@@ -131,6 +131,12 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-actuator</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Spanner -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

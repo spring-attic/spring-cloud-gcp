@@ -161,7 +161,7 @@ public class ApplicationTests {
 								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
 
 		assertThat(singer3.getLastModifiedTime())
-				.isAfter(LocalDateTime.parse("2000-01-01"));
+				.isAfter(LocalDateTime.parse("2000-01-01T00:00:00"));
 
 		assertThat(baos.toString()).contains("Query by example\n" +
 				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +
