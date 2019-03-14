@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +59,7 @@ public class SpannerTemplateAuditingTests {
 	private static final List<Mutation> UPSERT_MUTATION = Arrays
 			.asList(Mutation.newInsertOrUpdateBuilder("custom_test_table").build());
 
-	private static final LocalDateTime LONG_AGO = LocalDateTime.parse("2000-01-01");
+	private static final LocalDateTime LONG_AGO = LocalDate.parse("2000-01-01").atStartOfDay();
 
 	@Autowired
 	SpannerTemplate spannerTemplate;

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
@@ -57,7 +58,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration
 public class DatastoreTemplateAuditingTests {
 
-	private static final LocalDateTime LONG_AGO = LocalDateTime.parse("2000-01-01");
+	private static final LocalDateTime LONG_AGO = LocalDate.parse("2000-01-01").atStartOfDay();
 
 	@Autowired
 	DatastoreTemplate datastoreTemplate;
