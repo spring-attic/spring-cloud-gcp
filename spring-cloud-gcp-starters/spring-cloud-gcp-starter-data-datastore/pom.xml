@@ -26,6 +26,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-actuator</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>
