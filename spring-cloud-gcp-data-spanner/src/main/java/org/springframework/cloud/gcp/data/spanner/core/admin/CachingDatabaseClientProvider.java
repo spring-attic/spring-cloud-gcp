@@ -21,34 +21,35 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.google.cloud.spanner.DatabaseClient;
+
 /**
- * A provider of database-related objects that relies on another provider and caches
+ * A provider of database client objects that relies on another provider and caches
  * provided results.
  *
- * @param <T> the type of objects this provider produces.
  * @param <U> the type of objects this provider bases its products on.
  * @author Chengyuan Zhao
  */
-public class CachingDatabaseUtilityProvider<T, U> implements Supplier<T> {
+public class CachingDatabaseClientProvider<U> implements Supplier<DatabaseClient> {
 
-	private final Map<U, T> products = new ConcurrentHashMap<>();
+	private final Map<U, DatabaseClient> products = new ConcurrentHashMap<>();
 
 	private final Supplier<U> inputProvider;
 
-	private final Function<U, T> producer;
+	private final Function<U, DatabaseClient> producer;
 
 	/**
 	 * Constructor.
 	 * @param inputProvider the provider that gives inputs for each product of this provider.
-	 * @param producer the function that returns products of this provider given inputs.
+	 * @param producer the function that returns database clients of this provider given inputs.
 	 */
-	public CachingDatabaseUtilityProvider(Supplier<U> inputProvider, Function<U, T> producer) {
+	public CachingDatabaseClientProvider(Supplier<U> inputProvider, Function<U, DatabaseClient> producer) {
 		this.inputProvider = inputProvider;
 		this.producer = producer;
 	}
 
 	@Override
-	public T get() {
+	public DatabaseClient get() {
 		return this.products.computeIfAbsent(inputProvider.get(), this.producer);
 	}
 }
