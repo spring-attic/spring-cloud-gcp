@@ -235,7 +235,7 @@ public interface DatastoreOperations {
 	 * @param queryOptions the query options
 	 * @return query results, converted to objects of class T
 	 */
-	<T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+	<T> DatastoreResultsIterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
 
 	/**
 	 * Run key query by example.

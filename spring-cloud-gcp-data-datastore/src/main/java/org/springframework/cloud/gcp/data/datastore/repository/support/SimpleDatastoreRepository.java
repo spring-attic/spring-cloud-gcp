@@ -24,11 +24,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.CursorPageable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -68,7 +71,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	public Iterable<T> findAll(Sort sort) {
 		Assert.notNull(sort, "A non-null Sort is required.");
 		return this.datastoreTemplate
-				.findAll(this.entityType, new DatastoreQueryOptions(null, null, sort));
+				.findAll(this.entityType, new DatastoreQueryOptions(null, null, sort, null));
 	}
 
 	@Override
@@ -78,7 +81,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 				new ArrayList<>(this.datastoreTemplate
 						.findAll(this.entityType,
 								new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(),
-										pageable.getSort()))),
+										pageable.getSort(), null))),
 				pageable, this.datastoreTemplate.count(this.entityType));
 	}
 
@@ -139,7 +142,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Optional<S> findOne(Example<S> example) {
-		Iterable<S> entities = this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions(1, null, null, null));
 		Iterator<S> iterator = entities.iterator();
 		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
 	}
@@ -151,18 +155,27 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Iterable<S> findAll(Example<S> example, Sort sort) {
-		return this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(null, null, sort));
+		return this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(null, null, sort, null));
 	}
 
 	@Override
 	public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
 		Assert.notNull(pageable, "A non-null pageable is required.");
-
-		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
-				new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(), pageable.getSort()));
+		Cursor cursor = null;
+		Long totalCount = null;
+		if (pageable instanceof CursorPageable) {
+			cursor = ((CursorPageable) pageable).getCursor();
+			totalCount = ((CursorPageable) pageable).getTotalCount();
+		}
+		DatastoreResultsIterable<S> entities = this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(), pageable.getSort(),
+						cursor));
 		List<S> result = StreamSupport.stream(entities.spliterator(), false).collect(Collectors.toList());
 
-		return new PageImpl<>(result, pageable, count(example));
+		totalCount = totalCount != null ? totalCount : count(example);
+		Pageable cursorPageable = CursorPageable.from(pageable, entities.getCursor(), totalCount);
+
+		return new PageImpl<>(result, cursorPageable, totalCount);
 	}
 
 	@Override
@@ -174,7 +187,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> boolean exists(Example<S> example) {
-		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null, null));
 		return StreamSupport.stream(keys.spliterator(), false).findAny().isPresent();
 	}
 }

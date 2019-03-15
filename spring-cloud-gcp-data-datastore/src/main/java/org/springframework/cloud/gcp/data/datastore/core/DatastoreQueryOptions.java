@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Objects;
 
+import com.google.cloud.datastore.Cursor;
+
 import org.springframework.data.domain.Sort;
 
 /**
@@ -33,10 +35,13 @@ public class DatastoreQueryOptions {
 
 	private Sort sort;
 
-	public DatastoreQueryOptions(Integer limit, Integer offset, Sort sort) {
+	private Cursor cursor;
+
+	public DatastoreQueryOptions(Integer limit, Integer offset, Sort sort, Cursor cursor) {
 		this.limit = limit;
 		this.offset = offset;
 		this.sort = sort;
+		this.cursor = cursor;
 	}
 
 	public Integer getLimit() {
@@ -51,6 +56,10 @@ public class DatastoreQueryOptions {
 		return this.sort;
 	}
 
+	public Cursor getCursor() {
+		return this.cursor;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -62,11 +71,12 @@ public class DatastoreQueryOptions {
 		DatastoreQueryOptions that = (DatastoreQueryOptions) o;
 		return Objects.equals(getLimit(), that.getLimit()) &&
 				Objects.equals(getOffset(), that.getOffset()) &&
-				Objects.equals(getSort(), that.getSort());
+				Objects.equals(getSort(), that.getSort()) &&
+				Objects.equals(getCursor(), that.getCursor());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getLimit(), getOffset(), getSort());
+		return Objects.hash(getLimit(), getOffset(), getSort(), getCursor());
 	}
 }

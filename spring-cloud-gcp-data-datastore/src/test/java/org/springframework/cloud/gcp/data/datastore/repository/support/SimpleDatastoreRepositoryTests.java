@@ -21,12 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import com.google.cloud.datastore.Cursor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -153,7 +155,7 @@ public class SimpleDatastoreRepositoryTests {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
 
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"))));
+				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"), null)));
 	}
 
 	@Test
@@ -163,7 +165,7 @@ public class SimpleDatastoreRepositoryTests {
 				eq(new DatastoreQueryOptions(5, 5,
 						Sort.by(
 								new Sort.Order(Sort.Direction.DESC, "property1"),
-								new Sort.Order(Sort.Direction.DESC, "property2")))));
+								new Sort.Order(Sort.Direction.DESC, "property2")), null)));
 	}
 
 	@Test
@@ -179,7 +181,7 @@ public class SimpleDatastoreRepositoryTests {
 		Sort sort = Sort.by("id");
 		this.simpleDatastoreRepository.findAll(example, sort);
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(null, null, sort)));
+				eq(new DatastoreQueryOptions(null, null, sort, null)));
 	}
 
 	@Test
@@ -187,11 +189,11 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example = Example.of(new Object());
 		Sort sort = Sort.by("id");
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1, 2))
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2), null))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-						eq(new DatastoreQueryOptions(2, 2, sort)));
+						eq(new DatastoreQueryOptions(2, 2, sort, null)));
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3, 4, 5))
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2, 3, 4, 5), null))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
 
 
@@ -199,10 +201,44 @@ public class SimpleDatastoreRepositoryTests {
 		assertThat(result).containsExactly(1, 2);
 		assertThat(result.getTotalElements()).isEqualTo(5);
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 2, sort)));
+				eq(new DatastoreQueryOptions(2, 2, sort, null)));
 		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
 	}
 
+
+	@Test
+	public void findAllByExamplePageCursor() {
+		Example<Object> example = Example.of(new Object());
+		Sort sort = Sort.by("id");
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2), cursor))
+				.when(this.datastoreTemplate).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(2, 0, sort, null)));
+
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(3, 4), null))
+				.when(this.datastoreTemplate).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(2, 2, sort, cursor)));
+
+
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2, 3, 4, 5), null))
+				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
+
+
+		Page<Object> result = this.simpleDatastoreRepository.findAll(example, PageRequest.of(0, 2, sort));
+		assertThat(result).containsExactly(1, 2);
+		assertThat(result.getTotalElements()).isEqualTo(5);
+
+		Page<Object> resultNext = this.simpleDatastoreRepository.findAll(example, result.getPageable().next());
+		assertThat(resultNext).containsExactly(3, 4);
+		assertThat(resultNext.getTotalElements()).isEqualTo(5);
+
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(2, 0, sort, null)));
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(2, 2, sort, cursor)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
+	}
 
 	@Test
 	public void findAllByExamplePageNull() {
@@ -215,17 +251,16 @@ public class SimpleDatastoreRepositoryTests {
 	@Test
 	public void findOneByExample() {
 		Example<Object> example = Example.of(new Object());
-		Sort sort = Sort.by("id");
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1))
+		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1), null))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(1, null, null)));
+				eq(new DatastoreQueryOptions(1, null, null, null)));
 
 
 		assertThat(this.simpleDatastoreRepository.findOne(example).get()).isEqualTo(1);
 
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(1, null, null)));
+				eq(new DatastoreQueryOptions(1, null, null, null)));
 	}
 
 	@Test
@@ -233,11 +268,11 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example2 = Example.of(new Object());
 
 		doAnswer((invocationOnMock) -> Arrays.asList(1))
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
 	}
 
 	@Test
@@ -245,11 +280,11 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example2 = Example.of(new Object());
 
 		doAnswer((invocationOnMock) -> Arrays.asList())
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(false);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
 	}
 
 	@Test
@@ -285,7 +320,7 @@ public class SimpleDatastoreRepositoryTests {
 				eq(new DatastoreQueryOptions(null, null,
 						Sort.by(
 								new Sort.Order(Sort.Direction.DESC, "property1"),
-								new Sort.Order(Sort.Direction.ASC, "property2")))));
+								new Sort.Order(Sort.Direction.ASC, "property2")), null)));
 
 	}
 }

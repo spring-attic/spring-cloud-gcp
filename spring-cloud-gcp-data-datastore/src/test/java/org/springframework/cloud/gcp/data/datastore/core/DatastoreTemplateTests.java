@@ -798,11 +798,11 @@ public class DatastoreTemplateTests {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
 
 		this.datastoreTemplate.findAll(TestEntity.class,
-				new DatastoreQueryOptions(1, 5, null));
+				new DatastoreQueryOptions(1, 5, null, null));
 		verify(this.datastore, times(1)).run(builder.setLimit(1).setOffset(5).build());
 
 		this.datastoreTemplate.findAll(TestEntity.class,
-				new DatastoreQueryOptions(null, null, null));
+				new DatastoreQueryOptions(null, null, null, null));
 		verify(this.datastore, times(1)).run(builder.build());
 	}
 
@@ -819,7 +819,7 @@ public class DatastoreTemplateTests {
 		PropertyFilter propertyFilter = PropertyFilter.eq("field", "some value");
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind")
 				.setFilter(propertyFilter);
-		DatastoreTemplate.applyQueryOptions(builder, new DatastoreQueryOptions(1, 2, null),
+		DatastoreTemplate.applyQueryOptions(builder, new DatastoreQueryOptions(1, 2, null, null),
 				new DatastoreMappingContext().getPersistentEntity(SimpleDiscriminationTestEntity.class));
 
 		assertThat(builder.build().getFilter()).isEqualTo(
@@ -834,13 +834,13 @@ public class DatastoreTemplateTests {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
 
 		this.datastoreTemplate.findAll(TestEntity.class,
-				new DatastoreQueryOptions(null, null, new Sort(Sort.Direction.ASC, "sortProperty")));
+				new DatastoreQueryOptions(null, null, new Sort(Sort.Direction.ASC, "sortProperty"), null));
 		verify(this.datastore, times(1)).run(
 				builder.setOrderBy(
 						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
 
 		this.datastoreTemplate.findAll(TestEntity.class,
-				new DatastoreQueryOptions(null, null, new Sort(Sort.Direction.DESC, "sortProperty")));
+				new DatastoreQueryOptions(null, null, new Sort(Sort.Direction.DESC, "sortProperty"), null));
 		verify(this.datastore, times(1)).run(
 				builder.setOrderBy(
 						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.DESCENDING)).build());
@@ -851,7 +851,7 @@ public class DatastoreTemplateTests {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
 
 		this.datastoreTemplate.findAll(TestEntity.class,
-				new DatastoreQueryOptions(2, 3, new Sort(Sort.Direction.ASC, "sortProperty")));
+				new DatastoreQueryOptions(2, 3, new Sort(Sort.Direction.ASC, "sortProperty"), null));
 		verify(this.datastore, times(1)).run(
 				builder.setLimit(2).setOffset(3)
 						.setOrderBy(
@@ -973,7 +973,7 @@ public class DatastoreTemplateTests {
 	public void queryByExampleOptions() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity),
-				new DatastoreQueryOptions(10, 1, Sort.by("intField")));
+				new DatastoreQueryOptions(10, 1, Sort.by("intField"), null));
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"),
