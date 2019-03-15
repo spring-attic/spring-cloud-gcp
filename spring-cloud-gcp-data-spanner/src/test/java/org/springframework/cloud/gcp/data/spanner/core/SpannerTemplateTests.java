@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -46,6 +48,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -118,9 +121,45 @@ public class SpannerTemplateTests {
 				true);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
-		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
+		this.spannerTemplate = new SpannerTemplate(() -> this.databaseClient,
 				this.mappingContext, this.objectMapper, this.mutationFactory,
 				this.schemaUtils);
+	}
+
+	@Test
+	public void multipleDatabaseClientTest() {
+		DatabaseClient databaseClient1 = mock(DatabaseClient.class);
+		DatabaseClient databaseClient2 = mock(DatabaseClient.class);
+
+		when(databaseClient1.singleUse()).thenReturn(this.readContext);
+		when(databaseClient2.singleUse()).thenReturn(this.readContext);
+
+		AtomicInteger currentClient = new AtomicInteger(1);
+
+		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
+
+		// this client selector will alternate between the two clients
+		Supplier<DatabaseClient> clientProvider = new CachingComposingSupplier<>(regionProvider,
+				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
+
+		SpannerTemplate template = new SpannerTemplate(clientProvider,
+				this.mappingContext, this.objectMapper, this.mutationFactory,
+				this.schemaUtils);
+
+		// this first read should use the first client
+		template.read(TestEntity.class, Key.of("key"));
+		verify(databaseClient1, times(1)).singleUse();
+		verify(databaseClient2, times(0)).singleUse();
+
+		// this second read should use the second client
+		template.read(TestEntity.class, Key.of("key"));
+		verify(databaseClient1, times(1)).singleUse();
+		verify(databaseClient2, times(1)).singleUse();
+
+		// this third read should use the first client again
+		template.read(TestEntity.class, Key.of("key"));
+		verify(databaseClient1, times(2)).singleUse();
+		verify(databaseClient2, times(1)).singleUse();
 	}
 
 	@Test
@@ -215,7 +254,7 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid mapping context for Spanner is required.");
 
-		new SpannerTemplate(this.databaseClient, null, this.objectMapper,
+		new SpannerTemplate(() -> this.databaseClient, null, this.objectMapper,
 				this.mutationFactory, this.schemaUtils);
 	}
 
@@ -225,7 +264,7 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid entity processor for Spanner is required.");
 
-		new SpannerTemplate(this.databaseClient, this.mappingContext, null,
+		new SpannerTemplate(() -> this.databaseClient, this.mappingContext, null,
 				this.mutationFactory, this.schemaUtils);
 	}
 
@@ -235,7 +274,7 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid Spanner mutation factory is required.");
 
-		new SpannerTemplate(this.databaseClient, this.mappingContext, this.objectMapper,
+		new SpannerTemplate(() -> this.databaseClient, this.mappingContext, this.objectMapper,
 				null, this.schemaUtils);
 	}
 

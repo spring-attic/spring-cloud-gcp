@@ -87,7 +87,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
-	private final DatabaseClient databaseClient;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
 	private final SpannerMappingContext mappingContext;
 
@@ -99,12 +99,12 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
-	public SpannerTemplate(DatabaseClient databaseClient,
+	public SpannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
 			SpannerSchemaUtils spannerSchemaUtils) {
-		Assert.notNull(databaseClient,
+		Assert.notNull(databaseClientProvider,
 				"A valid database client for Spanner is required.");
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
@@ -113,7 +113,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		Assert.notNull(spannerMutationFactory,
 				"A valid Spanner mutation factory is required.");
 		Assert.notNull(spannerSchemaUtils, "A valid Spanner schema utils is required.");
-		this.databaseClient = databaseClient;
+		this.databaseClientProvider = databaseClientProvider;
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.mutationFactory = spannerMutationFactory;
@@ -126,12 +126,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	protected ReadContext getReadContext() {
-		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClient::singleUse);
+		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClientProvider.get()::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
 		return doWithOrWithoutTransactionContext((x) -> x,
-				() -> this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
+				() -> this.databaseClientProvider.get()
+						.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -147,7 +148,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		Assert.notNull(statement, "A non-null statement is required.");
 		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
 		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
-				() -> this.databaseClient.executePartitionedUpdate(statement));
+				() -> this.databaseClientProvider.get().executePartitionedUpdate(statement));
 		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
 		return rowsAffected;
 	}
@@ -348,7 +349,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
-		}, () -> this.databaseClient.readWriteTransaction()
+		}, () -> this.databaseClientProvider.get().readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
 					@Override
@@ -356,7 +357,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 									ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
 											new ReadWriteTransactionSpannerTemplate(
 													// @formatter:on
-										SpannerTemplate.this.databaseClient,
+										SpannerTemplate.this.databaseClientProvider,
 										SpannerTemplate.this.mappingContext,
 										SpannerTemplate.this.spannerEntityProcessor,
 										SpannerTemplate.this.mutationFactory,
@@ -377,11 +378,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
 			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
-					? this.databaseClient.readOnlyTransaction(
+					? this.databaseClientProvider.get().readOnlyTransaction(
 							TimestampBound.ofReadTimestamp(options.getTimestamp()))
-					: this.databaseClient.readOnlyTransaction()) {
+					: this.databaseClientProvider.get().readOnlyTransaction()) {
 				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
-						SpannerTemplate.this.databaseClient,
+						SpannerTemplate.this.databaseClientProvider,
 						SpannerTemplate.this.mappingContext,
 						SpannerTemplate.this.spannerEntityProcessor,
 						SpannerTemplate.this.mutationFactory,
@@ -499,7 +500,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			x.buffer(mutations);
 			return null;
 		}, () -> {
-			this.databaseClient.write(mutations);
+			this.databaseClientProvider.get().write(mutations);
 			return null;
 		});
 	}
