@@ -32,9 +32,6 @@ import static org.mockito.Mockito.when;
 
 public class DocumentOcrResultSetTests {
 
-	private static final byte[] SINGLE_JSON_OUTPUT_PAGE = "{'responses':[{'fullTextAnnotation': {'text': 'hello_world'}}]}"
-			.getBytes();
-
 	@Test
 	public void testValidateBlobNames() {
 		Blob blob = Mockito.mock(Blob.class);
@@ -71,26 +68,4 @@ public class DocumentOcrResultSetTests {
 				.isInstanceOf(IndexOutOfBoundsException.class);
 	}
 
-	@Test
-	public void testBlobCaching() throws InvalidProtocolBufferException {
-		Blob blob1 = Mockito.mock(Blob.class);
-		when(blob1.getName()).thenReturn("blob-output-1-to-1.json");
-		when(blob1.getContent()).thenReturn(SINGLE_JSON_OUTPUT_PAGE);
-
-		Blob blob2 = Mockito.mock(Blob.class);
-		when(blob2.getName()).thenReturn("blob-output-2-to-2.json");
-		when(blob2.getContent()).thenReturn(SINGLE_JSON_OUTPUT_PAGE);
-
-		ArrayList<Blob> blobs = new ArrayList<>();
-		blobs.add(blob1);
-		blobs.add(blob2);
-
-		DocumentOcrResultSet documentOcrResultSet = new DocumentOcrResultSet(blobs);
-
-		assertThat(documentOcrResultSet.getPage(2).getText()).isEqualTo("hello_world");
-		assertThat(documentOcrResultSet.getPage(2).getText()).isEqualTo("hello_world");
-
-		/* Retrieved content of blob2 twice, but getContent() only called once due to caching. */
-		verify(blob2, times(1)).getContent();
-	}
 }

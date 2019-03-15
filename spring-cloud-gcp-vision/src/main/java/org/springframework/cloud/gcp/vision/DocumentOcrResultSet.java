@@ -22,16 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.google.cloud.storage.Blob;
-import com.google.cloud.vision.v1.AnnotateFileResponse;
-import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 
 /**
  * Represents the parsed OCR content for an document in the provided range of pages.
@@ -40,11 +34,7 @@ import com.google.protobuf.util.JsonFormat;
  */
 public class DocumentOcrResultSet {
 
-	private static final Pattern OUTPUT_PAGE_PATTERN = Pattern.compile("output-(\\d+)-to-(\\d+)\\.json");
-
 	private final TreeMap<Integer, OcrPageRange> ocrPageRanges;
-
-	private final TreeMap<Integer, List<TextAnnotation>> documentPagesCache;
 
 	private final int minPage;
 
@@ -52,20 +42,14 @@ public class DocumentOcrResultSet {
 
 	DocumentOcrResultSet(Collection<Blob> pages) {
 		this.ocrPageRanges = new TreeMap<>();
-		this.documentPagesCache = new TreeMap<>();
 
-		int tmpMin = Integer.MAX_VALUE;
-		int tmpMax = Integer.MIN_VALUE;
 		for (Blob blob : pages) {
-			OcrPageRange pageRange = extractPageRange(blob);
-			ocrPageRanges.put(pageRange.startPage, pageRange);
-
-			tmpMin = Math.min(pageRange.startPage, tmpMin);
-			tmpMax = Math.max(pageRange.endPage, tmpMax);
+			OcrPageRange pageRange = new OcrPageRange(blob);
+			ocrPageRanges.put(pageRange.getStartPage(), pageRange);
 		}
 
-		this.minPage = tmpMin;
-		this.maxPage = tmpMax;
+		this.minPage = this.ocrPageRanges.firstEntry().getValue().getStartPage();
+		this.maxPage = this.ocrPageRanges.lastEntry().getValue().getEndPage();
 	}
 
 	/**
@@ -108,25 +92,8 @@ public class DocumentOcrResultSet {
 			throw new IndexOutOfBoundsException("Page number out of bounds: " + pageNumber);
 		}
 
-		int pageRangeFloorKey = this.ocrPageRanges.floorKey(pageNumber);
-		OcrPageRange pageRange = this.ocrPageRanges.get(pageRangeFloorKey);
-		if (pageNumber > pageRange.endPage) {
-			throw new IndexOutOfBoundsException(
-					"Page number not found in result set: " + pageNumber + ". "
-							+ "Could not find page in closest JSON output file: " + pageRange.blob.getName());
-		}
-
-		List<TextAnnotation> documentPages;
-		if (documentPagesCache.containsKey(pageRangeFloorKey)) {
-			documentPages = documentPagesCache.get(pageRangeFloorKey);
-		}
-		else {
-			documentPages = parseJsonBlob(pageRange.blob);
-			documentPagesCache.put(pageRangeFloorKey, documentPages);
-		}
-
-		int offsetIdx = pageNumber - pageRange.startPage;
-		return documentPages.get(offsetIdx);
+		OcrPageRange pageRange = ocrPageRanges.floorEntry(pageNumber).getValue();
+		return pageRange.getPage(pageNumber);
 	}
 
 	/**
@@ -160,12 +127,12 @@ public class DocumentOcrResultSet {
 					offset = 0;
 
 					try {
-						currentPageRange = parseJsonBlob(pageRange.blob);
+						currentPageRange = pageRange.getPages();
 					}
 					catch (InvalidProtocolBufferException e) {
 						throw new RuntimeException(
 								"Failed to parse OCR output from JSON output file "
-										+ pageRange.blob.getName(),
+										+ pageRange.getBlob().getName(),
 								e);
 					}
 				}
@@ -175,49 +142,5 @@ public class DocumentOcrResultSet {
 				return result;
 			}
 		};
-	}
-
-	private static List<TextAnnotation> parseJsonBlob(Blob blob)
-			throws InvalidProtocolBufferException {
-
-		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
-		String jsonContent = new String(blob.getContent());
-		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
-
-		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
-
-		return annotateFileResponse.getResponsesList().stream()
-				.map(AnnotateImageResponse::getFullTextAnnotation)
-				.collect(Collectors.toList());
-	}
-
-	private static OcrPageRange extractPageRange(Blob blob) {
-		Matcher matcher = OUTPUT_PAGE_PATTERN.matcher(blob.getName());
-		boolean success = matcher.find();
-
-		if (success) {
-			int startPage = Integer.parseInt(matcher.group(1));
-			int endPage = Integer.parseInt(matcher.group(2));
-			return new OcrPageRange(blob, startPage, endPage);
-		}
-		else {
-			throw new IllegalArgumentException(
-					"Cannot create a DocumentOcrResultSet with blob: " + blob.getName()
-							+ " Blob name does not contain suffix with the form: output-#-to-#.json");
-		}
-	}
-
-	private static class OcrPageRange {
-		private final Blob blob;
-
-		private final int startPage;
-
-		private final int endPage;
-
-		OcrPageRange(Blob blob, int startPage, int endPage) {
-			this.blob = blob;
-			this.startPage = startPage;
-			this.endPage = endPage;
-		}
 	}
 }
