@@ -32,7 +32,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
@@ -41,6 +40,8 @@ import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+
+import java.util.function.Supplier;
 
 /**
  * Spanner transaction manager.
@@ -51,9 +52,9 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * @since 1.1
  */
 public class SpannerTransactionManager extends AbstractPlatformTransactionManager {
-	private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
-	public SpannerTransactionManager(final DatabaseUtilityProvider databaseClientProvider) {
+	public SpannerTransactionManager(final Supplier databaseClientProvider) {
 		this.databaseClientProvider = databaseClientProvider;
 	}
 

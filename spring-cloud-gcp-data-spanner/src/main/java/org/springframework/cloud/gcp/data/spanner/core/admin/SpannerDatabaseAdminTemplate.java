@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -54,9 +55,9 @@ public class SpannerDatabaseAdminTemplate {
 
 	private final DatabaseAdminClient databaseAdminClient;
 
-	private final DatabaseUtilityProvider<DatabaseId> databaseIdProvider;
+	private final Supplier<DatabaseId> databaseIdProvider;
 
-	private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
 	/**
 	 * Constructor that takes in the database admin client used to perform operations and the
@@ -71,8 +72,8 @@ public class SpannerDatabaseAdminTemplate {
 	 *     billing and are not created automatically.
 	 */
 	public SpannerDatabaseAdminTemplate(DatabaseAdminClient databaseAdminClient,
-			DatabaseUtilityProvider<DatabaseClient> databaseClientProvider,
-			DatabaseUtilityProvider<DatabaseId> databaseIdProvider) {
+										Supplier<DatabaseClient> databaseClientProvider,
+										Supplier<DatabaseId> databaseIdProvider) {
 		Assert.notNull(databaseAdminClient, "A valid database admin client is required.");
 		Assert.notNull(databaseIdProvider, "A valid database ID is required.");
 		Assert.notNull(databaseClientProvider, "A valid database client is required.");

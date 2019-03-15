@@ -49,7 +49,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -88,7 +87,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
-	private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
 	private final SpannerMappingContext mappingContext;
 
@@ -100,7 +99,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
-	public SpannerTemplate(DatabaseUtilityProvider<DatabaseClient> databaseClientProvider,
+	public SpannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,

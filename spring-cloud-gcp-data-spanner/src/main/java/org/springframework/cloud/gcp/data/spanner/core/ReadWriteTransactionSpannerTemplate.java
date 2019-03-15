@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
@@ -26,7 +27,6 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -44,12 +44,12 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 
 	private TransactionContext transactionContext;
 
-	ReadWriteTransactionSpannerTemplate(DatabaseUtilityProvider<DatabaseClient> databaseClient,
-			SpannerMappingContext mappingContext,
-			SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMutationFactory spannerMutationFactory,
-			SpannerSchemaUtils spannerSchemaUtils,
-			TransactionContext transactionContext) {
+	ReadWriteTransactionSpannerTemplate(Supplier<DatabaseClient> databaseClient,
+										SpannerMappingContext mappingContext,
+										SpannerEntityProcessor spannerEntityProcessor,
+										SpannerMutationFactory spannerMutationFactory,
+										SpannerSchemaUtils spannerSchemaUtils,
+										TransactionContext transactionContext) {
 		super(databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 		this.transactionContext = transactionContext;

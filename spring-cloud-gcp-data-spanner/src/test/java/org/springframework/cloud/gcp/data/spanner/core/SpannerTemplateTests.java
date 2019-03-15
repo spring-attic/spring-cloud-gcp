@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -48,7 +49,6 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.CachingDatabaseUtilityProvider;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -136,10 +136,10 @@ public class SpannerTemplateTests {
 
 		AtomicInteger currentClient = new AtomicInteger(1);
 
-		DatabaseUtilityProvider<Integer> regionProvider = currentClient::getAndIncrement;
+		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
 
 		// this client selector will alternate between the two clients
-		DatabaseUtilityProvider<DatabaseClient> clientProvider = new CachingDatabaseUtilityProvider<>(regionProvider,
+		Supplier<DatabaseClient> clientProvider = new CachingDatabaseUtilityProvider<>(regionProvider,
 				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
 
 		SpannerTemplate template = new SpannerTemplate(clientProvider,

@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.admin;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A provider of database-related objects that relies on another provider and caches
@@ -28,11 +29,11 @@ import java.util.function.Function;
  * @param <U> the type of objects this provider bases its products on.
  * @author Chengyuan Zhao
  */
-public class CachingDatabaseUtilityProvider<T, U> implements DatabaseUtilityProvider<T> {
+public class CachingDatabaseUtilityProvider<T, U> implements Supplier<T> {
 
 	private final Map<U, T> products = new ConcurrentHashMap<>();
 
-	private final DatabaseUtilityProvider<U> inputProvider;
+	private final Supplier<U> inputProvider;
 
 	private final Function<U, T> producer;
 
@@ -41,7 +42,7 @@ public class CachingDatabaseUtilityProvider<T, U> implements DatabaseUtilityProv
 	 * @param inputProvider the provider that gives inputs for each product of this provider.
 	 * @param producer the function that returns products of this provider given inputs.
 	 */
-	public CachingDatabaseUtilityProvider(DatabaseUtilityProvider<U> inputProvider, Function<U, T> producer) {
+	public CachingDatabaseUtilityProvider(Supplier<U> inputProvider, Function<U, T> producer) {
 		this.inputProvider = inputProvider;
 		this.producer = producer;
 	}
