@@ -1345,13 +1345,13 @@ You can also set a custom provider for properties annotated `@LastModifiedDate` 
 
 === Multi-Instance Usage
 
-Your application can be configured to use multiple Cloud Spanner instances or databases by providing a custom bean for `Supplier<DatabaseId>`.
+Your application can be configured to use multiple Cloud Spanner instances or databases by providing a custom bean for `DatabaseIdProvider`.
 The default bean uses the instance ID, database name, and project ID options you configured in `application.properties`.
 
 [source,java]
 ----
     @Bean
-    public Supplier<DatabaseId> databaseIdProvider() {
+    public DatabaseIdProvider databaseIdProvider() {
         // return custom connection options provider
     }
 ----
@@ -1359,7 +1359,9 @@ The default bean uses the instance ID, database name, and project ID options you
 The `DatabaseId` given by this provider is used as the target database name and instance of each operation Spring Data Cloud Spanner executes.
 By providing a custom implementation of this bean (for example, supplying a thread-local `DatabaseId`), you can direct your application to use multiple instances or databases because.
 
-If you would like to configure every aspect of the connection (such as pool size and retry settings), you can supply a bean for `Supplier<DatabaseClient>`.
+Database administrative operations, such as creating tables using `SpannerDatabaseAdminTemplate`, will also utilize the provided `DatabaseId`.
+
+If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for `Supplier<DatabaseClient>`.
 
 === Sample
 

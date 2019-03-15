@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
+import java.util.function.Supplier;
+
 import com.google.cloud.spanner.DatabaseClient;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -25,7 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseUtilityProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -48,11 +49,11 @@ public class SpannerTransactionManagerAutoConfiguration {
 	@Configuration
 	static class DatabaseClientTransactionManagerConfiguration {
 
-		private final DatabaseUtilityProvider<DatabaseClient> databaseClientProvider;
+		private final Supplier<DatabaseClient> databaseClientProvider;
 
 		private final TransactionManagerCustomizers transactionManagerCustomizers;
 
-		DatabaseClientTransactionManagerConfiguration(DatabaseUtilityProvider<DatabaseClient> databaseClientProvider,
+		DatabaseClientTransactionManagerConfiguration(Supplier<DatabaseClient> databaseClientProvider,
 				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
 			this.databaseClientProvider = databaseClientProvider;
 			this.transactionManagerCustomizers = transactionManagerCustomizers

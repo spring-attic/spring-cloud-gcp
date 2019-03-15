@@ -45,11 +45,11 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	private ReadOnlyTransaction readOnlyTransaction;
 
 	ReadOnlyTransactionSpannerTemplate(Supplier<DatabaseClient> databaseClient,
-									   SpannerMappingContext mappingContext,
-									   SpannerEntityProcessor spannerEntityProcessor,
-									   SpannerMutationFactory spannerMutationFactory,
-									   SpannerSchemaUtils spannerSchemaUtils,
-									   ReadOnlyTransaction readOnlyTransaction) {
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMutationFactory spannerMutationFactory,
+			SpannerSchemaUtils spannerSchemaUtils,
+			ReadOnlyTransaction readOnlyTransaction) {
 		super(databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 		this.readOnlyTransaction = readOnlyTransaction;

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import com.google.cloud.spanner.AbortedException;
@@ -40,8 +42,6 @@ import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
-
-import java.util.function.Supplier;
 
 /**
  * Spanner transaction manager.
