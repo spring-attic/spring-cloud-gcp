@@ -16,8 +16,6 @@
 
 package com.example;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.After;
@@ -109,7 +107,7 @@ public class SpannerRepositoryMultiDatabaseTests {
 	@Configuration
 	static class Config {
 
-		static AtomicBoolean databaseFlipper = new AtomicBoolean(false);
+		static boolean databaseFlipper;
 
 		@Value("${spring.cloud.gcp.spanner.instance-id}")
 		String instanceId;
@@ -118,13 +116,13 @@ public class SpannerRepositoryMultiDatabaseTests {
 		 * Flips the database connection that all repositories and templates use.
 		 */
 		static void flipDatabase() {
-			databaseFlipper.set(!databaseFlipper.get());
+			databaseFlipper = !databaseFlipper;
 		}
 
 		@Bean
 		public DatabaseIdProvider databaseIdProvider(SpannerOptions spannerOptions) {
 			return () -> DatabaseId.of(spannerOptions.getProjectId(), this.instanceId,
-					databaseFlipper.get() ? "db1" : "db2");
+					databaseFlipper ? "db1" : "db2");
 		}
 	}
 
