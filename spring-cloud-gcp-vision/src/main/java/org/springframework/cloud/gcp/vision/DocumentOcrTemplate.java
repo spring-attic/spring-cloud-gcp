@@ -30,8 +30,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.BlobListOption;
-import com.google.cloud.vision.v1.AnnotateFileResponse;
-import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.AsyncAnnotateFileRequest;
 import com.google.cloud.vision.v1.AsyncBatchAnnotateFilesResponse;
 import com.google.cloud.vision.v1.Feature;
@@ -44,7 +42,6 @@ import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.cloud.vision.v1.OutputConfig;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.util.JsonFormat;
 
 import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
 import org.springframework.util.Assert;
@@ -197,18 +194,6 @@ public class DocumentOcrTemplate {
 		Blob jsonOutputBlob = this.storage.get(
 				BlobId.of(jsonFile.getBucketName(), jsonFile.getBlobName()));
 		return new DocumentOcrResultSet(Collections.singletonList(jsonOutputBlob));
-	}
-
-	static List<TextAnnotation> parseJsonBlob(Blob blob) throws InvalidProtocolBufferException {
-		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
-		String jsonContent = new String(blob.getContent());
-		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
-
-		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
-
-		return annotateFileResponse.getResponsesList().stream()
-				.map(AnnotateImageResponse::getFullTextAnnotation)
-				.collect(Collectors.toList());
 	}
 
 	private ListenableFuture<DocumentOcrResultSet> extractOcrResultFuture(

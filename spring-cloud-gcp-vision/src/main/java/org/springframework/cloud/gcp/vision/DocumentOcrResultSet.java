@@ -20,15 +20,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.cloud.storage.Blob;
+import com.google.cloud.vision.v1.AnnotateFileResponse;
+import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 
 /**
  * Represents the parsed OCR content for an document in the provided range of pages.
@@ -41,12 +44,15 @@ public class DocumentOcrResultSet {
 
 	private final TreeMap<Integer, OcrPageRange> ocrPageRanges;
 
+	private final TreeMap<Integer, List<TextAnnotation>> documentPagesCache;
+
 	private final int minPage;
 
 	private final int maxPage;
 
 	DocumentOcrResultSet(Collection<Blob> pages) {
 		this.ocrPageRanges = new TreeMap<>();
+		this.documentPagesCache = new TreeMap<>();
 
 		for (Blob blob : pages) {
 			OcrPageRange pageRange = extractPageRange(blob);
@@ -104,17 +110,24 @@ public class DocumentOcrResultSet {
 			throw new IndexOutOfBoundsException("Page number out of bounds: " + pageNumber);
 		}
 
-		Map.Entry<Integer, OcrPageRange> floorEntry = this.ocrPageRanges.floorEntry(pageNumber);
-		OcrPageRange pageRange = floorEntry.getValue();
-		List<TextAnnotation> documentPages = DocumentOcrTemplate.parseJsonBlob(pageRange.blob);
-
-		int offsetIdx = pageNumber - pageRange.startPage;
-		if (offsetIdx >= documentPages.size()) {
+		int pageRangeFloorKey = this.ocrPageRanges.floorKey(pageNumber);
+		OcrPageRange pageRange = this.ocrPageRanges.get(pageRangeFloorKey);
+		if (pageNumber > pageRange.endPage) {
 			throw new IndexOutOfBoundsException(
 					"Page number not found in result set: " + pageNumber + ". "
-					+ "Could not find page in closest JSON output file: " + pageRange.blob.getName());
+							+ "Could not find page in closest JSON output file: " + pageRange.blob.getName());
 		}
 
+		List<TextAnnotation> documentPages;
+		if (documentPagesCache.containsKey(pageRangeFloorKey)) {
+			documentPages = documentPagesCache.get(pageRangeFloorKey);
+		}
+		else {
+			documentPages = parseJsonBlob(pageRange.blob);
+			documentPagesCache.put(pageRangeFloorKey, documentPages);
+		}
+
+		int offsetIdx = pageNumber - pageRange.startPage;
 		return documentPages.get(offsetIdx);
 	}
 
@@ -149,7 +162,7 @@ public class DocumentOcrResultSet {
 					offset = 0;
 
 					try {
-						currentPageRange = DocumentOcrTemplate.parseJsonBlob(pageRange.blob);
+						currentPageRange = parseJsonBlob(pageRange.blob);
 					}
 					catch (InvalidProtocolBufferException e) {
 						throw new RuntimeException(
@@ -164,6 +177,20 @@ public class DocumentOcrResultSet {
 				return result;
 			}
 		};
+	}
+
+	private static List<TextAnnotation> parseJsonBlob(Blob blob)
+			throws InvalidProtocolBufferException {
+
+		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
+		String jsonContent = new String(blob.getContent());
+		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
+
+		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
+
+		return annotateFileResponse.getResponsesList().stream()
+				.map(AnnotateImageResponse::getFullTextAnnotation)
+				.collect(Collectors.toList());
 	}
 
 	private static OcrPageRange extractPageRange(Blob blob) {

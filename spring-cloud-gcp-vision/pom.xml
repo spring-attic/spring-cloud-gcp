@@ -28,6 +28,7 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-storage</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Integration Test Dependencies -->

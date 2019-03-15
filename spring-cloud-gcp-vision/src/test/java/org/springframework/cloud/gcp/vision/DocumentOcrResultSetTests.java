@@ -16,20 +16,24 @@
 
 package org.springframework.cloud.gcp.vision;
 
-import com.google.cloud.vision.v1.TextAnnotation;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import com.google.cloud.storage.Blob;
-import java.util.List;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DocumentOcrResultSetTests {
+
+	private static final byte[] SINGLE_JSON_OUTPUT_PAGE = "{'responses':[{'fullTextAnnotation': {'text': 'hello_world'}}]}"
+			.getBytes();
 
 	@Test
 	public void testValidateBlobNames() {
@@ -65,5 +69,28 @@ public class DocumentOcrResultSetTests {
 		assertThatThrownBy(() -> documentOcrResultSet.getPage(8))
 				.hasMessageContaining("Page number out of bounds")
 				.isInstanceOf(IndexOutOfBoundsException.class);
+	}
+
+	@Test
+	public void testBlobCaching() throws InvalidProtocolBufferException {
+		Blob blob1 = Mockito.mock(Blob.class);
+		when(blob1.getName()).thenReturn("blob-output-1-to-1.json");
+		when(blob1.getContent()).thenReturn(SINGLE_JSON_OUTPUT_PAGE);
+
+		Blob blob2 = Mockito.mock(Blob.class);
+		when(blob2.getName()).thenReturn("blob-output-2-to-2.json");
+		when(blob2.getContent()).thenReturn(SINGLE_JSON_OUTPUT_PAGE);
+
+		ArrayList<Blob> blobs = new ArrayList<>();
+		blobs.add(blob1);
+		blobs.add(blob2);
+
+		DocumentOcrResultSet documentOcrResultSet = new DocumentOcrResultSet(blobs);
+
+		assertThat(documentOcrResultSet.getPage(2).getText()).isEqualTo("hello_world");
+		assertThat(documentOcrResultSet.getPage(2).getText()).isEqualTo("hello_world");
+
+		/* Retrieved content of blob2 twice, but getContent() only called once due to caching. */
+		verify(blob2, times(1)).getContent();
 	}
 }

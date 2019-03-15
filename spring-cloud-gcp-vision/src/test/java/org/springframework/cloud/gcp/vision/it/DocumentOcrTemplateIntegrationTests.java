@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.vision.it;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,10 +48,10 @@ public class DocumentOcrTemplateIntegrationTests {
 
 	@BeforeClass
 	public static void prepare() {
-		// assumeThat(System.getProperty("it.vision"))
-		// 		.as("Vision Sample integration tests are disabled. "
-		// 				+ "Please use '-Dit.vision=true' to enable them.")
-		// 		.isEqualTo("true");
+		assumeThat(System.getProperty("it.vision"))
+				.as("Vision Sample integration tests are disabled. "
+						+ "Please use '-Dit.vision=true' to enable them.")
+				.isEqualTo("true");
 	}
 
 	@Test
