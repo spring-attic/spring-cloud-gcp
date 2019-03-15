@@ -73,7 +73,7 @@ public class SpannerTransactionManagerTests {
 		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
 		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
 
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -93,7 +93,7 @@ public class SpannerTransactionManagerTests {
 		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
 		ReflectionTestUtils.setField(tx, "transactionManager", transactionManagerAborted);
 
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -116,7 +116,7 @@ public class SpannerTransactionManagerTests {
 		TransactionManager transactionManagerNew = Mockito.mock(TransactionManager.class);
 		Mockito.when(transactionManagerNew.getState()).thenReturn(TransactionState.STARTED);
 		Mockito.when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return null;
@@ -142,7 +142,7 @@ public class SpannerTransactionManagerTests {
 		TransactionDefinition definition = new DefaultTransactionDefinition();
 		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
 		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -169,7 +169,7 @@ public class SpannerTransactionManagerTests {
 
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -190,7 +190,7 @@ public class SpannerTransactionManagerTests {
 
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -217,7 +217,7 @@ public class SpannerTransactionManagerTests {
 
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -245,7 +245,7 @@ public class SpannerTransactionManagerTests {
 
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -266,7 +266,7 @@ public class SpannerTransactionManagerTests {
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
 
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;
@@ -287,7 +287,7 @@ public class SpannerTransactionManagerTests {
 
 		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
 		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(this.databaseClient) {
+		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
 			protected Tx getCurrentTX() {
 				return tx;

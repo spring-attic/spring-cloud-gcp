@@ -46,7 +46,7 @@ However, if Sleuth is used the trace ID will be picked up from the MDC.
 Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback: via direct API calls and through JSON-formatted console logs.
 
 ==== Log via API
-A Stackdriver appender is available using `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml`.
+A Stackdriver appender is available using `org/springframework/cloud/gcp/logging/logback-appender.xml`.
 This appender builds a Stackdriver Logging log entry from a JUL or Logback log entry, adds a trace ID to it and sends it to Stackdriver Logging.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the `STACKDRIVER` appender.
@@ -55,7 +55,7 @@ Your configuration may then look like this:
 [source, xml]
 ----
 <configuration>
-  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="STACKDRIVER" />
@@ -78,13 +78,13 @@ This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variabl
 
 ==== Log via Console
 
-For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml` file is made available for import to make it easier to configure the JSON Logback appender.
+For Logback, a `org/springframework/cloud/gcp/logging/logback-json-appender.xml` file is made available for import to make it easier to configure the JSON Logback appender.
 
 Your configuration may then look something like this:
 [source, xml]
 ----
 <configuration>
-  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="CONSOLE_JSON" />
@@ -93,7 +93,7 @@ Your configuration may then look something like this:
 ----
 
 If your application is running on Google Kubernetes Engine, Google Compute Engine or Google App Engine Flexible, your console logging is automatically saved to Google Stackdriver Logging.
-Therefore, you can just include `org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml` in your logging configuration, which logs JSON entries to the console.
+Therefore, you can just include `org/springframework/cloud/gcp/logging/logback-json-appender.xml` in your logging configuration, which logs JSON entries to the console.
 The trace id will be set correctly.
 
 If you want to have more control over the log output, you can further configure the appender.

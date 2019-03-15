@@ -38,17 +38,18 @@
 		<module>spring-cloud-gcp-security-iap</module>
 		<module>spring-cloud-gcp-vision</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>
+		<module>spring-cloud-gcp-logging</module>
 	</modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-commons.version>2.1.1.BUILD-SNAPSHOT</spring-cloud-commons.version>
-		<spring-cloud-sleuth.version>2.1.1.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
+		<spring-cloud-commons.version>2.1.2.BUILD-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-sleuth.version>2.1.2.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.9.0</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
-		<kotlin.version>1.3.10</kotlin.version>
+		<kotlin.version>1.3.21</kotlin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -195,10 +196,10 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<links>
-						<link>http://docs.oracle.com/javase/7/docs/api/</link>
-						<link>http://docs.oracle.com/javaee/7/api/</link>
-						<link>http://fasterxml.github.com/jackson-core/javadoc/2.0.0/</link>
-						<link>http://docs.spring.io/spring/docs/4.1.x/javadoc-api/</link>
+						<link>https://docs.oracle.com/javase/7/docs/api/</link>
+						<link>https://docs.oracle.com/javaee/7/api/</link>
+						<link>https://fasterxml.github.com/jackson-core/javadoc/2.0.0/</link>
+						<link>https://docs.spring.io/spring/docs/4.1.x/javadoc-api/</link>
 					</links>
 					<author>true</author>
 					<header>${project.name}</header>

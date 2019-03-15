@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -23,7 +25,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.KeyFactory;
-import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,7 +58,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration
 public class DatastoreTemplateAuditingTests {
 
-	private static final DateTime LONG_AGO = DateTime.parse("2000-01-01");
+	private static final LocalDateTime LONG_AGO = LocalDate.parse("2000-01-01").atStartOfDay();
 
 	@Autowired
 	DatastoreTemplate datastoreTemplate;
@@ -116,7 +117,7 @@ public class DatastoreTemplateAuditingTests {
 						FullEntity testEntity = invocation.getArgument(0);
 						assertThat(testEntity.getTimestamp("lastTouched")).isNotNull();
 						assertThat(testEntity.getTimestamp("lastTouched"))
-								.isGreaterThan(Timestamp.of(LONG_AGO.toDate()));
+								.isGreaterThan(Timestamp.of(java.sql.Timestamp.valueOf(LONG_AGO)));
 						assertThat(testEntity.getString("lastUser")).isEqualTo("test_user");
 						return null;
 					});
@@ -139,6 +140,6 @@ public class DatastoreTemplateAuditingTests {
 		String lastUser;
 
 		@LastModifiedDate
-		DateTime lastTouched;
+		LocalDateTime lastTouched;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.example;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
-import org.joda.time.DateTime;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -161,7 +161,7 @@ public class ApplicationTests {
 								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
 
 		assertThat(singer3.getLastModifiedTime())
-				.isGreaterThan(DateTime.parse("2000-01-01"));
+				.isAfter(LocalDateTime.parse("2000-01-01T00:00:00"));
 
 		assertThat(baos.toString()).contains("Query by example\n" +
 				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,22 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * MVC Adapter that adds the {@link TraceIdLoggingWebMvcInterceptor}.
  *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ *
+ * @deprecated use {@link org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer}
  */
 @Configuration
-public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
-
-	private final TraceIdLoggingWebMvcInterceptor interceptor;
-
-	/**
-	 * Constructor that accepts an {@link TraceIdLoggingWebMvcInterceptor}. If the given
-	 * interceptor is null, then a default {@link XCloudTraceIdExtractor} is used.
-	 * @param interceptor the interceptor to use with this configurer. If not provided a
-	 * {@link TraceIdLoggingWebMvcInterceptor} is used with the trace ID extractor
-	 * described above.
-	 * @param projectIdProvider the project ID provider to use
-	 */
-	public LoggingWebMvcConfigurer(
-			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor,
+@Deprecated
+public class LoggingWebMvcConfigurer extends org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer {
+	public LoggingWebMvcConfigurer(TraceIdLoggingWebMvcInterceptor interceptor,
 			GcpProjectIdProvider projectIdProvider) {
-		if (interceptor != null) {
-			this.interceptor = interceptor;
-		}
-		else {
-			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
-					new XCloudTraceIdExtractor());
-		}
-	}
-
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(this.interceptor);
+		super(interceptor, projectIdProvider);
 	}
 }

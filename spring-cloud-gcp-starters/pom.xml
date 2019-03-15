@@ -14,7 +14,7 @@
 	<artifactId>spring-cloud-gcp-starters</artifactId>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
-		<url>http://www.spring.io</url>
+		<url>https://www.spring.io</url>
 	</organization>
 	<properties>
 		<main.basedir>${basedir}/..</main.basedir>

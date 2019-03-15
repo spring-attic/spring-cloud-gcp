@@ -18,12 +18,8 @@
 			<artifactId>spring-cloud-gcp-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback.contrib</groupId>
-			<artifactId>logback-json-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-logging-logback</artifactId>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-logging</artifactId>
 		</dependency>
 	</dependencies>
 </project>
