@@ -30,6 +30,7 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.repository.query.CursorPageable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -156,6 +157,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
 				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"), null)));
+		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
 	@Test
@@ -166,6 +168,21 @@ public class SimpleDatastoreRepositoryTests {
 						Sort.by(
 								new Sort.Order(Sort.Direction.DESC, "property1"),
 								new Sort.Order(Sort.Direction.DESC, "property2")), null)));
+		verify(this.datastoreTemplate, times(1)).count(any());
+	}
+
+	@Test
+	public void findAllPageableCursor() {
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		Pageable pageable = CursorPageable.from(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"),
+				cursor, 10L);
+		this.simpleDatastoreRepository.findAll(pageable);
+		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
+				eq(new DatastoreQueryOptions(5, 5,
+						Sort.by(
+								new Sort.Order(Sort.Direction.DESC, "property1"),
+								new Sort.Order(Sort.Direction.DESC, "property2")), cursor)));
+		verify(this.datastoreTemplate, times(0)).count(any());
 	}
 
 	@Test

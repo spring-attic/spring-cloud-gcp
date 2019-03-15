@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -178,7 +177,7 @@ public interface DatastoreOperations {
 	 * @param <T> the type param of the domain type.
 	 * @return the entities that were found.
 	 */
-	<T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions);
+	<T> DatastoreResultsCollection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions);
 
 	/**
 	 * Check if the given ID belongs to an entity in Cloud Datastore. If this is actually

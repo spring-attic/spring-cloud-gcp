@@ -307,15 +307,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
+	public <T> DatastoreResultsCollection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
 		applyQueryOptions(builder, queryOptions, persistentEntity);
 		Query query = builder.build();
-		Collection<T> convertedResults = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		QueryResults queryResults = getDatastoreReadWriter().run(query);
+		Collection<T> convertedResults = convertEntitiesForRead(queryResults, entityClass);
 		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
-		return convertedResults;
+		return new DatastoreResultsCollection<>(convertedResults,
+				queryResults != null ? queryResults.getCursorAfter() : null);
 	}
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,

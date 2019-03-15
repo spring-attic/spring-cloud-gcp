@@ -24,8 +24,8 @@ import com.google.cloud.datastore.Cursor;
  * @author Dmitry Solomakha
  */
 public class DatastoreResultsIterable<T> implements Iterable<T> {
-	Iterator<T> iterator;
-	Cursor cursor;
+	private final Iterator<T> iterator;
+	private final Cursor cursor;
 
 	public DatastoreResultsIterable(Iterable<T> iterable, Cursor cursor) {
 		this(iterable.iterator(), cursor);

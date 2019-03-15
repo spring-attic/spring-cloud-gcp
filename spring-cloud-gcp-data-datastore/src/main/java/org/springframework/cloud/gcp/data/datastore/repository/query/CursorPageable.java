@@ -25,9 +25,9 @@ import org.springframework.data.domain.Pageable;
  * @author Dmitry Solomakha
  */
 public class CursorPageable extends PageRequest {
-	Cursor cursor;
+	private final Cursor cursor;
 
-	Long totalCount;
+	private final Long totalCount;
 
 	CursorPageable(Pageable pageable, Cursor cursor, Long totalCount) {
 		super(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
