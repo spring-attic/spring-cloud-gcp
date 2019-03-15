@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
@@ -54,32 +55,31 @@ public class SpannerDatabaseAdminTemplate {
 
 	private final DatabaseAdminClient databaseAdminClient;
 
-	private final DatabaseId databaseId;
+	private final Supplier<DatabaseId> databaseIdProvider;
 
-	private final DatabaseClient databaseClient;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
 	/**
-	 * Constructor that takes in the database admin client used to perform operations and
-	 * the {@link DatabaseId} object holding the project, instance, and database IDs used
-	 * for all operations. While operations can be optionally performed for a database
-	 * that does not yet exist, the project and instance IDs must already exist for
-	 * Spanner.
+	 * Constructor that takes in the database admin client used to perform operations and the
+	 * {@link DatabaseId} object holding the project, instance, and database IDs used for all
+	 * operations. While operations can be optionally performed for a database that does not
+	 * yet exist, the project and instance IDs must already exist for Spanner.
 	 * @param databaseAdminClient the client used to create databases and execute DDL
-	 * statements.
-	 * @param databaseClient the client used to access schema information tables.
-	 * @param databaseId the combination of Cloud Spanner Instance Id and Database Id. While
-	 * databases can be created automatically by this template, instances determine
-	 * billing and are not created automatically.
+	 *     statements.
+	 * @param databaseClientProvider the client used to access schema information tables.
+	 * @param databaseIdProvider the combination of Cloud Spanner Instance Id and Database Id.
+	 *     While databases can be created automatically by this template, instances determine
+	 *     billing and are not created automatically.
 	 */
 	public SpannerDatabaseAdminTemplate(DatabaseAdminClient databaseAdminClient,
-			DatabaseClient databaseClient,
-			DatabaseId databaseId) {
+										Supplier<DatabaseClient> databaseClientProvider,
+										Supplier<DatabaseId> databaseIdProvider) {
 		Assert.notNull(databaseAdminClient, "A valid database admin client is required.");
-		Assert.notNull(databaseId, "A valid database ID is required.");
-		Assert.notNull(databaseClient, "A valid database client is required.");
+		Assert.notNull(databaseIdProvider, "A valid database ID is required.");
+		Assert.notNull(databaseClientProvider, "A valid database client is required.");
 		this.databaseAdminClient = databaseAdminClient;
-		this.databaseId = databaseId;
-		this.databaseClient = databaseClient;
+		this.databaseIdProvider = databaseIdProvider;
+		this.databaseClientProvider = databaseClientProvider;
 	}
 
 	/**
@@ -94,8 +94,7 @@ public class SpannerDatabaseAdminTemplate {
 			boolean createDatabase) {
 		try {
 			if (createDatabase && !this.databaseExists()) {
-				this.databaseAdminClient
-						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
+				this.databaseAdminClient.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
 						.get();
 			}
 			else {
@@ -117,7 +116,7 @@ public class SpannerDatabaseAdminTemplate {
 	 * @return the instance ID string.
 	 */
 	public String getInstanceId() {
-		return this.databaseId.getInstanceId().getInstance();
+		return this.databaseIdProvider.get().getInstanceId().getInstance();
 	}
 
 	/**
@@ -125,7 +124,7 @@ public class SpannerDatabaseAdminTemplate {
 	 * @return the database ID string.
 	 */
 	public String getDatabase() {
-		return this.databaseId.getDatabase();
+		return this.databaseIdProvider.get().getDatabase();
 	}
 
 	/**
@@ -150,7 +149,7 @@ public class SpannerDatabaseAdminTemplate {
 	 */
 	public Map<String, String> getChildParentTablesMap() {
 		Map<String, String> relationships = new HashMap<>();
-		ResultSet results = this.databaseClient.singleUse()
+		ResultSet results = this.databaseClientProvider.get().singleUse()
 				.executeQuery(TABLE_AND_PARENT_QUERY);
 		while (results.next()) {
 			Struct row = results.getCurrentRowAsStruct();

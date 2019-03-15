@@ -131,7 +131,7 @@ public class IntegrationTestConfiguration {
 			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
 			SpannerSchemaUtils spannerSchemaUtils) {
-		return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
+		return new SpannerTemplate(() -> databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 	}
 
@@ -143,7 +143,7 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerTransactionManager spannerTransactionManager(
 			DatabaseClient databaseClient) {
-		return new SpannerTransactionManager(databaseClient);
+		return new SpannerTransactionManager(() -> databaseClient);
 	}
 
 	@Bean
@@ -170,6 +170,6 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
 			DatabaseAdminClient databaseAdminClient, DatabaseClient databaseClient, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseClient, databaseId);
+		return new SpannerDatabaseAdminTemplate(databaseAdminClient, () -> databaseClient, () -> databaseId);
 	}
 }

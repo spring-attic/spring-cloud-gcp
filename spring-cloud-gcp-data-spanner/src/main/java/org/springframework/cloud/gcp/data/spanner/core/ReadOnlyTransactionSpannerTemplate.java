@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Collection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
@@ -43,7 +44,7 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 
 	private ReadOnlyTransaction readOnlyTransaction;
 
-	ReadOnlyTransactionSpannerTemplate(DatabaseClient databaseClient,
+	ReadOnlyTransactionSpannerTemplate(Supplier<DatabaseClient> databaseClient,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,

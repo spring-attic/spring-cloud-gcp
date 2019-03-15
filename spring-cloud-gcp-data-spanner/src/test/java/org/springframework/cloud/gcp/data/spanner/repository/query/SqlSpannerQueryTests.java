@@ -98,7 +98,7 @@ public class SqlSpannerQueryTests {
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(SpannerQueryMethod.class);
-		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
+		this.spannerTemplate = spy(new SpannerTemplate(() -> mock(DatabaseClient.class),
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
 						this.spannerMappingContext, this.spannerEntityProcessor, true)));

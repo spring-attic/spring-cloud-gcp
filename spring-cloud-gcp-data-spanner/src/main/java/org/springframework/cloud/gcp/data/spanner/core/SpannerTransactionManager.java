@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import com.google.cloud.spanner.AbortedException;
@@ -50,10 +52,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * @since 1.1
  */
 public class SpannerTransactionManager extends AbstractPlatformTransactionManager {
-	private final DatabaseClient databaseClient;
+	private final Supplier<DatabaseClient> databaseClientProvider;
 
-	public SpannerTransactionManager(final DatabaseClient databaseClient) {
-		this.databaseClient = databaseClient;
+	public SpannerTransactionManager(final Supplier databaseClientProvider) {
+		this.databaseClientProvider = databaseClientProvider;
 	}
 
 	protected Tx getCurrentTX() {
@@ -77,7 +79,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		// create a new one if current is not there
 		tx = new Tx();
-		tx.transactionManager = this.databaseClient.transactionManager();
+		tx.transactionManager = this.databaseClientProvider.get().transactionManager();
 		logger.debug(tx + " create; state = " + tx.transactionManager.getState());
 		return tx;
 	}
@@ -96,7 +98,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		Tx tx = (Tx) transactionObject;
 		if (transactionDefinition.isReadOnly()) {
-			final ReadContext targetTransactionContext = this.databaseClient
+			final ReadContext targetTransactionContext = this.databaseClientProvider.get()
 					.readOnlyTransaction();
 
 			tx.transactionContext = new TransactionContext() {
