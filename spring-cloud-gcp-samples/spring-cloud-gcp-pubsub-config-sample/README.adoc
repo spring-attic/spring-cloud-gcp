@@ -1,0 +1,9 @@
+= Spring Cloud GCP Pub/Sub Configuration Management Code Sample
+
+TBD
+RefreshEndpointAutoConfiguration
+curl -X POST http://localhost:8080/actuator/bus-refresh
+
+
+To manually update property:
+curl -X POST http://localhost:8080/actuator/bus-env -H "Content-Type: application/json" -d '{"name": "example.message", "value": "blah"}'

@@ -1,0 +1,5 @@
+== Spring Cloud Bus
+
+Spring Cloud Bus integration is as simple as importing two dependencies: spring-cloud-bus and spring-cloud-gcp-pubsub-stream-binder.
+
+TBD
