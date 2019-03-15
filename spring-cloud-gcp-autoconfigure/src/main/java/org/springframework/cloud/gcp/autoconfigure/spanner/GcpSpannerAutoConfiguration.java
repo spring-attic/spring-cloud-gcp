@@ -42,7 +42,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.admin.CachingDatabaseUtilityProvider;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
@@ -176,7 +176,7 @@ public class GcpSpannerAutoConfiguration {
 		@ConditionalOnMissingBean(value = DatabaseClient.class, parameterizedContainer = Supplier.class)
 		public Supplier<DatabaseClient> databaseClientProvider(
 				Spanner spanner, Supplier<DatabaseId> databaseIdProvider) {
-			return new CachingDatabaseUtilityProvider<>(databaseIdProvider, spanner::getDatabaseClient);
+			return new CachingComposingSupplier<>(databaseIdProvider, spanner::getDatabaseClient);
 		}
 
 		@Bean

@@ -48,7 +48,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.spanner.core.admin.CachingDatabaseUtilityProvider;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -139,7 +139,7 @@ public class SpannerTemplateTests {
 		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
 
 		// this client selector will alternate between the two clients
-		Supplier<DatabaseClient> clientProvider = new CachingDatabaseUtilityProvider<>(regionProvider,
+		Supplier<DatabaseClient> clientProvider = new CachingComposingSupplier<>(regionProvider,
 				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
 
 		SpannerTemplate template = new SpannerTemplate(clientProvider,

@@ -22,14 +22,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * A provider of database-related objects that relies on another provider and caches
+ * A supplier of objects that relies on another supplier and caches
  * provided results.
  *
- * @param <T> the type of objects this provider produces.
- * @param <U> the type of objects this provider bases its products on.
+ * @param <T> the type of objects this supplier produces.
+ * @param <U> the type of objects this supplier bases its products on.
  * @author Chengyuan Zhao
  */
-public class CachingDatabaseUtilityProvider<T, U> implements Supplier<T> {
+public class CachingComposingSupplier<T, U> implements Supplier<T> {
 
 	private final Map<U, T> products = new ConcurrentHashMap<>();
 
@@ -42,7 +42,7 @@ public class CachingDatabaseUtilityProvider<T, U> implements Supplier<T> {
 	 * @param inputProvider the provider that gives inputs for each product of this provider.
 	 * @param producer the function that returns products of this provider given inputs.
 	 */
-	public CachingDatabaseUtilityProvider(Supplier<U> inputProvider, Function<U, T> producer) {
+	public CachingComposingSupplier(Supplier<U> inputProvider, Function<U, T> producer) {
 		this.inputProvider = inputProvider;
 		this.producer = producer;
 	}
