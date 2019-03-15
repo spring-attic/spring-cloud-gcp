@@ -190,7 +190,8 @@ $(addBlockSwitches);
 <li><a href="#_database_and_schema_admin">12.6. Database and Schema Admin</a></li>
 <li><a href="#_events">12.7. Events</a></li>
 <li><a href="#_auditing">12.8. Auditing</a></li>
-<li><a href="#_sample_9">12.9. Sample</a></li>
+<li><a href="#_multi_instance_usage">12.9. Multi-Instance Usage</a></li>
+<li><a href="#_sample_9">12.10. Sample</a></li>
 </ul>
 </li>
 <li><a href="#_spring_data_cloud_datastore">13. Spring Data Cloud Datastore</a>
@@ -5055,7 +5056,32 @@ One alternative is to use Spring Security&#8217;s <code>User</code> type:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sample_9"><a class="link" href="#_sample_9">12.9. Sample</a></h3>
+<h3 id="_multi_instance_usage"><a class="link" href="#_multi_instance_usage">12.9. Multi-Instance Usage</a></h3>
+<div class="paragraph">
+<p>Your application can be configured to use multiple Cloud Spanner instances or databases by providing a custom bean for <code>DatabaseIdProvider</code>.
+The default bean uses the instance ID, database name, and project ID options you configured in <code>application.properties</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    @Bean
+    public DatabaseIdProvider databaseIdProvider() {
+        // return custom connection options provider
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>DatabaseId</code> given by this provider is used as the target database name and instance of each operation Spring Data Cloud Spanner executes.
+By providing a custom implementation of this bean (for example, supplying a thread-local <code>DatabaseId</code>), you can direct your application to use multiple instances or databases.</p>
+</div>
+<div class="paragraph">
+<p>Database administrative operations, such as creating tables using <code>SpannerDatabaseAdminTemplate</code>, will also utilize the provided <code>DatabaseId</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for <code>Supplier&lt;DatabaseClient&gt;</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sample_9"><a class="link" href="#_sample_9">12.10. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample">sample application</a> is available.</p>
 </div>
