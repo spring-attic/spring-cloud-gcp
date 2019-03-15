@@ -54,20 +54,18 @@ public class DocumentOcrResultSet {
 		this.ocrPageRanges = new TreeMap<>();
 		this.documentPagesCache = new TreeMap<>();
 
+		int tmpMin = Integer.MAX_VALUE;
+		int tmpMax = Integer.MIN_VALUE;
 		for (Blob blob : pages) {
 			OcrPageRange pageRange = extractPageRange(blob);
 			ocrPageRanges.put(pageRange.startPage, pageRange);
+
+			tmpMin = Math.min(pageRange.startPage, tmpMin);
+			tmpMax = Math.max(pageRange.endPage, tmpMax);
 		}
 
-		this.minPage = this.ocrPageRanges.values().stream()
-				.mapToInt(range -> range.startPage)
-				.min()
-				.getAsInt();
-
-		this.maxPage = this.ocrPageRanges.values().stream()
-				.mapToInt(range -> range.endPage)
-				.max()
-				.getAsInt();
+		this.minPage = tmpMin;
+		this.maxPage = tmpMax;
 	}
 
 	/**
