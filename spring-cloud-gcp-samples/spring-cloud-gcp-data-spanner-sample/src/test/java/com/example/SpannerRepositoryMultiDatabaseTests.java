@@ -110,6 +110,7 @@ public class SpannerRepositoryMultiDatabaseTests {
 	static class Config {
 
 		static AtomicBoolean databaseFlipper = new AtomicBoolean(false);
+
 		@Value("${spring.cloud.gcp.spanner.instance-id}")
 		String instanceId;
 
