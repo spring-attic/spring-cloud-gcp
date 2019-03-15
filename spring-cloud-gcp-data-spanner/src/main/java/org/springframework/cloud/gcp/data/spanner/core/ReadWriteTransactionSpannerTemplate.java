@@ -45,11 +45,11 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	private TransactionContext transactionContext;
 
 	ReadWriteTransactionSpannerTemplate(Supplier<DatabaseClient> databaseClient,
-										SpannerMappingContext mappingContext,
-										SpannerEntityProcessor spannerEntityProcessor,
-										SpannerMutationFactory spannerMutationFactory,
-										SpannerSchemaUtils spannerSchemaUtils,
-										TransactionContext transactionContext) {
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMutationFactory spannerMutationFactory,
+			SpannerSchemaUtils spannerSchemaUtils,
+			TransactionContext transactionContext) {
 		super(databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 		this.transactionContext = transactionContext;
