@@ -16,21 +16,20 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import com.google.cloud.storage.Blob;
+import com.google.protobuf.InvalidProtocolBufferException;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.storage.Blob;
-import com.google.protobuf.InvalidProtocolBufferException;
-import java.util.ArrayList;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 public class OcrPageRangeTests {
 
-	private static final byte[] SINGLE_JSON_OUTPUT_PAGE =
-			"{'responses':[{'fullTextAnnotation': {'text': 'hello_world'}}]}".getBytes();
+	private static final byte[] SINGLE_JSON_OUTPUT_PAGE = "{'responses':[{'fullTextAnnotation': {'text': 'hello_world'}}]}"
+			.getBytes();
 
 	@Test
 	public void testParseCorrectPageRange() {
