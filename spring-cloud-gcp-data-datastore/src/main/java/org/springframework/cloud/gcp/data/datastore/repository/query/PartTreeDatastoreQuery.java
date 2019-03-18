@@ -296,7 +296,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		DatastoreTemplate.applyQueryOptions(
 				builder, new DatastoreQueryOptions.Builder().setLimit(limit).setOffset(offset).setSort(sort)
-						.setCursor(cursorToApply).createDatastoreQueryOptions(),
+						.setCursor(cursorToApply).build(),
 				this.datastorePersistentEntity);
 		return builder.build();
 	}

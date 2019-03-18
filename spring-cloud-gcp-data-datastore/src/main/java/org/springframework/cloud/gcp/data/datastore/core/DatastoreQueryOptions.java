@@ -106,7 +106,7 @@ public final class DatastoreQueryOptions {
 			return this;
 		}
 
-		public DatastoreQueryOptions createDatastoreQueryOptions() {
+		public DatastoreQueryOptions build() {
 			return new DatastoreQueryOptions(this.limit, this.offset, this.sort, this.cursor);
 		}
 	}

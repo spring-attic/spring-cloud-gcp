@@ -75,7 +75,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	public Iterable<T> findAll(Sort sort) {
 		Assert.notNull(sort, "A non-null Sort is required.");
 		return this.datastoreTemplate
-				.findAll(this.entityType, new DatastoreQueryOptions.Builder().setSort(sort).createDatastoreQueryOptions());
+				.findAll(this.entityType, new DatastoreQueryOptions.Builder().setSort(sort).build());
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 				.findAll(this.entityType,
 						new DatastoreQueryOptions.Builder().setLimit(pageable.getPageSize())
 								.setOffset((int) pageable.getOffset()).setSort(pageable.getSort())
-								.setCursor(getCursor(pageable)).createDatastoreQueryOptions());
+								.setCursor(getCursor(pageable)).build());
 
 		Long totalCount = getOrComputeTotalCount(pageable, () -> this.datastoreTemplate.count(this.entityType));
 		Pageable cursorPageable = DatastorePageable.from(pageable,
@@ -155,7 +155,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	@Override
 	public <S extends T> Optional<S> findOne(Example<S> example) {
 		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
-				new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions());
+				new DatastoreQueryOptions.Builder().setLimit(1).build());
 		Iterator<S> iterator = entities.iterator();
 		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
 	}
@@ -168,7 +168,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	@Override
 	public <S extends T> Iterable<S> findAll(Example<S> example, Sort sort) {
 		return this.datastoreTemplate.queryByExample(example,
-				new DatastoreQueryOptions.Builder().setSort(sort).createDatastoreQueryOptions());
+				new DatastoreQueryOptions.Builder().setSort(sort).build());
 	}
 
 	@Override
@@ -178,7 +178,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
 				new DatastoreQueryOptions.Builder().setLimit(pageable.getPageSize())
 						.setOffset((int) pageable.getOffset()).setSort(pageable.getSort())
-						.setCursor(getCursor(pageable)).createDatastoreQueryOptions());
+						.setCursor(getCursor(pageable)).build());
 		List<S> result = StreamSupport.stream(entities.spliterator(), false).collect(Collectors.toList());
 
 		Long totalCount = getOrComputeTotalCount(pageable, () -> count(example));
@@ -199,7 +199,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	@Override
 	public <S extends T> boolean exists(Example<S> example) {
 		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example,
-				new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions());
+				new DatastoreQueryOptions.Builder().setLimit(1).build());
 		return StreamSupport.stream(keys.spliterator(), false).findAny().isPresent();
 	}
 
