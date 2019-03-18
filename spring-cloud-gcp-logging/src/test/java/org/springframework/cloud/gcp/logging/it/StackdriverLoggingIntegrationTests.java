@@ -14,33 +14,30 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging.it;
+package org.springframework.cloud.gcp.logging.it;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.awaitility.Duration;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -51,7 +48,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
@@ -67,16 +63,13 @@ import static org.awaitility.Awaitility.await;
 		properties = {"spring.main.banner-mode=off"}
 )
 @RunWith(SpringRunner.class)
-@Ignore
 public class StackdriverLoggingIntegrationTests {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverLoggingIntegrationTests.class);
 
-	@Autowired
 	private GcpProjectIdProvider projectIdProvider;
 
-	@Autowired
-	private CredentialsProvider credentialsProvider;
+	private DefaultCredentialsProvider credentialsProvider;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -88,6 +81,13 @@ public class StackdriverLoggingIntegrationTests {
 		assumeThat(System.getProperty("it.logging")).isEqualTo("true");
 	}
 
+	@Before
+	public void setupTest() throws IOException {
+		this.projectIdProvider = new DefaultGcpProjectIdProvider();
+		this.credentialsProvider = new DefaultCredentialsProvider(
+			org.springframework.cloud.gcp.core.Credentials::new);
+	}
+
 	@Test
 	public void test() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
@@ -96,37 +96,32 @@ public class StackdriverLoggingIntegrationTests {
 				"/", HttpMethod.GET, new HttpEntity<>(headers), String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
-		CredentialsProvider credentialsProvider = this.credentialsProvider;
 		Logging logClient = LoggingOptions.newBuilder()
 				.setCredentials(credentialsProvider.getCredentials())
 				.build().getService();
 
-		await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
-			Page<LogEntry> page = logClient.listLogEntries(
-					Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
-							+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
-							+ "/logs/spring.log\""));
+		await().atMost(120, TimeUnit.SECONDS)
+				.pollInterval(Duration.FIVE_SECONDS)
+				.untilAsserted(() -> {
+					Page<LogEntry> page = logClient.listLogEntries(
+							Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
+									+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
+									+ "/logs/spring.log\""));
 
-			assertThat(page.getValues()).hasSize(1);
+					assertThat(page.getValues()).hasSize(1);
 
-			LogEntry entry = page.getValues().iterator().next();
-			assertThat(entry.getTrace()).matches(
-					"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
-			assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
-		});
+					LogEntry entry = page.getValues().iterator().next();
+					assertThat(entry.getTrace()).matches(
+							"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
+					assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
+				});
 	}
 
 	/**
 	 * web-app used for integration tests.
 	 */
 	@RestController
-	@SpringBootApplication(exclude = {
-			GcpCloudSqlAutoConfiguration.class,
-			GcpStorageAutoConfiguration.class,
-			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class,
-			IapAuthenticationAutoConfiguration.class
-	})
+	@SpringBootApplication
 	static class LoggingApplication {
 
 		@GetMapping("/")

@@ -242,12 +242,5 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <!-- Needed for making conditional expressions in logback files. -->
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 </project>

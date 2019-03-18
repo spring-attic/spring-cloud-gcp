@@ -36,5 +36,18 @@
 			<artifactId>spring-webmvc</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Integration Test dependencies -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

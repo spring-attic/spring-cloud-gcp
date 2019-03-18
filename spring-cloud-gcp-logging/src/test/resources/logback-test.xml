@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration >
 
+<configuration >
 	<property name="projectId" value="test-project"/>
 
 	<include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml"/>
@@ -23,4 +23,13 @@
 		<appender-ref ref="STDOUT" />
 	</logger>
 
+	<if condition='property("it.logging").equalsIgnoreCase("true")'>
+		<then>
+			<include resource="org/springframework/cloud/gcp/logging/logback-appender.xml"/>
+			<logger name="org.springframework.cloud.gcp.logging.it.StackdriverLoggingIntegrationTests"
+					level="warn">
+				<appender-ref ref="STACKDRIVER" />
+			</logger>
+		</then>
+	</if>
 </configuration>
