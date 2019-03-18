@@ -20,9 +20,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Sample application for a binder.
+ * Sample application for config client.
  *
- * @author João André Martins
+ * @author Elena Felder
  */
 @SpringBootApplication
 public class PubSubConfigApplication {
