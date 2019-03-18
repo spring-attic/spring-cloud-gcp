@@ -5091,9 +5091,21 @@ By providing a custom implementation of this bean (for example, supplying a thre
 <div class="sect1">
 <h2 id="_spring_data_cloud_datastore"><a class="link" href="#_spring_data_cloud_datastore">13. Spring Data Cloud Datastore</a></h2>
 <div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This integration is fully compatible with <a href="https://cloud.google.com/datastore/docs/">Firestore in Datastore Mode</a>, but not with Firestore in Native Mode.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p><a href="http://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for <a href="http://cloud.google.com/datastore/">Google Cloud Datastore</a>.</p>
+Spring Cloud GCP adds Spring Data support for <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in Datastore mode.</p>
 </div>
 <div class="paragraph">
 <p>Maven coordinates for this module only, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
