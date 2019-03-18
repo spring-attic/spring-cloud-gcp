@@ -398,7 +398,7 @@ public class PartTreeDatastoreQueryTests {
 		PageRequest pageRequest = PageRequest.of(1, 2, Sort.Direction.DESC, "id");
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33,
-				CursorPageable.from(pageRequest, cursor, 99L) };
+				DatastorePageable.from(pageRequest, cursor, 99L) };
 
 		preparePageResults(2, 2, cursor);
 

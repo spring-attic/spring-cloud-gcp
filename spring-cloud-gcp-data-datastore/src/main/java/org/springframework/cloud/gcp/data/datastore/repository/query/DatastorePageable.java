@@ -24,12 +24,12 @@ import org.springframework.data.domain.Pageable;
 /**
  * @author Dmitry Solomakha
  */
-public class CursorPageable extends PageRequest {
+public class DatastorePageable extends PageRequest {
 	private final Cursor cursor;
 
 	private final Long totalCount;
 
-	CursorPageable(Pageable pageable, Cursor cursor, Long totalCount) {
+	DatastorePageable(Pageable pageable, Cursor cursor, Long totalCount) {
 		super(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 		this.cursor = cursor;
 		this.totalCount = totalCount;
@@ -39,7 +39,7 @@ public class CursorPageable extends PageRequest {
 		if (pageable.isUnpaged()) {
 			return pageable;
 		}
-		return new CursorPageable(pageable, cursor, totalCount);
+		return new DatastorePageable(pageable, cursor, totalCount);
 	}
 
 	@Override

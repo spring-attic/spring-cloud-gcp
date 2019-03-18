@@ -30,7 +30,7 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.repository.query.CursorPageable;
+import org.springframework.cloud.gcp.data.datastore.repository.query.DatastorePageable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -156,7 +156,8 @@ public class SimpleDatastoreRepositoryTests {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
 
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"), null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(0)
+						.setSort(new Sort(Sort.Direction.ASC, "property1")).createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
@@ -164,24 +165,22 @@ public class SimpleDatastoreRepositoryTests {
 	public void findAllPageableDesc() {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(5, 5,
-						Sort.by(
-								new Sort.Order(Sort.Direction.DESC, "property1"),
-								new Sort.Order(Sort.Direction.DESC, "property2")), null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
+						new Sort.Order(Sort.Direction.DESC, "property1"),
+						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(null).createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
 	@Test
 	public void findAllPageableCursor() {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
-		Pageable pageable = CursorPageable.from(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"),
+		Pageable pageable = DatastorePageable.from(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"),
 				cursor, 10L);
 		this.simpleDatastoreRepository.findAll(pageable);
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(5, 5,
-						Sort.by(
-								new Sort.Order(Sort.Direction.DESC, "property1"),
-								new Sort.Order(Sort.Direction.DESC, "property2")), cursor)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
+						new Sort.Order(Sort.Direction.DESC, "property1"),
+						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(cursor).createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(0)).count(any());
 	}
 
@@ -198,7 +197,7 @@ public class SimpleDatastoreRepositoryTests {
 		Sort sort = Sort.by("id");
 		this.simpleDatastoreRepository.findAll(example, sort);
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(null, null, sort, null)));
+				eq(new DatastoreQueryOptions.Builder().setSort(sort).createDatastoreQueryOptions()));
 	}
 
 	@Test
@@ -208,7 +207,8 @@ public class SimpleDatastoreRepositoryTests {
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2), null))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-						eq(new DatastoreQueryOptions(2, 2, sort, null)));
+						eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort)
+								.createDatastoreQueryOptions()));
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2, 3, 4, 5), null))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
@@ -218,7 +218,8 @@ public class SimpleDatastoreRepositoryTests {
 		assertThat(result).containsExactly(1, 2);
 		assertThat(result.getTotalElements()).isEqualTo(5);
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 2, sort, null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort)
+						.createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
 	}
 
@@ -231,11 +232,13 @@ public class SimpleDatastoreRepositoryTests {
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2), cursor))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 0, sort, null)));
+						eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(0).setSort(sort)
+								.createDatastoreQueryOptions()));
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(3, 4), null))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 2, sort, cursor)));
+						eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort).setCursor(cursor)
+								.createDatastoreQueryOptions()));
 
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1, 2, 3, 4, 5), null))
@@ -251,9 +254,11 @@ public class SimpleDatastoreRepositoryTests {
 		assertThat(resultNext.getTotalElements()).isEqualTo(5);
 
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 0, sort, null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(0).setSort(sort)
+						.createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(2, 2, sort, cursor)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort).setCursor(cursor)
+						.createDatastoreQueryOptions()));
 		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
 	}
 
@@ -271,13 +276,13 @@ public class SimpleDatastoreRepositoryTests {
 
 		doAnswer((invocationOnMock) -> new DatastoreResultsIterable(Arrays.asList(1), null))
 				.when(this.datastoreTemplate).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(1, null, null, null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 
 
 		assertThat(this.simpleDatastoreRepository.findOne(example).get()).isEqualTo(1);
 
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
-				eq(new DatastoreQueryOptions(1, null, null, null)));
+				eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 	}
 
 	@Test
@@ -285,11 +290,13 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example2 = Example.of(new Object());
 
 		doAnswer((invocationOnMock) -> Arrays.asList(1))
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2),
+						eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+				eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 	}
 
 	@Test
@@ -297,11 +304,13 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example2 = Example.of(new Object());
 
 		doAnswer((invocationOnMock) -> Arrays.asList())
-				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2),
+						eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(false);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null, null)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+				eq(new DatastoreQueryOptions.Builder().setLimit(1).createDatastoreQueryOptions()));
 	}
 
 	@Test
@@ -334,10 +343,9 @@ public class SimpleDatastoreRepositoryTests {
 				new Sort.Order(Sort.Direction.DESC, "property1"),
 				new Sort.Order(Sort.Direction.ASC, "property2")));
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions(null, null,
-						Sort.by(
-								new Sort.Order(Sort.Direction.DESC, "property1"),
-								new Sort.Order(Sort.Direction.ASC, "property2")), null)));
+				eq(new DatastoreQueryOptions.Builder().setSort(Sort.by(
+						new Sort.Order(Sort.Direction.DESC, "property1"),
+						new Sort.Order(Sort.Direction.ASC, "property2"))).createDatastoreQueryOptions()));
 
 	}
 }

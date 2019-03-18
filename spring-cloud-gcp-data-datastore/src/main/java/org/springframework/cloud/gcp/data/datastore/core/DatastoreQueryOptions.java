@@ -23,11 +23,11 @@ import com.google.cloud.datastore.Cursor;
 import org.springframework.data.domain.Sort;
 
 /**
- * Encapsulates Cloud Memorystore query options.
+ * Encapsulates Cloud Datastore query options.
  *
  * @author Dmitry Solomakha
  */
-public class DatastoreQueryOptions {
+public final class DatastoreQueryOptions {
 
 	private Integer limit;
 
@@ -37,7 +37,7 @@ public class DatastoreQueryOptions {
 
 	private Cursor cursor;
 
-	public DatastoreQueryOptions(Integer limit, Integer offset, Sort sort, Cursor cursor) {
+	private DatastoreQueryOptions(Integer limit, Integer offset, Sort sort, Cursor cursor) {
 		this.limit = limit;
 		this.offset = offset;
 		this.sort = sort;
@@ -79,4 +79,36 @@ public class DatastoreQueryOptions {
 	public int hashCode() {
 		return Objects.hash(getLimit(), getOffset(), getSort(), getCursor());
 	}
+
+	public static class Builder {
+		private Integer limit;
+		private Integer offset;
+		private Sort sort;
+		private Cursor cursor;
+
+		public Builder setLimit(Integer limit) {
+			this.limit = limit;
+			return this;
+		}
+
+		public Builder setOffset(Integer offset) {
+			this.offset = offset;
+			return this;
+		}
+
+		public Builder setSort(Sort sort) {
+			this.sort = sort;
+			return this;
+		}
+
+		public Builder setCursor(Cursor cursor) {
+			this.cursor = cursor;
+			return this;
+		}
+
+		public DatastoreQueryOptions createDatastoreQueryOptions() {
+			return new DatastoreQueryOptions(this.limit, this.offset, this.sort, this.cursor);
+		}
+	}
+
 }

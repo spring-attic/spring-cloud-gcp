@@ -129,17 +129,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			Pageable pageableParam = paramAccessor.getPageable();
 
 			Long totalCount;
-			if (pageableParam instanceof CursorPageable) {
-				Long previousCount = ((CursorPageable) pageableParam).getTotalCount();
+			if (pageableParam instanceof DatastorePageable) {
+				Long previousCount = ((DatastorePageable) pageableParam).getTotalCount();
 				Assert.notNull(previousCount, "Previous total count can not be null.");
 
-				totalCount = ((CursorPageable) pageableParam).getTotalCount();
+				totalCount = ((DatastorePageable) pageableParam).getTotalCount();
 			}
 			else {
 				totalCount = (Long) execute(parameters, Long.class, null, true);
 			}
 
-			Pageable pageable = CursorPageable.from(pageableParam, this.cursor, totalCount);
+			Pageable pageable = DatastorePageable.from(pageableParam, this.cursor, totalCount);
 
 			return new PageImpl<>(resultEntries, pageable, totalCount);
 		}
@@ -225,7 +225,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
-		Pageable pageable = CursorPageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
+		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
 
 		EntityQuery.Builder builderNext = StructuredQuery.newEntityQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
@@ -291,11 +291,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		if (cursor != null) {
 			cursorToApply = cursor;
 		}
-		else if (pageable instanceof CursorPageable) {
-			cursorToApply = ((CursorPageable) pageable).getCursor();
+		else if (pageable instanceof DatastorePageable) {
+			cursorToApply = ((DatastorePageable) pageable).getCursor();
 		}
 		DatastoreTemplate.applyQueryOptions(
-				builder, new DatastoreQueryOptions(limit, offset, sort, cursorToApply), this.datastorePersistentEntity);
+				builder, new DatastoreQueryOptions.Builder().setLimit(limit).setOffset(offset).setSort(sort)
+						.setCursor(cursorToApply).createDatastoreQueryOptions(),
+				this.datastorePersistentEntity);
 		return builder.build();
 	}
 
