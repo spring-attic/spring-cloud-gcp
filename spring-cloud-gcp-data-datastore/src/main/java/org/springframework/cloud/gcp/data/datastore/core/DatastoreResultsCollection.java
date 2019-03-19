@@ -141,4 +141,9 @@ public class DatastoreResultsCollection<T> implements Collection<T> {
 	public void forEach(Consumer<? super T> consumer) {
 		this.collection.forEach(consumer);
 	}
+
+	@Override
+	public String toString() {
+		return this.collection.toString();
+	}
 }
