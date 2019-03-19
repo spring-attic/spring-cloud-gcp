@@ -33,6 +33,7 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-config-monitor</artifactId>
     </dependency>
+
   </dependencies>
 
 </project>

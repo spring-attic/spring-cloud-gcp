@@ -13,10 +13,10 @@
     <artifactId>spring-cloud-gcp-pubsub-config-sample</artifactId>
     <packaging>pom</packaging>
     <name>Spring Cloud GCP Pub/Sub Configuration Management Code Sample</name>
+
     <modules>
         <module>spring-cloud-gcp-pubsub-config-sample-client</module>
         <module>spring-cloud-gcp-pubsub-config-sample-server</module>
     </modules>
-
 
 </project>
