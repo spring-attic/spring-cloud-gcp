@@ -18,14 +18,16 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Objects;
 
+import com.google.cloud.datastore.Cursor;
+
 import org.springframework.data.domain.Sort;
 
 /**
- * Encapsulates Cloud Memorystore query options.
+ * Encapsulates Cloud Datastore query options.
  *
  * @author Dmitry Solomakha
  */
-public class DatastoreQueryOptions {
+public final class DatastoreQueryOptions {
 
 	private Integer limit;
 
@@ -33,10 +35,13 @@ public class DatastoreQueryOptions {
 
 	private Sort sort;
 
-	public DatastoreQueryOptions(Integer limit, Integer offset, Sort sort) {
+	private Cursor cursor;
+
+	private DatastoreQueryOptions(Integer limit, Integer offset, Sort sort, Cursor cursor) {
 		this.limit = limit;
 		this.offset = offset;
 		this.sort = sort;
+		this.cursor = cursor;
 	}
 
 	public Integer getLimit() {
@@ -51,6 +56,10 @@ public class DatastoreQueryOptions {
 		return this.sort;
 	}
 
+	public Cursor getCursor() {
+		return this.cursor;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -62,11 +71,44 @@ public class DatastoreQueryOptions {
 		DatastoreQueryOptions that = (DatastoreQueryOptions) o;
 		return Objects.equals(getLimit(), that.getLimit()) &&
 				Objects.equals(getOffset(), that.getOffset()) &&
-				Objects.equals(getSort(), that.getSort());
+				Objects.equals(getSort(), that.getSort()) &&
+				Objects.equals(getCursor(), that.getCursor());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getLimit(), getOffset(), getSort());
+		return Objects.hash(getLimit(), getOffset(), getSort(), getCursor());
 	}
+
+	public static class Builder {
+		private Integer limit;
+		private Integer offset;
+		private Sort sort;
+		private Cursor cursor;
+
+		public Builder setLimit(Integer limit) {
+			this.limit = limit;
+			return this;
+		}
+
+		public Builder setOffset(Integer offset) {
+			this.offset = offset;
+			return this;
+		}
+
+		public Builder setSort(Sort sort) {
+			this.sort = sort;
+			return this;
+		}
+
+		public Builder setCursor(Cursor cursor) {
+			this.cursor = cursor;
+			return this;
+		}
+
+		public DatastoreQueryOptions build() {
+			return new DatastoreQueryOptions(this.limit, this.offset, this.sort, this.cursor);
+		}
+	}
+
 }

@@ -53,6 +53,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -154,13 +155,28 @@ public class DatastoreIntegrationTests {
 				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
-		Page<TestEntity> result = this.testEntityRepository
+		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						PageRequest.of(1, 2));
-		assertThat(result.getTotalElements()).isEqualTo(4);
-		assertThat(result.getNumberOfElements()).isEqualTo(2);
-		assertThat(result.getTotalPages()).isEqualTo(2);
+						PageRequest.of(0, 2, Sort.by("id")));
+		assertThat(result1.getTotalElements()).isEqualTo(4);
+		assertThat(result1.getNumber()).isEqualTo(0);
+		assertThat(result1.getNumberOfElements()).isEqualTo(2);
+		assertThat(result1.getTotalPages()).isEqualTo(2);
+		assertThat(result1.hasNext()).isEqualTo(true);
+		assertThat(result1).containsExactly(this.testEntityA, this.testEntityB);
+
+		Page<TestEntity> result2 = this.testEntityRepository
+				.findAll(
+						Example.of(new TestEntity(null, null, null, null, null)),
+						result1.getPageable().next());
+		assertThat(result2.getTotalElements()).isEqualTo(4);
+		assertThat(result2.getNumber()).isEqualTo(1);
+		assertThat(result2.getNumberOfElements()).isEqualTo(2);
+		assertThat(result2.getTotalPages()).isEqualTo(2);
+		assertThat(result2.hasNext()).isEqualTo(false);
+		assertThat(result2).containsExactly(this.testEntityC, this.testEntityD);
+
 
 		assertThat(this.testEntityRepository
 				.findAll(
@@ -198,7 +214,16 @@ public class DatastoreIntegrationTests {
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
+		Slice<TestEntity> red1 = this.testEntityRepository.findByColor("red", PageRequest.of(0, 1));
+		assertThat(red1.hasNext()).isTrue();
+		assertThat(red1.getNumber()).isEqualTo(0);
+		Slice<TestEntity> red2 = this.testEntityRepository.findByColor("red", red1.getPageable().next());
+		assertThat(red2.hasNext()).isTrue();
+		assertThat(red2.getNumber()).isEqualTo(1);
+		Slice<TestEntity> red3 = this.testEntityRepository.findByColor("red", red2.getPageable().next());
+		assertThat(red3.hasNext()).isFalse();
+		assertThat(red3.getNumber()).isEqualTo(2);
+
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
 		assertThat(
 				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
@@ -208,6 +233,12 @@ public class DatastoreIntegrationTests {
 		assertThat(circles.getTotalPages()).isEqualTo(2);
 		assertThat(circles.get().count()).isEqualTo(2L);
 		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
+
+		Page<TestEntity> circlesNext = this.testEntityRepository.findByShape(Shape.CIRCLE, circles.nextPageable());
+		assertThat(circlesNext.getTotalElements()).isEqualTo(3L);
+		assertThat(circlesNext.getTotalPages()).isEqualTo(2);
+		assertThat(circlesNext.get().count()).isEqualTo(1L);
+		assertThat(circlesNext.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);

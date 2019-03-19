@@ -240,11 +240,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
-			Class<T> entityClass) {
-		Iterable<T> results = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
-		maybeEmitEvent(new AfterQueryEvent(results, query));
-		return results;
+	public <T> DatastoreResultsIterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass) {
+		QueryResults<? extends BaseEntity> results = getDatastoreReadWriter().run(query);
+		List<T> convertedResults = convertEntitiesForRead(results, entityClass);
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
+		return results != null
+				? new DatastoreResultsIterable<>(convertedResults, results.getCursorAfter())
+				: null;
 	}
 
 	/**
@@ -256,12 +258,18 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
-		QueryResults queryResults = getDatastoreReadWriter().run(query);
-		Iterable<?> convertedResults = queryResults.getResultClass() == Key.class ? () -> queryResults
-				: convertEntitiesForRead(queryResults, entityClass);
-		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
-		return convertedResults;
+	public <T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
+		QueryResults results = getDatastoreReadWriter().run(query);
+		DatastoreResultsIterable resultsIterable;
+		if (results.getResultClass() == Key.class) {
+			resultsIterable = new DatastoreResultsIterable(results, results.getCursorAfter());
+		}
+		else {
+			resultsIterable = new DatastoreResultsIterable<>(convertEntitiesForRead(results, entityClass),
+					results.getCursorAfter());
+		}
+		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
+		return resultsIterable;
 	}
 
 	@Override
@@ -286,7 +294,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
+	public <T> DatastoreResultsIterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
 		return query(exampleToQuery(example, queryOptions, false), example.getProbeType());
 	}
 
@@ -299,15 +307,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
+	public <T> DatastoreResultsCollection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
 		applyQueryOptions(builder, queryOptions, persistentEntity);
 		Query query = builder.build();
-		Collection<T> convertedResults = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		QueryResults queryResults = getDatastoreReadWriter().run(query);
+		Collection<T> convertedResults = convertEntitiesForRead(queryResults, entityClass);
 		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
-		return convertedResults;
+		return new DatastoreResultsCollection<>(convertedResults,
+				queryResults != null ? queryResults.getCursorAfter() : null);
 	}
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
@@ -328,8 +338,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (queryOptions.getLimit() != null) {
 			builder.setLimit(queryOptions.getLimit());
 		}
-		if (queryOptions.getOffset() != null) {
+		if (queryOptions.getCursor() == null && queryOptions.getOffset() != null) {
 			builder.setOffset(queryOptions.getOffset());
+		}
+		if (queryOptions.getCursor() != null) {
+			builder.setStartCursor(queryOptions.getCursor());
 		}
 		if (queryOptions.getSort() != null && persistentEntity != null) {
 			queryOptions.getSort().stream()
