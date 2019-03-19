@@ -1,0 +1,36 @@
+== Spring Cloud Bus
+
+Spring Cloud Bus integration with GCP Pub/Sub is as simple as importing two Spring Cloud dependencies: `spring-cloud-bus` and `spring-cloud-gcp-pubsub-stream-binder`.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-bus</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
+    </dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-bus'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+}
+----
+
+=== Configuration Management with Spring Cloud Config
+
+Spring Cloud Bus can be used to push configuration changes from Spring Cloud Config server to the clients listening on the same bus.
+
+To use GCP Pub/Sub as the bus, both configuration server and configuration client need `spring-cloud-bus` and `spring-cloud-gcp-pubsub-stream-binder` dependencies.
+
+All other configuration is standard to https://spring.io/projects/spring-cloud-config[Spring Cloud Config].
