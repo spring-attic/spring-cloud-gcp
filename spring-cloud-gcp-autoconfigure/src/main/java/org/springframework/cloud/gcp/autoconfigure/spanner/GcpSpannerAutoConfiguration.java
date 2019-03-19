@@ -17,9 +17,11 @@
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.SessionPoolOptions;
@@ -40,6 +42,8 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
@@ -158,9 +162,8 @@ public class GcpSpannerAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean
-		public DatabaseId databaseId() {
-			return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
+		public DatabaseIdProvider databaseId() {
+			return () -> DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
 		}
 
 		@Bean
@@ -170,9 +173,17 @@ public class GcpSpannerAutoConfiguration {
 		}
 
 		@Bean
+		@ConditionalOnMissingBean(value = DatabaseClient.class, parameterizedContainer = Supplier.class)
+		public Supplier<DatabaseClient> databaseClientProvider(
+				Spanner spanner, Supplier<DatabaseId> databaseIdProvider) {
+			return new CachingComposingSupplier<>(databaseIdProvider, spanner::getDatabaseClient);
+		}
+
+		@Bean
 		@ConditionalOnMissingBean
-		public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
-			return spanner.getDatabaseClient(databaseId);
+		public DatabaseAdminClient spannerDatabaseAdminClient(
+				Spanner Spanner) {
+			return Spanner.getDatabaseAdminClient();
 		}
 
 		@Bean
@@ -183,11 +194,11 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
+		public SpannerTemplate spannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
 				SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 				SpannerMutationFactory spannerMutationFactory,
 				SpannerSchemaUtils spannerSchemaUtils) {
-			return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
+			return new SpannerTemplate(databaseClientProvider, mappingContext, spannerEntityProcessor,
 					spannerMutationFactory, spannerSchemaUtils);
 		}
 
@@ -219,9 +230,9 @@ public class GcpSpannerAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-				Spanner spanner, DatabaseId databaseId) {
-			return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
-					spanner.getDatabaseClient(databaseId), databaseId);
+				Supplier<DatabaseClient> databaseClientProvider,
+				DatabaseAdminClient adminClient, Supplier<DatabaseId> databaseIdProvider) {
+			return new SpannerDatabaseAdminTemplate(adminClient, databaseClientProvider, databaseIdProvider);
 		}
 	}
 

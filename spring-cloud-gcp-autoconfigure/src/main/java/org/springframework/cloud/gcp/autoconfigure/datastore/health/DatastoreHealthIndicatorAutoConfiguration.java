@@ -41,7 +41,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.2
  */
 @Configuration
-@ConditionalOnClass(Datastore.class)
+@ConditionalOnClass({ Datastore.class, HealthIndicator.class })
 @ConditionalOnBean(Datastore.class)
 @ConditionalOnEnabledHealthIndicator("datastore")
 @AutoConfigureBefore(HealthIndicatorAutoConfiguration.class)

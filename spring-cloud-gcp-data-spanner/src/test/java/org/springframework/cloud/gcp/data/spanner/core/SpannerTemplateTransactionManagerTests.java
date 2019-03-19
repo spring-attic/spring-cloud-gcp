@@ -239,12 +239,12 @@ public class SpannerTemplateTransactionManagerTests {
 			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(mappingContext, objectMapper, true);
 
 			return new SpannerTemplate(
-					databaseClient, mappingContext, objectMapper, mutationFactory, schemaUtils);
+					() -> databaseClient, mappingContext, objectMapper, mutationFactory, schemaUtils);
 		}
 
 		@Bean
 		public SpannerTransactionManager spannerTransactionManager(DatabaseClient databaseClient) {
-			return new SpannerTransactionManager(databaseClient);
+			return new SpannerTransactionManager(() -> databaseClient);
 		}
 
 		@Bean
