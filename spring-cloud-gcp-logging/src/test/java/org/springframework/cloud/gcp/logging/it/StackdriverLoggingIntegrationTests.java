@@ -33,12 +33,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
+import org.springframework.cloud.gcp.logging.extractors.TraceIdExtractor;
+import org.springframework.cloud.gcp.logging.extractors.XCloudTraceIdExtractor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -66,8 +72,6 @@ import static org.awaitility.Awaitility.await;
 @RunWith(SpringRunner.class)
 public class StackdriverLoggingIntegrationTests {
 
-	private static final Log LOGGER = LogFactory.getLog(StackdriverLoggingIntegrationTests.class);
-
 	private GcpProjectIdProvider projectIdProvider;
 
 	private DefaultCredentialsProvider credentialsProvider;
@@ -75,11 +79,9 @@ public class StackdriverLoggingIntegrationTests {
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
-	private static final LocalDateTime NOW = LocalDateTime.now();
-
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.logging")).isEqualTo("true");
+		// assumeThat(System.getProperty("it.logging")).isEqualTo("true");
 	}
 
 	@Before
@@ -92,7 +94,7 @@ public class StackdriverLoggingIntegrationTests {
 	@Test
 	public void test() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("x-cloud-trace-context", "everything-zen");
+		headers.add("x-cloud-trace-context", "105445aa7843bc8bf206b120001000/0;o=1");
 		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
 				"/", HttpMethod.GET, new HttpEntity<>(headers), String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
@@ -105,7 +107,8 @@ public class StackdriverLoggingIntegrationTests {
 				.pollInterval(Duration.FIVE_SECONDS)
 				.untilAsserted(() -> {
 					Page<LogEntry> page = logClient.listLogEntries(
-							Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
+							Logging.EntryListOption.filter("textPayload:\"#$%^&"
+									+ LoggingTestApplication.NOW + "\" AND"
 									+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
 									+ "/logs/spring.log\""));
 
@@ -118,17 +121,4 @@ public class StackdriverLoggingIntegrationTests {
 				});
 	}
 
-	/**
-	 * web-app used for integration tests.
-	 */
-	@RestController
-	@SpringBootApplication
-	static class LoggingApplication {
-
-		@GetMapping("/")
-		public String log() {
-			LOGGER.error("#$%^&" + NOW);
-			return "Log sent.";
-		}
-	}
 }
