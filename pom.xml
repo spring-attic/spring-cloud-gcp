@@ -87,6 +87,20 @@
 			</dependency>
 
 			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-config-dependencies</artifactId>
+				<version>${spring-cloud-commons.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-bus</artifactId>
+				<version>${spring-cloud-commons.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>ch.qos.logback.contrib</groupId>
 				<artifactId>logback-json-classic</artifactId>
 				<version>0.1.5</version>
