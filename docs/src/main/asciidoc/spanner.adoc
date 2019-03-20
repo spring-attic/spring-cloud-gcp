@@ -1399,7 +1399,7 @@ By providing an overridden instance of `SettableClientSpannerTemplate` to the `C
 
 Note that overriding `SpannerTemplate` methods in `SettableClientSpannerTemplate` means you *do not* need to actually implement the operation; a full `SpannerTemplate` bean will still perform the actual operations.
 You only need to call `getDatabaseClientProvider()` to set the database client that will be used for the actual execution of this operation.
-The overridden can be exited as soon as the desired database client is set.
+The overridden method can be exited as soon as the desired database client is set.
 
 You can override any of the normally accessible `SpannerTemplate` methods in this way to further customize your target instances and databases.
 
