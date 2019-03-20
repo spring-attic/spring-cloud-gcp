@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DiscriminationValue {
+public @interface DiscriminatorValue {
 
 	/**
 	 * The value that corresponds to entities of the annotated subclass stored in the

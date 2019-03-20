@@ -39,20 +39,27 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -75,6 +82,12 @@ public class DatastoreIntegrationTests {
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
+
+	@Autowired
+	private PetRepository petRepository;
+
+	@Autowired
+	private DogRepository dogRepository;
 
 	@Autowired
 	private DatastoreTemplate datastoreTemplate;
@@ -119,6 +132,8 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.deleteAll(ReferenceEntry.class);
 		this.datastoreTemplate.deleteAll(ParentEntity.class);
 		this.datastoreTemplate.deleteAll(SubEntity.class);
+		this.datastoreTemplate.deleteAll(Pet.class);
+		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -140,13 +155,28 @@ public class DatastoreIntegrationTests {
 				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
-		Page<TestEntity> result = this.testEntityRepository
+		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						PageRequest.of(1, 2));
-		assertThat(result.getTotalElements()).isEqualTo(4);
-		assertThat(result.getNumberOfElements()).isEqualTo(2);
-		assertThat(result.getTotalPages()).isEqualTo(2);
+						PageRequest.of(0, 2, Sort.by("id")));
+		assertThat(result1.getTotalElements()).isEqualTo(4);
+		assertThat(result1.getNumber()).isEqualTo(0);
+		assertThat(result1.getNumberOfElements()).isEqualTo(2);
+		assertThat(result1.getTotalPages()).isEqualTo(2);
+		assertThat(result1.hasNext()).isEqualTo(true);
+		assertThat(result1).containsExactly(this.testEntityA, this.testEntityB);
+
+		Page<TestEntity> result2 = this.testEntityRepository
+				.findAll(
+						Example.of(new TestEntity(null, null, null, null, null)),
+						result1.getPageable().next());
+		assertThat(result2.getTotalElements()).isEqualTo(4);
+		assertThat(result2.getNumber()).isEqualTo(1);
+		assertThat(result2.getNumberOfElements()).isEqualTo(2);
+		assertThat(result2.getTotalPages()).isEqualTo(2);
+		assertThat(result2.hasNext()).isEqualTo(false);
+		assertThat(result2).containsExactly(this.testEntityC, this.testEntityD);
+
 
 		assertThat(this.testEntityRepository
 				.findAll(
@@ -184,7 +214,16 @@ public class DatastoreIntegrationTests {
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
+		Slice<TestEntity> red1 = this.testEntityRepository.findByColor("red", PageRequest.of(0, 1));
+		assertThat(red1.hasNext()).isTrue();
+		assertThat(red1.getNumber()).isEqualTo(0);
+		Slice<TestEntity> red2 = this.testEntityRepository.findByColor("red", red1.getPageable().next());
+		assertThat(red2.hasNext()).isTrue();
+		assertThat(red2.getNumber()).isEqualTo(1);
+		Slice<TestEntity> red3 = this.testEntityRepository.findByColor("red", red2.getPageable().next());
+		assertThat(red3.hasNext()).isFalse();
+		assertThat(red3.getNumber()).isEqualTo(2);
+
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
 		assertThat(
 				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
@@ -194,6 +233,12 @@ public class DatastoreIntegrationTests {
 		assertThat(circles.getTotalPages()).isEqualTo(2);
 		assertThat(circles.get().count()).isEqualTo(2L);
 		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
+
+		Page<TestEntity> circlesNext = this.testEntityRepository.findByShape(Shape.CIRCLE, circles.nextPageable());
+		assertThat(circlesNext.getTotalElements()).isEqualTo(3L);
+		assertThat(circlesNext.getTotalPages()).isEqualTo(2);
+		assertThat(circlesNext.get().count()).isEqualTo(1L);
+		assertThat(circlesNext.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
@@ -457,6 +502,57 @@ public class DatastoreIntegrationTests {
 
 		return System.currentTimeMillis() - startTime;
 	}
+
+	@Test
+	public void inheritanceTest() {
+		PetOwner petOwner = new PetOwner();
+		petOwner.pets = Arrays.asList(
+				new Cat("Alice"),
+				new Cat("Bob"),
+				new Pug("Bob"),
+				new Dog("Bob"));
+
+		this.datastoreTemplate.save(petOwner);
+
+		PetOwner readPetOwner = this.datastoreTemplate.findById(petOwner.id, PetOwner.class);
+
+		assertThat(readPetOwner.pets).hasSize(4);
+
+		assertThat(readPetOwner.pets.stream().filter(pet -> "meow".equals(pet.speak()))).hasSize(2);
+		assertThat(readPetOwner.pets.stream().filter(pet -> "woof".equals(pet.speak()))).hasSize(1);
+		assertThat(readPetOwner.pets.stream().filter(pet -> "woof woof".equals(pet.speak()))).hasSize(1);
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Pet.class) == 4);
+		List<Pet> bobPets = this.petRepository.findByName("Bob");
+		assertThat(bobPets.stream().map(Pet::speak)).containsExactlyInAnyOrder("meow", "woof", "woof woof");
+
+		List<Dog> bobDogs = this.dogRepository.findByName("Bob");
+		assertThat(bobDogs.stream().map(Pet::speak)).containsExactlyInAnyOrder("woof", "woof woof");
+
+		assertThatThrownBy(() -> this.dogRepository.findByCustomQuery()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Can't append discrimination condition");
+	}
+
+	@Test
+	public void inheritanceTestFindAll() {
+		this.datastoreTemplate.saveAll(Arrays.asList(
+				new Cat("Cat1"),
+				new Dog("Dog1"),
+				new Pug("Dog2")));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Pet.class) == 3);
+
+		Collection<Dog> dogs = this.datastoreTemplate.findAll(Dog.class);
+
+		assertThat(dogs).hasSize(2);
+
+		Long dogCount = dogs.stream().filter(pet -> "woof".equals(pet.speak())).count();
+		Long pugCount = dogs.stream().filter(pet -> "woof woof".equals(pet.speak())).count();
+
+
+		assertThat(pugCount).isEqualTo(1);
+		assertThat(dogCount).isEqualTo(1);
+	}
 }
 
 /**
@@ -500,4 +596,77 @@ class SubEntity {
 
 	@Reference
 	SubEntity sibling;
+}
+
+class PetOwner {
+	@Id
+	Long id;
+
+	@Reference
+	Collection<Pet> pets;
+}
+
+@Entity
+@DiscriminatorField(field = "pet_type")
+abstract class Pet {
+	@Id
+	Long id;
+
+	String name;
+
+	Pet(String name) {
+		this.name = name;
+	}
+
+	abstract String speak();
+}
+
+@DiscriminatorValue("cat")
+class Cat extends Pet {
+
+	Cat(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "meow";
+	}
+}
+
+@DiscriminatorValue("dog")
+class Dog extends Pet {
+
+	Dog(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "woof";
+	}
+}
+
+@DiscriminatorValue("pug")
+class Pug extends Dog {
+
+	Pug(String name) {
+		super(name);
+	}
+
+	@Override
+	String speak() {
+		return "woof woof";
+	}
+}
+
+interface PetRepository extends DatastoreRepository<Pet, Long> {
+	List<Pet> findByName(String s);
+}
+
+interface DogRepository extends DatastoreRepository<Dog, Long> {
+	List<Dog> findByName(String s);
+
+	@Query("select * from Pet")
+	List<Dog> findByCustomQuery();
 }

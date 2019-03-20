@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
+
+import java.util.List;
 
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PropertyHandler;
@@ -56,7 +58,13 @@ public interface DatastorePersistentEntity<T> extends
 	 * Get the discrimination value corresponding to this persistent entity type.
 	 * @return the value or {@code null} if there is no value for this type.
 	 */
-	String getDiscriminationValue();
+	String getDiscriminatorValue();
+
+	/**
+	 * Get the discrimination values corresponding to this persistent entity ad its supertypes.
+	 * @return the list of values where the first item is this entity's discrimination value
+	 */
+	List<String> getCompatibleDiscriminationValues();
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all

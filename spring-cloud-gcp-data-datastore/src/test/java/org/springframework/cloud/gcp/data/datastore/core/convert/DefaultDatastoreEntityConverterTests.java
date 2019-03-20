@@ -47,8 +47,8 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreIt
 import org.springframework.cloud.gcp.data.datastore.core.convert.TestItemWithEmbeddedEntity.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminationValue;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
@@ -122,6 +122,56 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(item.getIntField()).as("validate int field").isEqualTo(99);
 		assertThat(item.getEnumField()).as("validate enum field").isEqualTo(TestDatastoreItem.Color.WHITE);
 		assertThat(item.getKeyField()).as("validate key field").isEqualTo(otherKey);
+	}
+
+	@Test
+	public void discriminatingReadTest() {
+		Entity entityA = getEntityBuilder()
+				.set("discrimination_column", "A", "unused", "anotherParentValue")
+				.set("boolField", true)
+				.set("intField", 99)
+				.set("enumField", "WHITE")
+				.build();
+
+		Entity entityB = getEntityBuilder()
+				.set("discrimination_column", "B", "unused", "anotherParentValue")
+				.set("boolField", true)
+				.set("intField", 99)
+				.set("enumField", "WHITE")
+				.build();
+
+		Entity entityX = getEntityBuilder()
+				.set("discrimination_column", "X", "unused", "anotherParentValue")
+				.set("boolField", true)
+				.set("intField", 99)
+				.set("enumField", "WHITE")
+				.build();
+
+		// All the reads use the superclass type but verify to be instances of the subclasses.
+		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityX)).isInstanceOf(DiscrimEntityX.class);
+		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityA)).isInstanceOf(DiscrimEntityA.class);
+		assertThat(ENTITY_CONVERTER.read(DiscrimEntityX.class, entityB)).isInstanceOf(DiscrimEntityB.class);
+
+		// Because A is NOT a superclass of X, we cannot read entityX as type X. It falls back to
+		// A.
+		assertThat(ENTITY_CONVERTER.read(DiscrimEntityA.class, entityX)).isInstanceOf(DiscrimEntityA.class);
+	}
+
+	@Test
+	public void conflictingDiscriminationTest() {
+
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("More than one class in an inheritance hierarchy " +
+				"has the same DiscriminatorValue: ");
+
+		Entity entityY = getEntityBuilder()
+				.set("discrimination_column", "Y", "unused", "anotherParentValue")
+				.set("boolField", true)
+				.set("intField", 99)
+				.set("enumField", "WHITE")
+				.build();
+
+		ENTITY_CONVERTER.read(DiscrimEntityY.class, entityY);
 	}
 
 	@Test
@@ -240,20 +290,22 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void writeTestSubtypes() {
-		TestDatastoreItemSubtypeA itemA = new TestDatastoreItemSubtypeA();
-		itemA.stringField = "item A";
-		itemA.intField = 10;
+		DiscrimEntityD entityD = new DiscrimEntityD();
+		entityD.stringField = "item D";
+		entityD.intField = 10;
+		entityD.enumField = TestDatastoreItem.Color.BLACK;
 
 		Entity.Builder builder = getEntityBuilder();
-		ENTITY_CONVERTER.write(itemA, builder);
+		ENTITY_CONVERTER.write(entityD, builder);
 
 		Entity entity = builder.build();
 
 
-		assertThat(entity.getString("stringField")).as("validate string field")
-				.isEqualTo("item A");
+		assertThat(entity.getString("stringField")).as("validate string field").isEqualTo("item D");
 		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(10L);
-		assertThat(entity.getString("subtype")).as("validate discrimination field").isEqualTo("A");
+		assertThat(entity.getString("enumField")).as("validate enum field").isEqualTo("BLACK");
+		assertThat(entity.getList("discrimination_column")).as("validate discrimination field")
+				.containsExactly(StringValue.of("D"), StringValue.of("B"), StringValue.of("X"));
 	}
 
 	@Test
@@ -685,13 +737,41 @@ public class DefaultDatastoreEntityConverterTests {
 		};
 	}
 
-	@DiscriminationField(field = "subtype")
-	abstract class TestDatastoreItemParentType {
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorField(field = "discrimination_column")
+	@DiscriminatorValue("X")
+	private static class DiscrimEntityX {
+		TestDatastoreItem.Color enumField;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorValue("A")
+	private static class DiscrimEntityA extends DiscrimEntityX {
+		boolean boolField;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorValue("B")
+	private static class DiscrimEntityB extends DiscrimEntityX {
+		int intField;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorValue("D")
+	private static class DiscrimEntityD extends DiscrimEntityB {
 		String stringField;
 	}
 
-	@DiscriminationValue("A")
-	class TestDatastoreItemSubtypeA extends TestDatastoreItemParentType {
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorField(field = "discrimination_column")
+	@DiscriminatorValue("Y")
+	private static class DiscrimEntityY {
+		TestDatastoreItem.Color enumField;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	@DiscriminatorValue("Y")
+	private static class DiscrimEntityC extends DiscrimEntityY {
 		int intField;
 	}
 }

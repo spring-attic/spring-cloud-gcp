@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- DEPRECATED!!! PLEASE USE "org/springframework/cloud/gcp/logging/logback-appender.xml" -->
+
 <!--
 Stackdriver appender logback configuration provided for import.
 -->
@@ -10,7 +12,7 @@ Stackdriver appender logback configuration provided for import.
 
   <appender name="STACKDRIVER" class="com.google.cloud.logging.logback.LoggingAppender">
     <log>${STACKDRIVER_LOG_NAME}</log> <!-- Optional : default java.log -->
-    <enhancer>org.springframework.cloud.gcp.autoconfigure.logging.TraceIdLoggingEnhancer</enhancer>
+    <enhancer>org.springframework.cloud.gcp.logging.TraceIdLoggingEnhancer</enhancer>
     <flushLevel>${STACKDRIVER_LOG_FLUSH_LEVEL}</flushLevel> <!-- Optional : default ERROR -->
   </appender>
 </included>

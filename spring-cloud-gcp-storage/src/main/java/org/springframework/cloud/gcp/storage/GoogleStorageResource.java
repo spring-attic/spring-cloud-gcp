@@ -49,11 +49,13 @@ import org.springframework.util.Assert;
  * @author João André Martins
  * @author Daniel Zou
  */
-public class GoogleStorageResource extends GoogleStorageLocation implements WritableResource {
+public class GoogleStorageResource implements WritableResource {
 
 	private static final Log LOGGER = LogFactory.getLog(GoogleStorageResource.class);
 
 	private final Storage storage;
+
+	private final GoogleStorageLocation location;
 
 	private final boolean autoCreateFiles;
 
@@ -70,11 +72,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 * @throws IllegalArgumentException if the location URI is invalid
 	 */
 	public GoogleStorageResource(Storage storage, String locationUri, boolean autoCreateFiles) {
-		super(locationUri);
-
-		Assert.notNull(storage, "Storage object can not be null");
-		this.storage = storage;
-		this.autoCreateFiles = autoCreateFiles;
+		this(storage, new GoogleStorageLocation(locationUri), autoCreateFiles);
 	}
 
 	/**
@@ -92,9 +90,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 * Storage.
 	 *
 	 * @param storage the Google Cloud Storage client
-	 * @param bucketName the name of the Google Storage bucket
-	 * @param pathToFile the path to the folder/blob in the bucket; leave as empty string for the
-	 *    path to the bucket itself.
+	 * @param googleStorageLocation the {@link GoogleStorageLocation} of the resource.
 	 * @param autoCreateFiles determines the auto-creation of the file in Google Cloud Storage
 	 *     if an operation that depends on its existence is triggered (e.g., getting the
 	 *     output stream of a file)
@@ -104,13 +100,11 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 */
 	public GoogleStorageResource(
 			Storage storage,
-			String bucketName,
-			String pathToFile,
+			GoogleStorageLocation googleStorageLocation,
 			boolean autoCreateFiles) {
-		super(bucketName, pathToFile);
-
 		Assert.notNull(storage, "Storage object can not be null");
 		this.storage = storage;
+		this.location = googleStorageLocation;
 		this.autoCreateFiles = autoCreateFiles;
 	}
 
@@ -145,12 +139,12 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 */
 	@Override
 	public URL getURL() throws IOException {
-		return this.uri().toURL();
+		return getURI().toURL();
 	}
 
 	@Override
 	public URI getURI() {
-		return this.uri();
+		return this.location.uri();
 	}
 
 	/**
@@ -177,7 +171,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 			Storage.SignUrlOption... options) throws IOException {
 		if (LOGGER.isWarnEnabled()) {
 			if (!exists()) {
-				LOGGER.warn("Creating signed URL for non-existing GCS object " + this.uri());
+				LOGGER.warn("Creating signed URL for non-existing GCS object " + getURI());
 			}
 		}
 
@@ -204,7 +198,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 * such as if the bucket already exists
 	 */
 	public Bucket createBucket() {
-		return this.storage.create(BucketInfo.newBuilder(this.getBucketName()).build());
+		return this.storage.create(BucketInfo.newBuilder(getBucketName()).build());
 	}
 
 	/**
@@ -212,7 +206,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	 * @return the bucket if it exists, or null otherwise
 	 */
 	public Bucket getBucket() {
-		return this.storage.get(this.getBucketName());
+		return this.storage.get(this.location.getBucketName());
 	}
 
 	/**
@@ -225,7 +219,7 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 
 	private Blob throwExceptionForNullBlob(Blob blob) throws IOException {
 		if (blob == null) {
-			throw new FileNotFoundException("The blob was not found: " + this.uri());
+			throw new FileNotFoundException("The blob was not found: " + getURI());
 		}
 		return blob;
 	}
@@ -259,24 +253,25 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	public GoogleStorageResource createRelative(String relativePath) throws IOException {
 		return new GoogleStorageResource(
 				this.storage,
-				this.uri().resolve(relativePath).toString(),
+				getURI().resolve(relativePath).toString(),
 				this.autoCreateFiles);
 	}
 
 	@Override
 	public String getFilename() {
-		return isBucket() ? this.getBucketName() : this.getBlobName();
+		return isBucket() ? getBucketName() : getBlobName();
 	}
 
 	@Override
 	public String getDescription() {
-		return this.uri().toString();
+		return getURI().toString();
 	}
 
 	@Override
 	public InputStream getInputStream() throws IOException {
 		if (isBucket()) {
-			throw new IllegalStateException("Cannot open an input stream to a bucket: '" + this.uri() + "'");
+			throw new IllegalStateException(
+					"Cannot open an input stream to a bucket: '" + getURI() + "'");
 		}
 		else {
 			return Channels.newInputStream(throwExceptionForNullBlob(getBlob()).reader());
@@ -297,14 +292,15 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 	@Override
 	public OutputStream getOutputStream() throws IOException {
 		if (isBucket()) {
-			throw new IllegalStateException("Cannot open an output stream to a bucket: '" + this.uri() + "'");
+			throw new IllegalStateException(
+					"Cannot open an output stream to a bucket: '" + getURI() + "'");
 		}
 		else {
 			Blob blob = getBlob();
 
 			if (blob == null || !blob.exists()) {
 				if (!this.autoCreateFiles) {
-					throw new FileNotFoundException("The blob was not found: " + this.uri());
+					throw new FileNotFoundException("The blob was not found: " + getURI());
 				}
 
 				blob = createBlob();
@@ -314,11 +310,41 @@ public class GoogleStorageResource extends GoogleStorageLocation implements Writ
 		}
 	}
 
+	/**
+	 * @return the blob name of the Google Storage Resource; null if the resource is a bucket
+	 */
+	public String getBlobName() {
+		return this.location.getBlobName();
+	}
+
+	/**
+	 * @return true if the resource is a bucket; false otherwise
+	 */
+	public boolean isBucket() {
+		return this.location.isBucket();
+	}
+
+	/**
+	 * @return the bucket name of the Google Storage Resource
+	 */
+	public String getBucketName() {
+		return this.location.getBucketName();
+	}
+
+	/**
+	 * @return the {@link GoogleStorageLocation} describing the location of the resource in GCS
+	 *
+	 * @since 1.2
+	 */
+	public GoogleStorageLocation getGoogleStorageLocation() {
+		return this.location;
+	}
+
 	private BlobId getBlobId() {
 		if (isBucket()) {
-			throw new IllegalStateException("No blob id specified in the location: '" + this.uri() +
-					"', and the operation is not allowed on buckets.");
+			throw new IllegalStateException("No blob id specified in the location: '"
+					+ getURI() + "', and the operation is not allowed on buckets.");
 		}
-		return BlobId.of(this.getBucketName(), this.getBlobName());
+		return BlobId.of(getBucketName(), getBlobName());
 	}
 }

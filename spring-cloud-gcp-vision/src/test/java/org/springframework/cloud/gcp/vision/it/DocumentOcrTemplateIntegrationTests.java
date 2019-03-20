@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.vision.it;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -61,12 +63,30 @@ public class DocumentOcrTemplateIntegrationTests {
 		GoogleStorageLocation outputLocationPrefix = GoogleStorageLocation.forFile(
 				"vision-integration-test-bucket", "it_output/test-");
 
-		ListenableFuture<DocumentOcrResultSet> result = this.documentOcrTemplate.runOcrForDocument(document,
+		ListenableFuture<DocumentOcrResultSet> result = this.documentOcrTemplate.runOcrForDocument(
+				document,
 				outputLocationPrefix);
 
 		DocumentOcrResultSet ocrPages = result.get(5, TimeUnit.MINUTES);
-		String text = ocrPages.getPage(0).getText();
-		assertThat(text).contains("Hello World. Is mayonnaise an instrument?");
+
+		String page1Text = ocrPages.getPage(1).getText();
+		assertThat(page1Text).contains("Hello World. Is mayonnaise an instrument?");
+
+		String page2Text = ocrPages.getPage(2).getText();
+		assertThat(page2Text).contains("Page 2 stuff");
+
+		ArrayList<String> pageContent = new ArrayList<>();
+
+		Iterator<TextAnnotation> pageIterator = ocrPages.getAllPages();
+		while (pageIterator.hasNext()) {
+			pageContent.add(pageIterator.next().getText());
+		}
+
+		assertThat(pageContent).containsExactly(
+				"Hello World. Is mayonnaise an instrument?\n",
+				"Page 2 stuff\n",
+				"Page 3 stuff\n",
+				"Page 4 stuff\n");
 	}
 
 	@Test
@@ -74,9 +94,9 @@ public class DocumentOcrTemplateIntegrationTests {
 		GoogleStorageLocation ocrOutputPrefix = GoogleStorageLocation.forFolder(
 				"vision-integration-test-bucket", "json_output_set/");
 
-		DocumentOcrResultSet result = this.documentOcrTemplate.parseOcrOutputFileSet(ocrOutputPrefix);
+		DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFileSet(ocrOutputPrefix);
 
-		String text = result.getPage(0).getText();
+		String text = result.getPage(2).getText();
 		assertThat(text).contains("Hello World. Is mayonnaise an instrument?");
 	}
 
@@ -84,11 +104,11 @@ public class DocumentOcrTemplateIntegrationTests {
 	public void testParseOcrFile() throws InvalidProtocolBufferException {
 		GoogleStorageLocation ocrOutputFile = GoogleStorageLocation.forFile(
 				"vision-integration-test-bucket",
-				"json_output_set/test_output.json");
+				"json_output_set/test_output-2-to-2.json");
 
-		TextAnnotation result = this.documentOcrTemplate.parseOcrOutputFile(ocrOutputFile);
+		DocumentOcrResultSet pages = this.documentOcrTemplate.readOcrOutputFile(ocrOutputFile);
 
-		String text = result.getText();
+		String text = pages.getPage(2).getText();
 		assertThat(text).contains("Hello World. Is mayonnaise an instrument?");
 	}
 }

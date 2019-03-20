@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,15 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging.extractors;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * An extractor that can provide a trace ID from an HTTP request.
  *
  * @author Chengyuan Zhao
+ *
+ * @deprecated use
+ * {@link org.springframework.cloud.gcp.logging.extractors.TraceIdExtractor}
  */
-public interface TraceIdExtractor {
+@Deprecated
+public interface TraceIdExtractor extends org.springframework.cloud.gcp.logging.extractors.TraceIdExtractor {
 
-	/**
-	 * Extract trace ID from the HTTP request.
-	 *
-	 * @param req the HTTP servlet request.
-	 * @return the trace ID or null, if none found.
-	 */
-	String extractTraceIdFromRequest(HttpServletRequest req);
 }

@@ -2,8 +2,10 @@
 
 == Spring Data Cloud Datastore
 
+NOTE: This integration is fully compatible with https://cloud.google.com/datastore/docs/[Firestore in Datastore Mode], but not with Firestore in Native Mode.
+
 http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud Datastore].
+Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in Datastore mode.
 
 Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -349,6 +351,58 @@ public class ConverterConfiguration {
 	}
 }
 ----
+
+
+==== Inheritance Hierarchies
+
+Java entity types related by inheritance can be stored in the same Kind.
+When reading and querying entities using `DatastoreRepository` or `DatastoreTemplate` with a superclass as the type parameter, you can receive instances of subclasses if you annotate the superclass and its subclasses with `DiscriminatorField` and `DiscriminatorValue`:
+
+[source, java]
+----
+@Entity(name = "pets")
+@DiscriminatorField(field = "pet_type")
+abstract class Pet {
+	@Id
+	Long id;
+
+	abstract String speak();
+}
+
+@DiscriminatorValue("cat")
+class Cat extends Pet {
+	@Override
+	String speak() {
+		return "meow";
+	}
+}
+
+@DiscriminatorValue("dog")
+class Dog extends Pet {
+	@Override
+	String speak() {
+		return "woof";
+	}
+}
+
+@DiscriminatorValue("pug")
+class Pug extends Dog {
+	@Override
+	String speak() {
+		return "woof woof";
+	}
+}
+----
+
+Instances of all 3 types are stored in the `pets` Kind.
+Because a single Kind is used, all classes in the hierarchy must share the same ID property and no two instances of any type in the hierarchy can share the same ID value.
+
+Entity rows in Cloud Datastore store their respective types' `DiscriminatorValue` in a field specified by the root superclass's `DiscriminatorField` (`pet_type` in this case).
+Reads and queries using a given type parameter will match each entity with its specific type.
+For example, reading a `List<Pet>` will produce a list containing instances of all 3 types.
+However, reading a `List<Dog>` will produce a list containing only `Dog` and `Pug` instances.
+You can include the `pet_type` discrimination field in your Java entities, but its type must be convertible to a collection or array of `String`.
+Any value set in the discrimination field will be overwritten upon write to Cloud Datastore.
 
 
 === Relationships
@@ -960,6 +1014,9 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 }
 ----
 
+NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with `DiscriminatorField`.
+
 The following parameter types are supported:
 
 * `com.google.cloud.Timestamp`
@@ -1027,6 +1084,9 @@ You can also specify queries with Cloud Datastore parameter tags and SpEL expres
 
 By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the `META-INF/datastore-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:
+
+NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
+annotated with `DiscriminatorField`.
 
 [source, properties]
 ----
@@ -1133,10 +1193,85 @@ Spring Data Cloud Datastore publishes events extending the Spring Framework's `A
 [options="header"]
 |===
 | Type | Description | Contents
+| `AfterFindByKeyEvent`|Published immediately after read by-key operations are executed by `DatastoreTemplate`| The entities read from Cloud Datastore and the original keys in the request.
+| `AfterQueryEvent`|Published immediately after read byquery operations are executed by `DatastoreTemplate`| The entities read from Cloud Datastore and the original query in the request.
+| `BeforeSaveEvent`|Published immediately before save operations are executed by `DatastoreTemplate`| The entities to be sent to Cloud Datastore and the original Java objects being saved.
+| `AfterSaveEvent`|Published immediately after save operations are executed by `DatastoreTemplate`| The entities sent to Cloud Datastore  and the original Java objects being saved.
 | `BeforeDeleteEvent`|Published immediately before delete operations are executed by `DatastoreTemplate`| The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 | `AfterDeleteEvent`|Published immediately after delete operations are executed by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 |===
 
+=== Auditing
+
+Spring Data Cloud Datastore supports the `@LastModifiedDate` and `@LastModifiedBy` auditing annotations for properties:
+
+[source,java]
+----
+@Entity
+public class SimpleEntity {
+    @Id
+    String id;
+
+    @LastModifiedBy
+    String lastUser;
+
+    @LastModifiedDate
+    DateTime lastTouched;
+}
+----
+
+Upon insert, update, or save, these properties will be set automatically by the framework before Datastore entities are generated and saved to Cloud Datastore.
+
+To take advantage of these features, add the `@EnableDatastoreAuditing` annotation to your configuration class and provide a bean for an `AuditorAware<A>` implementation where the type `A` is the desired property type annotated by `@LastModifiedBy`:
+
+[source,java]
+----
+@Configuration
+@EnableDatastoreAuditing
+public class Config {
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of("YOUR_USERNAME_HERE");
+    }
+}
+----
+
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModifiedBy` and can be of any type.
+One alternative is to use Spring Security's `User` type:
+
+[source,java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public Optional<User> getCurrentAuditor() {
+
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
+  }
+}
+----
+
+You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableDatastoreAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
+
+=== Spring Boot Actuator Support
+
+==== Cloud Datastore Health Indicator
+
+If you are using Spring Boot Actuator, you can take advantage of the Cloud Datastore health indicator called `datastore`.
+The health indicator will verify whether Cloud Datastore is up and accessible by your application.
+To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
 
 === Sample
 

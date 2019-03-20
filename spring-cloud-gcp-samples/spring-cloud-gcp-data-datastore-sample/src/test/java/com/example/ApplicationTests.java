@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.example;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,19 +93,19 @@ public class ApplicationTests {
 	@Test
 	public void basicTest() throws Exception {
 		Singer johnDoe = new Singer(null, "John", "Doe", null);
-		Singer maryJane = new Singer(null, "Mary", "Jane", null);
-		Singer scottSmith = new Singer(null, "Scott", "Smith", null);
+		Singer janeDoe = new Singer(null, "Jane", "Doe", null);
+		Singer richardRoe = new Singer(null, "Richard", "Roe", null);
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAsc)
 				.as("Verify ASC order")
-				.containsExactly(johnDoe, maryJane, scottSmith);
+				.containsExactly(johnDoe, janeDoe, richardRoe);
 
 		List<Singer> singersDesc = getSingers("/singers?sort=lastName,DESC");
 		assertThat(singersDesc)
 				.as("Verify DESC order")
-				.containsExactly(scottSmith, maryJane, johnDoe);
+				.containsExactly(richardRoe, johnDoe, janeDoe);
 
 		sendRequest("/singers", "{\"singerId\": \"singerFrodo\", \"firstName\":" +
 						" \"Frodo\", \"lastName\": \"Baggins\"}",
@@ -116,7 +117,7 @@ public class ApplicationTests {
 		List<Singer> singersAfterInsertion = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAfterInsertion)
 				.as("Verify post")
-				.containsExactly(frodoBaggins, johnDoe, maryJane, scottSmith);
+				.containsExactly(frodoBaggins, johnDoe, janeDoe, richardRoe);
 
 		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
 
@@ -126,15 +127,15 @@ public class ApplicationTests {
 		List<Singer> singersAfterDeletion = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAfterDeletion)
 				.as("Verify Delete")
-				.containsExactly(frodoBaggins, maryJane, scottSmith);
+				.containsExactly(frodoBaggins, janeDoe, richardRoe);
 
 		assertThat(baos.toString())
 				.as("Verify relationships saved in transaction")
 				.contains("Relationship links "
 						+ "were saved between a singer, bands, and instruments in a single transaction: "
-						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
+						+ "Singer{singerId='singer2', firstName='Jane', lastName='Doe', "
 						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
-						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
+						+ "date=2018-02-12}], firstBand=General Band, bands=General Band,Big Bland Band, "
 						+ "personalInstruments=recorder,cow bell}");
 
 		assertThat(
@@ -145,17 +146,22 @@ public class ApplicationTests {
 		assertThat(
 				this.singerRepository.findById("singer2").get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("band1", "band2");
+								.containsExactlyInAnyOrder("General Band", "Big Bland Band");
+
+		Singer singer3 = this.singerRepository.findById("singer3").get();
 
 		assertThat(
-				this.singerRepository.findById("singer3").get().getPersonalInstruments()
+				singer3.getPersonalInstruments()
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("triangle", "marimba");
 
 		assertThat(
-				this.singerRepository.findById("singer3").get().getBands().stream()
+				singer3.getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder("band3", "band2");
+								.containsExactlyInAnyOrder("Crooked Still", "Big Bland Band");
+
+		assertThat(singer3.getLastModifiedTime())
+				.isAfter(LocalDateTime.parse("2000-01-01T00:00:00"));
 
 		assertThat(baos.toString()).contains("Query by example\n" +
 				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +

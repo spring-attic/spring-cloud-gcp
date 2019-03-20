@@ -28,6 +28,7 @@ import com.google.cloud.logging.LoggingOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,6 +67,7 @@ import static org.awaitility.Awaitility.await;
 		properties = {"spring.main.banner-mode=off"}
 )
 @RunWith(SpringRunner.class)
+@Ignore
 public class StackdriverLoggingIntegrationTests {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverLoggingIntegrationTests.class);

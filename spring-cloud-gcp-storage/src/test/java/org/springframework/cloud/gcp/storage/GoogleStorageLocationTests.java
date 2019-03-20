@@ -26,20 +26,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GoogleStorageLocationTests {
 
 	@Test
-	public void testCorrectUriForBucket() {
+	public void testCorrectLocationForBucket() {
 		GoogleStorageLocation location = GoogleStorageLocation.forBucket("bucketName");
 		assertThat(location.uriString()).isEqualTo("gs://bucketName/");
+		assertThat(location.isBucket()).isTrue();
 	}
 
 	@Test
-	public void testCorrectUriForFolder() {
+	public void testCorrectLocationForFolder() {
 		GoogleStorageLocation location = GoogleStorageLocation.forFolder("bucketName", "folderName");
 		assertThat(location.uriString()).isEqualTo("gs://bucketName/folderName/");
+		assertThat(location.isFolder()).isTrue();
 	}
 
 	@Test
-	public void testCorrectUriForFile() {
+	public void testCorrectLocationForFile() {
 		GoogleStorageLocation location = GoogleStorageLocation.forFile("bucketName", "fileName");
 		assertThat(location.uriString()).isEqualTo("gs://bucketName/fileName");
+		assertThat(location.isFile()).isTrue();
 	}
 }

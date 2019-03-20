@@ -16,55 +16,84 @@
 
 package org.springframework.cloud.gcp.vision;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 
 import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
- * Represents the parsed OCR output for a document.
+ * Represents the parsed OCR content for an document in the provided range of pages.
  *
  * @author Daniel Zou
  */
 public class DocumentOcrResultSet {
 
-	private final Storage storageClient;
+	private final TreeMap<Integer, OcrPageRange> ocrPageRanges;
 
-	private final List<Blob> pageBlobs;
+	private final int minPage;
 
-	public DocumentOcrResultSet(List<Blob> pages, Storage storageClient) {
-		this.pageBlobs = pages;
-		this.storageClient = storageClient;
+	private final int maxPage;
+
+	DocumentOcrResultSet(Collection<Blob> pages) {
+		this.ocrPageRanges = new TreeMap<>();
+
+		for (Blob blob : pages) {
+			OcrPageRange pageRange = new OcrPageRange(blob);
+			ocrPageRanges.put(pageRange.getStartPage(), pageRange);
+		}
+
+		this.minPage = this.ocrPageRanges.firstEntry().getValue().getStartPage();
+		this.maxPage = this.ocrPageRanges.lastEntry().getValue().getEndPage();
 	}
 
 	/**
-	 * Returns the number of pages of the document.
+	 * Returns the minimum page number in the result set.
 	 *
-	 * @return number of pages in the document
+	 * @return the lowest page number in the result set.
 	 */
-	public int getPageCount() {
-		return this.pageBlobs.size();
+	public int getMinPage() {
+		return this.minPage;
 	}
+
+	/**
+	 * Returns the maximum page number in the result set.
+	 *
+	 * @return the highest page number in the result set.
+	 */
+	public int getMaxPage() {
+		return this.maxPage;
+	}
+
 
 	/**
 	 * Retrieves the parsed OCR information of the page at index {@code pageNumber} of the
-	 * document. All page numbers are 0-indexed.
+	 * document. The page number must be a value between {@link DocumentOcrResultSet#getMinPage()}
+	 * and {@link DocumentOcrResultSet#getMaxPage()}.
 	 *
-	 * <p>This returns a TextAnnotation object which is Google Cloud Vision's representation of a
+	 * <p>
+	 * This returns a TextAnnotation object which is Google Cloud Vision's representation of a
 	 * page of a document. For more information on reading this object, see:
 	 * https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.TextAnnotation
 	 *
-	 * @param pageNumber the zero-indexed page number of the document
+	 * @param pageNumber the page number of the document
 	 * @return the {@link TextAnnotation} representing the page of the document
 	 * @throws InvalidProtocolBufferException if the OCR information for the page failed to be
 	 *     parsed
+	 *
 	 */
 	public TextAnnotation getPage(int pageNumber) throws InvalidProtocolBufferException {
-		Blob pageBlob = this.pageBlobs.get(pageNumber);
-		return DocumentOcrTemplate.parseJsonBlob(pageBlob);
+		if (pageNumber < this.minPage || pageNumber > this.maxPage) {
+			throw new IndexOutOfBoundsException("Page number out of bounds: " + pageNumber);
+		}
+
+		OcrPageRange pageRange = ocrPageRanges.floorEntry(pageNumber).getValue();
+		return pageRange.getPage(pageNumber);
 	}
 
 	/**
@@ -76,23 +105,41 @@ public class DocumentOcrResultSet {
 	public Iterator<TextAnnotation> getAllPages() {
 		return new Iterator<TextAnnotation>() {
 
-			int currentPage = 0;
+			private final Iterator<OcrPageRange> pageRangeIterator = ocrPageRanges.values().iterator();
+
+			private int offset = 0;
+
+			private List<TextAnnotation> currentPageRange = Collections.EMPTY_LIST;
 
 			@Override
 			public boolean hasNext() {
-				return currentPage < getPageCount();
+				return pageRangeIterator.hasNext() || offset < currentPageRange.size();
 			}
 
 			@Override
 			public TextAnnotation next() {
-				try {
-					TextAnnotation result = getPage(currentPage);
-					currentPage++;
-					return result;
+				if (!hasNext()) {
+					throw new NoSuchElementException("No more pages left in DocumentOcrResultSet.");
 				}
-				catch (InvalidProtocolBufferException e) {
-					throw new RuntimeException("Failed to process over document result set.", e);
+
+				if (offset >= currentPageRange.size()) {
+					OcrPageRange pageRange = pageRangeIterator.next();
+					offset = 0;
+
+					try {
+						currentPageRange = pageRange.getPages();
+					}
+					catch (InvalidProtocolBufferException e) {
+						throw new RuntimeException(
+								"Failed to parse OCR output from JSON output file "
+										+ pageRange.getBlob().getName(),
+								e);
+					}
 				}
+
+				TextAnnotation result = currentPageRange.get(offset);
+				offset++;
+				return result;
 			}
 		};
 	}
