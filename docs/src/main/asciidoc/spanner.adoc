@@ -1363,6 +1363,46 @@ Database administrative operations, such as creating tables using `SpannerDataba
 
 If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for `Supplier<DatabaseClient>`.
 
+==== Setting Instance by Parameters and Method
+
+The aforementioned method for providing target instances and databases allows only externally-determined connection settings.
+
+However, you can also specify target databases based the actual parameters of your operations, such as the entities to be written to or the keys to be read from Cloud Spanner by providing a `databaseClientConfiguringSpannerTemplate` bean:
+
+[source,java]
+----
+    @Bean
+    public DatabaseClientProvidingSpannerTemplate databaseClientConfiguringSpannerTemplate() {
+        return ConfigurableDatabaseClientSpannerTemplateFactory
+                .prepareDatabaseClientConfigurationSpannerTemplate(new SettableClientSpannerTemplate() {
+
+                    @Override
+                    public void upsert(Object object) {
+                        Book book = (Book) object;
+                        if (book.genre == "Fantasy") {
+                            getDatabaseClientProvider()
+                                    .setCurrentThreadLocalDatabaseClient(/*Database Client for Fantasy books*/);
+                        }
+                        else if (book.length > 1000) {
+                            getDatabaseClientProvider()
+                                    .setCurrentThreadLocalDatabaseClient(/*Database Client for very long books*/);
+                        }
+                        else {
+                            // etc...
+                        }
+                    }
+                });
+    }
+----
+
+By providing an overridden instance of `SettableClientSpannerTemplate` to the `ConfigurableDatabaseClientSpannerTemplateFactory.prepareDatabaseClientConfigurationSpannerTemplate` method, you can use the `getDatabaseClientProvider` to set an arbitrary `DatabaseClient` for that specific operation.
+
+Note that overriding `SpannerTemplate` methods in `SettableClientSpannerTemplate` means you *do not* need to actually implement the operation; a full `SpannerTemplate` bean will still perform the actual operations.
+You only need to call `getDatabaseClientProvider()` to set the database client that will be used for the actual execution of this operation.
+The overridden can be exited as soon as the desired database client is set.
+
+You can override any of the normally accessible `SpannerTemplate` methods in this way to further customize your target instances and databases.
+
 === Sample
 
 
