@@ -1397,7 +1397,7 @@ However, you can also specify target databases based the actual parameters of yo
 
 By providing an overridden instance of `SettableClientSpannerTemplate` to the `ConfigurableDatabaseClientSpannerTemplateFactory.prepareDatabaseClientConfigurationSpannerTemplate` method, you can use the `getDatabaseClientProvider` to set an arbitrary `DatabaseClient` for that specific operation.
 
-Note that overriding `SpannerTemplate` methods in `SettableClientSpannerTemplate` means you *do not* need to actually implement the operation; a full `SpannerTemplate` bean will still perform the actual operations.
+NOTE: Overriding `SpannerTemplate` methods in `SettableClientSpannerTemplate` means you *DO NOT* need to actually implement the operation; a full `SpannerTemplate` bean will still perform the actual operations.
 You only need to call `getDatabaseClientProvider()` to set the database client that will be used for the actual execution of this operation.
 The overridden method can be exited as soon as the desired database client is set.
 
