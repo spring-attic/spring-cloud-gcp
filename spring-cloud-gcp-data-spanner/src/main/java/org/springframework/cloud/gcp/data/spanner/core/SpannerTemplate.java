@@ -87,18 +87,36 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
-	private final Supplier<DatabaseClient> databaseClientProvider;
+	protected SpannerMappingContext mappingContext;
 
-	private final SpannerMappingContext mappingContext;
+	protected SpannerEntityProcessor spannerEntityProcessor;
 
-	private final SpannerEntityProcessor spannerEntityProcessor;
+	protected SpannerMutationFactory mutationFactory;
 
-	private final SpannerMutationFactory mutationFactory;
+	protected SpannerSchemaUtils spannerSchemaUtils;
 
-	private final SpannerSchemaUtils spannerSchemaUtils;
+	protected Supplier<DatabaseClient> databaseClientProvider;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
+	/**
+	 * A default constructor supplied to allow easier work when extending SpannerTemplate and
+	 * inheritance.
+	 */
+	public SpannerTemplate() {
+
+	}
+
+	/**
+	 * Primary constructor.
+	 * @param databaseClientProvider a supplier of database clients. This is used to supply
+	 *     each database client for a new operation or new transaction.
+	 * @param mappingContext the Spring Data mapping context used to provide entity metadata.
+	 * @param spannerEntityProcessor the entity processor for working with Cloud Spanner row
+	 *     objects
+	 * @param spannerMutationFactory the mutation factory for generating write operations.
+	 * @param spannerSchemaUtils the utility class for working with table and entity schemas.
+	 */
 	public SpannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
@@ -123,6 +141,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
 		this.eventPublisher = applicationEventPublisher;
+	}
+
+	/**
+	 * Set the database client provider this template will use for operations and queries.
+	 * @param databaseClientProvider the database client provider that will be used.
+	 */
+	public void setDatabaseClientProvider(Supplier<DatabaseClient> databaseClientProvider) {
+		this.databaseClientProvider = databaseClientProvider;
 	}
 
 	protected ReadContext getReadContext() {

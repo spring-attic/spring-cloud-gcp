@@ -17,6 +17,8 @@
 package com.example;
 
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.After;
 import org.junit.Before;
@@ -27,13 +29,19 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration;
+import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientSettingSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -47,7 +55,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application.properties")
 @EnableAutoConfiguration
-public class SpannerRepositoryMultiDatabaseTests {
+public class SpannerRepositoryMultiDatabaseIdTests {
 	@Autowired
 	private TraderRepository traderRepository;
 
@@ -125,5 +133,4 @@ public class SpannerRepositoryMultiDatabaseTests {
 					databaseFlipper ? "db1" : "db2");
 		}
 	}
-
 }

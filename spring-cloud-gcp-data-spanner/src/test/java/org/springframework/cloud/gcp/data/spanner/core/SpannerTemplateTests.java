@@ -49,6 +49,8 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
+import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -127,7 +129,51 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void multipleDatabaseClientTest() {
+	public void argumentBasedMultipleDatabaseClientTest() {
+		DatabaseClient databaseClient1 = mock(DatabaseClient.class);
+		DatabaseClient databaseClient2 = mock(DatabaseClient.class);
+
+		when(databaseClient1.singleUse()).thenReturn(this.readContext);
+		when(databaseClient2.singleUse()).thenReturn(this.readContext);
+
+		SpannerTemplate template = ConfigurableDatabaseClientSpannerTemplateFactory.applyDatabaseClientSetterBehavior(
+				new SpannerTemplate(() -> null,
+						this.mappingContext, this.objectMapper, this.mutationFactory,
+						this.schemaUtils),
+				ConfigurableDatabaseClientSpannerTemplateFactory.prepareDatabaseClientConfigurationSpannerTemplate(
+						new SettableClientSpannerTemplate() {
+							@Override
+							public <T> T read(Class<T> entityClass, Key key) {
+
+								if (key.equals(Key.of("key1"))) {
+									setDatabaseClient(databaseClient1);
+								}
+								else if (key.equals(Key.of("key2"))) {
+									setDatabaseClient(databaseClient2);
+								}
+
+								return null;
+							}
+						}));
+
+		// this first read should use the first client
+		template.read(TestEntity.class, Key.of("key1"));
+		verify(databaseClient1, times(1)).singleUse();
+		verify(databaseClient2, times(0)).singleUse();
+
+		// this second read should use the second client
+		template.read(TestEntity.class, Key.of("key2"));
+		verify(databaseClient1, times(1)).singleUse();
+		verify(databaseClient2, times(1)).singleUse();
+
+		// this third read should use the first client again
+		template.read(TestEntity.class, Key.of("key1"));
+		verify(databaseClient1, times(2)).singleUse();
+		verify(databaseClient2, times(1)).singleUse();
+	}
+
+	@Test
+	public void multipleDatabaseClientSupplierTest() {
 		DatabaseClient databaseClient1 = mock(DatabaseClient.class);
 		DatabaseClient databaseClient2 = mock(DatabaseClient.class);
 
