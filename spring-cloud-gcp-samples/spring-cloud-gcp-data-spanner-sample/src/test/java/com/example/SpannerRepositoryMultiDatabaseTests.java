@@ -17,8 +17,7 @@
 package com.example;
 
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.After;
 import org.junit.Before;
@@ -29,9 +28,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientSettingSpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientProvidingSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
@@ -40,8 +38,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Collection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -55,7 +51,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application.properties")
 @EnableAutoConfiguration
-public class SpannerRepositoryMultiDatabaseIdTests {
+public class SpannerRepositoryMultiDatabaseTests {
 	@Autowired
 	private TraderRepository traderRepository;
 
@@ -79,7 +75,6 @@ public class SpannerRepositoryMultiDatabaseIdTests {
 		createTable();
 		Config.flipDatabase();
 		createTable();
-		this.traderRepository.deleteAll();
 	}
 
 	private void createTable() {
@@ -88,23 +83,28 @@ public class SpannerRepositoryMultiDatabaseIdTests {
 					this.spannerSchemaUtils.getCreateTableDdlStringsForInterleavedHierarchy(Trader.class),
 					true);
 		}
+		this.traderRepository.deleteAll();
 	}
 
 	@Test
 	public void testLoadsCorrectData() {
+		// all operations on Cloud Spanner use connections determined by the `databaseIdProvider`
+		// bean.
 		assertThat(this.traderRepository.count()).isEqualTo(0);
 		Config.flipDatabase();
 		assertThat(this.traderRepository.count()).isEqualTo(0);
 
+		// however, save operations in particular utilize the
+		// `databaseClientConfiguringSpannerTemplate`
+		// bean which allows the user to examine the parameters of each `SpannerTemplate` call.
 		this.traderRepository.save(new Trader("1", "a", "al"));
-		Config.flipDatabase();
 		this.traderRepository.save(new Trader("2", "a", "al"));
-		Config.flipDatabase();
 		this.traderRepository.save(new Trader("3", "a", "al"));
+		this.traderRepository.save(new Trader("5", "a", "al"));
 
-		assertThat(this.traderRepository.count()).isEqualTo(2);
-		Config.flipDatabase();
 		assertThat(this.traderRepository.count()).isEqualTo(1);
+		Config.flipDatabase();
+		assertThat(this.traderRepository.count()).isEqualTo(3);
 	}
 
 	/**
@@ -131,6 +131,36 @@ public class SpannerRepositoryMultiDatabaseIdTests {
 		public DatabaseIdProvider databaseIdProvider(SpannerOptions spannerOptions) {
 			return () -> DatabaseId.of(spannerOptions.getProjectId(), this.instanceId,
 					databaseFlipper ? "db1" : "db2");
+		}
+
+		@Bean
+		public DatabaseClientProvidingSpannerTemplate databaseClientConfiguringSpannerTemplate(Spanner spanner) {
+			return ConfigurableDatabaseClientSpannerTemplateFactory
+					.prepareDatabaseClientConfigurationSpannerTemplate(new SettableClientSpannerTemplate() {
+
+						/*
+						 * The purpose is to call the `setDatabaseClient` method, which determines the connection
+						 * to use for this operation based on the arguments.
+						 * Note that this override DOES NOT need to execute the mutations. The override method
+						 * merely presents the arguments to the user for client-setting.
+						 */
+						@Override
+						public void upsert(Object object) {
+							Trader trader = (Trader) object;
+							if (Integer.valueOf(trader.getTraderId()) % 2 == 0) {
+								getDatabaseClientProvider()
+										.setCurrentThreadLocalDatabaseClient(spanner.getDatabaseClient(DatabaseId
+												.of(spanner.getOptions().getProjectId(), Config.this.instanceId,
+														"db2")));
+							}
+							else {
+								getDatabaseClientProvider()
+										.setCurrentThreadLocalDatabaseClient(spanner.getDatabaseClient(DatabaseId
+												.of(spanner.getOptions().getProjectId(), Config.this.instanceId,
+														"db1")));
+							}
+						}
+					});
 		}
 	}
 }

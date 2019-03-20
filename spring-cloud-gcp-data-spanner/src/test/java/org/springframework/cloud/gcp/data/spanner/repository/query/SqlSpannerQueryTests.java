@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -98,7 +99,9 @@ public class SqlSpannerQueryTests {
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(SpannerQueryMethod.class);
-		this.spannerTemplate = spy(new SpannerTemplate(() -> mock(DatabaseClient.class),
+		this.spannerTemplate = spy(new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> mock(DatabaseClient.class),
+						x -> mock(DatabaseClient.class)),
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
 						this.spannerMappingContext, this.spannerEntityProcessor, true)));

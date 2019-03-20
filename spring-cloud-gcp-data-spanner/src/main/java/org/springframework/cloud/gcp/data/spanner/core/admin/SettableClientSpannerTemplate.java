@@ -16,12 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
-import java.util.function.Supplier;
-
-import com.google.cloud.spanner.DatabaseClient;
-
+import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.util.Assert;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
 /**
  * This class is intended for users to override with a bean to configure per-method
@@ -31,20 +29,34 @@ import org.springframework.util.Assert;
  */
 public class SettableClientSpannerTemplate extends SpannerTemplate {
 
+	public SettableClientSpannerTemplate() {
+		this.databaseClientProvider = new CachingComposingDatabaseClientSupplier(() -> 0, x -> null);
+	}
+
 	/**
-	 * Set the database client to use for operations.
-	 * @param databaseClient the client.
+	 * Primary constructor.
+	 * @param databaseClientProvider a supplier of database clients. This is used to supply
+	 *     each database client for a new operation or new transaction.
+	 * @param mappingContext the Spring Data mapping context used to provide entity metadata.
+	 * @param spannerEntityProcessor the entity processor for working with Cloud Spanner row
+	 *     objects
+	 * @param spannerMutationFactory the mutation factory for generating write operations.
+	 * @param spannerSchemaUtils the utility class for working with table and entity schemas.
 	 */
-	public void setDatabaseClient(DatabaseClient databaseClient) {
-		Assert.notNull(databaseClient, "The database client must not be null.");
-		setDatabaseClientProvider(() -> databaseClient);
+	public SettableClientSpannerTemplate(CachingComposingDatabaseClientSupplier databaseClientProvider,
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMutationFactory spannerMutationFactory,
+			SpannerSchemaUtils spannerSchemaUtils) {
+		super(databaseClientProvider, mappingContext, spannerEntityProcessor, spannerMutationFactory,
+				spannerSchemaUtils);
 	}
 
 	/**
 	 * Get the database client provider this template will use for operations and queries.
 	 * @return the database client provider that will be used.
 	 */
-	public Supplier<DatabaseClient> getDatabaseClientProvider() {
+	public CachingComposingDatabaseClientSupplier getDatabaseClientProvider() {
 		return this.databaseClientProvider;
 	}
 }

@@ -42,9 +42,9 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientSettingSpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientProvidingSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
@@ -178,9 +178,9 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean(value = DatabaseClient.class, parameterizedContainer = Supplier.class)
-		public Supplier<DatabaseClient> databaseClientProvider(
+		public CachingComposingDatabaseClientSupplier databaseClientProvider(
 				Spanner spanner, Supplier<DatabaseId> databaseIdProvider) {
-			return new CachingComposingSupplier<>(databaseIdProvider, spanner::getDatabaseClient);
+			return new CachingComposingDatabaseClientSupplier<>(databaseIdProvider, spanner::getDatabaseClient);
 		}
 
 		@Bean
@@ -198,22 +198,23 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@Primary
-		@ConditionalOnMissingBean
-		public SpannerTemplate spannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
+		@ConditionalOnMissingBean(name = "spannerTemplate")
+		public SpannerTemplate spannerTemplate(CachingComposingDatabaseClientSupplier databaseClientProvider,
 				SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 				SpannerMutationFactory spannerMutationFactory,
 				SpannerSchemaUtils spannerSchemaUtils,
-				DatabaseClientSettingSpannerTemplate databaseClientSettingSpannerTemplate) {
+				DatabaseClientProvidingSpannerTemplate databaseClientProvidingSpannerTemplate) {
 			return ConfigurableDatabaseClientSpannerTemplateFactory
 					.applyDatabaseClientSetterBehavior(
-							new SpannerTemplate(databaseClientProvider, mappingContext, spannerEntityProcessor,
+							new SettableClientSpannerTemplate(databaseClientProvider, mappingContext,
+									spannerEntityProcessor,
 									spannerMutationFactory, spannerSchemaUtils),
-							databaseClientSettingSpannerTemplate);
+							databaseClientProvidingSpannerTemplate);
 		}
 
 		@Bean
 		@ConditionalOnMissingBean
-		public DatabaseClientSettingSpannerTemplate databaseClientConfiguringSpannerTemplate() {
+		public DatabaseClientProvidingSpannerTemplate databaseClientConfiguringSpannerTemplate() {
 			return ConfigurableDatabaseClientSpannerTemplateFactory
 					.prepareDatabaseClientConfigurationSpannerTemplate(new SettableClientSpannerTemplate());
 		}

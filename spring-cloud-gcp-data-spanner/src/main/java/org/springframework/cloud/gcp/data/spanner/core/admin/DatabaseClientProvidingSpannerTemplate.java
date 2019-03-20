@@ -25,9 +25,9 @@ package org.springframework.cloud.gcp.data.spanner.core.admin;
  *
  * @since 1.2
  */
-public class DatabaseClientSettingSpannerTemplate extends SettableClientSpannerTemplate {
+public class DatabaseClientProvidingSpannerTemplate extends SettableClientSpannerTemplate {
 
-	DatabaseClientSettingSpannerTemplate() {
+	DatabaseClientProvidingSpannerTemplate() {
 
 	}
 }

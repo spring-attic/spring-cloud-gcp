@@ -48,7 +48,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
@@ -123,7 +123,8 @@ public class SpannerTemplateTests {
 				true);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
-		this.spannerTemplate = new SpannerTemplate(() -> this.databaseClient,
+		this.spannerTemplate = new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> this.databaseClient, x -> this.databaseClient),
 				this.mappingContext, this.objectMapper, this.mutationFactory,
 				this.schemaUtils);
 	}
@@ -137,7 +138,7 @@ public class SpannerTemplateTests {
 		when(databaseClient2.singleUse()).thenReturn(this.readContext);
 
 		SpannerTemplate template = ConfigurableDatabaseClientSpannerTemplateFactory.applyDatabaseClientSetterBehavior(
-				new SpannerTemplate(() -> null,
+				new SettableClientSpannerTemplate(new CachingComposingDatabaseClientSupplier(() -> null, x -> null),
 						this.mappingContext, this.objectMapper, this.mutationFactory,
 						this.schemaUtils),
 				ConfigurableDatabaseClientSpannerTemplateFactory.prepareDatabaseClientConfigurationSpannerTemplate(
@@ -146,10 +147,10 @@ public class SpannerTemplateTests {
 							public <T> T read(Class<T> entityClass, Key key) {
 
 								if (key.equals(Key.of("key1"))) {
-									setDatabaseClient(databaseClient1);
+									getDatabaseClientProvider().setCurrentThreadLocalDatabaseClient(databaseClient1);
 								}
 								else if (key.equals(Key.of("key2"))) {
-									setDatabaseClient(databaseClient2);
+									getDatabaseClientProvider().setCurrentThreadLocalDatabaseClient(databaseClient2);
 								}
 
 								return null;
@@ -185,7 +186,8 @@ public class SpannerTemplateTests {
 		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
 
 		// this client selector will alternate between the two clients
-		Supplier<DatabaseClient> clientProvider = new CachingComposingSupplier<>(regionProvider,
+		CachingComposingDatabaseClientSupplier clientProvider = new CachingComposingDatabaseClientSupplier<>(
+				regionProvider,
 				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
 
 		SpannerTemplate template = new SpannerTemplate(clientProvider,
@@ -300,7 +302,9 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid mapping context for Spanner is required.");
 
-		new SpannerTemplate(() -> this.databaseClient, null, this.objectMapper,
+		new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> this.databaseClient, x -> this.databaseClient), null,
+				this.objectMapper,
 				this.mutationFactory, this.schemaUtils);
 	}
 
@@ -310,7 +314,9 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid entity processor for Spanner is required.");
 
-		new SpannerTemplate(() -> this.databaseClient, this.mappingContext, null,
+		new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> this.databaseClient, x -> this.databaseClient),
+				this.mappingContext, null,
 				this.mutationFactory, this.schemaUtils);
 	}
 
@@ -320,7 +326,9 @@ public class SpannerTemplateTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("A valid Spanner mutation factory is required.");
 
-		new SpannerTemplate(() -> this.databaseClient, this.mappingContext, this.objectMapper,
+		new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> this.databaseClient, x -> this.databaseClient),
+				this.mappingContext, this.objectMapper,
 				null, this.schemaUtils);
 	}
 

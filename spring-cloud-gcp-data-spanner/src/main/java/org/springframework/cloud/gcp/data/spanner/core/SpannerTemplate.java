@@ -32,7 +32,6 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -49,6 +48,7 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -95,7 +95,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	protected SpannerSchemaUtils spannerSchemaUtils;
 
-	protected Supplier<DatabaseClient> databaseClientProvider;
+	protected CachingComposingDatabaseClientSupplier databaseClientProvider;
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
@@ -117,7 +117,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	 * @param spannerMutationFactory the mutation factory for generating write operations.
 	 * @param spannerSchemaUtils the utility class for working with table and entity schemas.
 	 */
-	public SpannerTemplate(Supplier<DatabaseClient> databaseClientProvider,
+	public SpannerTemplate(CachingComposingDatabaseClientSupplier databaseClientProvider,
 			SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
@@ -143,21 +143,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		this.eventPublisher = applicationEventPublisher;
 	}
 
-	/**
-	 * Set the database client provider this template will use for operations and queries.
-	 * @param databaseClientProvider the database client provider that will be used.
-	 */
-	public void setDatabaseClientProvider(Supplier<DatabaseClient> databaseClientProvider) {
-		this.databaseClientProvider = databaseClientProvider;
-	}
-
 	protected ReadContext getReadContext() {
-		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClientProvider.get()::singleUse);
+		return doWithOrWithoutTransactionContext((x) -> x,
+				this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient()::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
 		return doWithOrWithoutTransactionContext((x) -> x,
-				() -> this.databaseClientProvider.get()
+				() -> this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient()
 						.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
@@ -174,7 +167,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		Assert.notNull(statement, "A non-null statement is required.");
 		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
 		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
-				() -> this.databaseClientProvider.get().executePartitionedUpdate(statement));
+				() -> this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient()
+						.executePartitionedUpdate(statement));
 		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
 		return rowsAffected;
 	}
@@ -375,7 +369,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
-		}, () -> this.databaseClientProvider.get().readWriteTransaction()
+		}, () -> this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient().readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
 					@Override
@@ -404,9 +398,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
 			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
-					? this.databaseClientProvider.get().readOnlyTransaction(
+					? this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient().readOnlyTransaction(
 							TimestampBound.ofReadTimestamp(options.getTimestamp()))
-					: this.databaseClientProvider.get().readOnlyTransaction()) {
+					: this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient()
+							.readOnlyTransaction()) {
 				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 						SpannerTemplate.this.databaseClientProvider,
 						SpannerTemplate.this.mappingContext,
@@ -526,7 +521,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			x.buffer(mutations);
 			return null;
 		}, () -> {
-			this.databaseClientProvider.get().write(mutations);
+			this.databaseClientProvider.getComputedOrCurrentThreadLocalDatabaseClient().write(mutations);
 			return null;
 		});
 	}

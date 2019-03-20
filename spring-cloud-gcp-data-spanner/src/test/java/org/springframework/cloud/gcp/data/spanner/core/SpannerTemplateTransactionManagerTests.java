@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -239,7 +240,8 @@ public class SpannerTemplateTransactionManagerTests {
 			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(mappingContext, objectMapper, true);
 
 			return new SpannerTemplate(
-					() -> databaseClient, mappingContext, objectMapper, mutationFactory, schemaUtils);
+					new CachingComposingDatabaseClientSupplier(() -> databaseClient, x -> databaseClient),
+					mappingContext, objectMapper, mutationFactory, schemaUtils);
 		}
 
 		@Bean

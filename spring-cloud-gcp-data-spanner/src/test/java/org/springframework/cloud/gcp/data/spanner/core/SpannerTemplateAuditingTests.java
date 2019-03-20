@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -111,7 +112,9 @@ public class SpannerTemplateAuditingTests {
 
 			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(spannerMappingContext, objectMapper, true);
 
-			return new SpannerTemplate(() -> mock(DatabaseClient.class),
+			return new SpannerTemplate(
+					new CachingComposingDatabaseClientSupplier(() -> mock(DatabaseClient.class),
+							x -> mock(DatabaseClient.class)),
 					spannerMappingContext, objectMapper, mutationFactory, schemaUtils);
 		}
 

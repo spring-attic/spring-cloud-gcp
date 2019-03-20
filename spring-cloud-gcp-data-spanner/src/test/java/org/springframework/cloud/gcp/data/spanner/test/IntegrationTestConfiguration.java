@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
+import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
@@ -131,7 +132,9 @@ public class IntegrationTestConfiguration {
 			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
 			SpannerSchemaUtils spannerSchemaUtils) {
-		return new SpannerTemplate(() -> databaseClient, mappingContext, spannerEntityProcessor,
+		return new SpannerTemplate(
+				new CachingComposingDatabaseClientSupplier(() -> databaseClient, x -> databaseClient), mappingContext,
+				spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 	}
 
