@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.StructuredQuery;
@@ -37,6 +38,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -78,6 +80,9 @@ import static org.mockito.Mockito.when;
 public class PartTreeDatastoreQueryTests {
 
 	private static final Object[] EMPTY_PARAMETERS = new Object[0];
+
+	private static final DatastoreResultsIterable<Object> EMPTY_RESPONSE = new DatastoreResultsIterable<>(
+			Collections.emptyIterator(), null);
 
 	private DatastoreTemplate datastoreTemplate;
 
@@ -149,7 +154,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -184,7 +189,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -218,7 +223,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -251,7 +256,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -284,7 +289,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -344,7 +349,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.emptyList();
+			return EMPTY_RESPONSE;
 		});
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
@@ -365,7 +370,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		preparePageResults(2, 2);
+		preparePageResults(2, 2, null);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -382,6 +387,33 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
+	public void pageableQueryNextPage() throws NoSuchMethodException {
+		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
+						+ "ThanEqualAndIdIsNull", null,
+				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
+						Pageable.class));
+
+		this.partTreeDatastoreQuery = createQuery(true, false);
+
+		PageRequest pageRequest = PageRequest.of(1, 2, Sort.Direction.DESC, "id");
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33,
+				DatastorePageable.from(pageRequest, cursor, 99L) };
+
+		preparePageResults(2, 2, cursor);
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
+
+		Page result = (Page) this.partTreeDatastoreQuery.execute(params);
+		assertThat(result.getTotalElements()).isEqualTo(99L);
+		assertThat(result.getTotalPages()).isEqualTo(50);
+		assertThat(result.getNumberOfElements()).isEqualTo(2);
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+	}
+
+	@Test
 	public void pageableQueryNoPageableParam() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
@@ -391,7 +423,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		preparePageResults(0, null);
+		preparePageResults(0, null, null);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -417,17 +449,15 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		prepareSliceResults(2, 3, 2);
+		prepareSliceResults(2, 2, true);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertThat(result.hasNext()).isEqualTo(false);
-		assertThat(result.getNumberOfElements()).isEqualTo(2);
-
+		assertThat(result.hasNext()).isEqualTo(true);
 
 		verify(this.datastoreTemplate, times(1))
-				.query(isA(EntityQuery.class), (Function) any());
+				.query(any(), (Function) any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -443,7 +473,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		prepareSliceResults(0, null, null);
+		prepareSliceResults(0, null, false);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -469,14 +499,12 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(0, 2, Sort.Direction.DESC, "id") };
 
-		prepareSliceResults(0, 3, 3);
+		prepareSliceResults(0, 2, false);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertThat(result.hasNext()).isEqualTo(true);
-		assertThat(result.getNumberOfElements()).isEqualTo(2);
-
+		assertThat(result.hasNext()).isEqualTo(false);
 
 		verify(this.datastoreTemplate, times(1))
 				.query(isA(EntityQuery.class), (Function) any());
@@ -485,7 +513,7 @@ public class PartTreeDatastoreQueryTests {
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
-	private void preparePageResults(int offset, Integer limit) {
+	private void preparePageResults(int offset, Integer limit, Cursor cursor) {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -495,11 +523,13 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.ge("price", 3.33),
 							PropertyFilter.isNull("id")))
 					.setKind("trades")
-					.setOffset(offset)
+					.setStartCursor(cursor)
+					.setOffset(cursor != null ? 0 : offset)
 					.setOrderBy(OrderBy.desc("id")).setLimit(limit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return Arrays.asList(3, 4);
+			List<Integer> results = Arrays.asList(3, 4);
+			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("abc".getBytes()));
 		});
 
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
@@ -514,12 +544,15 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("id")).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return Arrays.asList(1, 2, 3, 4);
+			List<Integer> results = Arrays.asList(1, 2, 3, 4);
+			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("def".getBytes()));
 		});
 	}
 
-	private void prepareSliceResults(int offset, Integer queryLimit, Integer resultLimit) {
-		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer((invocation) -> {
+	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -532,9 +565,23 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("id")).setLimit(queryLimit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			List<Integer> results = Arrays.asList(3, 4, 5);
-			return (resultLimit != null && resultLimit < results.size()) ? results.subList(0, resultLimit)
-					: results;
+			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+		});
+		when(this.datastoreTemplate.query((com.google.cloud.datastore.Query<Object>) any(), any()))
+				.thenAnswer(invocation -> {
+					EntityQuery statement = invocation.getArgument(0);
+					EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
+							.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+									PropertyFilter.eq("ticker", "abcd"),
+									PropertyFilter.lt("price", 8.88),
+									PropertyFilter.ge("price", 3.33),
+									PropertyFilter.isNull("id")))
+							.setKind("trades")
+							.setStartCursor(cursor)
+							.setOrderBy(OrderBy.desc("id")).setLimit(1).build();
+
+					assertThat(statement).isEqualTo(expected);
+					return hasNext ? datastoreMatchingRecords.subList(0, 1) : Collections.emptyList();
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
 				(invocation) -> {
@@ -660,7 +707,8 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 
-			return Collections.singletonList(trade);
+			List<Trade> results = Collections.singletonList(trade);
+			return new DatastoreResultsIterable(results.iterator(), null);
 		});
 
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
@@ -719,7 +767,8 @@ public class PartTreeDatastoreQueryTests {
 
 		this.partTreeDatastoreQuery = createQuery(false, false);
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), Mockito.<Class<Trade>>any()))
-				.thenReturn(results);
+				.thenReturn(new DatastoreResultsIterable<>(
+						results != null ? results.iterator() : Collections.emptyIterator(), null));
 	}
 
 	public Trade findByAction(String action) {

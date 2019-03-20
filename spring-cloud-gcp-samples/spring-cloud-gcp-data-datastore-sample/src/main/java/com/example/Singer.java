@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.example;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Reference;
 
 /**
@@ -56,6 +58,9 @@ public class Singer {
 
 	@Descendants
 	private Set<Instrument> personalInstruments;
+
+	@LastModifiedDate
+	private LocalDateTime lastModifiedTime;
 
 	private Set<Album> albums;
 
@@ -158,5 +163,13 @@ public class Singer {
 						: Strings.join(this.personalInstruments.stream()
 								.map((x) -> x.getType()).collect(Collectors.toList()), ','))
 				+ '}';
+	}
+
+	public LocalDateTime getLastModifiedTime() {
+		return this.lastModifiedTime;
+	}
+
+	public void setLastModifiedTime(LocalDateTime lastModifiedTime) {
+		this.lastModifiedTime = lastModifiedTime;
 	}
 }

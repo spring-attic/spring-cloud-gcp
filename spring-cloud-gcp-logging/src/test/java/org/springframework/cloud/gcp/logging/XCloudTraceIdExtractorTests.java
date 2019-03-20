@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging;
+package org.springframework.cloud.gcp.logging;
 
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 /**
- * Tests the trace id logging web mvc interceptor.
+ * Tests for the x-cloud trace ID extractor.
  *
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 
-public class TraceIdLoggingWebMvcInterceptorTests {
+public class XCloudTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -38,27 +38,35 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
-	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+	private XCloudTraceIdExtractor extractor = new XCloudTraceIdExtractor();
 
 	@Test
-	public void testPreHandle() throws Exception {
+	public void testExtractTraceIdFromRequest_valid() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		TraceIdLoggingEnhancer.setCurrentTraceId(null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		this.interceptor.preHandle(request, null, null);
-
-		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId()).isEqualTo(TEST_TRACE_ID);
+		assertThat(traceId).isEqualTo(TEST_TRACE_ID);
 	}
 
 	@Test
-	public void testAfterCompletion() throws Exception {
-		TraceIdLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
+	public void testExtractTraceIdFromRequest_missing() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
 
-		this.interceptor.afterCompletion(null, null, null, null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId()).isNull();
+		assertThat(traceId).isNull();
 	}
+
+	@Test
+	public void testExtractTraceIdFromRequest_missingSpan() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID);
+
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId).isEqualTo(TEST_TRACE_ID);
+	}
+
 }

@@ -2,8 +2,10 @@
 
 == Spring Data Cloud Datastore
 
+NOTE: This integration is fully compatible with https://cloud.google.com/datastore/docs/[Firestore in Datastore Mode], but not with Firestore in Native Mode.
+
 http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud Datastore].
+Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in Datastore mode.
 
 Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -1199,6 +1201,77 @@ Spring Data Cloud Datastore publishes events extending the Spring Framework's `A
 | `AfterDeleteEvent`|Published immediately after delete operations are executed by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 |===
 
+=== Auditing
+
+Spring Data Cloud Datastore supports the `@LastModifiedDate` and `@LastModifiedBy` auditing annotations for properties:
+
+[source,java]
+----
+@Entity
+public class SimpleEntity {
+    @Id
+    String id;
+
+    @LastModifiedBy
+    String lastUser;
+
+    @LastModifiedDate
+    DateTime lastTouched;
+}
+----
+
+Upon insert, update, or save, these properties will be set automatically by the framework before Datastore entities are generated and saved to Cloud Datastore.
+
+To take advantage of these features, add the `@EnableDatastoreAuditing` annotation to your configuration class and provide a bean for an `AuditorAware<A>` implementation where the type `A` is the desired property type annotated by `@LastModifiedBy`:
+
+[source,java]
+----
+@Configuration
+@EnableDatastoreAuditing
+public class Config {
+
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.of("YOUR_USERNAME_HERE");
+    }
+}
+----
+
+The `AuditorAware` interface contains a single method that supplies the value for fields annotated by `@LastModifiedBy` and can be of any type.
+One alternative is to use Spring Security's `User` type:
+
+[source,java]
+----
+class SpringSecurityAuditorAware implements AuditorAware<User> {
+
+  public Optional<User> getCurrentAuditor() {
+
+    return Optional.ofNullable(SecurityContextHolder.getContext())
+			  .map(SecurityContext::getAuthentication)
+			  .filter(Authentication::isAuthenticated)
+			  .map(Authentication::getPrincipal)
+			  .map(User.class::cast);
+  }
+}
+----
+
+You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableDatastoreAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
+
+=== Spring Boot Actuator Support
+
+==== Cloud Datastore Health Indicator
+
+If you are using Spring Boot Actuator, you can take advantage of the Cloud Datastore health indicator called `datastore`.
+The health indicator will verify whether Cloud Datastore is up and accessible by your application.
+To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
 
 === Sample
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class SpannerDatabaseAdminTemplateTests {
 		this.mockDatabasePage = mock(Page.class);
 		this.databaseId = DatabaseId.of("fakeproject", "fakeinstance", "fakedb");
 		this.spannerDatabaseAdminTemplate = new SpannerDatabaseAdminTemplate(
-				this.databaseAdminClient, this.databaseClient, this.databaseId);
+				this.databaseAdminClient, () -> this.databaseClient, () -> this.databaseId);
 		this.ddlList = new ArrayList<>();
 		this.ddlList.add("describe Something");
 

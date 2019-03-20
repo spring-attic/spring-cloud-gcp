@@ -34,7 +34,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -94,11 +94,11 @@ public class SpannerRepositoryTests {
 		this.spannerRepositoryExample.runExample();
 
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
-		ResponseEntity<PagedResources<Trade>> tradesResponse = testRestTemplate.exchange(
+		ResponseEntity<PagedModel<Trade>> tradesResponse = testRestTemplate.exchange(
 				String.format("http://localhost:%s/trades/", this.port),
 				HttpMethod.GET,
 				null,
-				new ParameterizedTypeReference<PagedResources<Trade>>() {
+				new ParameterizedTypeReference<PagedModel<Trade>>() {
 				});
 		assertThat(tradesResponse.getBody().getMetadata().getTotalElements()).isEqualTo(8);
 	}

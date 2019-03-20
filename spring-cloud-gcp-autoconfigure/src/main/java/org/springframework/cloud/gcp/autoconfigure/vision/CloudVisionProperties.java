@@ -35,7 +35,27 @@ public class CloudVisionProperties implements CredentialsSupplier {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.CLOUD_VISION.getUrl());
 
+	private int executorThreadsCount = 1;
+
+	private int jsonOutputBatchSize = 20;
+
 	public Credentials getCredentials() {
 		return this.credentials;
+	}
+
+	public int getExecutorThreadsCount() {
+		return executorThreadsCount;
+	}
+
+	public void setExecutorThreadsCount(int executorThreadsCount) {
+		this.executorThreadsCount = executorThreadsCount;
+	}
+
+	public int getJsonOutputBatchSize() {
+		return jsonOutputBatchSize;
+	}
+
+	public void setJsonOutputBatchSize(int jsonOutputBatchSize) {
+		this.jsonOutputBatchSize = jsonOutputBatchSize;
 	}
 }

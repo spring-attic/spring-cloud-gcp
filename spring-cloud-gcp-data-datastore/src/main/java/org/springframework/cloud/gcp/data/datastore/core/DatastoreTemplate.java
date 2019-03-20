@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,13 +141,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public <T> T save(T instance, Key... ancestors) {
 		List<T> instances = Collections.singletonList(instance);
-		saveEntities(instances, getEntitiesForSave(instances, new HashSet<>(), ancestors));
+		saveEntities(instances, ancestors);
 		return instance;
 	}
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
-		saveEntities((List<T>) entities, getEntitiesForSave(entities, new HashSet<>(), ancestors));
+		saveEntities((List<T>) entities, ancestors);
 		return entities;
 	}
 
@@ -163,9 +163,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return entitiesForSave;
 	}
 
-	private <T> void saveEntities(List<T> instances, List<Entity> entities) {
-		if (!entities.isEmpty()) {
-			maybeEmitEvent(new BeforeSaveEvent(entities, instances));
+	private <T> void saveEntities(List<T> instances, Key[] ancestors) {
+		if (!instances.isEmpty()) {
+			maybeEmitEvent(new BeforeSaveEvent(instances));
+			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
 			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
 			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
@@ -239,11 +240,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
-			Class<T> entityClass) {
-		Iterable<T> results = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
-		maybeEmitEvent(new AfterQueryEvent(results, query));
-		return results;
+	public <T> DatastoreResultsIterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass) {
+		QueryResults<? extends BaseEntity> results = getDatastoreReadWriter().run(query);
+		List<T> convertedResults = convertEntitiesForRead(results, entityClass);
+		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
+		return results != null
+				? new DatastoreResultsIterable<>(convertedResults, results.getCursorAfter())
+				: null;
 	}
 
 	/**
@@ -255,12 +258,18 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
-		QueryResults queryResults = getDatastoreReadWriter().run(query);
-		Iterable<?> convertedResults = queryResults.getResultClass() == Key.class ? () -> queryResults
-				: convertEntitiesForRead(queryResults, entityClass);
-		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
-		return convertedResults;
+	public <T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
+		QueryResults results = getDatastoreReadWriter().run(query);
+		DatastoreResultsIterable resultsIterable;
+		if (results.getResultClass() == Key.class) {
+			resultsIterable = new DatastoreResultsIterable(results, results.getCursorAfter());
+		}
+		else {
+			resultsIterable = new DatastoreResultsIterable<>(convertEntitiesForRead(results, entityClass),
+					results.getCursorAfter());
+		}
+		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
+		return resultsIterable;
 	}
 
 	@Override
@@ -285,7 +294,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
+	public <T> DatastoreResultsIterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
 		return query(exampleToQuery(example, queryOptions, false), example.getProbeType());
 	}
 
@@ -298,15 +307,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
+	public <T> DatastoreResultsCollection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
 		applyQueryOptions(builder, queryOptions, persistentEntity);
 		Query query = builder.build();
-		Collection<T> convertedResults = convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
+		QueryResults queryResults = getDatastoreReadWriter().run(query);
+		Collection<T> convertedResults = convertEntitiesForRead(queryResults, entityClass);
 		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
-		return convertedResults;
+		return new DatastoreResultsCollection<>(convertedResults,
+				queryResults != null ? queryResults.getCursorAfter() : null);
 	}
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
@@ -327,8 +338,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (queryOptions.getLimit() != null) {
 			builder.setLimit(queryOptions.getLimit());
 		}
-		if (queryOptions.getOffset() != null) {
+		if (queryOptions.getCursor() == null && queryOptions.getOffset() != null) {
 			builder.setOffset(queryOptions.getOffset());
+		}
+		if (queryOptions.getCursor() != null) {
+			builder.setStartCursor(queryOptions.getCursor());
 		}
 		if (queryOptions.getSort() != null && persistentEntity != null) {
 			queryOptions.getSort().stream()
