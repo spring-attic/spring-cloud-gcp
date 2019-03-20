@@ -16,24 +16,21 @@
 
 package com.example;
 
+import java.io.IOException;
+import java.nio.channels.Channels;
+import java.util.concurrent.ExecutionException;
+
 import com.google.api.client.util.ByteStreams;
 import com.google.cloud.WriteChannel;
-import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.util.concurrent.ExecutionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
-import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.cloud.gcp.vision.DocumentOcrResultSet;
 import org.springframework.cloud.gcp.vision.DocumentOcrTemplate;
 import org.springframework.core.io.Resource;
@@ -81,17 +78,20 @@ public class WebController {
 
 	@GetMapping("/viewDocument")
 	public ModelAndView renderViewDocumentPage(
-			@RequestParam("gcsDocumentUrl") String gcsDocumentUrl, ModelMap map)
+			@RequestParam("gcsDocumentUrl") String gcsDocumentUrl,
+			@RequestParam("pageNumber") int pageNumber,
+			ModelMap map)
 			throws ExecutionException, InterruptedException, InvalidProtocolBufferException {
 
 		TextAnnotation textAnnotation =
 				ocrStatusReporter.getDocumentOcrStatuses()
 						.get(gcsDocumentUrl)
 						.getResultSet()
-						.getPage(0);
+						.getPage(pageNumber);
 
 		String[] firstWordsTokens = textAnnotation.getText().split(" ", 50);
 
+		map.put("pageNumber", pageNumber);
 		map.put("gcsDocumentUrl", gcsDocumentUrl);
 		map.put("text", String.join(" ", firstWordsTokens));
 
@@ -99,9 +99,9 @@ public class WebController {
 	}
 
 	@PostMapping("/submitDocument")
-	public void submitDocument(@RequestParam("documentUrl") String documentUrl) throws IOException {
+	public ModelAndView submitDocument(@RequestParam("documentUrl") String documentUrl) throws IOException {
 
-		// Upload the document to the GCS bucket
+		// Uploads the document to the GCS bucket
 		Resource documentResource = resourceLoader.getResource(documentUrl);
 		BlobId outputBlobId = BlobId.of(ocrBucket, documentResource.getFilename());
 		BlobInfo blobInfo =
@@ -113,7 +113,7 @@ public class WebController {
 			ByteStreams.copy(documentResource.getInputStream(), Channels.newOutputStream(writer));
 		}
 
-		// Run the OCR algorithm on the document
+		// Run OCR on the document
 		GoogleStorageLocation documentLocation =
 				GoogleStorageLocation.forFile(outputBlobId.getBucket(), outputBlobId.getName());
 
@@ -121,10 +121,11 @@ public class WebController {
 				outputBlobId.getBucket(), "ocr_results/" + documentLocation.getBlobName());
 
 		ListenableFuture<DocumentOcrResultSet> result =
-				documentOcrTemplate.runOcrForDocument(
-						documentLocation, outputLocation, 0);
+				documentOcrTemplate.runOcrForDocument(documentLocation, outputLocation);
 
 		ocrStatusReporter.registerFuture(documentLocation.uriString(), result);
+
+		return new ModelAndView("submit_done");
 	}
 
 	private static String getFileType(Resource documentResource) {

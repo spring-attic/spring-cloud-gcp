@@ -17,21 +17,24 @@
 
   <p>
     This page displays all pending and completed document OCR operations.
+    After the operation is complete, you will be provided page number links to view the first 50
+    words on each page of the document.
   </p>
 
   <table border="1">
     <tr>
-      <th>Description</th>
+      <th>Uploaded Document</th>
       <th>Status</th>
-      <th>Parsed Content</th>
+      <th>Pages</th>
     </tr>
 
     <tr th:each="ocrStatus : ${ocrStatuses}">
       <td>[[${ocrStatus.getGcsLocation()}]]</td>
       <td th:text="${ocrStatus.isDone()} ? 'OCR results ready' : 'OCR still running'" />
       <td th:if="${ocrStatus.isDone()}">
-        <a th:href="@{/viewDocument(gcsDocumentUrl=${ocrStatus.getGcsLocation()})}">
-          Get first 50 Words
+        <a th:each="pageNumber: ${#numbers.sequence(ocrStatus.getResultSet().getMinPage(), ocrStatus.getResultSet().getMaxPage())}"
+            th:href="@{/viewDocument(gcsDocumentUrl=${ocrStatus.getGcsLocation()},pageNumber=${pageNumber})}">
+          [[${pageNumber}]]
         </a>
       </td>
     </tr>

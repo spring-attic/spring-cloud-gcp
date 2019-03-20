@@ -19,6 +19,7 @@ package com.example;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import org.springframework.cloud.gcp.vision.DocumentOcrResultSet;
 import org.springframework.util.concurrent.ListenableFuture;
 
