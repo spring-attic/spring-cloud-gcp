@@ -434,7 +434,7 @@ You do <strong>not</strong> need to include the underlying <code>spring-cloud-gc
 <div class="sect3">
 <h4 id="_spring_initializr"><a class="link" href="#_spring_initializr">2.1.3. Spring Initializr</a></h4>
 <div class="paragraph">
-<p><a href="http://start.spring.io/">Spring Initializr</a> is a tool which generates the scaffolding code for a new Spring Boot project.
+<p><a href="https://start.spring.io/">Spring Initializr</a> is a tool which generates the scaffolding code for a new Spring Boot project.
 It handles the work of generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.</p>
 </div>
 <div class="paragraph">
@@ -776,7 +776,7 @@ The provider can help determine programmatically in which GCP environment (App E
 <div class="sect2">
 <h3 id="_spring_initializr_2"><a class="link" href="#_spring_initializr_2">3.4. Spring Initializr</a></h3>
 <div class="paragraph">
-<p>This starter is available from <a href="http://start.spring.io/">Spring Initializr</a> through the <code>GCP Support</code> entry.</p>
+<p>This starter is available from <a href="https://start.spring.io/">Spring Initializr</a> through the <code>GCP Support</code> entry.</p>
 </div>
 </div>
 </div>
@@ -1110,7 +1110,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public void newSubscription() {
-    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “https://my.endpoint/push”);
 }</code></pre>
 </div>
 </div>
@@ -2658,7 +2658,7 @@ This allows grouping of log messages by request, for example, in the <a href="ht
 <td class="content">
 Due to the way logging is set up, the GCP project ID and credentials defined in <code>application.properties</code> are ignored.
 Instead, you should set the <code>GOOGLE_CLOUD_PROJECT</code> and <code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variables to the project ID and credentials private key location, respectively.
-You can do this easily if you&#8217;re using the <a href="http://cloud.google.com/sdk">Google Cloud SDK</a>, using the <code>gcloud config set project [YOUR_PROJECT_ID]</code> and <code>gcloud auth application-default login</code> commands, respectively.
+You can do this easily if you&#8217;re using the <a href="https://cloud.google.com/sdk">Google Cloud SDK</a>, using the <code>gcloud config set project [YOUR_PROJECT_ID]</code> and <code>gcloud auth application-default login</code> commands, respectively.
 </td>
 </tr>
 </table>
@@ -3036,7 +3036,7 @@ If more than a single profile, last one is chosen</p></td>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-These properties should be specified in a <a href="http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context"><code>bootstrap.yml</code>/<code>bootstrap.properties</code></a> file, rather than the usual <code>applications.yml</code>/<code>application.properties</code>.
+These properties should be specified in a <a href="https://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context"><code>bootstrap.yml</code>/<code>bootstrap.properties</code></a> file, rather than the usual <code>applications.yml</code>/<code>application.properties</code>.
 </td>
 </tr>
 </table>
@@ -3111,7 +3111,7 @@ public class SampleConfig {
 <div class="sect2">
 <h3 id="_refreshing_the_configuration_at_runtime"><a class="link" href="#_refreshing_the_configuration_at_runtime">11.3. Refreshing the configuration at runtime</a></h3>
 <div class="paragraph">
-<p><a href="http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints">Spring Cloud</a> provides support to have configuration parameters be reloadable with the POST request to <code>/actuator/refresh</code> endpoint.</p>
+<p><a href="https://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints">Spring Cloud</a> provides support to have configuration parameters be reloadable with the POST request to <code>/actuator/refresh</code> endpoint.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -3159,7 +3159,7 @@ public class SampleConfig {
 <p>Send a POST request to the refresh endpoint:</p>
 <div class="literalblock">
 <div class="content">
-<pre>$ curl -XPOST http://myapp.host.com/actuator/refresh</pre>
+<pre>$ curl -XPOST https://myapp.host.com/actuator/refresh</pre>
 </div>
 </div>
 </li>
@@ -3178,8 +3178,8 @@ public class SampleConfig {
 <h2 id="_spring_data_cloud_spanner"><a class="link" href="#_spring_data_cloud_spanner">12. Spring Data Cloud Spanner</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><a href="http://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for <a href="http://cloud.google.com/spanner/">Google Cloud Spanner</a>.</p>
+<p><a href="https://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for <a href="https://cloud.google.com/spanner/">Google Cloud Spanner</a>.</p>
 </div>
 <div class="paragraph">
 <p>Maven coordinates for this module only, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
@@ -5104,7 +5104,7 @@ This integration is fully compatible with <a href="https://cloud.google.com/data
 </table>
 </div>
 <div class="paragraph">
-<p><a href="http://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+<p><a href="https://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data support for <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in Datastore mode.</p>
 </div>
 <div class="paragraph">
@@ -7159,7 +7159,7 @@ A full list of Cloud Vision Features is provided in the <a href="https://cloud.g
 For each feature type that you provide in the request, <code>AnnotateImageResponse</code> provides a getter method to get the result of that feature analysis.
 For example, if you analyzed an image using the <code>LABEL_DETECTION</code> feature, you would retrieve the results from the response using <code>annotateImageResponse.getLabelAnnotationsList()</code>.</p>
 <div class="paragraph">
-<p><code>AnnotateImageResponse</code> is provided by the Google Cloud Vision libraries; please consult the <a href="https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse">RPC reference</a> or <a href="http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html">Javadoc</a> for more details.
+<p><code>AnnotateImageResponse</code> is provided by the Google Cloud Vision libraries; please consult the <a href="https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse">RPC reference</a> or <a href="https://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html">Javadoc</a> for more details.
 Additionally, you may consult the <a href="https://cloud.google.com/vision/docs/">Cloud Vision docs</a> to familiarize yourself with the concepts and features of the API.</p>
 </div>
 </li>
