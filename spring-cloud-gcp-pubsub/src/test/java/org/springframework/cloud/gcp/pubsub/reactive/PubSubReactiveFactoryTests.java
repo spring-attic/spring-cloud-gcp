@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.test.StepVerifier;
+import reactor.test.scheduler.VirtualTimeScheduler;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -63,14 +64,14 @@ public class PubSubReactiveFactoryTests {
 
 	@Before
 	public void setUp() {
-		factory = new PubSubReactiveFactory(subscriberOperations);
+		factory = new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet());
 	}
 
 	@Test
 	public void testSequentialRequests() throws InterruptedException {
 		setUpMessages("msg1", "msg2", "msg3", "msg4");
 
-		StepVerifier.withVirtualTime(() -> factory.createPolledFlux("sub1", 10).map(this::messageToString), 1)
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString), 1)
 				.expectSubscription()
 				.expectNext("msg1")
 				.thenRequest(3)
@@ -89,7 +90,7 @@ public class PubSubReactiveFactoryTests {
 	public void testSequentialRequestWithInsufficientDemandGetsSplitIntoTwoRequests() throws InterruptedException {
 		setUpMessages("msg1", "stop", "msg2", "msg3", "msg4");
 
-		StepVerifier.withVirtualTime(() -> factory.createPolledFlux("sub1", 10).map(this::messageToString), 4)
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString), 4)
 				.expectSubscription()
 				.expectNext("msg1", "msg2", "msg3", "msg4")
 				.expectNoEvent(Duration.ofSeconds(10))
@@ -106,7 +107,7 @@ public class PubSubReactiveFactoryTests {
 	public void testDeadlineExceededCausesRetry() throws InterruptedException {
 		setUpMessages("throw", "msg1", "msg2");
 
-		StepVerifier.withVirtualTime(() -> factory.createPolledFlux("sub1", 10).map(this::messageToString), 2)
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString), 2)
 				.expectSubscription()
 				.expectNext("msg1", "msg2")
 				.expectNoEvent(Duration.ofSeconds(10))
@@ -122,7 +123,7 @@ public class PubSubReactiveFactoryTests {
 	public void testUnlimitedDemand() throws InterruptedException {
 		setUpMessages("msg1", "msg2", "stop", "msg3", "msg4", "stop", "msg5", "stop");
 
-		StepVerifier.withVirtualTime(() -> factory.createPolledFlux("sub1", 10).map(this::messageToString))
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString))
 				.expectSubscription()
 				.expectNext("msg1", "msg2")
 				.expectNoEvent(Duration.ofMillis(10))

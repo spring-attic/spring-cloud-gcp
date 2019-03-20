@@ -44,7 +44,7 @@ public class ReactiveController {
 	public Flux<String> getMessages() {
 
 		Flux<AcknowledgeablePubsubMessage> flux
-				= this.reactiveFactory.createPolledFlux("exampleSubscription", 1000);
+				= this.reactiveFactory.poll("exampleSubscription", 1000);
 
 		return flux
 				.doOnNext(message -> {
