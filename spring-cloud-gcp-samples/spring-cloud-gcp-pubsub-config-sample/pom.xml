@@ -16,7 +16,8 @@
 
     <modules>
         <module>spring-cloud-gcp-pubsub-config-sample-client</module>
-        <module>spring-cloud-gcp-pubsub-config-sample-server</module>
+        <module>spring-cloud-gcp-pubsub-config-sample-server-local</module>
+        <module>spring-cloud-gcp-pubsub-config-sample-server-github</module>
     </modules>
 
 </project>

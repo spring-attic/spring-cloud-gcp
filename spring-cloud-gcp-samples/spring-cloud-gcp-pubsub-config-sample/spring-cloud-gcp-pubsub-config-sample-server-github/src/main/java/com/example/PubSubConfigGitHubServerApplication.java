@@ -21,15 +21,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.config.server.EnableConfigServer;
 
 /**
- * Sample application for config server TBD.
+ * Sample Spring Cloud Config server.
  *
  * @author Elena Felder
  */
 @SpringBootApplication
 @EnableConfigServer
-public class PubSubConfigServerApplication {
+public class PubSubConfigGitHubServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PubSubConfigServerApplication.class, args);
+		SpringApplication.run(PubSubConfigGitHubServerApplication.class, args);
 	}
 }
