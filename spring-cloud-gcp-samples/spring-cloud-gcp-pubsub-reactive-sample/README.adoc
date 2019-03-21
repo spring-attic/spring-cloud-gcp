@@ -15,12 +15,10 @@ Create a new subscription called `exampleSubscription` with all default paramete
 
 4. In a terminal window, move into this directory (spring-cloud-gcp-pubsub-reactive-sample) and run: `mvn spring-boot:run`.
 
-5. In another terminal, send a message to the GCP Pub/Sub topic.
+5. In a browser, open `http://localhost:8080`, and send some messages to the GCP Pub/Sub topic.
 Observe that nothing is received by the sample application, since there are no subscribers yet.
 
-  gcloud pubsub topics publish exampleTopic --message "hello!"
-
-6. In a third terminal, open a connection to '/getmessages' streaming endpoint.
+6. In another terminal, open a connection to '/getmessages' streaming endpoint.
 
   curl localhost:8080/getmessages
 
