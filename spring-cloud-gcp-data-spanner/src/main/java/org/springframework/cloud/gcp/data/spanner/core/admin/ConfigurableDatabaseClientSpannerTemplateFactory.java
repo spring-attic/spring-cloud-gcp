@@ -52,34 +52,27 @@ public final class ConfigurableDatabaseClientSpannerTemplateFactory {
 	 * by the {@code clientSetterTemplate}.
 	 */
 	public static SpannerTemplate applyDatabaseClientSetterBehavior(SettableClientSpannerTemplate workTemplate,
-			DatabaseClientProvidingSpannerTemplate clientSetterTemplate) {
+			SettableClientSpannerTemplate clientSetterTemplate) {
 		return (SpannerTemplate) Enhancer.create(SpannerTemplate.class,
 				new DatabaseClientSetterInvocationHandler(workTemplate, clientSetterTemplate));
 	}
 
-	/**
-	 * Accepts an overridden template and produces a template that intercept's and utilizes
-	 * the user's per-method and parameter-based database clients.
-	 * @param configuringTemplate the template that the user has created setting database
-	 *     clients on a per-call and parameter-based basis.
-	 * @return a configuring template that is ready to be used by
-	 * {@code applyDatabaseClientSetterBehavior}.
-	 */
-	public static DatabaseClientProvidingSpannerTemplate prepareDatabaseClientConfigurationSpannerTemplate(
-			SettableClientSpannerTemplate configuringTemplate) {
-		return (DatabaseClientProvidingSpannerTemplate) Enhancer.create(DatabaseClientProvidingSpannerTemplate.class,
-				new DatabaseClientSettingSpannerTemplateHandler(configuringTemplate));
-	}
+	private static final class DatabaseClientSetterInvocationHandler implements MethodInterceptor {
 
-	private static final class DatabaseClientSettingSpannerTemplateHandler implements MethodInterceptor {
+		private final SettableClientSpannerTemplate workTemplate;
 
-		private final SettableClientSpannerTemplate settableClientSpannerTemplate;
+		private final SettableClientSpannerTemplate clientSetterTemplate;
 
 		private final Set<Integer> declaredMethodHashes = new HashSet<>();
 
-		private DatabaseClientSettingSpannerTemplateHandler(SettableClientSpannerTemplate configuringTemplate) {
-			this.settableClientSpannerTemplate = configuringTemplate;
-			Arrays.stream(configuringTemplate.getClass().getDeclaredMethods())
+		private DatabaseClientSetterInvocationHandler(SettableClientSpannerTemplate workTemplate,
+				SettableClientSpannerTemplate clientSetterTemplate) {
+			Assert.notNull(workTemplate, "A non-null SpannerTemplate to execute Cloud Spanner operations is required.");
+			Assert.notNull(workTemplate,
+					"A non-null SpannerTemplate that sets the database client by-operation is required.");
+			this.workTemplate = workTemplate;
+			this.clientSetterTemplate = clientSetterTemplate;
+			Arrays.stream(clientSetterTemplate.getClass().getDeclaredMethods())
 					.forEach(x -> this.declaredMethodHashes.add(getMethodHash(x)));
 		}
 
@@ -88,38 +81,17 @@ public final class ConfigurableDatabaseClientSpannerTemplateFactory {
 		}
 
 		@Override
-		public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy)
-				throws Throwable {
+		public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
 			if (this.declaredMethodHashes.contains(getMethodHash(method))
 					|| SettableClientSpannerTemplate.class.isAssignableFrom(method.getDeclaringClass())) {
-				return method.invoke(this.settableClientSpannerTemplate, objects);
+				method.invoke(this.clientSetterTemplate, objects);
+				this.workTemplate.getDatabaseClientProvider()
+						.setCurrentThreadLocalDatabaseClient(this.clientSetterTemplate
+								.getDatabaseClientProvider().getComputedOrCurrentThreadLocalDatabaseClient());
 			}
-			return null;
-		}
-	}
-
-	private static final class DatabaseClientSetterInvocationHandler implements MethodInterceptor {
-
-		private final SettableClientSpannerTemplate workTemplate;
-
-		private final DatabaseClientProvidingSpannerTemplate clientSetterTemplate;
-
-		private DatabaseClientSetterInvocationHandler(SettableClientSpannerTemplate workTemplate,
-				DatabaseClientProvidingSpannerTemplate clientSetterTemplate) {
-			Assert.notNull(workTemplate, "A non-null SpannerTemplate to execute Cloud Spanner operations is required.");
-			Assert.notNull(workTemplate,
-					"A non-null SpannerTemplate that sets the database client by-operation is required.");
-			this.workTemplate = workTemplate;
-			this.clientSetterTemplate = clientSetterTemplate;
-		}
-
-		@Override
-		public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
-			method.invoke(this.clientSetterTemplate, objects);
-			this.workTemplate.getDatabaseClientProvider().setCurrentThreadLocalDatabaseClient(this.clientSetterTemplate
-					.getDatabaseClientProvider().getComputedOrCurrentThreadLocalDatabaseClient());
 			Object result = method.invoke(this.workTemplate, objects);
 			this.clientSetterTemplate.getDatabaseClientProvider().clearCurrentThreadLocalDatabaseClient();
+			this.workTemplate.getDatabaseClientProvider().clearCurrentThreadLocalDatabaseClient();
 			return result;
 		}
 	}

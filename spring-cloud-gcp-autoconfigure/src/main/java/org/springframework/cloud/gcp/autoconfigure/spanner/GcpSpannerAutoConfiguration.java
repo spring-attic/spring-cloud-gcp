@@ -44,7 +44,6 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingDatabaseClientSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientProvidingSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
@@ -203,20 +202,19 @@ public class GcpSpannerAutoConfiguration {
 				SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 				SpannerMutationFactory spannerMutationFactory,
 				SpannerSchemaUtils spannerSchemaUtils,
-				DatabaseClientProvidingSpannerTemplate databaseClientProvidingSpannerTemplate) {
+				SettableClientSpannerTemplate settableClientSpannerTemplate) {
 			return ConfigurableDatabaseClientSpannerTemplateFactory
 					.applyDatabaseClientSetterBehavior(
 							new SettableClientSpannerTemplate(databaseClientProvider, mappingContext,
 									spannerEntityProcessor,
 									spannerMutationFactory, spannerSchemaUtils),
-							databaseClientProvidingSpannerTemplate);
+							settableClientSpannerTemplate);
 		}
 
 		@Bean
 		@ConditionalOnMissingBean
-		public DatabaseClientProvidingSpannerTemplate databaseClientConfiguringSpannerTemplate() {
-			return ConfigurableDatabaseClientSpannerTemplateFactory
-					.prepareDatabaseClientConfigurationSpannerTemplate(new SettableClientSpannerTemplate());
+		public SettableClientSpannerTemplate  settableClientSpannerTemplate() {
+			return new SettableClientSpannerTemplate();
 		}
 
 		@Bean

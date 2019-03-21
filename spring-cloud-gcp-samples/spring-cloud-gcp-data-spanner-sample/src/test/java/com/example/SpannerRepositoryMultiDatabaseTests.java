@@ -28,8 +28,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.gcp.data.spanner.core.admin.ConfigurableDatabaseClientSpannerTemplateFactory;
-import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseClientProvidingSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.DatabaseIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SettableClientSpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
@@ -70,7 +68,6 @@ public class SpannerRepositoryMultiDatabaseTests {
 	}
 
 	@Before
-	@After
 	public void setUp() {
 		createTable();
 		Config.flipDatabase();
@@ -134,9 +131,8 @@ public class SpannerRepositoryMultiDatabaseTests {
 		}
 
 		@Bean
-		public DatabaseClientProvidingSpannerTemplate databaseClientConfiguringSpannerTemplate(Spanner spanner) {
-			return ConfigurableDatabaseClientSpannerTemplateFactory
-					.prepareDatabaseClientConfigurationSpannerTemplate(new SettableClientSpannerTemplate() {
+		public SettableClientSpannerTemplate settableClientSpannerTemplate(Spanner spanner) {
+			return new SettableClientSpannerTemplate() {
 
 						/*
 						 * The purpose is to call the `setDatabaseClient` method, which determines the connection
@@ -160,7 +156,7 @@ public class SpannerRepositoryMultiDatabaseTests {
 														"db1")));
 							}
 						}
-					});
+			};
 		}
 	}
 }

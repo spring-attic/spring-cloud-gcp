@@ -141,7 +141,6 @@ public class SpannerTemplateTests {
 				new SettableClientSpannerTemplate(new CachingComposingDatabaseClientSupplier(() -> null, x -> null),
 						this.mappingContext, this.objectMapper, this.mutationFactory,
 						this.schemaUtils),
-				ConfigurableDatabaseClientSpannerTemplateFactory.prepareDatabaseClientConfigurationSpannerTemplate(
 						new SettableClientSpannerTemplate() {
 							@Override
 							public <T> T read(Class<T> entityClass, Key key) {
@@ -155,7 +154,7 @@ public class SpannerTemplateTests {
 
 								return null;
 							}
-						}));
+				});
 
 		// this first read should use the first client
 		template.read(TestEntity.class, Key.of("key1"));
