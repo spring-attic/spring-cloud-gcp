@@ -45,10 +45,9 @@ public class GcpPubSubReactiveAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "pubSubReactiveScheduler")
-	Scheduler  pubSubReactiveScheduler() {
+	Scheduler pubSubReactiveScheduler() {
 		return Schedulers.elastic();
 	}
-
 
 	@Bean
 	@ConditionalOnMissingBean
