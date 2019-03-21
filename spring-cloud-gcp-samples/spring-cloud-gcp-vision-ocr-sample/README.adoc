@@ -1,0 +1,53 @@
+= Spring GCP Cloud Vision OCR Sample Application
+
+This demonstrates how to run Google Cloud Vision https://cloud.google.com/vision/docs/ocr[Optical Character Recognition (OCR)] analysis on PDF and TIFF documents.
+OCR is a process which allows you to detect and extract the text from digital documents.
+
+This sample application allows you to upload documents to a specified https://cloud.google.com/storage/docs/key-terms#buckets[Google Cloud Storage bucket] and run OCR on those documents you uploaded.
+After your document is uploaded and processed, the application will allow you to access the extracted text of each document.
+
+== Running the sample
+
+This section describes how to run the sample and use it to extract text from some documents.
+
+=== 1. Setting up your GCP Project
+
+a. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
+
+b. Enable the Google Cloud Vision API from the "APIs & Services" menu of the Google Cloud Console.
+
+c. Authenticate in one of two ways:
+
+* Use the Google Cloud SDK to https://developers.google.com/identity/protocols/application-default-credentials#toolcloudsdk[authenticate with application default credentials].
+
+* https://cloud.google.com/iam/docs/creating-managing-service-accounts[Create a new service account], download its private key and point the `spring.cloud.gcp.credentials.location` property to it.
++
+Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
+
+=== 2. Create a Google Storage Bucket
+
+a. Go to the https://console.cloud.google.com/storage[Google Cloud Storage] section of the Google Cloud Console and create a bucket.
+You may specify any name for the bucket.
+
+b. In the `resources/application.properties` file in this directory, set the `application.ocr-bucket` to the name of the bucket you created.
+
+=== 3. Running the App
+
+a. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+b. Go to http://localhost:8080 in your browser, and specify the URL of a PDF or TIFF document to process.
++
+The application allows you to specify documents to upload in two ways:
+
+* From a web URL.
++
+Example: `http://www.google.com/document.pdf`
+
+* From the `resources/` directory.
+You may specify any document under the `resources/` subdirectory using the `classpath:` protocol.
+Specify its path relative to the `resources/` directory.
++
+Example: `classpath:test_pdfs/test.pdf` references the sample pdf provided at `resources/test_pdfs/test.pdf`.
+
+c. When you submit the document through the application, it will be uploaded to your Google Storage bucket and OCR analysis will be run on it.
+After a few minutes, you will be able to view the text extracted from each page of the document on the status page at http://localhost:8080/status.
