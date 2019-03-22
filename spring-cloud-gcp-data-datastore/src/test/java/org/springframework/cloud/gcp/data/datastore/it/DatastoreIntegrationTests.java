@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -202,6 +203,52 @@ public class DatastoreIntegrationTests {
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
 				.isEqualTo(true);
+	}
+
+	@Test
+	public void testSlice() {
+		List<TestEntity> results = new ArrayList<>();
+		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				PageRequest.of(0, 1));
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isFalse();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testSliceSort() {
+		List<TestEntity> results = this.testEntityRepository.findEntitiesWithCustomQuerySliceSort(Sort.by("color"));
+
+		assertThat(results.get(0)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
+	}
+
+	@Test
+	public void testSliceSortDesc() {
+		List<TestEntity> results = this.testEntityRepository
+				.findEntitiesWithCustomQuerySliceSort(Sort.by(Sort.Direction.DESC, "color"));
+
+		assertThat(results.get(results.size() - 1)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
 	}
 
 	@Test
