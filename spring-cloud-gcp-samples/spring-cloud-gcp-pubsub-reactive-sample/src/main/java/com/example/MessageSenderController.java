@@ -19,7 +19,7 @@ package com.example;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.result.view.RedirectView;
 
@@ -36,7 +36,7 @@ public class MessageSenderController {
 	@Autowired
 	PubSubPublisherTemplate pubSubPublisherTemplate;
 
-	@GetMapping("/postMessage")
+	@PostMapping("/postMessage")
 	public RedirectView publish(@RequestParam("message") String message, @RequestParam("count") int messageCount) {
 		for (int i = 0; i < messageCount; i++) {
 			this.pubSubPublisherTemplate.publish("exampleTopic", message + " " + i);

@@ -23,4 +23,4 @@ Observe that nothing is received by the sample application, since there are no s
   curl localhost:8080/getmessages
 
 
-7. Verify that the `curl` command got the message text, while the application itself logged its message ID, matching the one returned by `gcloud` command.
+7. Verify that the `curl` terminal received the messages, while the application itself logged their IDs.
