@@ -122,8 +122,9 @@ $(addBlockSwitches);
 <ul class="sectlevel2">
 <li><a href="#_sample">4.1. Sample</a></li>
 <li><a href="#_pubsub_operations_template">4.2. Pub/Sub Operations &amp; Template</a></li>
-<li><a href="#_pubsub_management">4.3. Pub/Sub management</a></li>
-<li><a href="#pubsub-configuration">4.4. Configuration</a></li>
+<li><a href="#_reactive_stream_subscription">4.3. Reactive Stream Subscription</a></li>
+<li><a href="#_pubsub_management">4.4. Pub/Sub management</a></li>
+<li><a href="#pubsub-configuration">4.5. Configuration</a></li>
 </ul>
 </li>
 <li><a href="#_spring_resources">5. Spring Resources</a>
@@ -817,7 +818,7 @@ The provider can help determine programmatically in which GCP environment (App E
 <div class="sect2">
 <h3 id="_sample"><a class="link" href="#_sample">4.1. Sample</a></h3>
 <div class="paragraph">
-<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample">sample application</a> is available.</p>
+<p>Sample applications for <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample">using the template</a> and <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample">using a subscription-backed reactive stream</a> are available.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1023,7 +1024,49 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 </div>
 <div class="sect2">
-<h3 id="_pubsub_management"><a class="link" href="#_pubsub_management">4.3. Pub/Sub management</a></h3>
+<h3 id="_reactive_stream_subscription"><a class="link" href="#_reactive_stream_subscription">4.3. Reactive Stream Subscription</a></h3>
+<div class="paragraph">
+<p>It is also possible to acquire a reactive stream backed by a subscription.
+To do so, a Project Reactor dependency (<code>io.projectreactor:reactor-core</code>) must be added to the project.
+The combination of the Pub/Sub starter and the Project Reactor dependencies will then make a <code>PubSubReactiveFactory</code> bean available, which can then be used to get a <code>Publisher</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+PubSubReactiveFactory reactiveFactory;
+
+// ...
+
+Flux&lt;AcknowledgeablePubsubMessage&gt; flux
+				= reactiveFactory.createPolledFlux("exampleSubscription", 1000);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>Flux</code> then represents an infinite stream of GCP Pub/Sub messages coming in through the specified subscription.
+For unlimited demand, the Pub/Sub subscription will be polled regularly, at intervals determined by <code>pollingPeriodMs</code> parameter passed in when creating the <code>Flux</code>.
+For bounded demand, the <code>pollingPeriodMs</code> parameter is unused.
+Instead, as many messages as possible (up to the requested number) are delivered immediately, with the remaining messages delivered as they become available.</p>
+</div>
+<div class="paragraph">
+<p>The full range of Project Reactor operations can be applied to the stream.
+For example, if you only want to fetch 5 messages, you can use <code>limitRequest</code> operation to turn the infinite stream into a finite one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Flux&lt;AcknowledgeablePubsubMessage&gt; fiveMessageFlux = flux.limitRequest(5);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Acknowledging messages flowing through the <code>Flux</code> should be manually acknowledged.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">flux.doOnNext(AcknowledgeablePubsubMessage::ack);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pubsub_management"><a class="link" href="#_pubsub_management">4.4. Pub/Sub management</a></h3>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.</p>
@@ -1034,7 +1077,7 @@ If given a <code>CredentialsProvider</code>, it creates a <code>TopicAdminClient
 The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</code> object using the <code>GcpProjectIdProvider</code> and the <code>CredentialsProvider</code> auto-configured by the Spring Boot GCP Core starter.</p>
 </div>
 <div class="sect3">
-<h4 id="_creating_a_topic"><a class="link" href="#_creating_a_topic">4.3.1. Creating a topic</a></h4>
+<h4 id="_creating_a_topic"><a class="link" href="#_creating_a_topic">4.4.1. Creating a topic</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to create topics:</p>
 </div>
@@ -1055,7 +1098,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 </div>
 </div>
 <div class="sect3">
-<h4 id="_deleting_a_topic"><a class="link" href="#_deleting_a_topic">4.3.2. Deleting a topic</a></h4>
+<h4 id="_deleting_a_topic"><a class="link" href="#_deleting_a_topic">4.4.2. Deleting a topic</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to delete topics:</p>
 </div>
@@ -1076,7 +1119,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 </div>
 </div>
 <div class="sect3">
-<h4 id="_listing_topics"><a class="link" href="#_listing_topics">4.3.3. Listing topics</a></h4>
+<h4 id="_listing_topics"><a class="link" href="#_listing_topics">4.4.3. Listing topics</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to list topics:</p>
 </div>
@@ -1095,7 +1138,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 </div>
 </div>
 <div class="sect3">
-<h4 id="_creating_a_subscription"><a class="link" href="#_creating_a_subscription">4.3.4. Creating a subscription</a></h4>
+<h4 id="_creating_a_subscription"><a class="link" href="#_creating_a_subscription">4.4.4. Creating a subscription</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to create subscriptions to existing topics:</p>
 </div>
@@ -1136,7 +1179,7 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 </div>
 <div class="sect3">
-<h4 id="_deleting_a_subscription"><a class="link" href="#_deleting_a_subscription">4.3.5. Deleting a subscription</a></h4>
+<h4 id="_deleting_a_subscription"><a class="link" href="#_deleting_a_subscription">4.4.5. Deleting a subscription</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to delete subscriptions:</p>
 </div>
@@ -1157,7 +1200,7 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 </div>
 <div class="sect3">
-<h4 id="_listing_subscriptions"><a class="link" href="#_listing_subscriptions">4.3.6. Listing subscriptions</a></h4>
+<h4 id="_listing_subscriptions"><a class="link" href="#_listing_subscriptions">4.4.6. Listing subscriptions</a></h4>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> implements a method to list subscriptions:</p>
 </div>
@@ -1177,7 +1220,7 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 </div>
 <div class="sect2">
-<h3 id="pubsub-configuration"><a class="link" href="#pubsub-configuration">4.4. Configuration</a></h3>
+<h3 id="pubsub-configuration"><a class="link" href="#pubsub-configuration">4.5. Configuration</a></h3>
 <div class="paragraph">
 <p>The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:</p>
 </div>
