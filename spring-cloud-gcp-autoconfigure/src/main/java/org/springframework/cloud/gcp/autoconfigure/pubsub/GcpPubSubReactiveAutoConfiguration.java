@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(GcpPubSubAutoConfiguration.class)
-@ConditionalOnClass(Flux.class)
+@ConditionalOnClass({Flux.class, PubSubSubscriberTemplate.class})
 @ConditionalOnProperty(value = "spring.cloud.gcp.pubsub.reactive.enabled", matchIfMissing = true)
 public class GcpPubSubReactiveAutoConfiguration {
 
