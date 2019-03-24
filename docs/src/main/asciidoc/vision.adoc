@@ -36,7 +36,7 @@ dependencies {
 ==== Cloud Vision OCR Dependencies
 
 If you are interested in applying optical character recognition (OCR) on documents for your project, you'll need to add both `spring-cloud-gcp-starter-vision` and `spring-cloud-gcp-starter-storage` to your dependencies.
-The storage starter is necessary because the Cloud Vision API runs OCR on documents stored in Google Cloud Storage buckets.
+The storage starter is necessary because the Cloud Vision API will process your documents and write OCR output files all within your Google Cloud Storage buckets.
 
 Maven coordinates using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -126,7 +126,32 @@ The method allows you to specify the location of the document and the output loc
 It returns a `ListenableFuture` containing `DocumentOcrResultSet` which contains the OCR content of the document.
 
 NOTE: Running OCR on a document is an operation that can take between several minutes to several hours depending on how large the document is.
-It is recommended to register callbacks to the returned ListenableFuture or ignore it and process the JSON output files at a later point in time.
+It is recommended to register callbacks to the returned ListenableFuture or ignore it and process the JSON output files at a later point in time using `readOcrOutputFile` or `readOcrOutputFileSet`.
+
+==== Running OCR Example
+
+Below is a code snippet of how to run OCR on a document stored in a Google Storage bucket and read the text in the first page of the document.
+
+----
+@Autowired
+private DocumentOcrTemplate documentOcrTemplate;
+
+public void runOcrOnDocument() {
+    GoogleStorageLocation document = GoogleStorageLocation.forFile(
+            "your-bucket", "test.pdf");
+    GoogleStorageLocation outputLocationPrefix = GoogleStorageLocation.forFolder(
+            "your-bucket", "output_folder/test.pdf/");
+
+    ListenableFuture<DocumentOcrResultSet> result =
+        this.documentOcrTemplate.runOcrForDocument(
+            document, outputLocationPrefix);
+
+    DocumentOcrResultSet ocrPages = result.get(5, TimeUnit.MINUTES);
+
+    String page1Text = ocrPages.getPage(1).getText();
+    System.out.println(page1Text);
+}
+----
 
 ==== Reading OCR Output Files
 
@@ -140,6 +165,33 @@ All of the files under the path should correspond to the same document.
 
 - `readOcrOutputFile(GoogleStorageLocation jsonFile)`:
 Reads a single OCR output file and returns the parsed contents.
+
+==== Reading OCR Output Files Example
+
+The code snippet below describes how to read the OCR output files of a single document.
+
+----
+@Autowired
+private DocumentOcrTemplate documentOcrTemplate;
+
+// Parses the OCR output files corresponding to a single document in a directory
+public void parseOutputFileSet() {
+  GoogleStorageLocation ocrOutputPrefix = GoogleStorageLocation.forFolder(
+      "your-bucket", "json_output_set/");
+
+  DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFileSet(ocrOutputPrefix);
+  System.out.println("Page 2 text: " + result.getPage(2).getText());
+}
+
+// Parses a single OCR output file
+public void parseSingleOutputFile() {
+  GoogleStorageLocation ocrOutputFile = GoogleStorageLocation.forFile(
+      "your-bucket", "json_output_set/test_output-2-to-2.json");
+
+  DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFile(ocrOutputFile);
+  System.out.println("Page 2 text: " + result.getPage(2).getText());
+}
+----
 
 === Configuration
 
