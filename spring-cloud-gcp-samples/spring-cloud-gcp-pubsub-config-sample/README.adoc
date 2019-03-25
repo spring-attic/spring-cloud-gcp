@@ -5,7 +5,7 @@ The sample app consists of a configuration server and a small web application th
 
 Configuration server runs on port `8888`, and can read configuration from a local filesystem (useful for exploring the sample) or from a source control system.
 When the server is notified that new configuration is available, it fetches the updated configuration and sends it out via Spring Cloud Bus.
-Under the hood, Spring Cloud Bus uses the Spring Cloud Stream binder for GCP Pub/Sub to send a message to a topic named `springCloudBus`.
+Under the hood, Spring Cloud Bus uses the Spring Cloud Stream binder for Cloud Pub/Sub to send a message to a topic named `springCloudBus`.
 The client uses the same binder with an anonymous subscription to receive notifications, and provides an HTTP endpoint `/message` for printing the dynamically updated message value.
 
 == Setup
@@ -68,7 +68,7 @@ CAUTION: Never commit any passwords or passphrases into source control.
 5. Push an update to configuration stored in GitHub, setting the message to a new value.
 
 6. Notify the configuration server that new configuration is available.
-In a deployed server, this would be done through a GitHub webhook.
+In a deployed server, this would be done automatically through a GitHub webhook.
 +
 ----
 curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content-Type: application/json" -d '{"commits": [{"modified": ["application.properties"]}]}'
