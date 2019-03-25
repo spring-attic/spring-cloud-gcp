@@ -381,4 +381,5 @@ public class GcpPubSubAutoConfiguration {
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
 	}
+
 }

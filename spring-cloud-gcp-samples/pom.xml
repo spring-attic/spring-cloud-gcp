@@ -34,6 +34,7 @@
 		<module>spring-cloud-gcp-pubsub-binder-sample</module>
 		<module>spring-cloud-gcp-pubsub-config-sample</module>
 		<module>spring-cloud-gcp-pubsub-polling-binder-sample</module>
+		<module>spring-cloud-gcp-pubsub-reactive-sample</module>
 		<module>spring-cloud-gcp-integration-pubsub-json-sample</module>
 		<module>spring-cloud-gcp-security-iap-sample</module>
 		<module>spring-cloud-gcp-sql-postgres-sample</module>

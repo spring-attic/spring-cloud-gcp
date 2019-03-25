@@ -1,0 +1,28 @@
+= Google Cloud Reactive Pub/Sub Code Sample
+
+This code sample demonstrates consuming data from a GCP Cloud Pub/Sub subscription as a reactive stream.
+
+== Setup & Configuration
+
+1. Configure your GCP project ID and credentials by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
+
+2. Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `exampleTopic`.
+
+3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
+Create a new subscription called `exampleSubscription` with all default parameters.
+
+4. In a terminal window, move into this directory (spring-cloud-gcp-pubsub-reactive-sample) and run: `mvn spring-boot:run`.
+
+5. In another terminal, send a message to the GCP Pub/Sub topic.
+Observe that nothing is received by the sample application, since there are no subscribers yet.
+
+  gcloud pubsub topics publish exampleTopic --message "hello!"
+
+6. In a third terminal, open a connection to '/getmessages' streaming endpoint.
+
+  curl localhost:8080/getmessages
+
+
+7. Verify that the `curl` command got the message text, while the application itself logged its message ID, matching the one returned by `gcloud` command.
