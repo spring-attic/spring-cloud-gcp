@@ -106,10 +106,10 @@ public class DatastoreQueryMethod extends QueryMethod {
 
 	boolean isNullable() {
 		if (this.isNullable == null) {
-			Optional<Annotation> first = Arrays.stream(this.method.getAnnotations())
+			Optional<Annotation> nullable = Arrays.stream(this.method.getAnnotations())
 					.filter(annotation -> annotation instanceof Nullable)
 					.findFirst();
-			this.isNullable = first.isPresent();
+			this.isNullable = nullable.isPresent();
 		}
 		return this.isNullable;
 	}
