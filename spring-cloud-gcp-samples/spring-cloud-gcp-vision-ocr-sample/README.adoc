@@ -14,7 +14,13 @@ This section describes how to run the sample and use it to extract text from som
 
 a. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
 
-b. Enable the Google Cloud Vision API from the "APIs & Services" menu of the Google Cloud Console.
+b. Enable the Google Cloud Vision API by following https://cloud.google.com/vision/docs/before-you-begin[these instructions].
++
+If you are using the https://cloud.google.com/sdk/gcloud/[gcloud] command line tool, you may run:
++
+----
+$ gcloud services enable vision.googleapis.com
+----
 
 c. Authenticate in one of two ways:
 
