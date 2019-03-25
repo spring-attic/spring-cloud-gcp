@@ -1,6 +1,6 @@
 == Spring Cloud Bus
 
-Spring Cloud Bus integration with Cloud Pub/Sub is as simple as importing two Spring Cloud dependencies: `spring-cloud-bus` and `spring-cloud-gcp-pubsub-stream-binder`.
+Using link:https://cloud.google.com/pubsub/[Cloud Pub/Sub] as the link:https://spring.io/projects/spring-cloud-bus[Spring Cloud Bus] implementation is as simple as importing the `spring-cloud-gcp-starter-bus-pubsub` starter.
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -8,12 +8,7 @@ Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud
 ----
     <dependency>
       <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-bus</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
+      <artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
     </dependency>
 ----
 
@@ -22,8 +17,7 @@ Gradle coordinates:
 [source,groovy]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-bus'
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-bus-pubsub'
 }
 ----
 

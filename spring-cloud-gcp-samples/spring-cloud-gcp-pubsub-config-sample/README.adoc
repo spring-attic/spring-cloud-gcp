@@ -5,8 +5,12 @@ The sample app consists of a configuration server and a small web application th
 
 Configuration server runs on port `8888`, and can read configuration from a local filesystem (useful for exploring the sample) or from a source control system.
 When the server is notified that new configuration is available, it fetches the updated configuration and sends it out via Spring Cloud Bus.
+
 Under the hood, Spring Cloud Bus uses the Spring Cloud Stream binder for Cloud Pub/Sub to send a message to a topic named `springCloudBus`.
 The client uses the same binder with an anonymous subscription to receive notifications, and provides an HTTP endpoint `/message` for printing the dynamically updated message value.
+
+Technically, every configuration server happens to also be a configuration client, so it subscribes to the configuration changes that it sends.
+But in this set of demo applications, the configuration server does not use any dynamic configuration, so the only evidence of it acting as a client is in the additional anonymous Cloud Pub/Sub subscription that gets created when the server starts up.
 
 == Setup
 
@@ -14,17 +18,25 @@ The client uses the same binder with an anonymous subscription to receive notifi
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
 
-2. Make sure that GCP Cloud Pub/Sub API is enabled.
+2. Make sure that GCP Cloud Pub/Sub API is enabled, either through link:https://console.cloud.google.com/apis/api/pubsub.googleapis.com[Google Cloud Console] or with the following `gcloud` command:
 
-== Running the code sample with configuration derived from local filesystem
+  gcloud services enable pubsub.googleapis.com
+
+== Demo with local filesystem
 
 1. Create a temporary directory `/tmp/config`.
 Alternatively, update `spring.cloud.config.server.native.searchLocationsconfig` property in configuration server's link:spring-cloud-gcp-pubsub-config-sample-server/src/main/resources/application.properties[application.properties] with the directory you will use.
 Make sure to specify `file:` prefix if using absolute paths.
 
-2. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-local` and `spring-cloud-gcp-pubsub-config-sample-client` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+2. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-local` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
 
-2. Visit http://localhost:8080/message in a browser; observe the default value of `none` printed on the page.
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-server-local
+
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
+
+2. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
 
 4. Place a file named `application.properties` with the following contents into the directory above:
@@ -37,10 +49,10 @@ example.message = message from the local filesystem
 As every configuration server is also its own configuration client, it will attempt to refresh its own configuration and find no relevant changes (because there are no refresh scoped properties to update in the server application), as reflected in `Received remote refresh request. Keys refreshed []` message.
 
 
-6. Visit http://localhost:8080/message in a browser; observe the value now matches the value updated in the file system.
+6. Refresh http://localhost:8080/message client endpoint; observe the value now matches the value updated in the file system.
 The client application log will also reflect the change: `Received remote refresh request. Keys refreshed [example.message]`.
 
-== Running the code sample with configuration maintained in GitHub
+== Demo with GitHub
 
 Keeping configuration in the local file system is simple, but not particularly useful -- if the configuration were available on the same file system as the client application, it could just get it without having to maintain a configuration server.
 A more realistic scenario is keeping configuration under version control.
@@ -61,9 +73,15 @@ NOTE: make sure to set `spring.cloud.config.server.git.passphrase` property if t
 +
 CAUTION: Never commit any passwords or passphrases into source control.
 
-3. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server` and `spring-cloud-gcp-pubsub-config-sample-client` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+3. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-github` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
 
-4. Visit http://localhost:8080/message in a browser; observe the correct value, "message from GitHub", printed on the page.
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-server-github
+
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
+
+4. Visit http://localhost:8080/message client in a browser; observe the correct value, "message from GitHub", printed on the page.
 
 5. Push an update to configuration stored in GitHub, setting the message to a new value.
 
@@ -74,4 +92,4 @@ In a deployed server, this would be done automatically through a GitHub webhook.
 curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content-Type: application/json" -d '{"commits": [{"modified": ["application.properties"]}]}'
 ----
 
-7. Visit http://localhost:8080/message in a browser again; observe the value was updated.
+7. Refresh http://localhost:8080/message client endpoint in a browser again; observe the value was updated.
