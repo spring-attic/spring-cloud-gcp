@@ -17,8 +17,6 @@
 package com.example;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.List;
 
@@ -29,8 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -52,41 +54,38 @@ public class ReactiveReceiverApplicationTests {
 	@LocalServerPort
 	private int port;
 
-
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
 	@Test
 	public void testSample() throws UnsupportedEncodingException {
-		String url = UriComponentsBuilder.newInstance()
+		String messagePostingUrl = UriComponentsBuilder.newInstance()
 			.scheme("http")
 			.host("localhost")
 			.port(this.port)
 			.path("/postMessage")
-			.queryParam("message", "reactive test msg")
-			.queryParam("count", 2)
 			.toUriString();
-		testRestTemplate.postForObject(url, null, String.class);
 
-		List<String> messages = WebClient.create("http://localhost:" + this.port).get()
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+		MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+		map.add("message", "reactive test msg");
+		map.add("count", "2");
+
+		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+		testRestTemplate.postForObject(messagePostingUrl, request, String.class);
+
+		List<String> streamedMessages = WebClient.create("http://localhost:" + this.port).get()
 			.uri("/getmessages")
 			.accept(MediaType.TEXT_EVENT_STREAM)
 			.retrieve()
 			.bodyToFlux(String.class)
 			.limitRequest(2)
-			.map(ReactiveReceiverApplicationTests::decode)
 			.collectList().block(Duration.ofSeconds(10));
 
-		assertThat(messages).containsExactlyInAnyOrder("reactive test msg 0", "reactive test msg 1");
-	}
-
-	static String decode(String s) {
-		try {
-			return URLDecoder.decode(s, Charset.defaultCharset().name());
-		}
-		catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("unable to decode string " + s, e);
-		}
+		assertThat(streamedMessages).containsExactlyInAnyOrder("reactive test msg 0", "reactive test msg 1");
 	}
 
 }
