@@ -48,6 +48,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,6 +61,7 @@ import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNotNull;
@@ -732,7 +734,11 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("findByActionNullable", String.class), true);
 
 		Object[] params = new Object[] { "BUY", };
-		assertThat(this.partTreeDatastoreQuery.execute(params)).isNull();
+		Throwable thrown = catchThrowable(() -> {
+			this.partTreeDatastoreQuery.execute(params);
+		});
+		assertThat(thrown).isInstanceOf(EmptyResultDataAccessException.class).hasNoCause()
+				.hasMessageContaining("Expecting at least 1 result, but none found");
 	}
 
 	@Test
