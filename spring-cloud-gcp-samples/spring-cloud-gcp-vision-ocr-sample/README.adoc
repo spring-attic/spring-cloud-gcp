@@ -43,11 +43,21 @@ a. Run the `$ mvn spring-boot:run` command from the same directory as this sampl
 
 b. Go to http://localhost:8080 in your browser, and specify the URL of a PDF or TIFF document to process.
 +
-The application allows you to specify documents to upload in two ways:
+The application allows you to specify the URL of documents in several ways:
 
 * From a web URL.
 +
 Example: `http://www.google.com/document.pdf`
+
+* From a file on your filesystem.
+Specify the absolute path to your file using `file:` protocol.
++
+Example: `file:/absolute/path/to/file.pdf`
+
+* From a file already on Google Cloud Storage.
+Specify its path using the `gs://[BUCKET-NAME]/path/to/document.pdf`
++
+Example: `gs://your-gcs-bucket/test.pdf`
 
 * From the `resources/` directory.
 You may specify any document under the `resources/` subdirectory using the `classpath:` protocol.
