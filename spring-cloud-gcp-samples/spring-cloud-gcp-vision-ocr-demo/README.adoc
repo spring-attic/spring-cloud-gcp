@@ -6,6 +6,16 @@ OCR is a process which allows you to detect and extract the text from digital do
 This demo application allows you to upload documents to a specified https://cloud.google.com/storage/docs/key-terms#buckets[Google Cloud Storage bucket] and run OCR on those documents you uploaded.
 After your documents are uploaded and processed, the application will allow you to access the extracted text from each document.
 
+The main work of running OCR in the application occurs in the `submitDocument` method in `WebController.java`:
+
+[source,java,indent=0]
+----
+include::src/main/java/com/example/WebController.java[tags=submit_document]
+----
+
+In this method, the application uploads the specified document to Google Cloud Storage and runs OCR on the document.
+This will be a common pattern in your code when using Cloud Vision to process your documents.
+
 == Running the Demo
 
 This section describes how to run the demo and use it to extract text from some documents.

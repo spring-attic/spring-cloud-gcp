@@ -98,6 +98,7 @@ public class WebController {
 		return new ModelAndView("viewDocument", map);
 	}
 
+	// tag::submit_document[]
 	@PostMapping("/submitDocument")
 	public ModelAndView submitDocument(@RequestParam("documentUrl") String documentUrl) throws IOException {
 
@@ -127,6 +128,7 @@ public class WebController {
 
 		return new ModelAndView("submit_done");
 	}
+	// end::submit_document[]
 
 	private static String getFileType(Resource documentResource) {
 		int extensionIdx = documentResource.getFilename().lastIndexOf(".");
