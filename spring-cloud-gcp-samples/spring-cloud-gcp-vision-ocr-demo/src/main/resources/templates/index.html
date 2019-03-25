@@ -43,11 +43,12 @@
     <div>
       Note: You may specify any PDF document via the following methods:
       <ul>
-        <li>PDFs accessible online through http:// (e.g. http://www.example.com/document.pdf)</li>
+        <li>Documents accessible online through "http://" (e.g. http://www.example.com/document.pdf)</li>
+        <li>Documents on filesystem via "file:/" (e.g. file:/absolute/path/to/file.pdf)</li>
+        <li>Documents on Google Cloud Storage via "gs://" (e.g. gs://your-gcs-bucket/path/to/file.pdf)</li>
         <li>
           PDFs in the application resources/ directory through "classpath:".
-          For example, if you want to specify the sample PDF provided with this demo at
-          resources/test_pdfs/test.pdf, you will specify "classpath:test_pdfs/test.pdf".
+          (e.g. classpath:test_pdfs/test.pdf)
         </li>
       </ul>
     </div>
