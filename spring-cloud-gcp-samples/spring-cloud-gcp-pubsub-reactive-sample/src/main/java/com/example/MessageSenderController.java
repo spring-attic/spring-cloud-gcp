@@ -38,6 +38,7 @@ public class MessageSenderController {
 
 	@PostMapping("/postMessage")
 	public RedirectView publish(@ModelAttribute("message") Message message) {
+
 		for (int i = 0; i < message.count; i++) {
 			this.pubSubPublisherTemplate.publish("exampleTopic", message.message + " " + i);
 		}
@@ -45,6 +46,9 @@ public class MessageSenderController {
 		return new RedirectView("/?statusMessage=Published");
 	}
 
+	/**
+	 * Convenience class encapsulating the form field values needed for publishing.
+	 */
 	public static class Message {
 
 		String message;
@@ -54,6 +58,7 @@ public class MessageSenderController {
 			this.message = message;
 			this.count = count;
 		}
+
 	}
 
 }

@@ -2,6 +2,23 @@
 
 This code sample demonstrates consuming data from a GCP Cloud Pub/Sub subscription as a reactive stream.
 
+Acquiring and processing the reactive stream is done in link:src/main/java/com/example/ReactiveController.java/[ReactiveController.java].
+Each message in the stream is acknowledged with `doOnNext()` operator.
+Then the `map()` operator converts the message's payload into a proper `String` and returns it to the subscriber:
+
+[source,java]
+----
+return flux
+  .doOnNext(message -> {
+    System.out.println("Received a message: " + message.getPubsubMessage().getMessageId());
+    message.ack();
+  })
+  .map(message -> new String(
+	  message.getPubsubMessage().getData().toByteArray(), Charset.defaultCharset()));
+----
+
+The other two classes (link:src/main/java/com/example/ReactiveReceiverApplication.java/[ReactiveReceiverApplication.java] and link:src/main/java/com/example/MessageSenderController.java/[MessageSenderController.java]) boostrap the application and simplify publishing test data to a topic.
+
 == Setup & Configuration
 
 1. Configure your GCP project ID and credentials by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
@@ -22,8 +39,10 @@ The messages sent will all start with the message text provided, and end with a 
 Observe that nothing is received by the sample application, since there are no subscribers yet.
 
 6. In another terminal, open a connection to `/getmessages` streaming endpoint.
+This stream will remain open until you stop it with `Ctrl+C`.
 
   curl localhost:8080/getmessages
 
-
 7. Verify that the `curl` terminal received the messages, while the application itself logged their IDs.
+
+8. Publish some more messages from http://localhost:8080; observe that the additional data is streamed to the `curl` client.
