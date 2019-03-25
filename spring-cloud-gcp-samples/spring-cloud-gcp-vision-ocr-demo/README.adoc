@@ -8,9 +8,37 @@ After your documents are uploaded and processed, the application will allow you 
 
 The main work of running OCR in the application occurs in the `submitDocument` method in `WebController.java`:
 
-[source,java,indent=0]
+[source,java]
 ----
-include::src/main/java/com/example/WebController.java[tags=submit_document]
+@PostMapping("/submitDocument")
+public ModelAndView submitDocument(@RequestParam("documentUrl") String documentUrl) throws IOException {
+
+  // Uploads the document to the GCS bucket
+  Resource documentResource = resourceLoader.getResource(documentUrl);
+  BlobId outputBlobId = BlobId.of(ocrBucket, documentResource.getFilename());
+  BlobInfo blobInfo =
+      BlobInfo.newBuilder(outputBlobId)
+          .setContentType(getFileType(documentResource))
+          .build();
+
+  try (WriteChannel writer = storage.writer(blobInfo)) {
+    ByteStreams.copy(documentResource.getInputStream(), Channels.newOutputStream(writer));
+  }
+
+  // Run OCR on the document
+  GoogleStorageLocation documentLocation =
+      GoogleStorageLocation.forFile(outputBlobId.getBucket(), outputBlobId.getName());
+
+  GoogleStorageLocation outputLocation = GoogleStorageLocation.forFolder(
+      outputBlobId.getBucket(), "ocr_results/" + documentLocation.getBlobName());
+
+  ListenableFuture<DocumentOcrResultSet> result =
+      documentOcrTemplate.runOcrForDocument(documentLocation, outputLocation);
+
+  ocrStatusReporter.registerFuture(documentLocation.uriString(), result);
+
+  return new ModelAndView("submit_done");
+}
 ----
 
 In this method, the application uploads the specified document to Google Cloud Storage and runs OCR on the document.
