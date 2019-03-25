@@ -3,6 +3,7 @@
 <head>
   <title>Google Cloud Vision OCR Results</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" href="css/style.css" rel="stylesheet"/>
 </head>
 
 <body>
@@ -21,7 +22,7 @@
     words on each page of the document.
   </p>
 
-  <table border="1">
+  <table border="1" id="status_table">
     <tr>
       <th>Uploaded Document</th>
       <th>Status</th>
@@ -32,7 +33,8 @@
       <td>[[${ocrStatus.getGcsLocation()}]]</td>
       <td th:text="${ocrStatus.isDone()} ? 'OCR results ready' : 'OCR still running'" />
       <td th:if="${ocrStatus.isDone()}">
-        <a th:each="pageNumber: ${#numbers.sequence(ocrStatus.getResultSet().getMinPage(), ocrStatus.getResultSet().getMaxPage())}"
+        <a class="page_number"
+            th:each="pageNumber: ${#numbers.sequence(ocrStatus.getResultSet().getMinPage(), ocrStatus.getResultSet().getMaxPage())}"
             th:href="@{/viewDocument(gcsDocumentUrl=${ocrStatus.getGcsLocation()},pageNumber=${pageNumber})}">
           [[${pageNumber}]]
         </a>
