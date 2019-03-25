@@ -9,8 +9,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-vision-ocr-sample</artifactId>
-	<name>Spring Cloud GCP Vision OCR Sample</name>
+	<artifactId>spring-cloud-gcp-vision-ocr-demo</artifactId>
+	<name>Spring Cloud GCP Vision OCR Demo</name>
 
 	<dependencies>
 		<dependency>
