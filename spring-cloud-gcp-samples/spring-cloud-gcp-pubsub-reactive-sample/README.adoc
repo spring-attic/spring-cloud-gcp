@@ -30,7 +30,7 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `exampleSubscription` with all default parameters.
 
-4. In a terminal window, move into this directory (`spring-cloud-gcp-pubsub-reactive-sample`) and run:
+4. In a terminal window, move into this directory (`spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample`) and run:
 
   mvn spring-boot:run
 
