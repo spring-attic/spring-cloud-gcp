@@ -221,9 +221,11 @@ $(addBlockSwitches);
 </li>
 <li><a href="#_google_cloud_vision">16. Google Cloud Vision</a>
 <ul class="sectlevel2">
-<li><a href="#_cloud_vision_template">16.1. Cloud Vision Template</a></li>
-<li><a href="#_detect_image_labels_example">16.2. Detect Image Labels Example</a></li>
-<li><a href="#_sample_12">16.3. Sample</a></li>
+<li><a href="#_dependency_setup">16.1. Dependency Setup</a></li>
+<li><a href="#_image_analysis">16.2. Image Analysis</a></li>
+<li><a href="#_document_ocr_template">16.3. Document OCR Template</a></li>
+<li><a href="#_configuration_7">16.4. Configuration</a></li>
+<li><a href="#_sample_12">16.5. Sample</a></li>
 </ul>
 </li>
 <li><a href="#_cloud_foundry">17. Cloud Foundry</a></li>
@@ -7115,7 +7117,7 @@ Modifying registry, algorithm, and header properties might be useful for testing
 <h2 id="_google_cloud_vision"><a class="link" href="#_google_cloud_vision">16. Google Cloud Vision</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <a href="https://cloud.google.com/vision/">Google Cloud Vision API</a> allows users to leverage machine learning algorithms for processing images including: image classification, face detection, text extraction, and others.</p>
+<p>The <a href="https://cloud.google.com/vision/">Google Cloud Vision API</a> allows users to leverage machine learning algorithms for processing images and documents including: image classification, face detection, text extraction, optical character recognition, and others.</p>
 </div>
 <div class="paragraph">
 <p>Spring Cloud GCP provides:</p>
@@ -7126,19 +7128,27 @@ Modifying registry, algorithm, and header properties might be useful for testing
 <p>A convenience starter which automatically configures authentication settings and client objects needed to begin using the <a href="https://cloud.google.com/vision/">Google Cloud Vision API</a>.</p>
 </li>
 <li>
-<p>A Cloud Vision Template which simplifies interactions with the Cloud Vision API.</p>
+<p><code>CloudVisionTemplate</code> which simplifies interactions with the Cloud Vision API.</p>
 <div class="ulist">
 <ul>
 <li>
 <p>Allows you to easily send images to the API as Spring Resources.</p>
 </li>
 <li>
-<p>Offers convenience methods for common operations, such as extracting the text from an image.</p>
+<p>Offers convenience methods for common operations, such as classifying content of an image.</p>
 </li>
 </ul>
 </div>
 </li>
+<li>
+<p><code>DocumentOcrTemplate</code> which offers convenient methods for running <a href="https://cloud.google.com/vision/docs/pdf">optical character recognition (OCR)</a> on PDF and TIFF documents.</p>
+</li>
 </ul>
+</div>
+<div class="sect2">
+<h3 id="_dependency_setup"><a class="link" href="#_dependency_setup">16.1. Dependency Setup</a></h3>
+<div class="paragraph">
+<p>To begin using this library, add the <code>spring-cloud-gcp-starter-vision</code> artifact to your project.</p>
 </div>
 <div class="paragraph">
 <p>Maven coordinates, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
@@ -7161,16 +7171,44 @@ Modifying registry, algorithm, and header properties might be useful for testing
 }</code></pre>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_cloud_vision_ocr_dependencies"><a class="link" href="#_cloud_vision_ocr_dependencies">16.1.1. Cloud Vision OCR Dependencies</a></h4>
+<div class="paragraph">
+<p>If you are interested in applying optical character recognition (OCR) on documents for your project, you&#8217;ll need to add both <code>spring-cloud-gcp-starter-vision</code> and <code>spring-cloud-gcp-starter-storage</code> to your dependencies.
+The storage starter is necessary because the Cloud Vision API will process your documents and write OCR output files all within your Google Cloud Storage buckets.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-starter-vision&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-starter-storage&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
 <div class="sect2">
-<h3 id="_cloud_vision_template"><a class="link" href="#_cloud_vision_template">16.1. Cloud Vision Template</a></h3>
+<h3 id="_image_analysis"><a class="link" href="#_image_analysis">16.2. Image Analysis</a></h3>
 <div class="paragraph">
-<p>The <code>CloudVisionTemplate</code> offers a simple way to use the Cloud Vision APIs with Spring Resources.</p>
-</div>
-<div class="paragraph">
-<p>After you add the <code>spring-cloud-gcp-starter-vision</code> dependency to your project, you may <code>@Autowire</code> an instance of <code>CloudVisionTemplate</code> to use in your code.</p>
-</div>
-<div class="paragraph">
-<p>The <code>CloudVisionTemplate</code> offers the following method for interfacing with Cloud Vision:</p>
+<p>The <code>CloudVisionTemplate</code> allows you to easily analyze images; it provides the following method for interfacing with Cloud Vision:</p>
 </div>
 <div class="paragraph">
 <p><code>public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type&#8230;&#8203; featureTypes)</code></p>
@@ -7208,9 +7246,8 @@ Additionally, you may consult the <a href="https://cloud.google.com/vision/docs/
 </li>
 </ul>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_detect_image_labels_example"><a class="link" href="#_detect_image_labels_example">16.2. Detect Image Labels Example</a></h3>
+<div class="sect3">
+<h4 id="_detect_image_labels_example"><a class="link" href="#_detect_image_labels_example">16.2.1. Detect Image Labels Example</a></h4>
 <div class="paragraph">
 <p><a href="https://cloud.google.com/vision/docs/detecting-labels">Image labeling</a> refers to producing labels that describe the contents of an image.
 Below is a code sample of how this is done using the Cloud Vision Spring Template.</p>
@@ -7232,8 +7269,167 @@ public void processImage() {
 </div>
 </div>
 </div>
+</div>
 <div class="sect2">
-<h3 id="_sample_12"><a class="link" href="#_sample_12">16.3. Sample</a></h3>
+<h3 id="_document_ocr_template"><a class="link" href="#_document_ocr_template">16.3. Document OCR Template</a></h3>
+<div class="paragraph">
+<p>The <code>DocumentOcrTemplate</code> allows you to easily run <a href="https://cloud.google.com/vision/docs/pdf">optical character recognition (OCR)</a> on your PDF and TIFF documents stored in your Google Storage bucket.</p>
+</div>
+<div class="paragraph">
+<p>First, you will need to create a bucket in <a href="https://console.cloud.google.com/storage">Google Cloud Storage</a> and <a href="https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-java">upload the documents you wish to process into the bucket</a>.</p>
+</div>
+<div class="sect3">
+<h4 id="_running_ocr_on_a_document"><a class="link" href="#_running_ocr_on_a_document">16.3.1. Running OCR on a Document</a></h4>
+<div class="paragraph">
+<p>When OCR is run on a document, the Cloud Vision APIs will output a collection of OCR output files in JSON which describe the text content, bounding rectangles of words and letters, and other information about the document.</p>
+</div>
+<div class="paragraph">
+<p>The <code>DocumentOcrTemplate</code> provides the following method for running OCR on a document saved in Google Cloud Storage:</p>
+</div>
+<div class="paragraph">
+<p><code>ListenableFuture&lt;DocumentOcrResultSet&gt; runOcrForDocument(GoogleStorageLocation document, GoogleStorageLocation outputFilePathPrefix)</code></p>
+</div>
+<div class="paragraph">
+<p>The method allows you to specify the location of the document and the output location for where all the JSON output files will be saved in Google Cloud Storage.
+It returns a <code>ListenableFuture</code> containing <code>DocumentOcrResultSet</code> which contains the OCR content of the document.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Running OCR on a document is an operation that can take between several minutes to several hours depending on how large the document is.
+It is recommended to register callbacks to the returned ListenableFuture or ignore it and process the JSON output files at a later point in time using <code>readOcrOutputFile</code> or <code>readOcrOutputFileSet</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_running_ocr_example"><a class="link" href="#_running_ocr_example">16.3.2. Running OCR Example</a></h4>
+<div class="paragraph">
+<p>Below is a code snippet of how to run OCR on a document stored in a Google Storage bucket and read the text in the first page of the document.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Autowired
+private DocumentOcrTemplate documentOcrTemplate;
+
+public void runOcrOnDocument() {
+    GoogleStorageLocation document = GoogleStorageLocation.forFile(
+            "your-bucket", "test.pdf");
+    GoogleStorageLocation outputLocationPrefix = GoogleStorageLocation.forFolder(
+            "your-bucket", "output_folder/test.pdf/");
+
+    ListenableFuture&lt;DocumentOcrResultSet&gt; result =
+        this.documentOcrTemplate.runOcrForDocument(
+            document, outputLocationPrefix);
+
+    DocumentOcrResultSet ocrPages = result.get(5, TimeUnit.MINUTES);
+
+    String page1Text = ocrPages.getPage(1).getText();
+    System.out.println(page1Text);
+}</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_reading_ocr_output_files"><a class="link" href="#_reading_ocr_output_files">16.3.3. Reading OCR Output Files</a></h4>
+<div class="paragraph">
+<p>In some use-cases, you may need to directly read OCR output files stored in Google Cloud Storage.</p>
+</div>
+<div class="paragraph">
+<p><code>DocumentOcrTemplate</code> offers the following methods for reading and processing OCR output files:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>readOcrOutputFileSet(GoogleStorageLocation jsonOutputFilePathPrefix)</code>:
+Reads a collection of OCR output files under a file path prefix and returns the parsed contents.
+All of the files under the path should correspond to the same document.</p>
+</li>
+<li>
+<p><code>readOcrOutputFile(GoogleStorageLocation jsonFile)</code>:
+Reads a single OCR output file and returns the parsed contents.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_reading_ocr_output_files_example"><a class="link" href="#_reading_ocr_output_files_example">16.3.4. Reading OCR Output Files Example</a></h4>
+<div class="paragraph">
+<p>The code snippet below describes how to read the OCR output files of a single document.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@Autowired
+private DocumentOcrTemplate documentOcrTemplate;
+
+// Parses the OCR output files corresponding to a single document in a directory
+public void parseOutputFileSet() {
+  GoogleStorageLocation ocrOutputPrefix = GoogleStorageLocation.forFolder(
+      "your-bucket", "json_output_set/");
+
+  DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFileSet(ocrOutputPrefix);
+  System.out.println("Page 2 text: " + result.getPage(2).getText());
+}
+
+// Parses a single OCR output file
+public void parseSingleOutputFile() {
+  GoogleStorageLocation ocrOutputFile = GoogleStorageLocation.forFile(
+      "your-bucket", "json_output_set/test_output-2-to-2.json");
+
+  DocumentOcrResultSet result = this.documentOcrTemplate.readOcrOutputFile(ocrOutputFile);
+  System.out.println("Page 2 text: " + result.getPage(2).getText());
+}</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_7"><a class="link" href="#_configuration_7">16.4. Configuration</a></h3>
+<div class="paragraph">
+<p>The following options may be configured with Spring Cloud GCP Vision libraries.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Cloud Vision autoconfiguration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.executors-threads-count</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used during document OCR processing for waiting on long-running OCR operations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.json-output-batch-size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of document pages to include in each OCR output file.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sample_12"><a class="link" href="#_sample_12">16.5. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample">Sample Spring Boot Application</a> is provided to show how to use the Cloud Vision starter and template.</p>
 </div>
