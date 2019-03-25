@@ -93,7 +93,7 @@ Specify the absolute path to your file using `file:` protocol.
 Example: `file:/absolute/path/to/file.pdf`
 
 * From a file already on Google Cloud Storage.
-Specify its path using the `gs://[BUCKET-NAME]/path/to/document.pdf`
+Specify its path using the `gs://` protocol.
 +
 Example: `gs://your-gcs-bucket/test.pdf`
 
