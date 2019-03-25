@@ -4,7 +4,7 @@ This demonstrates how to run Google Cloud Vision https://cloud.google.com/vision
 OCR is a process which allows you to detect and extract the text from digital documents.
 
 This sample application allows you to upload documents to a specified https://cloud.google.com/storage/docs/key-terms#buckets[Google Cloud Storage bucket] and run OCR on those documents you uploaded.
-After your document is uploaded and processed, the application will allow you to access the extracted text of each document.
+After your documents are uploaded and processed, the application will allow you to access the extracted text from each document.
 
 == Running the sample
 
@@ -65,5 +65,5 @@ Specify its path relative to the `resources/` directory.
 +
 Example: `classpath:test_pdfs/test.pdf` references the sample pdf provided at `resources/test_pdfs/test.pdf`.
 
-c. When you submit the document through the application, it will be uploaded to your Google Storage bucket and OCR analysis will be run on it.
+c. When you submit the document through the application, it will be uploaded to your Google Storage bucket, and OCR analysis will be run on it.
 After a few minutes, you will be able to view the text extracted from each page of the document on the status page at http://localhost:8080/status.
