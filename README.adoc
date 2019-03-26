@@ -3,7 +3,7 @@
 = Spring Framework on Google Cloud Platform
 
 This project makes it easy for Spring users to run their applications on Google Cloud Platform.
-You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
+You can check our project website https://cloud.spring.io/spring-cloud-gcp[here].
 
 For a deep dive into the project, refer to the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.1.0.RELEASE/single/spring-cloud-gcp.html[Spring Cloud GCP 1.1 Reference Document].
 
@@ -97,6 +97,6 @@ spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
 ----
 
 These properties are optional and, if not specified, Spring Boot will attempt to automatically find them for you.
-For details on how Spring Boot finds these properties, refer to the http://cloud.spring.io/spring-cloud-gcp[documentation].
+For details on how Spring Boot finds these properties, refer to the https://cloud.spring.io/spring-cloud-gcp[documentation].
 
 NOTE: If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core Starter find the correct credentials for those environments.
