@@ -37,6 +37,7 @@
 		<module>spring-cloud-gcp-integration-pubsub-json-sample</module>
 		<module>spring-cloud-gcp-security-iap-sample</module>
 		<module>spring-cloud-gcp-sql-postgres-sample</module>
+		<module>spring-cloud-gcp-vision-ocr-demo</module>
 	</modules>
 
 	<build>
