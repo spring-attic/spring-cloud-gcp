@@ -225,7 +225,7 @@ Here is an example of how to create a Google Cloud Pub/Sub subscription:
 [source,java]
 ----
 public void newSubscription() {
-    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “https://my.endpoint/push”);
 }
 ----
 

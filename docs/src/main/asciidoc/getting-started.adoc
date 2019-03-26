@@ -104,7 +104,7 @@ A summary of these artifacts are provided below.
 
 ==== Spring Initializr
 
-http://start.spring.io/[Spring Initializr] is a tool which generates the scaffolding code for a new Spring Boot project.
+https://start.spring.io/[Spring Initializr] is a tool which generates the scaffolding code for a new Spring Boot project.
 It handles the work of generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.
 
 Spring Initializr offers three modules from Spring Cloud GCP that you can use to generate your project.
