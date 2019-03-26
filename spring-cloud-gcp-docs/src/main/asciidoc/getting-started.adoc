@@ -4,7 +4,7 @@ There are many available resources to get you up to speed with our libraries as 
 
 === Spring Initializr
 
-There are three entries in http://start.spring.io/[Spring Initializr] for Spring Cloud GCP:
+There are three entries in https://start.spring.io/[Spring Initializr] for Spring Cloud GCP:
 
 - GCP Support
 - GCP Messaging
