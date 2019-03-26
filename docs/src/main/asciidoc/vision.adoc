@@ -54,7 +54,7 @@ A full list of Cloud Vision Features is provided in the https://cloud.google.com
 For each feature type that you provide in the request, `AnnotateImageResponse` provides a getter method to get the result of that feature analysis.
 For example, if you analyzed an image using the `LABEL_DETECTION` feature, you would retrieve the results from the response using `annotateImageResponse.getLabelAnnotationsList()`.
 +
-`AnnotateImageResponse` is provided by the Google Cloud Vision libraries; please consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] for more details.
+`AnnotateImageResponse` is provided by the Google Cloud Vision libraries; please consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or https://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] for more details.
 Additionally, you may consult the https://cloud.google.com/vision/docs/[Cloud Vision docs] to familiarize yourself with the concepts and features of the API.
 
 === Detect Image Labels Example
