@@ -137,7 +137,7 @@ For simplicity, the Gradle dependency snippets in the remainder of this document
 <simpara>There are many available resources to get you up to speed with our libraries as quickly as possible.</simpara>
 <section xml:id="_spring_initializr">
 <title>Spring Initializr</title>
-<simpara>There are three entries in <link xl:href="http://start.spring.io/">Spring Initializr</link> for Spring Cloud GCP.</simpara>
+<simpara>There are three entries in <link xl:href="https://start.spring.io/">Spring Initializr</link> for Spring Cloud GCP.</simpara>
 <section xml:id="_gcp_support">
 <title>GCP Support</title>
 <simpara>The GCP Support entry contains auto-configuration support for every Spring Cloud GCP integration.
@@ -361,7 +361,7 @@ The provider can help determine programmatically in which GCP environment (App E
 </section>
 <section xml:id="_spring_initializr_2">
 <title>Spring Initializr</title>
-<simpara>This starter is available from <link xl:href="http://start.spring.io/">Spring Initializr</link> through the <literal>GCP Support</literal> entry.</simpara>
+<simpara>This starter is available from <link xl:href="https://start.spring.io/">Spring Initializr</link> through the <literal>GCP Support</literal> entry.</simpara>
 </section>
 </chapter>
 <chapter xml:id="_google_cloud_pubsub">
@@ -487,7 +487,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <literal>PubSubAdmin</
 <programlisting language="java" linenumbering="unnumbered">public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)</programlisting>
 <simpara>Here is an example of how to create a Google Cloud Pub/Sub subscription:</simpara>
 <programlisting language="java" linenumbering="unnumbered">public void newSubscription() {
-    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “https://my.endpoint/push”);
 }</programlisting>
 <simpara>Alternative methods with default settings are provided for ease of use.
 The default value for <literal>ackDeadline</literal> is 10 seconds.
@@ -1437,7 +1437,7 @@ This allows grouping of log messages by request, for example, in the <link xl:hr
 <note>
 <simpara>Due to the way logging is set up, the GCP project ID and credentials defined in <literal>application.properties</literal> are ignored.
 Instead, you should set the <literal>GOOGLE_CLOUD_PROJECT</literal> and <literal>GOOGLE_APPLICATION_CREDENTIALS</literal> environment variables to the project ID and credentials private key location, respectively.
-You can do this easily if you&#8217;re using the <link xl:href="http://cloud.google.com/sdk">Google Cloud SDK</link>, using the <literal>gcloud config set project [YOUR_PROJECT_ID]</literal> and <literal>gcloud auth application-default login</literal> commands, respectively.</simpara>
+You can do this easily if you&#8217;re using the <link xl:href="https://cloud.google.com/sdk">Google Cloud SDK</link>, using the <literal>gcloud config set project [YOUR_PROJECT_ID]</literal> and <literal>gcloud auth application-default login</literal> commands, respectively.</simpara>
 </note>
 <section xml:id="_web_mvc_interceptor">
 <title>Web MVC Interceptor</title>
@@ -1718,7 +1718,7 @@ If more than a single profile, last one is chosen</simpara></entry>
 </tgroup>
 </informaltable>
 <note>
-<simpara>These properties should be specified in a <link xl:href="http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context"><literal>bootstrap.yml</literal>/<literal>bootstrap.properties</literal></link> file, rather than the usual <literal>applications.yml</literal>/<literal>application.properties</literal>.</simpara>
+<simpara>These properties should be specified in a <link xl:href="https://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context"><literal>bootstrap.yml</literal>/<literal>bootstrap.properties</literal></link> file, rather than the usual <literal>applications.yml</literal>/<literal>application.properties</literal>.</simpara>
 </note>
 <note>
 <simpara>Core properties, as described in <link linkend="spring-cloud-gcp-core">Spring Cloud GCP Core Module</link>, do not apply to Spring Cloud GCP Config.</simpara>
@@ -1764,7 +1764,7 @@ public class SampleConfig {
 </section>
 <section xml:id="_refreshing_the_configuration_at_runtime">
 <title>Refreshing the configuration at runtime</title>
-<simpara><link xl:href="http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints">Spring Cloud</link> provides support to have configuration parameters be reloadable with the POST request to <literal>/actuator/refresh</literal> endpoint.</simpara>
+<simpara><link xl:href="https://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints">Spring Cloud</link> provides support to have configuration parameters be reloadable with the POST request to <literal>/actuator/refresh</literal> endpoint.</simpara>
 <orderedlist numeration="arabic">
 <listitem>
 <simpara>Add the Spring Boot Actuator dependency:</simpara>
@@ -1794,7 +1794,7 @@ public class SampleConfig {
 </listitem>
 <listitem>
 <simpara>Send a POST request to the refresh endpoint:</simpara>
-<literallayout class="monospaced">$ curl -XPOST http://myapp.host.com/actuator/refresh</literallayout>
+<literallayout class="monospaced">$ curl -XPOST https://myapp.host.com/actuator/refresh</literallayout>
 </listitem>
 </orderedlist>
 </section>
@@ -1805,8 +1805,8 @@ public class SampleConfig {
 </chapter>
 <chapter xml:id="_spring_data_cloud_spanner">
 <title>Spring Data Cloud Spanner</title>
-<simpara><link xl:href="http://projects.spring.io/spring-data/">Spring Data</link> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for <link xl:href="http://cloud.google.com/spanner/">Google Cloud Spanner</link>.</simpara>
+<simpara><link xl:href="https://projects.spring.io/spring-data/">Spring Data</link> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for <link xl:href="https://cloud.google.com/spanner/">Google Cloud Spanner</link>.</simpara>
 <simpara>Maven coordinates for this module only, using Spring Cloud GCP BOM:</simpara>
 <programlisting language="xml" linenumbering="unnumbered">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
@@ -3019,8 +3019,8 @@ public void createTable(SpannerPersistentEntity entity) {
 </chapter>
 <chapter xml:id="_spring_data_cloud_datastore">
 <title>Spring Data Cloud Datastore</title>
-<simpara><link xl:href="http://projects.spring.io/spring-data/">Spring Data</link> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for <link xl:href="http://cloud.google.com/datastore/">Google Cloud Datastore</link>.</simpara>
+<simpara><link xl:href="https://projects.spring.io/spring-data/">Spring Data</link> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for <link xl:href="https://cloud.google.com/datastore/">Google Cloud Datastore</link>.</simpara>
 <simpara>Maven coordinates for this module only, using <link xl:href="https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml">Spring Cloud GCP BOM</link>:</simpara>
 <programlisting language="xml" linenumbering="unnumbered">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
@@ -4202,7 +4202,7 @@ A full list of Cloud Vision Features is provided in the <link xl:href="https://c
 <simpara><link xl:href="https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse"><literal>AnnotateImageResponse</literal></link> contains the results of all the feature analyses that were specified in the request.
 For each feature type that you provide in the request, <literal>AnnotateImageResponse</literal> provides a getter method to get the result of that feature analysis.
 For example, if you analyzed an image using the <literal>LABEL_DETECTION</literal> feature, you would retrieve the results from the response using <literal>annotateImageResponse.getLabelAnnotationsList()</literal>.</simpara>
-<simpara><literal>AnnotateImageResponse</literal> is provided by the Google Cloud Vision libraries; please consult the <link xl:href="https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse">RPC reference</link> or <link xl:href="http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html">Javadoc</link> for more details.
+<simpara><literal>AnnotateImageResponse</literal> is provided by the Google Cloud Vision libraries; please consult the <link xl:href="https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse">RPC reference</link> or <link xl:href="https://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html">Javadoc</link> for more details.
 Additionally, you may consult the <link xl:href="https://cloud.google.com/vision/docs/">Cloud Vision docs</link> to familiarize yourself with the concepts and features of the API.</simpara>
 </listitem>
 </itemizedlist>
