@@ -2,6 +2,23 @@
 
 This code sample demonstrates consuming data from a GCP Cloud Pub/Sub subscription as a reactive stream.
 
+Acquiring and processing the reactive stream is done in link:src/main/java/com/example/ReactiveController.java/[ReactiveController.java].
+Each message in the stream is acknowledged with `doOnNext()` operator.
+Then the `map()` operator converts the message's payload into a proper `String` and returns it to the subscriber:
+
+[source,java]
+----
+return flux
+  .doOnNext(message -> {
+    System.out.println("Received a message: " + message.getPubsubMessage().getMessageId());
+    message.ack();
+  })
+  .map(message -> new String(
+	  message.getPubsubMessage().getData().toByteArray(), Charset.defaultCharset()));
+----
+
+The other two classes (link:src/main/java/com/example/ReactiveReceiverApplication.java/[ReactiveReceiverApplication.java] and link:src/main/java/com/example/MessageSenderController.java/[MessageSenderController.java]) boostrap the application and simplify publishing test data to a topic.
+
 == Setup & Configuration
 
 1. Configure your GCP project ID and credentials by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
@@ -13,16 +30,19 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `exampleSubscription` with all default parameters.
 
-4. In a terminal window, move into this directory (spring-cloud-gcp-pubsub-reactive-sample) and run: `mvn spring-boot:run`.
+4. In a terminal window, move into this directory (`spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample`) and run:
 
-5. In another terminal, send a message to the GCP Pub/Sub topic.
+  mvn spring-boot:run
+
+5. In a browser, open http://localhost:8080, and send some (`N`) messages to the GCP Pub/Sub topic.
+The messages sent will all start with the message text provided, and end with a number from `0` to `N-1`.
 Observe that nothing is received by the sample application, since there are no subscribers yet.
 
-  gcloud pubsub topics publish exampleTopic --message "hello!"
-
-6. In a third terminal, open a connection to '/getmessages' streaming endpoint.
+6. In another terminal, open a connection to `/getmessages` streaming endpoint.
+This stream will remain open until you stop it with `Ctrl+C`.
 
   curl localhost:8080/getmessages
 
+7. Verify that the `curl` terminal received the messages, while the application itself logged their IDs.
 
-7. Verify that the `curl` command got the message text, while the application itself logged its message ID, matching the one returned by `gcloud` command.
+8. Publish some more messages from http://localhost:8080; observe that the additional data is streamed to the `curl` client.

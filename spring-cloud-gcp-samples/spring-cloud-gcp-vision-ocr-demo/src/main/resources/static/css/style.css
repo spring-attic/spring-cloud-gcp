@@ -1,0 +1,63 @@
+html * {
+   font-family: Roboto, Verdana, sans-serif;
+}
+
+/* Index page styling */
+
+#nav_bar {
+  width: 100%;
+}
+
+#description {
+  width: 30em;
+  padding: 2em;
+  float: left;
+}
+
+#submit_form {
+  width: 30em;
+  padding: 2em;
+  float: left;
+  background-color: #cce6ff;
+}
+
+#note {
+  background-color: #e6f2ff;
+  padding: 1em;
+}
+
+/* Status table styling */
+
+#status_table {
+  width: 100%
+  border-collapse: collapse;
+}
+
+#status_table td, #status_table th {
+  border: 1px solid #dddddd;
+  padding: 1em;
+}
+
+#status_table th {
+  padding-top: 1em;
+  padding-bottom: 1em;
+  text-align: left;
+  background-color: #cce6ff;
+}
+
+.page_number {
+  padding: 0.25em;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* View Document */
+
+#extracted_text {
+  font-size: 2em;
+  width: 30em;
+  min-height: 20em;
+  font-family: "Lucida Console", Monaco, monospace;
+  background-color: #f2f2f2;
+}
+

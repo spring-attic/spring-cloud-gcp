@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Google Cloud Vision OCR Results</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" href="css/style.css" rel="stylesheet"/>
+</head>
+
+<body>
+  <h1>Pending Document OCR Operations</h1>
+
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/status">Document OCR Results</a></li>
+    </ul>
+  </nav>
+
+  <p>
+    This page displays all pending and completed document OCR operations.
+    After the operation is complete, you will be provided page number links to view the first 50
+    words on each page of the document.
+  </p>
+
+  <p>
+    Refresh the page to see new updates.
+  </p>
+
+  <table border="1" id="status_table">
+    <tr>
+      <th>Uploaded Document</th>
+      <th>Status</th>
+      <th>Pages</th>
+    </tr>
+
+    <tr th:each="ocrStatus : ${ocrStatuses}">
+      <td>[[${ocrStatus.getGcsLocation()}]]</td>
+      <td th:text="${ocrStatus.isDone()} ? 'OCR results ready' : 'OCR still running'" />
+      <td th:if="${ocrStatus.isDone()}">
+        <a class="page_number"
+            th:each="pageNumber: ${#numbers.sequence(ocrStatus.getResultSet().getMinPage(), ocrStatus.getResultSet().getMaxPage())}"
+            th:href="@{/viewDocument(gcsDocumentUrl=${ocrStatus.getGcsLocation()},pageNumber=${pageNumber})}">
+          [[${pageNumber}]]
+        </a>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
