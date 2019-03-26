@@ -20,6 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,6 +38,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for the Reactive Pub/Sub sample application.
@@ -56,6 +59,12 @@ public class ReactiveReceiverApplicationTests {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
+
+	@BeforeClass
+	public static void prepare() {
+		assumeThat("PUB/SUB-sample integration tests disabled. Use '-Dit.pubsub=true' to enable them.",
+				System.getProperty("it.pubsub"), is("true"));
+	}
 
 	@Test
 	public void testSample() throws UnsupportedEncodingException {
