@@ -6,7 +6,7 @@ OCR is a process which allows you to detect and extract the text from digital do
 This demo application allows you to upload documents to a specified https://cloud.google.com/storage/docs/key-terms#buckets[Google Cloud Storage bucket] and run OCR on those documents you uploaded.
 After your documents are uploaded and processed, the application will allow you to access the extracted text from each document.
 
-The main work of running OCR in the application occurs in the `submitDocument` method in `WebController.java`:
+The main work of running OCR in the application occurs in the `submitDocument` method in link:src/main/java/com/example/WebController.java[WebController.java]:
 
 [source,java]
 ----
@@ -78,6 +78,11 @@ b. In the `resources/application.properties` file in this directory, set the `ap
 === 3. Running the App
 
 a. Run the `$ mvn spring-boot:run` command from the same directory as this demo's `pom.xml` file.
+Make sure that you set your bucket name in the application.properties file from the previous step.
++
+Alternatively, you may pass the name of your bucket directly through command line by running:
++
+`$ mvn spring-boot:run -Dapplication.ocr-bucket=YOUR_GCS_BUCKET_NAME`
 
 b. Go to http://localhost:8080 in your browser, and specify the URL of a PDF or TIFF document to process.
 +

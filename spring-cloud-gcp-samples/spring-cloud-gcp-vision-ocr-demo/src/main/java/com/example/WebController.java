@@ -25,6 +25,7 @@ import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.BucketGetOption;
 import com.google.cloud.vision.v1.TextAnnotation;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -46,7 +47,6 @@ import org.springframework.web.servlet.ModelAndView;
 @RestController
 public class WebController {
 
-	@Value("${application.ocr-bucket}")
 	private String ocrBucket;
 
 	@Autowired
@@ -126,6 +126,22 @@ public class WebController {
 		ocrStatusReporter.registerFuture(documentLocation.uriString(), result);
 
 		return new ModelAndView("submit_done");
+	}
+
+	@Value("${application.ocr-bucket}")
+	public void setOcrBucket(String ocrBucket) {
+		try {
+			this.storage.get(ocrBucket, BucketGetOption.fields());
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException(
+					"The bucket " + ocrBucket + " does not exist. "
+							+ "Please specify a valid Google Storage bucket name "
+							+ "in the resources/application.properties file. "
+							+ "You can create a new bucket at: https://console.cloud.google.com/storage");
+		}
+
+		this.ocrBucket = ocrBucket;
 	}
 
 	private static String getFileType(Resource documentResource) {
