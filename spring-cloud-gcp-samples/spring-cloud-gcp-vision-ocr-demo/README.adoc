@@ -90,7 +90,7 @@ The application allows you to specify the URL of documents in several ways:
 
 * From a web URL.
 +
-Example: `http://www.google.com/document.pdf`
+Example: `https://www.google.com/document.pdf`
 
 * From a file on your filesystem.
 Specify the absolute path to your file using `file:` protocol.
