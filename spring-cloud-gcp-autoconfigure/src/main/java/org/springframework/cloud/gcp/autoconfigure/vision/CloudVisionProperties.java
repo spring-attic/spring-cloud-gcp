@@ -35,8 +35,14 @@ public class CloudVisionProperties implements CredentialsSupplier {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.CLOUD_VISION.getUrl());
 
+	/**
+	 * Number of threads used to poll for the completion of Document OCR operations.
+	 */
 	private int executorThreadsCount = 1;
 
+	/**
+	 * Number of document pages to include in each JSON output file.
+	 */
 	private int jsonOutputBatchSize = 20;
 
 	public Credentials getCredentials() {
