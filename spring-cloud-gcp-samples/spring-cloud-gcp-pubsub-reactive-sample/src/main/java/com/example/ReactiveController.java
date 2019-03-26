@@ -24,8 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.pubsub.reactive.PubSubReactiveFactory;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * Sample controller demonstrating an HTTP endpoint acquiring data from a reactive GCP Pub/Sub stream.
@@ -34,7 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @since 1.2
  */
-@RestController
+@Controller
+@ResponseBody
 public class ReactiveController {
 
 	@Autowired
@@ -55,4 +57,5 @@ public class ReactiveController {
 						message.getPubsubMessage().getData().toByteArray(),
 						Charset.defaultCharset()));
 	}
+
 }
