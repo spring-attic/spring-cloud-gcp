@@ -9,8 +9,9 @@ When the server is notified that new configuration is available, it fetches the 
 Under the hood, Spring Cloud Bus uses the Spring Cloud Stream binder for Cloud Pub/Sub to send a message to a topic named `springCloudBus`.
 The client uses the same binder with an anonymous subscription to receive notifications, and provides an HTTP endpoint `/message` for printing the dynamically updated message value.
 
-Technically, every configuration server happens to also be a configuration client, so it subscribes to the configuration changes that it sends.
-But in this set of demo applications, the configuration server does not use any dynamic configuration, so the only evidence of it acting as a client is in the additional anonymous Cloud Pub/Sub subscription that gets created when the server starts up.
+Technically, every configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
+You may notice that there are two anonymous subscriptions to the `springCloudBus` topic when the sample applications are running -- one is for the client application, and the other is for the server acting as a client.
+In this set of demo applications, the configuration server does not use any refresh-scoped configuration, so every time configuration is updated, the server will print "Received remote refresh request. Keys refreshed []", indicating that no configuration was updated.
 
 == Setup
 

@@ -15,9 +15,9 @@
     <name>Spring Cloud GCP Pub/Sub Configuration Management Code Sample</name>
 
     <modules>
-        <module>spring-cloud-gcp-pubsub-config-sample-client</module>
-        <module>spring-cloud-gcp-pubsub-config-sample-server-local</module>
-        <module>spring-cloud-gcp-pubsub-config-sample-server-github</module>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-client</module>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-server-local</module>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-server-github</module>
     </modules>
 
 </project>
