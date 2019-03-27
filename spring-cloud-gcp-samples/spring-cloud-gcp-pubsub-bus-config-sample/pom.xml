@@ -12,7 +12,7 @@
     <groupId>com.example</groupId>
     <artifactId>spring-cloud-gcp-pubsub-config-sample</artifactId>
     <packaging>pom</packaging>
-    <name>Spring Cloud GCP Pub/Sub Configuration Management Code Sample</name>
+    <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
 
     <modules>
         <module>spring-cloud-gcp-pubsub-bus-config-sample-client</module>

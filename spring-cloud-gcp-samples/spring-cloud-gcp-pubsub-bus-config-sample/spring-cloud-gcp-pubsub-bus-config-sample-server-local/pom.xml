@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-pubsub-config-sample-server-local</artifactId>
-  <name>Spring Cloud GCP Pub/Sub Configuration Management Configuration Server Code Sample</name>
+  <name>Spring Cloud GCP Pub/Sub Bus Sample (Local Configuration)</name>
 
   <dependencies>
 

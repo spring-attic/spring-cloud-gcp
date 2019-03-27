@@ -27,7 +27,9 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 === With local filesystem
 
-1. Create a temporary directory `/tmp/config` (specified in `spring.cloud.config.server.native.searchLocationsconfig` property in configuration server's link:spring-cloud-gcp-pubsub-config-sample-server/src/main/resources/application.properties[application.properties]).
+Spring Cloud Config supports retrieving configuration from a local filesystem through `native` Spring Profile that is already configured in local configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties].
+
+1. Create a temporary directory `/tmp/config` (as configured by `spring.cloud.config.server.native.searchLocations` property in configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties]).
 
   mkdir /tmp/config
 
@@ -45,11 +47,14 @@ This happens because there is no configuration available for config server yet.
 4. Place a file named `application.properties` with the following contents into the directory above:
 +
 ----
-example.message = message from the local filesystem
+echo 'example.message = message from the local filesystem' > /tmp/config/application.properties
 ----
 
 5. In the config _server_ terminal, observe refresh activity such as `Refresh for: *` message.
++
 As every configuration server is also its own configuration client, it will attempt to refresh its own configuration and find no relevant changes (because there are no refresh scoped properties to update in the server application), as reflected in `Received remote refresh request. Keys refreshed []` message.
++
+In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
 
 
 6. Refresh http://localhost:8080/message client endpoint; observe the value now matches the value updated in the file system.
@@ -66,13 +71,11 @@ A more realistic scenario is keeping configuration under version control.
 example.message = message from GitHub
 ----
 
-2. In configuration server's link:spring-cloud-gcp-pubsub-config-sample-server/src/main/resources/application.properties[application.properties]:
-  * Comment out `spring.profiles.active` and `spring.cloud.config.server.native.searchLocations` properties.
-  * Uncomment `spring.cloud.config.server.git.uri` property; set its value to either HTTPS or SSH repository URI.
-  * If you opted for SSH, keys stored in `~/.ssh` should work automatically.
+2. In configuration server's link:spring-cloud-gcp-pubsub-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to either HTTPS or SSH repository URI.
 +
-NOTE: make sure to set `spring.cloud.config.server.git.passphrase` property if the key registered with GitHub is passphrase protected.
-  * If you opted for HTTPS, uncomment and set `spring.cloud.config.server.git.username` and `spring.cloud.config.server.git.password` properties.
+If you opted for SSH, the keys stored in `~/.ssh` should work automatically. if the key registered with GitHub is passphrase protected, set `spring.cloud.config.server.git.passphrase` property.
++
+If you opted for HTTPS, set `spring.cloud.config.server.git.username` and `spring.cloud.config.server.git.password` properties.
 +
 CAUTION: Never commit any passwords or passphrases into source control.
 
@@ -95,4 +98,10 @@ In a deployed server, this would be done automatically through a GitHub webhook.
 curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content-Type: application/json" -d '{"commits": [{"modified": ["application.properties"]}]}'
 ----
 
-7. Refresh http://localhost:8080/message client endpoint in a browser again; observe the value was updated.
+7. In the config _server_ terminal, observe refresh activity such as `Refresh for: *` message.
++
+As every configuration server is also its own configuration client, it will attempt to refresh its own configuration and find no relevant changes (because there are no refresh scoped properties to update in the server application), as reflected in `Received remote refresh request. Keys refreshed []` message.
++
+In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
+
+8. Refresh http://localhost:8080/message client endpoint in a browser again; observe the value was updated.
