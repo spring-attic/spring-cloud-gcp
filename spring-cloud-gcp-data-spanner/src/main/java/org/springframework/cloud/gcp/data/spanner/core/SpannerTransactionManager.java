@@ -119,6 +119,12 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
+				public long[] batchUpdate(Iterable<Statement> iterable) {
+					throw new IllegalStateException("Spanner transaction cannot execute DML " +
+							"because it is in readonly mode");
+				}
+
+				@Override
 				public ResultSet read(
 						String s,
 						KeySet keySet,
