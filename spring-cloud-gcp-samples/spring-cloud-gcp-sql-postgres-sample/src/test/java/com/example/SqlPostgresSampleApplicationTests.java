@@ -38,16 +38,20 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Simple integration test to verify the SQL sample application. This test will use the
- * properties set in resources/application.properties.
- *
- * Run with: mvn -Dit.cloudsql test
+ * Simple integration test to verify the SQL sample application with Postgres.
  *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
-public class SqlApplicationTests {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class }, properties = {
+		"spring.cloud.gcp.sql.database-name=code_samples_test_db",
+		"spring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testpostgres",
+		"spring.datasource.username=postgres",
+		"spring.datasource.password=test",
+		"spring.datasource.continue-on-error=true",
+		"spring.datasource.initialization-mode=always"
+})
+public class SqlPostgresSampleApplicationTests {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;

@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
-public class PubSubJsonPayloadApplicationTests {
+public class PubSubJsonPayloadSampleApplicationTests {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
