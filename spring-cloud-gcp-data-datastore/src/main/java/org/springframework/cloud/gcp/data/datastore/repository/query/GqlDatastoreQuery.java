@@ -43,6 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
@@ -133,8 +134,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
-		Iterable found = isNonEntityReturnType
-				? this.datastoreTemplate.query(query,
+		DatastoreResultsIterable found = isNonEntityReturnType
+				? this.datastoreTemplate.queryIterable(query,
 						GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
@@ -144,20 +145,40 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		Object result = null;
 
-		if (this.queryMethod.isSliceQuery()) {
+		if (this.queryMethod.isPageQuery()) {
+			List resultsList = this.datastoreTemplate.getDatastoreEntityConverter()
+					.getConversions().convertOnRead(rawResult, List.class, returnedItemType);
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
+
+			Pageable pageableParam = paramAccessor.getPageable();
+			Long count = pageableParam instanceof DatastorePageable
+					? ((DatastorePageable) pageableParam).getTotalCount()
+					: null;
+			if (count == null) {
+				parsedQueryWithTagsAndValues.switchToNoliminQuery();
+				GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
+				DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery,
+						this.entityType);
+				count = StreamSupport.stream(next.spliterator(), false).count();
+			}
+
+			Pageable pageable = DatastorePageable.from(pageableParam, found.getCursor(), count);
+			result = new PageImpl(resultsList, pageable, count);
+		}
+		else if (this.queryMethod.isSliceQuery()) {
 			List resultsList = this.datastoreTemplate.getDatastoreEntityConverter()
 							.getConversions().convertOnRead(rawResult, List.class, returnedItemType);
 			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
 					parameters);
 
-			DatastoreResultsIterable datastoreResultsIterable = (DatastoreResultsIterable) found;
-			Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(),
-					datastoreResultsIterable.getCursor(), null);
-			parsedQueryWithTagsAndValues.replaceCursor(datastoreResultsIterable.getCursor());
+			parsedQueryWithTagsAndValues.replaceCursor(found.getCursor());
 			parsedQueryWithTagsAndValues.replaceLimit(1);
 			GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
-
 			DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery, this.entityType);
+
+			Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(),
+					found.getCursor(), null);
 			result = new SliceImpl(resultsList, pageable, next.iterator().hasNext());
 		}
 		else if (this.queryMethod.isCollectionQuery()) {
@@ -235,11 +256,17 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	// Convenience class to hold a grouping of GQL, tags, and parameter values.
 	private class ParsedQueryWithTagsAndValues {
 
-		final List<String> tagsOrdered;
+		public static final String LIMIT_CLAUSE = " LIMIT @limit";
+		public static final String LIMIT_TAG_NAME = "limit";
+		public static final String OFFSET_CLAUSE = " OFFSET @offset";
+		public static final String OFFSET_TAG_NAME = "offset";
+		List<String> tagsOrdered;
 
 		final Object[] rawParams;
 
-		final List<Object> params;
+		List<Object> params;
+
+		private final String noLimitQuery;
 
 		String finalGql;
 
@@ -273,15 +300,16 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			if (!sort.equals(Sort.unsorted())) {
 				this.finalGql = addSort(this.finalGql, sort);
 			}
+			this.noLimitQuery = this.finalGql;
 			Pageable pageable = paramAccessor.getPageable();
 			if (!pageable.equals(Pageable.unpaged())) {
-				this.finalGql += " LIMIT @limit";
-				this.tagsOrdered.add("limit");
+				this.finalGql += LIMIT_CLAUSE;
+				this.tagsOrdered.add(LIMIT_TAG_NAME);
 				this.limitPosition = this.params.size();
 				this.params.add(pageable.getPageSize());
 
-				this.finalGql += " OFFSET @offset";
-				this.tagsOrdered.add("offset");
+				this.finalGql += OFFSET_CLAUSE;
+				this.tagsOrdered.add(OFFSET_TAG_NAME);
 				this.cursorPosition = this.params.size();
 				if (pageable instanceof DatastorePageable && ((DatastorePageable) pageable).getCursor() != null) {
 					this.params.add(((DatastorePageable) pageable).getCursor());
@@ -298,6 +326,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		private void replaceLimit(int newLimit) {
 			this.params.set(this.limitPosition, newLimit);
+		}
+
+		private void switchToNoliminQuery() {
+			this.finalGql = this.noLimitQuery;
+			this.tagsOrdered = this.tagsOrdered.subList(0, this.limitPosition);
+			this.params = this.params.subList(0, this.limitPosition);
 		}
 
 		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery() {

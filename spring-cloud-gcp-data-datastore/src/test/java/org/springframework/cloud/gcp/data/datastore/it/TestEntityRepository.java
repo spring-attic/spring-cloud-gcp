@@ -47,8 +47,11 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query("select * from  test_entities_ci where color = @color")
 	Slice<TestEntity> findEntitiesWithCustomQuerySlice(@Param("color") String color, Pageable pageable);
 
+	@Query("select * from  test_entities_ci where color = @color")
+	Page<TestEntity> findEntitiesWithCustomQueryPage(@Param("color") String color, Pageable pageable);
+
 	@Query("select * from  test_entities_ci")
-	List<TestEntity> findEntitiesWithCustomQuerySliceSort(Sort sort);
+	List<TestEntity> findEntitiesWithCustomQuerySort(Sort sort);
 
 	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
 	int countEntitiesWithCustomQuery(@Param("size") long size);
@@ -73,6 +76,9 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	@Query("select __key__ from test_entities_ci")
 	Set<Key> getKeys();
+
+	@Query("select color from test_entities_ci")
+	Page<String> getColorsPage(Pageable p);
 
 	@Query("select __key__ from test_entities_ci limit 1")
 	Key getKey();

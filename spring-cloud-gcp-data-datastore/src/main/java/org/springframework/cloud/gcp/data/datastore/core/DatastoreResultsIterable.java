@@ -26,9 +26,11 @@ import com.google.cloud.datastore.Cursor;
 public class DatastoreResultsIterable<T> implements Iterable<T> {
 	private final Iterator<T> iterator;
 	private final Cursor cursor;
+	private Iterable<T> iterable;
 
 	public DatastoreResultsIterable(Iterable<T> iterable, Cursor cursor) {
 		this(iterable.iterator(), cursor);
+		this.iterable = iterable;
 	}
 
 	public DatastoreResultsIterable(Iterator<T> iterator, Cursor cursor) {
@@ -43,5 +45,9 @@ public class DatastoreResultsIterable<T> implements Iterable<T> {
 
 	public Cursor getCursor() {
 		return this.cursor;
+	}
+
+	public Iterable<T> getIterable() {
+		return this.iterable;
 	}
 }

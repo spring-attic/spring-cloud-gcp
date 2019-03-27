@@ -233,8 +233,52 @@ public class DatastoreIntegrationTests {
 	}
 
 	@Test
+	public void testPage() {
+		List<TestEntity> results = new ArrayList<>();
+		Page<TestEntity> page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				PageRequest.of(0, 2));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(2);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testProjectionPage() {
+		Page<String> page = this.testEntityRepository
+				.getColorsPage(PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "color")));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(3);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("red", "red", "red");
+
+		page = this.testEntityRepository.getColorsPage(page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("blue");
+	}
+
+	@Test
 	public void testSliceSort() {
-		List<TestEntity> results = this.testEntityRepository.findEntitiesWithCustomQuerySliceSort(Sort.by("color"));
+		List<TestEntity> results = this.testEntityRepository.findEntitiesWithCustomQuerySort(Sort.by("color"));
 
 		assertThat(results.get(0)).isEqualTo(this.testEntityB);
 		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
@@ -244,7 +288,7 @@ public class DatastoreIntegrationTests {
 	@Test
 	public void testSliceSortDesc() {
 		List<TestEntity> results = this.testEntityRepository
-				.findEntitiesWithCustomQuerySliceSort(Sort.by(Sort.Direction.DESC, "color"));
+				.findEntitiesWithCustomQuerySort(Sort.by(Sort.Direction.DESC, "color"));
 
 		assertThat(results.get(results.size() - 1)).isEqualTo(this.testEntityB);
 		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
