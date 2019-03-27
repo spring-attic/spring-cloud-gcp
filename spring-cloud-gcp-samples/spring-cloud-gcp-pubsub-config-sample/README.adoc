@@ -1,4 +1,4 @@
-= Spring Cloud GCP Pub/Sub Configuration Management Code Sample
+= Spring Cloud Bus Configuration Management Demo
 
 This code sample demonstrates automated configuration management using Spring Cloud Config, Spring Cloud Bus and GCP Pub/Sub.
 The sample app consists of a configuration server and a small web application that subscribes to the server to be notified of property changes.
@@ -22,11 +22,13 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
   gcloud services enable pubsub.googleapis.com
 
-== Demo with local filesystem
+== Running the demo
 
-1. Create a temporary directory `/tmp/config`.
-Alternatively, update `spring.cloud.config.server.native.searchLocationsconfig` property in configuration server's link:spring-cloud-gcp-pubsub-config-sample-server/src/main/resources/application.properties[application.properties] with the directory you will use.
-Make sure to specify `file:` prefix if using absolute paths.
+=== With local filesystem
+
+1. Create a temporary directory `/tmp/config` (specified in `spring.cloud.config.server.native.searchLocationsconfig` property in configuration server's link:spring-cloud-gcp-pubsub-config-sample-server/src/main/resources/application.properties[application.properties]).
+
+  mkdir /tmp/config
 
 2. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-local` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
 
@@ -52,7 +54,7 @@ As every configuration server is also its own configuration client, it will atte
 6. Refresh http://localhost:8080/message client endpoint; observe the value now matches the value updated in the file system.
 The client application log will also reflect the change: `Received remote refresh request. Keys refreshed [example.message]`.
 
-== Demo with GitHub
+=== With GitHub
 
 Keeping configuration in the local file system is simple, but not particularly useful -- if the configuration were available on the same file system as the client application, it could just get it without having to maintain a configuration server.
 A more realistic scenario is keeping configuration under version control.
@@ -76,10 +78,10 @@ CAUTION: Never commit any passwords or passphrases into source control.
 3. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-github` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
 
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-server-github
+  mvn spring-boot:run -f spring-cloud-gcp-pubsub-config-sample-server-github
 
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
+  mvn spring-boot:run -f spring-cloud-gcp-pubsub-config-sample-client
 
 4. Visit http://localhost:8080/message client in a browser; observe the correct value, "message from GitHub", printed on the page.
 
