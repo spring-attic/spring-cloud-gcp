@@ -93,7 +93,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		this.originalGql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 		setOriginalParamTags();
 		setEvaluatingSpelQueryContext();
-		computeGqlResolvedEntityClassName();
+		setGqlResolvedEntityClassName();
 	}
 
 	private static Object getNonEntityObjectFromRow(Object x) {
@@ -241,7 +241,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return builder.build();
 	}
 
-	private void computeGqlResolvedEntityClassName() {
+	private void setGqlResolvedEntityClassName() {
 		Matcher matcher = CLASS_NAME_PATTERN.matcher(GqlDatastoreQuery.this.originalGql);
 		String result = GqlDatastoreQuery.this.originalGql;
 		while (matcher.find()) {
