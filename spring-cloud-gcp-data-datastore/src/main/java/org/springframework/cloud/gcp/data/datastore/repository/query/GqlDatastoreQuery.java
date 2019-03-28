@@ -81,7 +81,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param queryMethod the underlying query method to support.
 	 * @param datastoreTemplate used for executing queries.
 	 * @param gql the query text.
-	 * @param evaluationContextProvider the provider used to evaluate SpEL expressions in queries.
+	 * @param evaluationContextProvider the provider used to evaluate SpEL expressions in
+	 *     queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
@@ -312,7 +313,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				this.tagsOrdered.add(entry.getKey().substring(1));
 			}
 		}
-
 
 	}
 }

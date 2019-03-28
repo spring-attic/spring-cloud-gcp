@@ -81,8 +81,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * Constructor.
 	 * @param queryMethod the metadata for this query method.
 	 * @param datastoreTemplate used to execute the given query.
-	 * @param datastoreMappingContext used to provide metadata for mapping results to
-	 * objects.
+	 * @param datastoreMappingContext used to provide metadata for mapping results to objects.
 	 * @param entityType the result domain type.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
@@ -119,13 +118,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
 		if (isPageQuery()) {
-			ExecutionResult executionResult =
-					(ExecutionResult) execute(parameters, returnedObjectType, List.class, false);
+			ExecutionResult executionResult = (ExecutionResult) execute(parameters, returnedObjectType, List.class,
+					false);
 
 			List<?> resultEntries = (List) executionResult.getPayload();
 
-			ParameterAccessor paramAccessor =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
 
 			Pageable pageableParam = paramAccessor.getPageable();
 
@@ -212,7 +211,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		if (!this.tree.isExistsProjection() && !isCountingQuery) {
-            return new ExecutionResult(convertResultCollection(result, collectionType), rawResults.getCursor());
+			return new ExecutionResult(convertResultCollection(result, collectionType), rawResults.getCursor());
 		}
 		else if (isCountingQuery && this.tree.isDelete()) {
 			return ((List) result).size();
@@ -313,39 +312,39 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			Filter filter;
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
 					.getPersistentProperty(part.getProperty().getSegment()))
-					.getFieldName();
+							.getFieldName();
 			try {
 
 				ReadWriteConversions converter = this.datastoreTemplate.getDatastoreEntityConverter().getConversions();
 
 				switch (part.getType()) {
-					case IS_NULL:
-						filter = PropertyFilter.isNull(fieldName);
-						break;
-					case SIMPLE_PROPERTY:
-						filter = PropertyFilter.eq(fieldName,
-								converter.convertOnWriteSingle(it.next()));
-						equalityComparedFields.add(fieldName);
-						break;
-					case GREATER_THAN_EQUAL:
-						filter = PropertyFilter.ge(fieldName,
-								converter.convertOnWriteSingle(it.next()));
-						break;
-					case GREATER_THAN:
-						filter = PropertyFilter.gt(fieldName,
-								converter.convertOnWriteSingle(it.next()));
-						break;
-					case LESS_THAN_EQUAL:
-						filter = PropertyFilter.le(fieldName,
-								converter.convertOnWriteSingle(it.next()));
-						break;
-					case LESS_THAN:
-						filter = PropertyFilter.lt(fieldName,
-								converter.convertOnWriteSingle(it.next()));
-						break;
-					default:
-						throw new DatastoreDataException(
-								"Unsupported predicate keyword: " + part.getType());
+				case IS_NULL:
+					filter = PropertyFilter.isNull(fieldName);
+					break;
+				case SIMPLE_PROPERTY:
+					filter = PropertyFilter.eq(fieldName,
+							converter.convertOnWriteSingle(it.next()));
+					equalityComparedFields.add(fieldName);
+					break;
+				case GREATER_THAN_EQUAL:
+					filter = PropertyFilter.ge(fieldName,
+							converter.convertOnWriteSingle(it.next()));
+					break;
+				case GREATER_THAN:
+					filter = PropertyFilter.gt(fieldName,
+							converter.convertOnWriteSingle(it.next()));
+					break;
+				case LESS_THAN_EQUAL:
+					filter = PropertyFilter.le(fieldName,
+							converter.convertOnWriteSingle(it.next()));
+					break;
+				case LESS_THAN:
+					filter = PropertyFilter.lt(fieldName,
+							converter.convertOnWriteSingle(it.next()));
+					break;
+				default:
+					throw new DatastoreDataException(
+							"Unsupported predicate keyword: " + part.getType());
 
 				}
 				return filter;
@@ -365,6 +364,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private static class ExecutionResult {
 		Object payload;
+
 		Cursor cursor;
 
 		ExecutionResult(Object result, Cursor cursor) {
