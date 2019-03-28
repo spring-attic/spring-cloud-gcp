@@ -52,7 +52,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { GcsApplication.class })
-public class GcsApplicationTests {
+public class GcsSampleApplicationTests {
 
 	@Autowired
 	private Storage storage;

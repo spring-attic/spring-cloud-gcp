@@ -61,7 +61,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 @TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(classes = {
 		DatastoreRepositoryExample.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ApplicationTests {
+public class DatastoreSampleApplicationTests {
 
 	private static PrintStream systemOut;
 
