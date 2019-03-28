@@ -119,8 +119,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
 		if (isPageQuery()) {
-			ResultAndCursor execute = (ResultAndCursor) execute(parameters, returnedObjectType, List.class, false);
-			List<?> resultEntries = (List) execute.getResult();
+			ExecutionResult executionResult =
+					(ExecutionResult) execute(parameters, returnedObjectType, List.class, false);
+
+			List<?> resultEntries = (List) executionResult.getPayload();
 
 			ParameterAccessor paramAccessor =
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
@@ -138,7 +140,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				totalCount = (Long) execute(parameters, Long.class, null, true);
 			}
 
-			Pageable pageable = DatastorePageable.from(pageableParam, execute.getCursor(), totalCount);
+			Pageable pageable = DatastorePageable.from(pageableParam, executionResult.getCursor(), totalCount);
 
 			return new PageImpl<>(resultEntries, pageable, totalCount);
 		}
@@ -150,7 +152,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = execute(parameters, returnedObjectType,
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 
-		result = result instanceof ResultAndCursor ? ((ResultAndCursor) result).getResult() : result;
+		result = result instanceof PartTreeDatastoreQuery.ExecutionResult ? ((ExecutionResult) result).getPayload()
+				: result;
 		if (result == null) {
 			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
 				return Optional.empty();
@@ -209,7 +212,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		boolean countingOrExistsQuery = this.tree.isExistsProjection() || isCountingQuery;
 		if (!countingOrExistsQuery) {
-			return new ResultAndCursor(convertResultCollection(result, collectionType), rawResults.getCursor());
+			return new ExecutionResult(convertResultCollection(result, collectionType), rawResults.getCursor());
 		}
 		else {
 			return result;
@@ -357,17 +360,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						: filters[0]);
 	}
 
-	private static class ResultAndCursor {
-		Object result;
+	private static class ExecutionResult {
+		Object payload;
 		Cursor cursor;
 
-		ResultAndCursor(Object result, Cursor cursor) {
-			this.result = result;
+		ExecutionResult(Object result, Cursor cursor) {
+			this.payload = result;
 			this.cursor = cursor;
 		}
 
-		public Object getResult() {
-			return this.result;
+		public Object getPayload() {
+			return this.payload;
 		}
 
 		public Cursor getCursor() {
