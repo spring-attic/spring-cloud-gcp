@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -94,9 +96,12 @@ public class GqlDatastoreQueryTests {
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
-	private GqlDatastoreQuery<Trade> createQuery(String gql) {
-		return new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
-				this.datastoreTemplate, gql, this.evaluationContextProvider, new DatastoreMappingContext());
+	private GqlDatastoreQuery<Trade> createQuery(String gql, boolean isPageQuery, boolean isSliceQuery) {
+		GqlDatastoreQuery<Trade> spy = spy(new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
+				this.datastoreTemplate, gql, this.evaluationContextProvider, new DatastoreMappingContext()));
+		doReturn(isPageQuery).when(spy).isPageQuery();
+		doReturn(isSliceQuery).when(spy).isSliceQuery();
+		return spy;
 	}
 
 	@Test
@@ -138,7 +143,7 @@ public class GqlDatastoreQueryTests {
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
 				.thenReturn(evaluationContext);
 
-		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
 		doAnswer((invocation) -> {
 			GqlQuery statement = invocation.getArgument(0);
@@ -198,7 +203,7 @@ public class GqlDatastoreQueryTests {
 		when(parameters.hasPageableParameter()).thenReturn(true);
 		when(parameters.getPageableIndex()).thenReturn(1);
 
-		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
 		doAnswer((invocation) -> {
 			GqlQuery statement = invocation.getArgument(0);
@@ -236,7 +241,7 @@ public class GqlDatastoreQueryTests {
 		when(parameters.hasSortParameter()).thenReturn(true);
 		when(parameters.getSortIndex()).thenReturn(1);
 
-		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
 		doAnswer((invocation) -> {
 			GqlQuery statement = invocation.getArgument(0);
@@ -270,15 +275,12 @@ public class GqlDatastoreQueryTests {
 
 		Parameters parameters = buildParameters(paramVals, paramNames);
 
-		Mockito.<Boolean>when(this.queryMethod.isSliceQuery())
-				.thenReturn(Boolean.TRUE);
-
 		Mockito.<Class>when(this.queryMethod.getReturnedObjectType())
 				.thenReturn(Trade.class);
 		when(parameters.hasPageableParameter()).thenReturn(true);
 		when(parameters.getPageableIndex()).thenReturn(1);
 
-		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, true);
 
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Map> params = new ArrayList<>();
@@ -312,6 +314,111 @@ public class GqlDatastoreQueryTests {
 		assertThat(((Value) params.get(1).get("limit")).get()).isEqualTo(1L);
 		assertThat(params.get(1).get("offset")).isEqualTo(cursor);
 
+	}
+
+	@Test
+	public void pageableTestPage() {
+
+		String gql = "SELECT * FROM trades WHERE price=@price";
+		String expected = "SELECT * FROM trades WHERE price=@price LIMIT @limit OFFSET @offset";
+
+		Object[] paramVals = new Object[] {1, PageRequest.of(0, 2)};
+
+		String[] paramNames = new String[] { "price", null };
+
+		Parameters parameters = buildParameters(paramVals, paramNames);
+
+		Mockito.<Class>when(this.queryMethod.getReturnedObjectType())
+				.thenReturn(Trade.class);
+		when(parameters.hasPageableParameter()).thenReturn(true);
+		when(parameters.getPageableIndex()).thenReturn(1);
+
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, true, true);
+
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+
+		doAnswer((invocation) -> {
+			GqlQuery statement = invocation.getArgument(0);
+
+			assertThat(statement.getQueryString().equals(gql) || statement.getQueryString().equals(expected))
+					.isEqualTo(true);
+			Map<String, Value> paramMap = statement.getNamedBindings();
+
+			if (statement.getQueryString().equals(expected)) {
+				assertThat(paramMap.size()).isEqualTo(3);
+				assertThat(paramMap.get("price").get()).isEqualTo(1L);
+				assertThat(paramMap.get("limit").get()).isEqualTo(2L);
+				assertThat(paramMap.get("offset").get()).isEqualTo(0L);
+				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
+			}
+			else if (statement.getQueryString().equals(gql)) {
+				assertThat(paramMap.size()).isEqualTo(1);
+				assertThat(paramMap.get("price").get()).isEqualTo(1L);
+				return new DatastoreResultsIterable(Arrays.asList(1L, 2L), cursor);
+			}
+			return null;
+		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
+
+		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
+
+		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
+
+		assertThat(((DatastorePageable) result.getPageable()).getCursor()).isEqualTo(cursor);
+		assertThat(((DatastorePageable) result.getPageable()).getTotalCount()).isEqualTo(2L);
+
+		assertThat(((Page) result).getTotalElements()).isEqualTo(2L);
+
+		verify(this.datastoreTemplate, times(2))
+				.queryKeysOrEntities(any(), eq(Trade.class));
+	}
+
+	@Test
+	public void pageableTestPageCursor() {
+		String gql = "SELECT * FROM trades WHERE price=@price";
+		String expected = "SELECT * FROM trades WHERE price=@price LIMIT @limit OFFSET @offset";
+
+		Cursor cursorInPageable = Cursor.copyFrom("cde".getBytes());
+		long countInPageable = 123L;
+		Object[] paramVals = new Object[] { 1,
+				new DatastorePageable(PageRequest.of(0, 2), cursorInPageable, countInPageable) };
+
+		String[] paramNames = new String[] { "price", null };
+
+		Parameters parameters = buildParameters(paramVals, paramNames);
+
+		Mockito.<Class>when(this.queryMethod.getReturnedObjectType())
+				.thenReturn(Trade.class);
+		when(parameters.hasPageableParameter()).thenReturn(true);
+		when(parameters.getPageableIndex()).thenReturn(1);
+
+		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, true, true);
+
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+
+		doAnswer((invocation) -> {
+			GqlQuery statement = invocation.getArgument(0);
+
+			assertThat(statement.getQueryString()).isEqualTo(expected);
+			Map<String, Object> paramMap = statement.getNamedBindings();
+
+				assertThat(paramMap.size()).isEqualTo(3);
+				assertThat(((Value) paramMap.get("price")).get()).isEqualTo(1L);
+				assertThat(((Value) paramMap.get("limit")).get()).isEqualTo(2L);
+				assertThat(paramMap.get("offset")).isEqualTo(cursorInPageable);
+				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
+		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
+
+		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
+
+		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
+
+		assertThat(((DatastorePageable) result.getPageable()).getCursor()).isEqualTo(cursor);
+		assertThat(((DatastorePageable) result.getPageable()).getTotalCount()).isEqualTo(countInPageable);
+
+		assertThat(((Page) result).getTotalElements()).isEqualTo(countInPageable);
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), eq(Trade.class));
 	}
 
 	private Parameters buildParameters(Object[] params, String[] paramNames) {
