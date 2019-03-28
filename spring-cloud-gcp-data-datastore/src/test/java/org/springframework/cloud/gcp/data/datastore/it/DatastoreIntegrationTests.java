@@ -23,14 +23,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,10 +68,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DatastoreIntegrationTestConfiguration.class })
-public class DatastoreIntegrationTests {
-
-	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests {
 
 	// This value is multiplied against recorded actual times needed to wait for eventual
 	// consistency.
@@ -494,13 +488,6 @@ public class DatastoreIntegrationTests {
 		SubEntity readSubEntity2 = iterator.next();
 		assertThat(readSubEntity1.sibling).isSameAs(readSubEntity2);
 		assertThat(readSubEntity2.sibling).isSameAs(readSubEntity1);
-	}
-
-	private long waitUntilTrue(Supplier<Boolean> condition) {
-		long startTime = System.currentTimeMillis();
-		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
-
-		return System.currentTimeMillis() - startTime;
 	}
 
 	@Test
