@@ -32,4 +32,5 @@ public class PubSubConfigServerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PubSubConfigServerApplication.class, args);
 	}
+
 }

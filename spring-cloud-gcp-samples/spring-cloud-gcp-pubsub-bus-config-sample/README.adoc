@@ -4,14 +4,17 @@ This code sample demonstrates automated configuration management using Spring Cl
 The sample app consists of a configuration server and a small web application that subscribes to the server to be notified of property changes.
 
 Configuration server runs on port `8888`, and can read configuration from a local filesystem (useful for exploring the sample) or from a source control system.
-When the server is notified that new configuration is available, it fetches the updated configuration and sends it out via Spring Cloud Bus.
+When the server discovers (or is notified via `/monitor` HTTP endpoint) that new configuration is available, it fetches the updated configuration and broadcasts `RefreshRemoteApplicationEvent` via Spring Cloud Bus.
 
 Under the hood, Spring Cloud Bus uses the Spring Cloud Stream binder for Cloud Pub/Sub to send a message to a topic named `springCloudBus`.
+To customize the topic used as a bus, use the `spring.cloud.bus.destination` property.
+If changing from the default, make sure that both server and client have the same value!
+
 The client uses the same binder with an anonymous subscription to receive notifications, and provides an HTTP endpoint `/message` for printing the dynamically updated message value.
 
-Technically, every configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
 You may notice that there are two anonymous subscriptions to the `springCloudBus` topic when the sample applications are running -- one is for the client application, and the other is for the server acting as a client.
-In this set of demo applications, the configuration server does not use any refresh-scoped configuration, so every time configuration is updated, the server will print "Received remote refresh request. Keys refreshed []", indicating that no configuration was updated.
+Technically, every configuration server happens to also be a configuration client, but by configuration propagation is suppressed on the server by default.
+This is why every time configuration is updated, the server will print "Received remote refresh request. Keys refreshed []", indicating that it received the bus notification, but no configuration was updated.
 
 == Setup
 
@@ -23,11 +26,15 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
   gcloud services enable pubsub.googleapis.com
 
-== Running the demo
+== Demo with local filesystem
 
-=== With local filesystem
+=== Overview
 
 Spring Cloud Config supports retrieving configuration from a local filesystem through `native` Spring Profile that is already configured in local configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties].
+
+image::images/bus_sample_local.png[]
+
+=== Running the demo
 
 1. Create a temporary directory `/tmp/config` (as configured by `spring.cloud.config.server.native.searchLocations` property in configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties]).
 
@@ -41,7 +48,7 @@ Spring Cloud Config supports retrieving configuration from a local filesystem th
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
   mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
 
-2. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
+3. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
 
 4. Place a file named `application.properties` with the following contents into the directory above:
@@ -52,18 +59,22 @@ echo 'example.message = message from the local filesystem' > /tmp/config/applica
 
 5. In the config _server_ terminal, observe refresh activity such as `Refresh for: *` message.
 +
-As every configuration server is also its own configuration client, it will attempt to refresh its own configuration and find no relevant changes (because there are no refresh scoped properties to update in the server application), as reflected in `Received remote refresh request. Keys refreshed []` message.
-+
 In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
-
+The config _server_ terminal will print `Received remote refresh request. Keys refreshed []` because while it is subscribed to the bus events, config servers suppress context refresh by default.
 
 6. Refresh http://localhost:8080/message client endpoint; observe the value now matches the value updated in the file system.
 The client application log will also reflect the change: `Received remote refresh request. Keys refreshed [example.message]`.
 
-=== With GitHub
+== Demo with GitHub
+
+=== Overview
 
 Keeping configuration in the local file system is simple, but not particularly useful -- if the configuration were available on the same file system as the client application, it could just get it without having to maintain a configuration server.
 A more realistic scenario is keeping configuration under version control.
+
+image::images/bus_sample_github.png[]
+
+=== Running the demo
 
 1. In the root of a GitHub repository, create a file named `application.properties` containing the following line:
 +
@@ -73,7 +84,8 @@ example.message = message from GitHub
 
 2. In configuration server's link:spring-cloud-gcp-pubsub-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to either HTTPS or SSH repository URI.
 +
-If you opted for SSH, the keys stored in `~/.ssh` should work automatically. if the key registered with GitHub is passphrase protected, set `spring.cloud.config.server.git.passphrase` property.
+If you opted for SSH, the keys stored in `~/.ssh` should work automatically.
+If the key registered with GitHub is passphrase protected, set `spring.cloud.config.server.git.passphrase` property.
 +
 If you opted for HTTPS, set `spring.cloud.config.server.git.username` and `spring.cloud.config.server.git.password` properties.
 +
@@ -87,7 +99,7 @@ CAUTION: Never commit any passwords or passphrases into source control.
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
   mvn spring-boot:run -f spring-cloud-gcp-pubsub-config-sample-client
 
-4. Visit http://localhost:8080/message client in a browser; observe the correct value, "message from GitHub", printed on the page.
+4. Visit http://localhost:8080/message client in a browser; observe the correct value, `message from GitHub`, printed on the page.
 
 5. Push an update to configuration stored in GitHub, setting the message to a new value.
 
@@ -100,7 +112,7 @@ curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content
 
 7. In the config _server_ terminal, observe refresh activity such as `Refresh for: *` message.
 +
-As every configuration server is also its own configuration client, it will attempt to refresh its own configuration and find no relevant changes (because there are no refresh scoped properties to update in the server application), as reflected in `Received remote refresh request. Keys refreshed []` message.
+The config _server_ terminal will also print `Received remote refresh request. Keys refreshed []` because while it is subscribed to the bus events, config servers suppress context refresh by default.
 +
 In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
 
