@@ -33,5 +33,5 @@
 		<module>spring-cloud-gcp-starter-sql-postgresql</module>
 		<module>spring-cloud-gcp-starter-security-iap</module>
 		<module>spring-cloud-gcp-starter-vision</module>
-  </modules>
+	</modules>
 </project>

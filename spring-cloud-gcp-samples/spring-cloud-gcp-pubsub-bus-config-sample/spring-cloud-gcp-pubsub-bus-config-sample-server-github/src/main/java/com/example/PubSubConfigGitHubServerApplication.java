@@ -32,4 +32,5 @@ public class PubSubConfigGitHubServerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(PubSubConfigGitHubServerApplication.class, args);
 	}
+
 }

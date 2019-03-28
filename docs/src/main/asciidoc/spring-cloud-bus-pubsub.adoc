@@ -39,5 +39,6 @@ Spring Cloud Bus will then create a topic named `springCloudBus`, as well as a s
 
 Technically, every configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
 Thus, in a scenario with one configuration server and one configuration client, two anonymous subscriptions to the `springCloudBus` topic are created.
+But a config server disables configuration refresh by default (see link:https://static.javadoc.io/org.springframework.cloud/spring-cloud-config-server/2.1.0.RELEASE/index.html[ConfigServerBootstrapApplicationListener] for more details).
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample[demo application] showing configuration management and distribution over a Cloud Pub/Sub-powered bus is available.

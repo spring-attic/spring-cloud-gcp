@@ -38,5 +38,4 @@ public class ExampleController {
 		return this.message;
 	}
 
-
 }

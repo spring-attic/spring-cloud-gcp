@@ -13,7 +13,7 @@ If changing from the default, make sure that both server and client have the sam
 The client uses the same binder with an anonymous subscription to receive notifications, and provides an HTTP endpoint `/message` for printing the dynamically updated message value.
 
 You may notice that there are two anonymous subscriptions to the `springCloudBus` topic when the sample applications are running -- one is for the client application, and the other is for the server acting as a client.
-Technically, every configuration server happens to also be a configuration client, but by configuration propagation is suppressed on the server by default.
+Technically, every configuration server happens to also be a configuration client, but configuration propagation is suppressed on the server by default.
 This is why every time configuration is updated, the server will print "Received remote refresh request. Keys refreshed []", indicating that it received the bus notification, but no configuration was updated.
 
 == Setup
@@ -51,7 +51,7 @@ image::images/bus_sample_local.png[]
 3. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
 
-4. Place a file named `application.properties` with the following contents into the directory above:
+4. Write a file named `application.properties` containing `example.message` property value:
 +
 ----
 echo 'example.message = message from the local filesystem' > /tmp/config/application.properties
