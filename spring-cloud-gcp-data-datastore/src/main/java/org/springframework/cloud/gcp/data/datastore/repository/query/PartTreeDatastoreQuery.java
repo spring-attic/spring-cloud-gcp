@@ -150,7 +150,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = execute(parameters, returnedObjectType,
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 
-		result = result instanceof ResultAndCursor ? ((ResultAndCursor) result).getCursor() : result;
+		result = result instanceof ResultAndCursor ? ((ResultAndCursor) result).getResult() : result;
 		if (result == null) {
 			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
 				return Optional.empty();
