@@ -26,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.slf4j.MDCContextMap;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Andreas Berger
  * @author Mike Eltsufin
+ * @author Stefan Dieringer
  */
 public class StackdriverJsonLayoutLoggerTests {
 
@@ -69,6 +72,59 @@ public class StackdriverJsonLayoutLoggerTests {
 			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
 			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
 			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
+		}
+		finally {
+			System.setOut(oldOut);
+			mdc.clear();
+		}
+	}
+
+	@Test
+	public void testServiceContext() {
+		PrintStream oldOut = System.out;
+		MDCContextMap mdc = new MDCContextMap();
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			System.setOut(new java.io.PrintStream(out));
+
+
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_ID, "span123");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT, "true");
+			mdc.put("foo", "bar");
+
+			Logger logger = LoggerFactory.getLogger("StackdriverJsonLayoutServiceCtxLoggerTests");
+			logger.warn("test");
+
+			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+
+			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
+			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
+			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutServiceCtxLoggerTests", data);
+			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/12345678901234561234567890123456", data);
+			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
+			checkData("foo", "bar", data);
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)).isFalse();
+			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
+			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
+
+			assertThat(data.containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE)).isTrue();
+
+			// test service context
+			Object serviceCtxObject = data.get(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
+			assertThat(serviceCtxObject instanceof Map).isTrue();
+			Map serviceContextMap = (Map) serviceCtxObject;
+			assertThat(serviceContextMap.containsKey("service")).isTrue();
+			assertThat(serviceContextMap.get("service")).isEqualTo("service");
+			assertThat(serviceContextMap.containsKey("version")).isTrue();
+			assertThat(serviceContextMap.get("version")).isEqualTo("version");
+
+			assertThat(data.containsKey("custom-key")).isTrue();
+			assertThat(data.get("custom-key")).isEqualTo("custom-value");
 		}
 		finally {
 			System.setOut(oldOut);
