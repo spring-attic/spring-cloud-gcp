@@ -67,6 +67,11 @@ public interface StackdriverTraceConstants {
 	String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
 	/**
+	 * The JSON field name for the service context.
+	 */
+	String SERVICE_CONTEXT_ATTRIBUTE = "serviceContext";
+
+	/**
 	 * Composes the full trace name as expected by the Google Developers Console log viewer, to
 	 * enable trace correlation with log entries.
 	 * @param projectId the GCP project ID
