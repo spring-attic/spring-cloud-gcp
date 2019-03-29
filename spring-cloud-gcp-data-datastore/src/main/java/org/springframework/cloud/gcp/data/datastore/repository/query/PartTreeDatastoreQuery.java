@@ -77,14 +77,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private List<Part> filterParts;
 
-	private Cursor cursor;
-
 	/**
 	 * Constructor.
 	 * @param queryMethod the metadata for this query method.
 	 * @param datastoreTemplate used to execute the given query.
-	 * @param datastoreMappingContext used to provide metadata for mapping results to
-	 * objects.
+	 * @param datastoreMappingContext used to provide metadata for mapping results to objects.
 	 * @param entityType the result domain type.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
@@ -121,10 +118,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
 		if (isPageQuery()) {
-			List<?> resultEntries = (List) execute(parameters, returnedObjectType, List.class, false);
+			ExecutionResult executionResult = (ExecutionResult) execute(parameters, returnedObjectType, List.class,
+					false);
 
-			ParameterAccessor paramAccessor =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+			List<?> resultEntries = (List) executionResult.getPayload();
+
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
 
 			Pageable pageableParam = paramAccessor.getPageable();
 
@@ -139,7 +139,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				totalCount = (Long) execute(parameters, Long.class, null, true);
 			}
 
-			Pageable pageable = DatastorePageable.from(pageableParam, this.cursor, totalCount);
+			Pageable pageable = DatastorePageable.from(pageableParam, executionResult.getCursor(), totalCount);
 
 			return new PageImpl<>(resultEntries, pageable, totalCount);
 		}
@@ -151,6 +151,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = execute(parameters, returnedObjectType,
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 
+		result = result instanceof PartTreeDatastoreQuery.ExecutionResult ? ((ExecutionResult) result).getPayload()
+				: result;
 		if (result == null) {
 			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
 				return Optional.empty();
@@ -174,7 +176,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
 		Collector<?, ?, ?> collector = Collectors.toList();
-		if (isCountingQuery) {
+		if (isCountingQuery && !this.tree.isDelete()) {
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
@@ -197,12 +199,14 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
 
 		if (this.tree.isDelete()) {
-			deleteFoundEntities(returnedTypeIsNumber, rawResults);
+			deleteFoundEntities(returnedTypeIsNumber, (Iterable) result);
 		}
-		boolean countingOrExistsQuery = this.tree.isExistsProjection() || isCountingQuery;
-		if (!countingOrExistsQuery) {
-			this.cursor = rawResults.getCursor();
-			return convertResultCollection(result, collectionType);
+
+		if (!this.tree.isExistsProjection() && !isCountingQuery) {
+			return new ExecutionResult(convertResultCollection(result, collectionType), rawResults.getCursor());
+		}
+		else if (isCountingQuery && this.tree.isDelete()) {
+			return ((List) result).size();
 		}
 		else {
 			return result;
@@ -346,8 +350,26 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		builder.setFilter(
 				(filters.length > 1)
-				? CompositeFilter.and(filters[0],
-						Arrays.copyOfRange(filters, 1, filters.length))
-				: filters[0]);
+						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
+						: filters[0]);
+	}
+
+	private static class ExecutionResult {
+		Object payload;
+
+		Cursor cursor;
+
+		ExecutionResult(Object result, Cursor cursor) {
+			this.payload = result;
+			this.cursor = cursor;
+		}
+
+		public Object getPayload() {
+			return this.payload;
+		}
+
+		public Cursor getCursor() {
+			return this.cursor;
+		}
 	}
 }

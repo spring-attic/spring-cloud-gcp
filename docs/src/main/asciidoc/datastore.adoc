@@ -1011,7 +1011,26 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
   @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
   TestEntity getOneTestEntity(@Param("id_val") long id);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  List<Trader> tradersByNameSort(@Param("trader_name") String traderName, Sort sort);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  Slice<Trader> tradersByNameSlice(@Param("trader_name") String traderName, Pageable pageable);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  Page<Trader> tradersByNamePage(@Param("trader_name") String traderName, Pageable pageable);
 }
+----
+
+When return type is Slice or Pageable, the cursor that points to position after the result is preserved. In order to leverage it to make queries more efficient, use Pageable produced by `slice.getPageable().next()` (same for Page).
+
+NOTE: `Page` requires total count of entities produced by the query, therefore the first query will have to retrieve all the records just to count them. Instead, we recommend using `Slice` return type, because it does not require a count query.
+
+[source, java]
+----
+ Slice<Trader> slice1 = tradersByNamePage("Dave", PageRequest.of(0, 5));
+ Slice<Trader> slice2 = tradersByNamePage("Dave", slice1.getPageable().next());
 ----
 
 NOTE: You cannot use these Query Methods in repositories where the type parameter is a subclass of another class
