@@ -29,6 +29,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ProtocolResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.lang.Nullable;
 
 /**
  * A {@link ProtocolResolver} implementation for the {@code gs://} protocol.
@@ -100,6 +101,7 @@ public class GoogleStorageProtocolResolver
 		}
 	}
 
+	@Nullable
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (!location.startsWith(PROTOCOL)) {

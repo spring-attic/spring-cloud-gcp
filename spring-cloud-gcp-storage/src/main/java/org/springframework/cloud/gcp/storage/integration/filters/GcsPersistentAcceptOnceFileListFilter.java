@@ -20,6 +20,7 @@ import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.filters.AbstractPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.metadata.ConcurrentMetadataStore;
+import org.springframework.lang.Nullable;
 
 /**
  * A filter for Google Cloud Storage.
@@ -39,6 +40,7 @@ public class GcsPersistentAcceptOnceFileListFilter
 		return (blobInfo != null) ? blobInfo.getUpdateTime() : -1;
 	}
 
+	@Nullable
 	@Override
 	protected String fileName(BlobInfo blobInfo) {
 		return (blobInfo != null) ? blobInfo.getName() : null;

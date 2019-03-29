@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.storage.integration.filters;
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.filters.AbstractSimplePatternFileListFilter;
+import org.springframework.lang.Nullable;
 
 /**
  * A simple pattern file lister for Google Cloud Storage.
@@ -32,6 +33,7 @@ public class GcsSimplePatternFileListFilter extends AbstractSimplePatternFileLis
 		super(path);
 	}
 
+	@Nullable
 	@Override
 	protected String getFilename(BlobInfo blobInfo) {
 		return (blobInfo != null) ? blobInfo.getName() : null;

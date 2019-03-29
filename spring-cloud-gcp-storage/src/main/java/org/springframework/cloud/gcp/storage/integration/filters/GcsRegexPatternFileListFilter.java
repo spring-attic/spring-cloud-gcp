@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
+import org.springframework.lang.Nullable;
 
 /**
  * A pattern file lister for Google Cloud Storage.
@@ -38,6 +39,7 @@ public class GcsRegexPatternFileListFilter extends AbstractRegexPatternFileListF
 		super(pattern);
 	}
 
+	@Nullable
 	@Override
 	protected String getFilename(BlobInfo blobInfo) {
 		return (blobInfo != null) ? blobInfo.getName() : null;

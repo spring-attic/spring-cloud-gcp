@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.storage;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,6 +35,7 @@ public class GoogleStorageLocation {
 
 	private final String bucketName;
 
+	@Nullable
 	private final String blobName;
 
 	private final URI uri;
@@ -109,6 +111,7 @@ public class GoogleStorageLocation {
 	 *
 	 * @return a path to the blob or folder; null if the location is to a bucket.
 	 */
+	@Nullable
 	public String getBlobName() {
 		return blobName;
 	}
@@ -172,6 +175,7 @@ public class GoogleStorageLocation {
 		return uriString();
 	}
 
+	@Nullable
 	private static String getBlobPathFromUri(URI gcsUri) {
 		String uriPath = gcsUri.getPath();
 		if (uriPath.isEmpty() || uriPath.equals("/")) {
