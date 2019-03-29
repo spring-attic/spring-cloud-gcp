@@ -48,7 +48,7 @@ image::images/bus_sample_local.png[]
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
   mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
 
-3. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
+3. Visit the http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
 
 4. Write a file named `application.properties` containing `example.message` property value:
