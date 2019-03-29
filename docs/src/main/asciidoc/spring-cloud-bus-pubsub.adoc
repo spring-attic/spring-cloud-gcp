@@ -23,9 +23,9 @@ dependencies {
 
 === Configuration Management with Spring Cloud Config
 
-Spring Cloud Bus can be used to push configuration changes from Spring Cloud Config server to the clients listening on the same bus.
+Spring Cloud Bus can be used to push configuration changes from a Spring Cloud Config server to the clients listening on the same bus.
 
-To use GCP Pub/Sub as the bus implementation, both configuration server and configuration client need `spring-cloud-gcp-starter-bus-pubsub` dependency.
+To use GCP Pub/Sub as the bus implementation, both the configuration server and the configuration client need the `spring-cloud-gcp-starter-bus-pubsub` dependency.
 
 All other configuration is standard to https://spring.io/projects/spring-cloud-config[Spring Cloud Config].
 
@@ -47,7 +47,7 @@ Spring Cloud Bus will then create a topic named `springCloudBus`, as well as a s
 
 The configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
 Thus, in a scenario with one configuration server and one configuration client, two anonymous subscriptions to the `springCloudBus` topic are created.
-But a config server disables configuration refresh by default (see link:https://static.javadoc.io/org.springframework.cloud/spring-cloud-config-server/2.1.0.RELEASE/index.html[ConfigServerBootstrapApplicationListener] for more details).
+However, a config server disables configuration refresh by default (see link:https://static.javadoc.io/org.springframework.cloud/spring-cloud-config-server/2.1.0.RELEASE/index.html[ConfigServerBootstrapApplicationListener] for more details).
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample[demo application] showing configuration management and distribution over a Cloud Pub/Sub-powered bus is available.
 The sample contains two examples of configuration management with Spring Cloud Bus: one monitoring a local file system, and the other retrieving configuration from a GitHub repository.
