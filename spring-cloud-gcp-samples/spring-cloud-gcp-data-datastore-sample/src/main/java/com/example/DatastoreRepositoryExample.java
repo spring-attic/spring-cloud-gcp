@@ -107,7 +107,7 @@ public class DatastoreRepositoryExample {
 		Pageable pageable = PageRequest.of(0, 1);
 		Slice<Singer> slice;
 		boolean hasNext = true;
-		while (hasNext){
+		while (hasNext) {
 			slice = this.singerRepository.findSingersByLastName("Doe", pageable);
 			System.out.println(slice.getContent().get(0));
 			hasNext = slice.hasNext();
