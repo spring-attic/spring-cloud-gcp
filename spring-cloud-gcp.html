@@ -162,8 +162,9 @@ $(addBlockSwitches);
 <li><a href="#_tracing">9.1. Tracing</a></li>
 <li><a href="#_spring_boot_starter_for_stackdriver_trace">9.2. Spring Boot Starter for Stackdriver Trace</a></li>
 <li><a href="#_overriding_the_auto_configuration">9.3. Overriding the auto-configuration</a></li>
-<li><a href="#_integration_with_logging">9.4. Integration with Logging</a></li>
-<li><a href="#_sample_6">9.5. Sample</a></li>
+<li><a href="#_customizing_spans">9.4. Customizing spans</a></li>
+<li><a href="#_integration_with_logging">9.5. Integration with Logging</a></li>
+<li><a href="#_sample_6">9.6. Sample</a></li>
 </ul>
 </li>
 <li><a href="#_stackdriver_logging">10. Stackdriver Logging</a>
@@ -2646,7 +2647,46 @@ To do this you can use respectively <code>StackdriverTraceAutoConfiguration.REPO
 </div>
 </div>
 <div class="sect2">
-<h3 id="_integration_with_logging"><a class="link" href="#_integration_with_logging">9.4. Integration with Logging</a></h3>
+<h3 id="_customizing_spans"><a class="link" href="#_customizing_spans">9.4. Customizing spans</a></h3>
+<div class="paragraph">
+<p>You can add additional tags and annotations to spans by using the <code>brave.SpanCustomizer</code>, which is available in the application context.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s an example that uses <code>WebMvcConfigurer</code> to configure an MVC interceptor that adds two extra tags to all web controller spans.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@SpringBootApplication
+public class Application implements WebMvcConfigurer {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+	@Autowired
+	private SpanCustomizer spanCustomizer;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new HandlerInterceptor() {
+			@Override
+			public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+				spanCustomizer.tag("session-id", request.getSession().getId());
+				spanCustomizer.tag("environment", "QA");
+
+				return true;
+			}
+		});
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can then search and filter traces based on these additional tags in the Stackdriver Trace service.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_logging"><a class="link" href="#_integration_with_logging">9.5. Integration with Logging</a></h3>
 <div class="paragraph">
 <p>Integration with Stackdriver Logging is available through the <a href="logging.adoc">Stackdriver Logging Support</a>.
 If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
@@ -2654,7 +2694,7 @@ The trace logs can be viewed by going to the <a href="https://console.cloud.goog
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sample_6"><a class="link" href="#_sample_6">9.5. Sample</a></h3>
+<h3 id="_sample_6"><a class="link" href="#_sample_6">9.6. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample">sample application</a> and a <a href="https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html">codelab</a> are available.</p>
 </div>
