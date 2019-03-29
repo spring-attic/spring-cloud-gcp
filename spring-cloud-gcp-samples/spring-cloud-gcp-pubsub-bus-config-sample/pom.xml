@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>spring-cloud-gcp-pubsub-config-sample</artifactId>
+    <artifactId>spring-cloud-gcp-pubsub-bus-config-sample</artifactId>
     <packaging>pom</packaging>
     <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
 

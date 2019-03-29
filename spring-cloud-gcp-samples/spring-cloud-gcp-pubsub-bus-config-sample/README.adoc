@@ -30,7 +30,8 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 === Overview
 
-Spring Cloud Config supports retrieving configuration from a local filesystem through `native` Spring Profile that is already configured in local configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties].
+Spring Cloud Config supports retrieving configuration from a local filesystem through a Spring Profile called `native`.
+It is already configured in the local server module (link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties]).
 
 image::images/bus_sample_local.png[]
 
@@ -40,13 +41,13 @@ image::images/bus_sample_local.png[]
 
   mkdir /tmp/config
 
-2. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-local` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
+2. In separate terminal windows, start the `spring-cloud-gcp-pubsub-bus-config-sample-server-local` and `spring-cloud-gcp-pubsub-bus-config-sample-client` applications:
 
-  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-server-local
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-bus-config-sample-server-local
 
-  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-config-sample-client
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
+  mvn spring-boot:run -pl spring-cloud-gcp-pubsub-bus-config-sample-client
 
 3. Visit http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
@@ -82,7 +83,7 @@ image::images/bus_sample_github.png[]
 example.message = message from GitHub
 ----
 
-2. In configuration server's link:spring-cloud-gcp-pubsub-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to either HTTPS or SSH repository URI.
+2. In configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to either HTTPS or SSH repository URI.
 +
 If you opted for SSH, the keys stored in `~/.ssh` should work automatically.
 If the key registered with GitHub is passphrase protected, set `spring.cloud.config.server.git.passphrase` property.
@@ -91,13 +92,13 @@ If you opted for HTTPS, set `spring.cloud.config.server.git.username` and `sprin
 +
 CAUTION: Never commit any passwords or passphrases into source control.
 
-3. In separate terminal windows, start the `spring-cloud-gcp-pubsub-config-sample-server-github` and `spring-cloud-gcp-pubsub-config-sample-client` applications:
+3. In separate terminal windows, start the `spring-cloud-gcp-pubsub-bus-config-sample-server-github` and `spring-cloud-gcp-pubsub-bus-config-sample-client` applications:
 
-  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -f spring-cloud-gcp-pubsub-config-sample-server-github
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
+  mvn spring-boot:run -f spring-cloud-gcp-pubsub-bus-config-sample-server-github
 
-  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-config-sample
-  mvn spring-boot:run -f spring-cloud-gcp-pubsub-config-sample-client
+  cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
+  mvn spring-boot:run -f spring-cloud-gcp-pubsub-bus-config-sample-client
 
 4. Visit http://localhost:8080/message client in a browser; observe the correct value, `message from GitHub`, printed on the page.
 
