@@ -61,6 +61,7 @@ import static org.junit.Assume.assumeThat;
  * Verifies that the logged Traces on the sample application appear in StackDriver.
  *
  * @author Daniel Zou
+ * @author Mike Eltsufin
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
@@ -138,6 +139,10 @@ public class TraceSampleApplicationTests {
 			Trace trace = this.traceServiceStub.getTrace(getTraceRequest);
 			assertThat(trace.getTraceId()).isEqualTo(uuidString);
 			assertThat(trace.getSpansCount()).isEqualTo(8);
+
+			// verify custom tags
+			assertThat(trace.getSpans(0).getLabelsMap().get("environment")).isEqualTo("QA");
+			assertThat(trace.getSpans(0).getLabelsMap().get("session-id")).isNotNull();
 
 			List<LogEntry> logEntries = new ArrayList<>();
 			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()

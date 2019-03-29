@@ -16,18 +16,28 @@
 
 package com.example;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import brave.SpanCustomizer;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Sample spring boot application.
  *
  * @author Ray Tsang
+ * @author Mike Eltsufin
  */
 @SpringBootApplication
-public class Application {
+public class Application implements WebMvcConfigurer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
@@ -35,5 +45,22 @@ public class Application {
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
+	}
+
+	@Autowired
+	private SpanCustomizer spanCustomizer;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new HandlerInterceptor() {
+			@Override
+			public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+					throws Exception {
+				spanCustomizer.tag("session-id", request.getSession().getId());
+				spanCustomizer.tag("environment", "QA");
+
+				return true;
+			}
+		});
 	}
 }
