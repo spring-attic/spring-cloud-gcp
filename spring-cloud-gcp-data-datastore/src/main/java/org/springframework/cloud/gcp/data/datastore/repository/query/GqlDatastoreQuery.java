@@ -349,9 +349,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			ParameterAccessor paramAccessor =
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), rawParams);
 			Sort sort = paramAccessor.getSort();
-			if (!sort.equals(Sort.unsorted())) {
-				this.finalGql = addSort(this.finalGql, sort);
-			}
+
+			this.finalGql = addSort(this.finalGql, sort);
+
 			this.noLimitQuery = this.finalGql;
 			Pageable pageable = paramAccessor.getPageable();
 			if (!pageable.equals(Pageable.unpaged())) {
@@ -414,6 +414,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		private String addSort(String finalGql, Sort sort) {
+			if (sort.equals(Sort.unsorted())) {
+				return finalGql;
+			}
 			//similar to Spring Data JPA, we don't map passed sort properties to persistent properties names
 			// in @Query annotated methods
 			String orderString = sort.stream().map(order -> order.getProperty() + " " + order.getDirection())
