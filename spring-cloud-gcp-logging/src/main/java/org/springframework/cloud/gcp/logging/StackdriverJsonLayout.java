@@ -141,6 +141,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	/**
 	 * set the service context for stackdriver.
 	 * @param serviceContext the service context
+	 * @since 1.2
 	 */
 	public void setServiceContext(StackdriverErrorReportingServiceContext serviceContext) {
 		this.serviceContext = serviceContext;
