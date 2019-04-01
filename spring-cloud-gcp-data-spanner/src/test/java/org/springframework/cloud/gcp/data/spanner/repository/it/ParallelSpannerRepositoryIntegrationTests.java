@@ -52,7 +52,7 @@ public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIn
 
 		this.tradeRepository.performReadWriteTransaction(repo -> {
 
-			doOperation(x -> {
+			executeInParallel(unused -> {
 				repo.save(Trade.aTrade());
 
 				// all of the threads are using the same transaction at the same time, so they all still
@@ -63,18 +63,18 @@ public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIn
 			return null;
 		});
 
-		doOperation(x -> assertThat(this.tradeRepository.countByAction("BUY")).isEqualTo(PARALLEL_OPERATIONS));
+		executeInParallel(unused -> assertThat(this.tradeRepository.countByAction("BUY")).isEqualTo(PARALLEL_OPERATIONS));
 
-		doOperation(x -> this.tradeRepository.updateActionTradeById(
-				((List<Trade>) this.tradeRepository.findAll()).get(x).getId(),
+		executeInParallel(index -> this.tradeRepository.updateActionTradeById(
+				((List<Trade>) this.tradeRepository.findAll()).get(index).getId(),
 				"SELL"));
 
-		doOperation(x -> assertThat(this.tradeRepository.countByAction("SELL")).isEqualTo(PARALLEL_OPERATIONS));
+		executeInParallel(index -> assertThat(this.tradeRepository.countByAction("SELL")).isEqualTo(PARALLEL_OPERATIONS));
 
-		doOperation(x -> assertThat(this.tradeRepository.countByActionQuery("SELL")).isEqualTo(PARALLEL_OPERATIONS));
+		executeInParallel(index -> assertThat(this.tradeRepository.countByActionQuery("SELL")).isEqualTo(PARALLEL_OPERATIONS));
 	}
 
-	private void doOperation(IntConsumer function) {
+	private void executeInParallel(IntConsumer function) {
 		IntStream.range(0, PARALLEL_OPERATIONS).parallel().forEach(function);
 	}
 }
