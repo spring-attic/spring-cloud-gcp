@@ -22,6 +22,7 @@ package org.springframework.cloud.gcp.logging;
  * Reference:  https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
  *
  * @author Stefan Dieringer
+ * @since 1.2
  */
 public class StackdriverErrorReportingServiceContext {
 
