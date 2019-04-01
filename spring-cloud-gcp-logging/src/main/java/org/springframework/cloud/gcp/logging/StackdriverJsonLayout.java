@@ -150,6 +150,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	/**
 	 * set custom json data to include in log output.
 	 * @param json json string
+	 * @since 1.2
 	 */
 	public void setCustomJson(String json) {
 		Gson gson = new Gson();
