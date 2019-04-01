@@ -206,4 +206,9 @@ The following options may be configured with Spring Cloud GCP Vision libraries.
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Sample Spring Boot Application] is provided to show how to use the Cloud Vision starter and template.
+Samples are provided to show example usages of Spring Cloud GCP with Google Cloud Vision.
+
+* The https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Image Labeling Sample] shows you how to use image labelling in your Spring application.
+The application generates labels describing the content inside the images you specify in the application.
+
+* The https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-ocr-demo[Document OCR demo] shows how you can apply OCR processing on your PDF/TIFF documents in order to extract their text contents.
