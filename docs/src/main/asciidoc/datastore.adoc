@@ -1023,9 +1023,9 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 }
 ----
 
-When return type is Slice or Pageable, the cursor that points to position after the result is preserved. In order to leverage it to make queries more efficient, use Pageable produced by `slice.getPageable().next()` (same for Page).
+When the return type is `Slice` or `Pageable`, the result set cursor that points to the position just after the page is preserved in the returned `Slice` or `Page` object. To take advantage of the cursor to query for the next page or slice, use `result.getPageable().next()`.
 
-NOTE: `Page` requires total count of entities produced by the query, therefore the first query will have to retrieve all the records just to count them. Instead, we recommend using `Slice` return type, because it does not require a count query.
+NOTE: `Page` requires the total count of entities produced by the query. Therefore, the first query will have to retrieve all of the records just to count them. Instead, we recommend using the `Slice` return type, because it does not require an additional count query.
 
 [source, java]
 ----
