@@ -57,7 +57,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 	private boolean includeExceptionInMessage;
 
-	private StackdriverServiceContext serviceContext;
+	private StackdriverErrorReportingServiceContext serviceContext;
 
 	private Map<String, Object> customJson;
 
@@ -142,7 +142,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	 * set the service context for stackdriver.
 	 * @param serviceContext the service context
 	 */
-	public void setServiceContext(StackdriverServiceContext serviceContext) {
+	public void setServiceContext(StackdriverErrorReportingServiceContext serviceContext) {
 		this.serviceContext = serviceContext;
 	}
 

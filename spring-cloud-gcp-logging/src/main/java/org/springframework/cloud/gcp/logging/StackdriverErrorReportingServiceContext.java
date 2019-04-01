@@ -23,17 +23,17 @@ package org.springframework.cloud.gcp.logging;
  *
  * @author Stefan Dieringer
  */
-public class StackdriverServiceContext {
+public class StackdriverErrorReportingServiceContext {
 
 	private String service;
 
 	private String version;
 
-	public StackdriverServiceContext() {
+	public StackdriverErrorReportingServiceContext() {
 
 	}
 
-	public StackdriverServiceContext(String service, String version) {
+	public StackdriverErrorReportingServiceContext(String service, String version) {
 		this.service = service;
 		this.version = version;
 	}
