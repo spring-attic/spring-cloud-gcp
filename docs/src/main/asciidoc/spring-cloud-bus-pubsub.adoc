@@ -1,6 +1,12 @@
 == Spring Cloud Bus
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 Using link:https://cloud.google.com/pubsub/[Cloud Pub/Sub] as the link:https://spring.io/projects/spring-cloud-bus[Spring Cloud Bus] implementation is as simple as importing the `spring-cloud-gcp-starter-bus-pubsub` starter.
+
+This starter brings in the <<spring-stream#,Spring Cloud Stream binder for Cloud Pub/Sub>>, which is used to both publish and subscribe to the bus.
+If the bus topic (named `springCloudBus` by default) does not exist, the binder automatically creates it.
+The binder also creates anonymous subscriptions for each project using the `spring-cloud-gcp-starter-bus-pubsub` starter.
+
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -21,7 +27,7 @@ dependencies {
 }
 ----
 
-=== Configuration Management with Spring Cloud Config
+=== Configuration Management with Spring Cloud Config and Spring Cloud Bus
 
 Spring Cloud Bus can be used to push configuration changes from a Spring Cloud Config server to the clients listening on the same bus.
 
