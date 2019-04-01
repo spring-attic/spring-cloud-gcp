@@ -68,6 +68,7 @@ public interface StackdriverTraceConstants {
 
 	/**
 	 * The JSON field name for the service context.
+	 * @since 1.2
 	 */
 	String SERVICE_CONTEXT_ATTRIBUTE = "serviceContext";
 
