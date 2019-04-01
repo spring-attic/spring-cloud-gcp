@@ -3041,6 +3041,16 @@ This setting is only evaluated if <code>includeFormattedMessage</code> is <code>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Should the stacktrace be included as a own field</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>serviceContext</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Define the Stackdriver service context data (service and version). This allows filtering of error reports for service and version in the <a href="https://console.cloud.google.com/errors">Google Cloud Error Reporting View</a>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>customJson</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Defines custom json data. Data will be added to the json output.</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -3067,6 +3077,11 @@ This setting is only evaluated if <code>includeFormattedMessage</code> is <code>
         &lt;!--&lt;includeContextName&gt;true&lt;/includeContextName&gt;--&gt;
         &lt;!--&lt;includeMessage&gt;false&lt;/includeMessage&gt;--&gt;
         &lt;!--&lt;includeException&gt;false&lt;/includeException&gt;--&gt;
+        &lt;!--&lt;serviceContext&gt;
+              &lt;service&gt;service-name&lt;/service&gt;
+              &lt;version&gt;service-version&lt;/version&gt;
+            &lt;/serviceContext&gt;--&gt;
+        &lt;!--&lt;customJson&gt;{"custom-key": "custom-value"}&lt;/customJson&gt;--&gt;
       &lt;/layout&gt;
     &lt;/encoder&gt;
   &lt;/appender&gt;
