@@ -125,6 +125,8 @@ This setting is only evaluated if `includeFormattedMessage` is `true`
 | `includeContextName` | `true` | Should the logging context be included
 | `includeMessage` | `false` | Should the log message with blank placeholders be included
 | `includeException` | `false` | Should the stacktrace be included as a own field
+| `serviceContext` | none | Define the Stackdriver service context data (service and version). This allows filtering of error reports for service and version in the https://console.cloud.google.com/errors[Google Cloud Error Reporting View].
+| `customJson` | none | Defines custom json data. Data will be added to the json output.
 |=======================================================================
 
 This is an example of such an Logback configuration:
@@ -150,6 +152,11 @@ This is an example of such an Logback configuration:
         <!--<includeContextName>true</includeContextName>-->
         <!--<includeMessage>false</includeMessage>-->
         <!--<includeException>false</includeException>-->
+        <!--<serviceContext>
+              <service>service-name</service>
+              <version>service-version</version>
+            </serviceContext>-->
+        <!--<customJson>{"custom-key": "custom-value"}</customJson>-->
       </layout>
     </encoder>
   </appender>
