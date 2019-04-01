@@ -16,11 +16,18 @@
 
 package com.example;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.client.RestTemplate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -36,26 +43,39 @@ public class LocalSampleAppIntegrationTest {
 	private RestTemplate restTemplate = new RestTemplate();
 
 	@BeforeClass
-	public static void prepare() {
+	public static void prepare() throws Exception {
 		assumeThat(
 			"PUB/SUB integration tests are disabled. Use '-Dit.pubsub=true' to enable.",
 			System.getProperty("it.pubsub"), is("true"));
 
+		Files.createDirectories(Paths.get("/tmp/config_pubsub_integration_test"));
+		File properties = new File("/tmp/config_pubsub_integration_test/application.properties");
+
+		try (FileOutputStream fos = new FileOutputStream(properties)) {
+			fos.write("example.message = INTEGRATION TEST\n".getBytes());
+		}
 	}
 
 	@Test
 	public void testSample() {
+
+
 		SpringApplicationBuilder configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
-			.properties("");
+			.properties("server.port=8888",
+				"spring.profiles.active=native",
+				"spring.cloud.config.server.native.searchLocations=file:/tmp/config_pubsub_integration_test/");
+		configServer.run();
 
-		/*
-		server.port = 8888
+		// TODO: wait until config refreshes
 
-spring.profiles.active=native
-spring.cloud.config.server.native.searchLocations=file:/tmp/config/
-		 */
-		SpringApplicationBuilder configClient = new SpringApplicationBuilder(PubSubConfigApplication.class);
+		SpringApplicationBuilder configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
+			.properties("server.port=8081",
+				"spring.cloud.config.server.bootstrap=false",
+				"spring.profiles.active=native");
+		configClient.run();
 
+		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
+		assertThat(value).isEqualTo("INTEGRATION TEST");
 	}
 
 }
