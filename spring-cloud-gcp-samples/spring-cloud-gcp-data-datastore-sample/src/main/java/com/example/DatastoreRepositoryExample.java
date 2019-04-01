@@ -29,6 +29,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 /**
  * Sample app for Datastore repository.
@@ -98,6 +101,18 @@ public class DatastoreRepositoryExample {
 		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
 		System.out.println("Query by example");
 		singers.forEach(System.out::println);
+
+		//Pageable parameter
+		System.out.println("Using Pageable parameter");
+		Pageable pageable = PageRequest.of(0, 1);
+		Slice<Singer> slice;
+		boolean hasNext = true;
+		while (hasNext) {
+			slice = this.singerRepository.findSingersByLastName("Doe", pageable);
+			System.out.println(slice.getContent().get(0));
+			hasNext = slice.hasNext();
+			pageable = slice.getPageable().next();
+		}
 	}
 
 	private void createRelationshipsInTransaction(Singer singerA, Singer singerB) {

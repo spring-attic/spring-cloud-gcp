@@ -165,14 +165,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return result;
 	}
 
-	protected boolean isPageQuery() {
-		return getQueryMethod().isPageQuery();
-	}
-
-	protected boolean isSliceQuery() {
-		return getQueryMethod().isSliceQuery();
-	}
-
 	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
 		Function<T, ?> mapper = Function.identity();

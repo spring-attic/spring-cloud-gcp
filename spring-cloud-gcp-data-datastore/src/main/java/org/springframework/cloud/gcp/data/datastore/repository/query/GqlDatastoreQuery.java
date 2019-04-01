@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,10 +31,12 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -41,8 +44,14 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.SpelEvaluator;
 import org.springframework.data.repository.query.SpelQueryContext;
@@ -124,45 +133,69 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
 				this.originalParamTags, parameters);
 
-		GqlQuery query = bindArgsToGqlQuery(parsedQueryWithTagsAndValues.finalGql,
-				parsedQueryWithTagsAndValues.tagsOrdered, parsedQueryWithTagsAndValues.params);
+		GqlQuery query = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
 
-		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
 
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
-		Iterable found = isNonEntityReturnType
-				? this.datastoreTemplate.query(query,
+		DatastoreResultsIterable found = isNonEntityReturnType
+				? this.datastoreTemplate.queryIterable(query,
 						GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
-		List rawResult = (found != null)
-				? (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList())
-				: Collections.emptyList();
-
 		Object result;
+		if (isPageQuery() || isSliceQuery()) {
+			Pageable pageableParam =
+					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
+			List resultsList = found == null ? Collections.emptyList()
+					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+							.convertOnRead(found, List.class, returnedItemType);
 
-		if (returnTypeIsCollection) {
-			result = convertCollectionResult(returnedItemType, isNonEntityReturnType,
-					rawResult);
-		}
-		else {
-			if (rawResult.isEmpty()) {
-				result = null;
+			if (isPageQuery()) {
+				result = buildPage(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
 			}
 			else {
-
-				result = convertSingularResult(returnedItemType, isNonEntityReturnType,
-						rawResult);
+				result = buildSlice(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
 			}
+		}
+		else if (this.queryMethod.isCollectionQuery()) {
+			result = convertCollectionResult(returnedItemType, isNonEntityReturnType, found);
+		}
+		else {
+			result = convertSingularResult(returnedItemType, isNonEntityReturnType, found);
 		}
 
 		return result;
 	}
 
+	private Object buildSlice(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+			Cursor cursor, List resultsList) {
+		GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQuery(cursor, 1);
+		DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery, this.entityType);
+
+		Pageable pageable = DatastorePageable.from(pageableParam, cursor, null);
+		return new SliceImpl(resultsList, pageable, next.iterator().hasNext());
+	}
+
+	private Object buildPage(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+			Cursor cursor, List resultsList) {
+		Long count = pageableParam instanceof DatastorePageable
+				? ((DatastorePageable) pageableParam).getTotalCount()
+				: null;
+		if (count == null) {
+			GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQueryNoLimit();
+			DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery,
+					this.entityType);
+			count = StreamSupport.stream(next.spliterator(), false).count();
+		}
+
+		Pageable pageable = DatastorePageable.from(pageableParam, cursor, count);
+		return new PageImpl(resultsList, pageable, count);
+	}
+
 	private Object convertCollectionResult(Class returnedItemType,
-			boolean isNonEntityReturnType, List rawResult) {
+			boolean isNonEntityReturnType, Iterable rawResult) {
 		Object result = this.datastoreTemplate.getDatastoreEntityConverter()
 				.getConversions().convertOnRead(
 						isNonEntityReturnType ? rawResult : applyProjection(rawResult),
@@ -171,23 +204,32 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Object convertSingularResult(Class returnedItemType,
-			boolean isNonEntityReturnType, List rawResult) {
+			boolean isNonEntityReturnType, Iterable rawResult) {
+		if (rawResult == null) {
+			return null;
+		}
+		Iterator iterator = rawResult.iterator();
+		if (this.queryMethod.isExistsQuery()) {
+			return iterator.hasNext();
+		}
 
 		if (this.queryMethod.isCountQuery()) {
-			return rawResult.size();
+			return StreamSupport.stream(rawResult.spliterator(), false).count();
 		}
-		else if (this.queryMethod.isExistsQuery()) {
-			return !rawResult.isEmpty();
+
+		if (!iterator.hasNext()) {
+			return null;
 		}
-		if (rawResult.size() > 1) {
+		Object result = iterator.next();
+		if (iterator.hasNext()) {
 			throw new DatastoreDataException(
 					"The query method returns a singular object but "
 							+ "the query returned more than one result.");
 		}
 		return isNonEntityReturnType
 				? this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-						.convertOnRead(rawResult.get(0), null, returnedItemType)
-				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
+						.convertOnRead(result, null, returnedItemType)
+				: this.queryMethod.getResultProcessor().processResult(result);
 	}
 
 	boolean isNonEntityReturnedType(Class returnedType) {
@@ -201,6 +243,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Parameter param = parameters.getParameter(i);
+			if (Pageable.class.isAssignableFrom(param.getType()) || Sort.class.isAssignableFrom(param.getType())) {
+				continue;
+			}
 			Optional<String> paramName = param.getName();
 			if (!paramName.isPresent()) {
 				throw new DatastoreDataException(
@@ -215,31 +260,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			seen.add(name);
 			this.originalParamTags.add(name);
 		}
-	}
-
-	private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(String gql,
-			List<String> tags,
-			List vals) {
-		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
-		builder.setAllowLiteral(true);
-		if (tags.size() != vals.size()) {
-			throw new DatastoreDataException("Annotated GQL Query Method "
-					+ this.queryMethod.getName() + " has " + tags.size()
-					+ " tags but a different number of parameter values: " + vals.size());
-		}
-		for (int i = 0; i < tags.size(); i++) {
-			Object val = vals.get(i);
-			Object boundVal;
-			if (ValueUtil.isCollectionLike(val.getClass())) {
-				boundVal = convertCollectionParamToCompatibleArray((List) ValueUtil.toListIfArray(val));
-			}
-			else {
-				boundVal = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-						.convertOnWriteSingle(val).get();
-			}
-			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), boundVal);
-		}
-		return builder.build();
 	}
 
 	private void setGqlResolvedEntityClassName() {
@@ -265,7 +285,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 								+ className);
 			}
 		}
-		GqlDatastoreQuery.this.gqlResolvedEntityClassName = result;
+		this.gqlResolvedEntityClassName = result;
 	}
 
 	private void setEvaluatingSpelQueryContext() {
@@ -285,19 +305,32 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.withEvaluationContextProvider(GqlDatastoreQuery.this.evaluationContextProvider);
 	}
 
+
 	// Convenience class to hold a grouping of GQL, tags, and parameter values.
 	private class ParsedQueryWithTagsAndValues {
 
-		final List<String> tagsOrdered;
+		static final String LIMIT_CLAUSE = " LIMIT @limit";
+		static final String LIMIT_TAG_NAME = "limit";
+		static final String OFFSET_CLAUSE = " OFFSET @offset";
+		static final String OFFSET_TAG_NAME = "offset";
+		static final String ORDER_BY = " ORDER BY ";
+		List<String> tagsOrdered;
 
 		final Object[] rawParams;
 
-		final List<Object> params;
+		List<Object> params;
 
-		final String finalGql;
+		private final String noLimitQuery;
+
+		String finalGql;
+
+		int cursorPosition;
+
+		int limitPosition;
 
 		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams) {
-			this.params = new ArrayList<>(Arrays.asList(rawParams));
+			this.params = Arrays.stream(rawParams).filter(e -> !(e instanceof Pageable || e instanceof Sort))
+					.collect(Collectors.toList());
 			this.rawParams = rawParams;
 			this.tagsOrdered = new ArrayList<>(initialTags);
 
@@ -309,10 +342,87 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 			for (Map.Entry<String, Object> entry : results.entrySet()) {
 				this.params.add(entry.getValue());
-				// Cloud Datastore requires the tag name without the
+				// Cloud Datastore requires the tag name without the @
 				this.tagsOrdered.add(entry.getKey().substring(1));
+			}
+
+			ParameterAccessor paramAccessor =
+					new ParametersParameterAccessor(getQueryMethod().getParameters(), rawParams);
+			Sort sort = paramAccessor.getSort();
+
+			this.finalGql = addSort(this.finalGql, sort);
+
+			this.noLimitQuery = this.finalGql;
+			Pageable pageable = paramAccessor.getPageable();
+			if (!pageable.equals(Pageable.unpaged())) {
+				this.finalGql += LIMIT_CLAUSE;
+				this.tagsOrdered.add(LIMIT_TAG_NAME);
+				this.limitPosition = this.params.size();
+				this.params.add(pageable.getPageSize());
+
+				this.finalGql += OFFSET_CLAUSE;
+				this.tagsOrdered.add(OFFSET_TAG_NAME);
+				this.cursorPosition = this.params.size();
+				if (pageable instanceof DatastorePageable && ((DatastorePageable) pageable).getCursor() != null) {
+					this.params.add(((DatastorePageable) pageable).getCursor());
+				}
+				else {
+					this.params.add(pageable.getOffset());
+				}
 			}
 		}
 
+		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(Cursor newCursor, int newLimit) {
+			this.params.set(this.cursorPosition, newCursor);
+			this.params.set(this.limitPosition, newLimit);
+
+			return bindArgsToGqlQuery();
+		}
+
+		private GqlQuery<? extends BaseEntity> bindArgsToGqlQueryNoLimit() {
+			this.finalGql = this.noLimitQuery;
+			this.tagsOrdered = this.tagsOrdered.subList(0, this.limitPosition);
+			this.params = this.params.subList(0, this.limitPosition);
+
+			return bindArgsToGqlQuery();
+		}
+
+		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery() {
+			Builder builder = GqlQuery.newGqlQueryBuilder(this.finalGql);
+			builder.setAllowLiteral(true);
+			if (this.tagsOrdered.size() != this.params.size()) {
+				throw new DatastoreDataException("Annotated GQL Query Method "
+						+ GqlDatastoreQuery.this.queryMethod.getName() + " has " + this.tagsOrdered.size()
+						+ " tags but a different number of parameter values: " + this.params.size());
+			}
+			for (int i = 0; i < this.tagsOrdered.size(); i++) {
+				Object val = this.params.get(i);
+				Object boundVal;
+				if (val instanceof Cursor) {
+					boundVal = val;
+				}
+				else if (ValueUtil.isCollectionLike(val.getClass())) {
+					boundVal = convertCollectionParamToCompatibleArray((List) ValueUtil.toListIfArray(val));
+				}
+				else {
+					boundVal = GqlDatastoreQuery.this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+							.convertOnWriteSingle(val).get();
+				}
+				DatastoreNativeTypes.bindValueToGqlBuilder(builder, this.tagsOrdered.get(i), boundVal);
+			}
+			return builder.build();
+		}
+
+		private String addSort(String finalGql, Sort sort) {
+			if (sort.equals(Sort.unsorted())) {
+				return finalGql;
+			}
+			//similar to Spring Data JPA, we don't map passed sort properties to persistent properties names
+			// in @Query annotated methods
+			String orderString = sort.stream().map(order -> order.getProperty() + " " + order.getDirection())
+					.collect(Collectors.joining(", "));
+			return finalGql + ORDER_BY + orderString;
+		}
 	}
 }
+

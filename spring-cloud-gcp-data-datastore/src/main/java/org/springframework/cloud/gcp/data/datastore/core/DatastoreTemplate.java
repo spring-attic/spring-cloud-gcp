@@ -274,11 +274,20 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <A, T> List<T> query(Query<A> query, Function<A, T> entityFunc) {
-		List<T> results = new ArrayList<>();
-		getDatastoreReadWriter().run(query)
-				.forEachRemaining((x) -> results.add(entityFunc.apply(x)));
-		maybeEmitEvent(new AfterQueryEvent(results, query));
-		return results;
+		return (List<T>) queryIterable(query, entityFunc).getIterable();
+	}
+
+	public <A, T> DatastoreResultsIterable<T> queryIterable(Query<A> query, Function<A, T> entityFunc) {
+		QueryResults<A> results = getDatastoreReadWriter().run(query);
+		List resultsList = new ArrayList();
+		//cursor is not populated until we iterate
+		results.forEachRemaining(e -> {
+			resultsList.add(entityFunc.apply(e));
+		});
+		DatastoreResultsIterable<T> resultsIterable = new DatastoreResultsIterable<>(resultsList,
+				results.getCursorAfter());
+		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
+		return resultsIterable;
 	}
 
 	@Override

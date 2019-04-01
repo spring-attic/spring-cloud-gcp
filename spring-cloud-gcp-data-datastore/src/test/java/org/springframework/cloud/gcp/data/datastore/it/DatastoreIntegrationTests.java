@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -199,6 +200,96 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
+	public void testSlice() {
+		List<TestEntity> results = new ArrayList<>();
+		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				PageRequest.of(0, 1));
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isFalse();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testPage() {
+		List<TestEntity> results = new ArrayList<>();
+		Page<TestEntity> page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				PageRequest.of(0, 2));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(2);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testProjectionPage() {
+		Page<String> page = this.testEntityRepository
+				.getColorsPage(PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "color")));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(3);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("red", "red", "red");
+
+		page = this.testEntityRepository.getColorsPage(page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("blue");
+	}
+
+	@Test
+	public void testSliceSort() {
+		List<TestEntity> results = this.testEntityRepository.findEntitiesWithCustomQuerySort(Sort.by("color"));
+
+		assertThat(results.get(0)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
+	}
+
+	@Test
+	public void testSliceSortDesc() {
+		List<TestEntity> results = this.testEntityRepository
+				.findEntitiesWithCustomQuerySort(Sort.by(Sort.Direction.DESC, "color"));
+
+		assertThat(results.get(results.size() - 1)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
+	}
+
+	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
@@ -281,6 +372,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(foundByCustomQuery.size()).isEqualTo(1);
 		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
+		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
 		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
 		assertThat(foundByCustomProjectionQuery.length).isEqualTo(1);
