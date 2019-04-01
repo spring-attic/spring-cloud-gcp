@@ -6545,7 +6545,37 @@ It enables dynamic query generation based on a user-provided object. See <a href
 
   @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
   TestEntity getOneTestEntity(@Param("id_val") long id);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  List&lt;Trader&gt; tradersByNameSort(@Param("trader_name") String traderName, Sort sort);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  Slice&lt;Trader&gt; tradersByNameSlice(@Param("trader_name") String traderName, Pageable pageable);
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  Page&lt;Trader&gt; tradersByNamePage(@Param("trader_name") String traderName, Pageable pageable);
 }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the return type is <code>Slice</code> or <code>Pageable</code>, the result set cursor that points to the position just after the page is preserved in the returned <code>Slice</code> or <code>Page</code> object. To take advantage of the cursor to query for the next page or slice, use <code>result.getPageable().next()</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<code>Page</code> requires the total count of entities produced by the query. Therefore, the first query will have to retrieve all of the records just to count them. Instead, we recommend using the <code>Slice</code> return type, because it does not require an additional count query.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"> Slice&lt;Trader&gt; slice1 = tradersByNamePage("Dave", PageRequest.of(0, 5));
+ Slice&lt;Trader&gt; slice2 = tradersByNamePage("Dave", slice1.getPageable().next());</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
