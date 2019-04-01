@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIntegrationTest {
 
-	private final static int PARALLEL_OPERATIONS = 20;
+	private final static int PARALLEL_OPERATIONS = 2;
 
 	@Autowired
 	TradeRepository tradeRepository;
