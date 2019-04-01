@@ -1,4 +1,5 @@
 = Spring Cloud Bus Configuration Management Demo
+ifndef::imagesdir[:imagesdir: images]
 
 This code sample demonstrates automated configuration management using Spring Cloud Config, Spring Cloud Bus and GCP Pub/Sub.
 The sample app consists of a configuration server and a small web application that subscribes to the server to be notified of property changes.
@@ -33,7 +34,7 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 Spring Cloud Config supports retrieving configuration from a local filesystem through a Spring Profile called `native`.
 It is already configured in the local server module (link:spring-cloud-gcp-pubsub-bus-config-sample-server-local/src/main/resources/application.properties[application.properties]).
 
-image::images/bus_sample_local.png[]
+image::bus_sample_local.png[]
 
 === Running the demo
 
@@ -73,7 +74,7 @@ The client application log will also reflect the change: `Received remote refres
 Keeping configuration in the local file system is simple, but not particularly useful -- if the configuration were available on the same file system as the client application, it could just get it without having to maintain a configuration server.
 A more realistic scenario is keeping configuration under version control.
 
-image::images/bus_sample_github.png[]
+image::bus_sample_github.png[]
 
 === Running the demo
 

@@ -1,4 +1,5 @@
 == Spring Cloud Bus
+ifndef::imagesdir[:imagesdir: images]
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 Using link:https://cloud.google.com/pubsub/[Cloud Pub/Sub] as the link:https://spring.io/projects/spring-cloud-bus[Spring Cloud Bus] implementation is as simple as importing the `spring-cloud-gcp-starter-bus-pubsub` starter.
@@ -35,7 +36,7 @@ To use GCP Pub/Sub as the bus implementation, both the configuration server and 
 
 All other configuration is standard to https://spring.io/projects/spring-cloud-config[Spring Cloud Config].
 
-image::images/spring_cloud_bus_over_pubsub.png[]
+image::spring_cloud_bus_over_pubsub.png[]
 
 Spring Cloud Config Server typically runs on port `8888`, and can read configuration from a link:https://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_environment_repository[variety of source control systems] such as GitHub, and even from the local filesystem.
 When the server is notified that new configuration is available, it fetches the updated configuration and sends a notification (`RefreshRemoteApplicationEvent`) out via Spring Cloud Bus.
