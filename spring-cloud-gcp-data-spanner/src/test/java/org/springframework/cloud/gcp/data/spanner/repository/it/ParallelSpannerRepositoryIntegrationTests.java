@@ -69,9 +69,9 @@ public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIn
 				((List<Trade>) this.tradeRepository.findAll()).get(index).getId(),
 				"SELL"));
 
-		executeInParallel(index -> assertThat(this.tradeRepository.countByAction("SELL")).isEqualTo(PARALLEL_OPERATIONS));
+		executeInParallel(unused -> assertThat(this.tradeRepository.countByAction("SELL")).isEqualTo(PARALLEL_OPERATIONS));
 
-		executeInParallel(index -> assertThat(this.tradeRepository.countByActionQuery("SELL")).isEqualTo(PARALLEL_OPERATIONS));
+		executeInParallel(unused -> assertThat(this.tradeRepository.countByActionQuery("SELL")).isEqualTo(PARALLEL_OPERATIONS));
 	}
 
 	private void executeInParallel(IntConsumer function) {
