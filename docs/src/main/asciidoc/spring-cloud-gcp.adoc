@@ -39,6 +39,8 @@ include::spring-integration.adoc[]
 
 include::spring-stream.adoc[]
 
+include::spring-cloud-bus-pubsub.adoc[]
+
 include::trace.adoc[]
 
 include::logging.adoc[]

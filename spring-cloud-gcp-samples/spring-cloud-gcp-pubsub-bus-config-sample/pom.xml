@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>spring-cloud-gcp-samples</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <version>1.2.0.BUILD-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>spring-cloud-gcp-pubsub-bus-config-sample</artifactId>
+    <packaging>pom</packaging>
+    <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
+
+    <modules>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-client</module>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-server-local</module>
+        <module>spring-cloud-gcp-pubsub-bus-config-sample-server-github</module>
+    </modules>
+
+</project>

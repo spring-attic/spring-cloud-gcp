@@ -1,0 +1,60 @@
+== Spring Cloud Bus
+ifndef::imagesdir[:imagesdir: images]
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+Using link:https://cloud.google.com/pubsub/[Cloud Pub/Sub] as the link:https://spring.io/projects/spring-cloud-bus[Spring Cloud Bus] implementation is as simple as importing the `spring-cloud-gcp-starter-bus-pubsub` starter.
+
+This starter brings in the <<spring-stream#_spring_cloud_stream,Spring Cloud Stream binder for Cloud Pub/Sub>>, which is used to both publish and subscribe to the bus.
+If the bus topic (named `springCloudBus` by default) does not exist, the binder automatically creates it.
+The binder also creates anonymous subscriptions for each project using the `spring-cloud-gcp-starter-bus-pubsub` starter.
+
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,groovy]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-bus-pubsub'
+}
+----
+
+=== Configuration Management with Spring Cloud Config and Spring Cloud Bus
+
+Spring Cloud Bus can be used to push configuration changes from a Spring Cloud Config server to the clients listening on the same bus.
+
+To use GCP Pub/Sub as the bus implementation, both the configuration server and the configuration client need the `spring-cloud-gcp-starter-bus-pubsub` dependency.
+
+All other configuration is standard to https://spring.io/projects/spring-cloud-config[Spring Cloud Config].
+
+image::spring_cloud_bus_over_pubsub.png[]
+
+Spring Cloud Config Server typically runs on port `8888`, and can read configuration from a link:https://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_environment_repository[variety of source control systems] such as GitHub, and even from the local filesystem.
+When the server is notified that new configuration is available, it fetches the updated configuration and sends a notification (`RefreshRemoteApplicationEvent`) out via Spring Cloud Bus.
+
+When configuration is stored locally, config server polls the parent directory for changes.
+With configuration stored in source control repository, such as GitHub, the config server needs to be notified that a new version of configuration is available.
+In a deployed server, this would be done automatically through a GitHub webhook, but in a local testing scenario, the `/monitor` HTTP endpoint needs to be invoked manually.
+
+----
+curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content-Type: application/json" -d '{"commits": [{"modified": ["application.properties"]}]}'
+----
+
+By adding the `spring-cloud-gcp-starter-bus-pubsub` dependency, you instruct Spring Cloud Bus to use Cloud Pub/Sub to broadcast configuration changes.
+Spring Cloud Bus will then create a topic named `springCloudBus`, as well as a subscription for each configuration client.
+
+The configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
+Thus, in a scenario with one configuration server and one configuration client, two anonymous subscriptions to the `springCloudBus` topic are created.
+However, a config server disables configuration refresh by default (see link:https://static.javadoc.io/org.springframework.cloud/spring-cloud-config-server/2.1.0.RELEASE/index.html[ConfigServerBootstrapApplicationListener] for more details).
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample[demo application] showing configuration management and distribution over a Cloud Pub/Sub-powered bus is available.
+The sample contains two examples of configuration management with Spring Cloud Bus: one monitoring a local file system, and the other retrieving configuration from a GitHub repository.
