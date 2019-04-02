@@ -51,9 +51,13 @@ import static org.junit.Assume.assumeThat;
 public class LocalSampleAppIntegrationTest {
 
 	/** Test value of {example.message} property. */
-	public static final String VALUE = "INTEGRATION TEST";
+	static final String VALUE = "INTEGRATION TEST";
 
-	private RestTemplate restTemplate = new RestTemplate();
+	static final String CONFIG_DIR = "/tmp/config_pubsub_integration_test";
+
+	static final String CONFIG_FILE = CONFIG_DIR + "/application.properties";
+
+	private final RestTemplate restTemplate = new RestTemplate();
 
 	private static PrintStream systemOut;
 
@@ -70,8 +74,8 @@ public class LocalSampleAppIntegrationTest {
 		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
 		System.setOut(new PrintStream(out));
 
-		Files.createDirectories(Paths.get("/tmp/config_pubsub_integration_test"));
-		File properties = new File("/tmp/config_pubsub_integration_test/application.properties");
+		Files.createDirectories(Paths.get(CONFIG_DIR));
+		File properties = new File(CONFIG_FILE);
 
 		try (FileOutputStream fos = new FileOutputStream(properties)) {
 			fos.write(("example.message = " + VALUE).getBytes());
@@ -80,12 +84,12 @@ public class LocalSampleAppIntegrationTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		Path configFile = Paths.get("/tmp/config_pubsub_integration_test/application.properties");
+		Path configFile = Paths.get(CONFIG_FILE);
 		if (Files.exists(configFile)) {
 			Files.delete(configFile);
 		}
 
-		Path configDir = Paths.get("/tmp/config_pubsub_integration_test");
+		Path configDir = Paths.get(CONFIG_DIR);
 		if (Files.exists(configDir)) {
 			Files.delete(configDir);
 		}
@@ -99,13 +103,14 @@ public class LocalSampleAppIntegrationTest {
 		SpringApplicationBuilder configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
 			.properties("server.port=8888",
 				"spring.profiles.active=native",
-				"spring.cloud.config.server.native.searchLocations=file:/tmp/config_pubsub_integration_test/");
+				"spring.cloud.config.server.native.searchLocations=file:" + CONFIG_DIR);
 		configServer.run();
 
 		Awaitility.await("config server begins watching directory")
 			.atMost(60, TimeUnit.SECONDS)
 			.until(() -> {
-				return baos.toString().contains("Monitoring for local config changes: [/tmp/config_pubsub_integration_test]");
+				return baos.toString().contains(
+					"Monitoring for local config changes: [" + CONFIG_DIR + "]");
 			});
 
 		// Server is aware of value from filesystem.
