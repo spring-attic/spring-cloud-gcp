@@ -78,7 +78,6 @@ public class LocalSampleAppIntegrationTest {
 		System.setOut(new PrintStream(out));
 
 		Files.createDirectories(Paths.get(CONFIG_DIR));
-		writeMessageToFile();
 	}
 
 	@AfterClass
@@ -97,7 +96,7 @@ public class LocalSampleAppIntegrationTest {
 	}
 
 	@Test
-	public void testSample() {
+	public void testSample() throws Exception {
 
 		writeMessageToFile(INITIAL_MESSAGE);
 
@@ -110,9 +109,12 @@ public class LocalSampleAppIntegrationTest {
 		assertConfigClientValue(INITIAL_MESSAGE);
 
 		writeMessageToFile(UPDATED_MESSAGE);
-
 		waitForLogMessage("Refresh for: *");
 		assertConfigServerValue(UPDATED_MESSAGE);
+
+		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
+
+		waitForLogMessage("Keys refreshed [example.message]");
 		assertConfigClientValue(UPDATED_MESSAGE);
 	}
 
@@ -133,8 +135,10 @@ public class LocalSampleAppIntegrationTest {
 				"spring.cloud.config.server.bootstrap=false",
 				// re-enable config client behavior.
 				"spring.cloud.config.enabled=true",
+				"spring.cloud.config.watch.enabled=true",
 				// Suppress Git validation configured through spring.provides in config server module.
-				"spring.profiles.active=native");
+				"spring.profiles.active=native"
+			);
 		configClient.run();
 	}
 
@@ -143,7 +147,8 @@ public class LocalSampleAppIntegrationTest {
 
 		try (FileOutputStream fos = new FileOutputStream(properties)) {
 			fos.write(("example.message = " + value).getBytes());
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			fail("Could not write message to file", e);
 		}
 	}
