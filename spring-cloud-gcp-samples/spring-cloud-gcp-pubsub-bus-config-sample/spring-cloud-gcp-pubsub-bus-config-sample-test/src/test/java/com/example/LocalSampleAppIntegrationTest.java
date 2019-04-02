@@ -73,7 +73,7 @@ public class LocalSampleAppIntegrationTest {
 		File properties = new File("/tmp/config_pubsub_integration_test/application.properties");
 
 		try (FileOutputStream fos = new FileOutputStream(properties)) {
-			fos.write("example.message = INTEGRATION TEST\n".getBytes());
+			fos.write(("example.message = " + VALUE).getBytes());
 		}
 	}
 
@@ -124,7 +124,7 @@ public class LocalSampleAppIntegrationTest {
 
 		// Refresh scoped variable updated.
 		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
-		assertThat(value).isEqualTo("INTEGRATION TEST");
+		assertThat(value).isEqualTo(VALUE);
 
 	}
 

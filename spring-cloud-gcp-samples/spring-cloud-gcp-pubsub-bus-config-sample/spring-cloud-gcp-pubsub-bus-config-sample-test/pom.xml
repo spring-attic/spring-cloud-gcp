@@ -33,7 +33,6 @@
       <artifactId>spring-cloud-config-monitor</artifactId>
     </dependency>
 
-
   </dependencies>
 
   <build>
@@ -51,7 +50,6 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>3.0.0</version>
-
         <executions>
           <execution>
             <phase>generate-sources</phase>
@@ -67,12 +65,14 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
         <configuration>
           <skip>true</skip>
         </configuration>
       </plugin>
+
     </plugins>
   </build>
 
