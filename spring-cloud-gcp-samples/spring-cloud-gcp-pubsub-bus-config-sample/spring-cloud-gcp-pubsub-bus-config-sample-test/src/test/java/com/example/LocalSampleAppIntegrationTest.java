@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
@@ -79,8 +80,16 @@ public class LocalSampleAppIntegrationTest {
 
 	@AfterClass
 	public static void tearDown() throws Exception {
-		Files.delete(Paths.get("/tmp/config_pubsub_integration_test/application.properties"));
-		Files.delete(Paths.get("/tmp/config_pubsub_integration_test"));
+		Path configFile = Paths.get("/tmp/config_pubsub_integration_test/application.properties");
+		if (Files.exists(configFile)) {
+			Files.delete(configFile);
+		}
+
+		Path configDir = Paths.get("/tmp/config_pubsub_integration_test");
+		if (Files.exists(configDir)) {
+			Files.delete(configDir);
+		}
+
 		System.setOut(systemOut);
 	}
 
