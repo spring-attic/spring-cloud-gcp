@@ -19,6 +19,7 @@ package com.example;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +36,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -50,12 +52,13 @@ import static org.junit.Assume.assumeThat;
  */
 public class LocalSampleAppIntegrationTest {
 
-	/** Test value of {example.message} property. */
-	static final String VALUE = "INTEGRATION TEST";
-
 	static final String CONFIG_DIR = "/tmp/config_pubsub_integration_test";
 
 	static final String CONFIG_FILE = CONFIG_DIR + "/application.properties";
+
+	static final String INITIAL_MESSAGE = "initial message";
+
+	static final String UPDATED_MESSAGE = "initial message";
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
@@ -75,11 +78,7 @@ public class LocalSampleAppIntegrationTest {
 		System.setOut(new PrintStream(out));
 
 		Files.createDirectories(Paths.get(CONFIG_DIR));
-		File properties = new File(CONFIG_FILE);
-
-		try (FileOutputStream fos = new FileOutputStream(properties)) {
-			fos.write(("example.message = " + VALUE).getBytes());
-		}
+		writeMessageToFile();
 	}
 
 	@AfterClass
@@ -100,25 +99,35 @@ public class LocalSampleAppIntegrationTest {
 	@Test
 	public void testSample() {
 
-		SpringApplicationBuilder configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
+		writeMessageToFile(INITIAL_MESSAGE);
+
+		startConfigServer();
+		waitForLogMessage("Monitoring for local config changes: [" + CONFIG_DIR + "]");
+		assertConfigServerValue(INITIAL_MESSAGE);
+
+		startConfigClient();
+		waitForLogMessage("Located property source");
+		assertConfigClientValue(INITIAL_MESSAGE);
+
+		writeMessageToFile(UPDATED_MESSAGE);
+
+		waitForLogMessage("Refresh for: *");
+		assertConfigServerValue(UPDATED_MESSAGE);
+		assertConfigClientValue(UPDATED_MESSAGE);
+	}
+
+	private void startConfigServer() {
+		SpringApplicationBuilder
+			configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
 			.properties("server.port=8888",
 				"spring.profiles.active=native",
 				"spring.cloud.config.server.native.searchLocations=file:" + CONFIG_DIR);
 		configServer.run();
+	}
 
-		Awaitility.await("config server begins watching directory")
-			.atMost(60, TimeUnit.SECONDS)
-			.until(() -> {
-				return baos.toString().contains(
-					"Monitoring for local config changes: [" + CONFIG_DIR + "]");
-			});
-
-		// Server is aware of value from filesystem.
-		String serverPropertiesJson = this.restTemplate.getForObject("http://localhost:8888/application/default", String.class);
-		assertThat(serverPropertiesJson).contains(VALUE);
-
-
-		SpringApplicationBuilder configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
+	private void startConfigClient() {
+		SpringApplicationBuilder
+			configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
 			.properties("server.port=8081",
 				// suppress config server behavior.
 				"spring.cloud.config.server.bootstrap=false",
@@ -127,19 +136,36 @@ public class LocalSampleAppIntegrationTest {
 				// Suppress Git validation configured through spring.provides in config server module.
 				"spring.profiles.active=native");
 		configClient.run();
+	}
 
-		// Client is aware of value from filesystem.
-		Awaitility.await("client finds configuration")
+	private static void writeMessageToFile(String value) {
+		File properties = new File(CONFIG_FILE);
+
+		try (FileOutputStream fos = new FileOutputStream(properties)) {
+			fos.write(("example.message = " + value).getBytes());
+		} catch (IOException e) {
+			fail("Could not write message to file", e);
+		}
+	}
+
+	private void assertConfigServerValue(String message) {
+		// Server is aware of value from filesystem.
+		String serverPropertiesJson = this.restTemplate.getForObject("http://localhost:8888/application/default", String.class);
+		assertThat(serverPropertiesJson).contains(message);
+	}
+
+	private void assertConfigClientValue(String message) {
+		// Refresh scoped variable updated and returned.
+		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
+		assertThat(value).isEqualTo(message);
+	}
+
+	private void waitForLogMessage(String message) {
+		Awaitility.await(message)
 			.atMost(60, TimeUnit.SECONDS)
 			.until(() -> {
-				return baos.toString().contains("Located property source");
+				return baos.toString().contains(message);
 			});
-
-
-		// Refresh scoped variable updated.
-		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
-		assertThat(value).isEqualTo(VALUE);
-
 	}
 
 }
