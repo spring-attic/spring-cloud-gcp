@@ -16,23 +16,22 @@
 
 package com.example;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.bouncycastle.util.io.TeeOutputStream;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,19 +51,23 @@ import static org.junit.Assume.assumeThat;
  */
 public class LocalSampleAppIntegrationTest {
 
-	static final String CONFIG_DIR = "/tmp/config_pubsub_integration_test";
+	static final String CONFIG_DIR = "/tmp/config";
 
 	static final String CONFIG_FILE = CONFIG_DIR + "/application.properties";
 
 	static final String INITIAL_MESSAGE = "initial message";
 
-	static final String UPDATED_MESSAGE = "initial message";
+	static final String UPDATED_MESSAGE = "updated message";
 
-	private final RestTemplate restTemplate = new RestTemplate();
+	final RestTemplate restTemplate = new RestTemplate();
 
-	private static PrintStream systemOut;
+	BufferedReader configServerOutput;
 
-	private static ByteArrayOutputStream baos;
+	BufferedReader configClientOutput;
+
+	Process configServerProcess;
+
+	Process configClientProcess;
 
 	@BeforeClass
 	public static void prepare() throws Exception {
@@ -72,16 +75,37 @@ public class LocalSampleAppIntegrationTest {
 			"PUB/SUB integration tests are disabled. Use '-Dit.pubsub=true' to enable.",
 			System.getProperty("it.pubsub"), is("true"));
 
-		systemOut = System.out;
-		baos = new ByteArrayOutputStream();
-		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
-		System.setOut(new PrintStream(out));
-
 		Files.createDirectories(Paths.get(CONFIG_DIR));
+	}
+
+	@Test
+	public void testSample() throws Exception {
+
+		writeMessageToFile(INITIAL_MESSAGE);
+
+		startConfigServer();
+
+		waitForLogMessage(this.configServerOutput, "Monitoring for local config changes: [" + CONFIG_DIR + "]");
+		waitForLogMessage(this.configServerOutput, "Started PubSubConfigServerApplication");
+		assertConfigServerValue(INITIAL_MESSAGE);
+
+		startConfigClient();
+
+		waitForLogMessage(this.configClientOutput, "Located property source");
+		waitForLogMessage(this.configClientOutput, "Started PubSubConfigApplication");
+		assertConfigClientValue(INITIAL_MESSAGE);
+
+		writeMessageToFile(UPDATED_MESSAGE);
+		waitForLogMessage(this.configServerOutput, "Refresh for: *");
+		assertConfigServerValue(UPDATED_MESSAGE);
+
+		waitForLogMessage(this.configClientOutput, "Keys refreshed [example.message]");
+		assertConfigClientValue(UPDATED_MESSAGE);
 	}
 
 	@AfterClass
 	public static void tearDown() throws Exception {
+
 		Path configFile = Paths.get(CONFIG_FILE);
 		if (Files.exists(configFile)) {
 			Files.delete(configFile);
@@ -92,54 +116,44 @@ public class LocalSampleAppIntegrationTest {
 			Files.delete(configDir);
 		}
 
-		System.setOut(systemOut);
 	}
 
-	@Test
-	public void testSample() throws Exception {
+	@After
+	public void closeResources() throws IOException {
 
-		writeMessageToFile(INITIAL_MESSAGE);
+		if (this.configServerOutput != null) {
+			this.configServerOutput.close();
+		}
 
-		startConfigServer();
-		waitForLogMessage("Monitoring for local config changes: [" + CONFIG_DIR + "]");
-		assertConfigServerValue(INITIAL_MESSAGE);
+		if (this.configClientOutput != null) {
+			this.configClientOutput.close();
+		}
 
-		startConfigClient();
-		waitForLogMessage("Located property source");
-		assertConfigClientValue(INITIAL_MESSAGE);
+		if (this.configServerProcess != null) {
+			this.configServerProcess.destroy();
+		}
 
-		writeMessageToFile(UPDATED_MESSAGE);
-		waitForLogMessage("Refresh for: *");
-		assertConfigServerValue(UPDATED_MESSAGE);
+		if (this.configClientProcess != null) {
+			this.configClientProcess.destroy();
+		}
 
-		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
-
-		waitForLogMessage("Keys refreshed [example.message]");
-		assertConfigClientValue(UPDATED_MESSAGE);
 	}
 
-	private void startConfigServer() {
-		SpringApplicationBuilder
-			configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
-			.properties("server.port=8888",
-				"spring.profiles.active=native",
-				"spring.cloud.config.server.native.searchLocations=file:" + CONFIG_DIR);
-		configServer.run();
+	private void startConfigServer() throws IOException {
+		ProcessBuilder serverBuilder = new ProcessBuilder("mvn", "spring-boot:run",
+				"-f", "../spring-cloud-gcp-pubsub-bus-config-sample-server-local");
+		this.configServerProcess = serverBuilder.start();
+		this.configServerOutput = new BufferedReader(new InputStreamReader(this.configServerProcess.getInputStream()));
+
 	}
 
-	private void startConfigClient() {
-		SpringApplicationBuilder
-			configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
-			.properties("server.port=8081",
-				// suppress config server behavior.
-				"spring.cloud.config.server.bootstrap=false",
-				// re-enable config client behavior.
-				"spring.cloud.config.enabled=true",
-				"spring.cloud.config.watch.enabled=true",
-				// Suppress Git validation configured through spring.provides in config server module.
-				"spring.profiles.active=native"
-			);
-		configClient.run();
+	private void startConfigClient() throws IOException {
+
+		ProcessBuilder serverBuilder = new ProcessBuilder("mvn", "spring-boot:run",
+				"-f", "../spring-cloud-gcp-pubsub-bus-config-sample-client");
+		this.configClientProcess = serverBuilder.start();
+		this.configClientOutput = new BufferedReader(new InputStreamReader(this.configClientProcess.getInputStream()));
+
 	}
 
 	private static void writeMessageToFile(String value) {
@@ -161,15 +175,27 @@ public class LocalSampleAppIntegrationTest {
 
 	private void assertConfigClientValue(String message) {
 		// Refresh scoped variable updated and returned.
-		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
+		String value = this.restTemplate.getForObject("http://localhost:8080/message", String.class);
 		assertThat(value).isEqualTo(message);
 	}
 
-	private void waitForLogMessage(String message) {
+	private void waitForLogMessage(BufferedReader reader, String message) {
 		Awaitility.await(message)
-			.atMost(60, TimeUnit.SECONDS)
+			.atMost(30, TimeUnit.SECONDS)
 			.until(() -> {
-				return baos.toString().contains(message);
+				// drain all lines up to the one requested, or until no more lines in reader.
+				while (reader.ready()) {
+					String line = reader.readLine();
+
+					if (line == null) {
+						return false;
+					}
+
+					if (line.contains(message)) {
+						return true;
+					}
+				}
+				return false;
 			});
 	}
 
