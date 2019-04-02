@@ -22,10 +22,11 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
 import org.bouncycastle.util.io.TeeOutputStream;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -39,11 +40,17 @@ import static org.junit.Assume.assumeThat;
 /**
  * Integration test for the config client with local config server.
  *
+ * <p>Because the test brings in config server/config client source files into a single project,
+ * config server bootstrap need to be suppressed in the config client app instance.
+ *
  * @author Elena Felder
  *
  * @since 1.2
  */
 public class LocalSampleAppIntegrationTest {
+
+	/** Test value of {example.message} property. */
+	public static final String VALUE = "INTEGRATION TEST";
 
 	private RestTemplate restTemplate = new RestTemplate();
 
@@ -70,9 +77,15 @@ public class LocalSampleAppIntegrationTest {
 		}
 	}
 
+	@AfterClass
+	public static void tearDown() throws Exception {
+		Files.delete(Paths.get("/tmp/config_pubsub_integration_test/application.properties"));
+		Files.delete(Paths.get("/tmp/config_pubsub_integration_test"));
+		System.setOut(systemOut);
+	}
+
 	@Test
 	public void testSample() {
-
 
 		SpringApplicationBuilder configServer = new SpringApplicationBuilder(PubSubConfigServerApplication.class)
 			.properties("server.port=8888",
@@ -80,20 +93,39 @@ public class LocalSampleAppIntegrationTest {
 				"spring.cloud.config.server.native.searchLocations=file:/tmp/config_pubsub_integration_test/");
 		configServer.run();
 
-		// TODO: wait until config refreshes
-		Awaitility.await().atMost(60, TimeUnit.SECONDS)
+		Awaitility.await("config server begins watching directory")
+			.atMost(60, TimeUnit.SECONDS)
 			.until(() -> {
-				return baos.toString().contains("Refreshed configuration");
+				return baos.toString().contains("Monitoring for local config changes: [/tmp/config_pubsub_integration_test]");
 			});
+
+		// Server is aware of value from filesystem.
+		String serverPropertiesJson = this.restTemplate.getForObject("http://localhost:8888/application/default", String.class);
+		assertThat(serverPropertiesJson).contains(VALUE);
+
 
 		SpringApplicationBuilder configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
 			.properties("server.port=8081",
+				// suppress config server behavior.
 				"spring.cloud.config.server.bootstrap=false",
+				// re-enable config client behavior.
+				"spring.cloud.config.enabled=true",
+				// Suppress Git validation configured through spring.provides in config server module.
 				"spring.profiles.active=native");
 		configClient.run();
 
+		// Client is aware of value from filesystem.
+		Awaitility.await("client finds configuration")
+			.atMost(60, TimeUnit.SECONDS)
+			.until(() -> {
+				return baos.toString().contains("Located property source");
+			});
+
+
+		// Refresh scoped variable updated.
 		String value = this.restTemplate.getForObject("http://localhost:8081/message", String.class);
 		assertThat(value).isEqualTo("INTEGRATION TEST");
+
 	}
 
 }
