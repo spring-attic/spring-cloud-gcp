@@ -16,11 +16,16 @@
 
 package com.example;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import java.util.concurrent.TimeUnit;
+import org.awaitility.Awaitility;
+import org.bouncycastle.util.io.TeeOutputStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,11 +47,20 @@ public class LocalSampleAppIntegrationTest {
 
 	private RestTemplate restTemplate = new RestTemplate();
 
+	private static PrintStream systemOut;
+
+	private static ByteArrayOutputStream baos;
+
 	@BeforeClass
 	public static void prepare() throws Exception {
 		assumeThat(
 			"PUB/SUB integration tests are disabled. Use '-Dit.pubsub=true' to enable.",
 			System.getProperty("it.pubsub"), is("true"));
+
+		systemOut = System.out;
+		baos = new ByteArrayOutputStream();
+		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
+		System.setOut(new PrintStream(out));
 
 		Files.createDirectories(Paths.get("/tmp/config_pubsub_integration_test"));
 		File properties = new File("/tmp/config_pubsub_integration_test/application.properties");
@@ -67,6 +81,10 @@ public class LocalSampleAppIntegrationTest {
 		configServer.run();
 
 		// TODO: wait until config refreshes
+		Awaitility.await().atMost(60, TimeUnit.SECONDS)
+			.until(() -> {
+				return baos.toString().contains("Refreshed configuration");
+			});
 
 		SpringApplicationBuilder configClient = new SpringApplicationBuilder(PubSubConfigApplication.class)
 			.properties("server.port=8081",
