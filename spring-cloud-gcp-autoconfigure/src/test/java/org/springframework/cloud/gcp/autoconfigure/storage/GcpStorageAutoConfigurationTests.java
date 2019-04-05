@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -92,7 +93,8 @@ public class GcpStorageAutoConfigurationTests {
 			GcpCloudSqlAutoConfiguration.class,
 			DataSourceAutoConfiguration.class,
 			SecurityAutoConfiguration.class,
-			IapAuthenticationAutoConfiguration.class
+			IapAuthenticationAutoConfiguration.class,
+			RepositoryRestMvcAutoConfiguration.class
 	})
 	@RestController
 	static class StorageApplication {
