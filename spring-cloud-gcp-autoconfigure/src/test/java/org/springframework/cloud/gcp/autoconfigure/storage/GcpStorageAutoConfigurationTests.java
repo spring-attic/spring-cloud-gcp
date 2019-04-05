@@ -28,10 +28,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -41,6 +46,9 @@ import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfigurat
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,7 +80,6 @@ public class GcpStorageAutoConfigurationTests {
 	private Resource googleStorageResource;
 
 	@Test
-	@Ignore
 	public void testValidObject() throws Exception {
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
 		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
@@ -88,14 +95,12 @@ public class GcpStorageAutoConfigurationTests {
 	/**
 	 * The web app for the test.
 	 */
-	@SpringBootApplication(exclude = {
-			GcpContextAutoConfiguration.class,
-			GcpCloudSqlAutoConfiguration.class,
-			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class,
-			IapAuthenticationAutoConfiguration.class,
-			RepositoryRestMvcAutoConfiguration.class
-	})
+	@Configuration
+	@ComponentScan
+	@ImportAutoConfiguration({GcpStorageAutoConfiguration.class,
+		WebMvcAutoConfiguration.class,
+		ServletWebServerFactoryAutoConfiguration.class,
+		DispatcherServletAutoConfiguration.class})
 	@RestController
 	static class StorageApplication {
 
