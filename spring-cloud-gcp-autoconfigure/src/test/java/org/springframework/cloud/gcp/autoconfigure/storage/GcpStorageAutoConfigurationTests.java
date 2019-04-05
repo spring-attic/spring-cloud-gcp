@@ -23,28 +23,16 @@ import com.google.auth.Credentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -55,56 +43,55 @@ import static org.mockito.Mockito.when;
  * Config for Storage auto config tests.
  *
  * @author Artem Bilan
+ * @author Elena Felder
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = { "spring.cloud.gcp.storage.auto-create-files=false",
-				"spring.cloud.gcp.config.enabled=false",
-				"spring.main.banner-mode=off"
-		})
 public class GcpStorageAutoConfigurationTests {
 
-	@LocalServerPort
-	private int port;
+	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
+		.withUserConfiguration(TestConfiguration.class);
 
-	@Value("gs://test-spring/images/spring.png")
-	private Resource googleStorageResource;
 
 	@Test
-	@Ignore
 	public void testValidObject() throws Exception {
-		TestRestTemplate testRestTemplate = new TestRestTemplate();
-		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
-		assertThat(actual).isEqualTo(4096);
+
+		this.contextRunner.run((context) -> {
+			Resource resource = context.getBean("mockResource", Resource.class);
+			assertThat(resource.contentLength()).isEqualTo(4096);
+		});
 	}
 
 	@Test
-	public void testAutoCreateFilesFalse() throws IOException {
-		assertThat(((GoogleStorageResource) this.googleStorageResource)
-				.isAutoCreateFiles()).isFalse();
+	public void testAutoCreateFilesTrueByDefault() throws IOException {
+
+		this.contextRunner
+			.run((context) -> {
+				Resource resource = context.getBean("mockResource", Resource.class);
+				assertThat(((GoogleStorageResource) resource).isAutoCreateFiles()).isTrue();
+			});
 	}
 
-	/**
-	 * The web app for the test.
-	 */
-	@SpringBootApplication(exclude = {
-			GcpContextAutoConfiguration.class,
-			GcpCloudSqlAutoConfiguration.class,
-			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class,
-			IapAuthenticationAutoConfiguration.class,
-			RepositoryRestMvcAutoConfiguration.class
-	})
-	@RestController
-	static class StorageApplication {
+	@Test
+	public void testAutoCreateFilesRespectsProperty() throws IOException {
+
+		this.contextRunner
+			.withPropertyValues("spring.cloud.gcp.storage.auto-create-files=false")
+			.run((context) -> {
+				Resource resource = context.getBean("mockResource", Resource.class);
+				assertThat(((GoogleStorageResource) resource).isAutoCreateFiles()).isFalse();
+			});
+
+	}
+
+	@Configuration
+	static class TestConfiguration {
 
 		@Value("gs://test-spring/images/spring.png")
 		private Resource remoteResource;
 
-		@GetMapping("/resource")
-		public long getResource() throws IOException {
-			return this.remoteResource.contentLength();
+		@Bean(name = "mockResource")
+		public Resource getResource() throws IOException {
+			return this.remoteResource;
 		}
 
 		@Bean
