@@ -32,9 +32,7 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 		this.properties = properties;
 		Assert.hasText(properties.getDatabaseName(), "A database name is required.");
 		Assert.hasText(properties.getInstanceConnectionName(),
-				"An instance connection name must be provided. Refer to "
-						+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
-						+ " for more information.");
+				"An instance connection name must be provided in the format <PROJECT_ID>:<REGION>:<INSTANCE_ID>.");
 	}
 
 	@Override
