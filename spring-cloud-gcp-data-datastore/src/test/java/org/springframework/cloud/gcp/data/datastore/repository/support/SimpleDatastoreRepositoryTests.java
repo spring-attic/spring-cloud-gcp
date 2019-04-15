@@ -52,6 +52,7 @@ import static org.mockito.Mockito.when;
  * Tests for the default Datastore Repository implementation.
  *
  * @author Chengyuan Zhao
+ * @author Artem Bilan
  */
 public class SimpleDatastoreRepositoryTests {
 	/**
@@ -157,7 +158,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
 				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(0)
-						.setSort(new Sort(Sort.Direction.ASC, "property1")).build()));
+						.setSort(Sort.by("property1")).build()));
 		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
