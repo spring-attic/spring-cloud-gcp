@@ -68,7 +68,7 @@ import static org.mockito.Mockito.when;
 				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
 				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
 		})
-@Ignore("Until Spring Cloud Stream is compatible with Spring Integration 5.2")
+@Ignore("Until Spring Cloud Stream is compatible with Spring Integration 5.2 (GH-1648)")
 public class  PubSubExtendedBindingsPropertiesTests {
 
 	@Autowired
