@@ -60,3 +60,5 @@ include::vision.adoc[]
 include::cloudfoundry.adoc[]
 
 include::kotlin.adoc[]
+
+include::firestore.adoc[]

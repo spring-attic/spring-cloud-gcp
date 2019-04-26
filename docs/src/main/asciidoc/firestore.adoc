@@ -1,0 +1,60 @@
+== Cloud Firestore
+
+Spring Cloud GCP provides convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/firestore/[Google Cloud Firestore].
+
+See https://cloud.google.com/firestore/docs/[documentation] to learn more about Cloud Firestore.
+
+=== Dependency Setup
+
+To begin using this library, add the `spring-cloud-gcp-starter-data-firestore` artifact to your project.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-firestore'
+}
+----
+
+=== Using Cloud Firestore
+In order to inject `Firestore` into your class, you can use `@Autowired` annotation.
+
+[source,java]
+----
+@Autowired
+Firestore firestore;
+
+private void writeDocumentFromObject() throws ExecutionException, InterruptedException {
+    // Add document data with id "joe" to collection "users" using a custom User class
+    User data = new User("Joe",
+            Arrays.asList(
+                new Phone(12345, PhoneType.CELL),
+                new Phone(54321, PhoneType.WORK)));
+
+    this.firestore.document("users/joe").set(data).get();
+}
+
+private void readDocumentToObject() throws ExecutionException, InterruptedException {
+    ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = this.firestore.document("users/joe").get();
+
+    User user = documentSnapshotApiFuture.get().toObject(User.class);
+
+    /*
+        do something with the user object
+        ...
+    */
+}
+----
+
+

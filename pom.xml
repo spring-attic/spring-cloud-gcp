@@ -39,7 +39,8 @@
 		<module>spring-cloud-gcp-vision</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>
 		<module>spring-cloud-gcp-logging</module>
-	</modules>
+        <module>spring-cloud-gcp-data-firestore</module>
+    </modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
