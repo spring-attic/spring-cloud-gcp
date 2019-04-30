@@ -55,8 +55,7 @@ public class FirestoreSampleAppTests {
 		assumeThat(
 				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
-				//System.getProperty("it.firestore"), is("true"));
-				"true", is("true"));
+				System.getProperty("it.firestore"), is("true"));
 
 		systemOut = System.out;
 		baos = new ByteArrayOutputStream();
