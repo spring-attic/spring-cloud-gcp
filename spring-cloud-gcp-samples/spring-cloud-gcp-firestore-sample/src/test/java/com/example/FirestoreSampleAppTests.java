@@ -53,7 +53,7 @@ public class FirestoreSampleAppTests {
 	@BeforeClass
 	public static void prepare() {
 		assumeThat(
-				"PUB/SUB-sample integration tests are disabled. Please use '-Dit.firestore=true' "
+				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
 				//System.getProperty("it.firestore"), is("true"));
 				"true", is("true"));

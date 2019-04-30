@@ -165,8 +165,8 @@
 
         <!-- Firestore -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-data-firestore</artifactId>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-firestore</artifactId>
             <optional>true</optional>
         </dependency>
 

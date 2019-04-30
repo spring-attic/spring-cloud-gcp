@@ -71,7 +71,7 @@ public class FirestoreSampleApp {
 		ApiFuture<WriteResult> result = docRef.set(data);
 
 		// result.get() blocks on response
-		System.out.println("Update time : " + result.get().getUpdateTime());
+		System.out.println("Update time: " + result.get().getUpdateTime());
 	}
 
 	private void writeDocumentFromObject() throws ExecutionException, InterruptedException {
@@ -82,7 +82,7 @@ public class FirestoreSampleApp {
 		// .get() blocks on response
 		WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
 
-		System.out.println("Update time : " + writeResult.getUpdateTime());
+		System.out.println("Update time: " + writeResult.getUpdateTime());
 	}
 
 	private void readDocumentToMap() throws ExecutionException, InterruptedException {

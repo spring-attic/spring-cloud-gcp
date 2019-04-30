@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.firestore;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import org.junit.Test;
@@ -26,10 +26,6 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreRepositoriesAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,11 +41,9 @@ import static org.mockito.Mockito.mock;
 public class GcpFirestoreAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class,
-					DatastoreTransactionManagerAutoConfiguration.class,
-					DatastoreRepositoriesAutoConfiguration.class,
-					DatastoreHealthIndicatorAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(GcpFirestoreAutoConfiguration.class,
+					GcpContextAutoConfiguration.class
+					))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.firestore.project-id=test-project");
 
@@ -69,7 +63,7 @@ public class GcpFirestoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> mock(GoogleCredentials.class);
 		}
 	}
 }

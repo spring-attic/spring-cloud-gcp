@@ -9,14 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>spring-cloud-gcp-data-firestore-sample</artifactId>
+    <artifactId>spring-cloud-gcp-firestore-sample</artifactId>
     <name>Spring Cloud GCP Firestore Code Sample</name>
 
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
+            <artifactId>spring-cloud-gcp-starter-firestore</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

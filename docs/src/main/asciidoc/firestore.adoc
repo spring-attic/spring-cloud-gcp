@@ -13,7 +13,7 @@ Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
+    <artifactId>spring-cloud-gcp-starter-firestore</artifactId>
 </dependency>
 ----
 
@@ -22,9 +22,14 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-firestore'
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
 }
 ----
+
+=== Sample
+
+
+A https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
 
 === Using Cloud Firestore
 The starter automatically configures and registers a `Firestore` bean in the Spring application context. To start using it, simply use the `@Autowired` annotation.
@@ -41,7 +46,11 @@ private void writeDocumentFromObject() throws ExecutionException, InterruptedExc
                 new Phone(12345, PhoneType.CELL),
                 new Phone(54321, PhoneType.WORK)));
 
-    this.firestore.document("users/joe").set(data).get();
+    // asynchronously write data
+    ApiFuture<WriteResult> result = docRef.set(data);
+
+    // result.get() blocks on response
+    LOGGER.info"Update time: " + result.get().getUpdateTime());
 }
 
 private void readDocumentToObject() throws ExecutionException, InterruptedException {
@@ -55,5 +64,14 @@ private void readDocumentToObject() throws ExecutionException, InterruptedExcept
     */
 }
 ----
+
+=== Configuration
+
+The Spring Boot starter for Google Cloud Firestore provides the following configuration options:
+
+|===
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.firestore.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
+| `spring.cloud.gcp.firestore.project-id` | GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 
 

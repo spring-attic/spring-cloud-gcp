@@ -45,11 +45,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-data-firestore</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-data-spanner</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -127,7 +122,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
+				<artifactId>spring-cloud-gcp-starter-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
