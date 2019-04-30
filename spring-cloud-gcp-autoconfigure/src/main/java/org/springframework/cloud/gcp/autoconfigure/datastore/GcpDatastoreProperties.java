@@ -37,10 +37,22 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 	private final Credentials credentials = new Credentials(GcpScope.DATASTORE.getUrl());
 
 	/**
-	 * The host and port of the local running emulator. If provided, this will setup the
-	 * client to connect against a running pub/sub emulator.
+	 * Properties to auto configure a local Datastore Emulator.
 	 */
+	@NestedConfigurationProperty
+	private final EmulatorSettings emulator = new EmulatorSettings();
+
+	/**
+	 * @deprecated use <code>spring.cloud.gcp.datastore.host</code> instead.
+	 * @see #host
+	 */
+	@Deprecated
 	private String emulatorHost;
+
+	/**
+	 * The host and port of a Datastore emulator as the following example: localhost:8081.
+	 */
+	private String host;
 
 	private String projectId;
 
@@ -49,6 +61,10 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 	@Override
 	public Credentials getCredentials() {
 		return this.credentials;
+	}
+
+	public EmulatorSettings getEmulator() {
+		return this.emulator;
 	}
 
 	public String getProjectId() {
@@ -67,10 +83,28 @@ public class GcpDatastoreProperties implements CredentialsSupplier {
 		this.namespace = namespace;
 	}
 
-	public String getEmulatorHost() {
-		return emulatorHost;
+	public String getHost() {
+		return this.host;
 	}
 
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	/**
+	 * @return the old emulator host parameter
+	 * @deprecated use {@link #getHost()} instead
+	 */
+	@Deprecated
+	public String getEmulatorHost() {
+		return this.emulatorHost;
+	}
+
+	/**
+	 * @param emulatorHost the emulator post
+	 * @deprecated use {@link #setHost(String)} instead
+	 */
+	@Deprecated
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
 	}

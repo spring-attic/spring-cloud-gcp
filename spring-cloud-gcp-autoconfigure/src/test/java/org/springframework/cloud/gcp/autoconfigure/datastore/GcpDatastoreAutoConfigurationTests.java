@@ -56,7 +56,7 @@ public class GcpDatastoreAutoConfigurationTests {
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace=testNamespace",
-					"spring.cloud.gcp.datastore.emulator-host=localhost:8081",
+					"spring.cloud.gcp.datastore.host=localhost:8081",
 					"management.health.datastore.enabled=false");
 
 	@Test

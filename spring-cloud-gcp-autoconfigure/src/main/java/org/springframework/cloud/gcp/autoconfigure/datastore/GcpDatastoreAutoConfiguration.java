@@ -66,7 +66,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	private final Credentials credentials;
 
-	private final String emulatorHost;
+	private final String host;
 
 	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -77,7 +77,12 @@ public class GcpDatastoreAutoConfiguration {
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();
 
-		if (gcpDatastoreProperties.getEmulatorHost() == null) {
+		String hostToConnect = gcpDatastoreProperties.getHost();
+		if (gcpDatastoreProperties.getEmulator().isEnabled()) {
+			hostToConnect = "localhost:" + gcpDatastoreProperties.getEmulator().getPort();
+		}
+
+		if (hostToConnect == null) {
 			this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpDatastoreProperties)
 					: credentialsProvider).getCredentials();
@@ -87,7 +92,7 @@ public class GcpDatastoreAutoConfiguration {
 			this.credentials = NoCredentials.getInstance();
 		}
 
-		this.emulatorHost = gcpDatastoreProperties.getEmulatorHost();
+		this.host = hostToConnect;
 	}
 
 	@Bean
@@ -101,8 +106,8 @@ public class GcpDatastoreAutoConfiguration {
 			builder.setNamespace(this.namespace);
 		}
 
-		if (emulatorHost != null) {
-			builder.setHost(emulatorHost);
+		if (this.host != null) {
+			builder.setHost(this.host);
 		}
 
 		return builder.build().getService();
