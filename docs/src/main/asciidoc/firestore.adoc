@@ -4,7 +4,6 @@ Spring Cloud GCP provides a convenience starter which automatically configures a
 
 See https://cloud.google.com/firestore/docs/[documentation] to learn more about Cloud Firestore.
 
-
 To begin using this library, add the `spring-cloud-gcp-starter-data-firestore` artifact to your project.
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
@@ -28,10 +27,10 @@ dependencies {
 
 === Sample
 
-
 A https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
 
 === Using Cloud Firestore
+
 The starter automatically configures and registers a `Firestore` bean in the Spring application context. To start using it, simply use the `@Autowired` annotation.
 
 [source,java]
