@@ -1,10 +1,9 @@
 == Cloud Firestore
 
-Spring Cloud GCP provides convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/firestore/[Google Cloud Firestore].
+Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using https://cloud.google.com/firestore/[Google Cloud Firestore].
 
 See https://cloud.google.com/firestore/docs/[documentation] to learn more about Cloud Firestore.
 
-=== Dependency Setup
 
 To begin using this library, add the `spring-cloud-gcp-starter-data-firestore` artifact to your project.
 
@@ -28,7 +27,7 @@ dependencies {
 ----
 
 === Using Cloud Firestore
-In order to inject `Firestore` into your class, you can use `@Autowired` annotation.
+The starter automatically configures and registers a `Firestore` bean in the Spring application context. To start using it, simply use the `@Autowired` annotation.
 
 [source,java]
 ----
