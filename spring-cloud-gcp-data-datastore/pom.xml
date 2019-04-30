@@ -42,5 +42,11 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-tx</artifactId>
     </dependency>
+    <dependency>
+      <artifactId>reactor-core</artifactId>
+      <groupId>io.projectreactor</groupId>
+      <version>3.2.6.RELEASE</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>

@@ -119,6 +119,29 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
+	static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
+			Sort.Order order) {
+		if (order.isIgnoreCase()) {
+			throw new DatastoreDataException("Datastore doesn't support sorting ignoring case");
+		}
+		if (!order.getNullHandling().equals(Sort.NullHandling.NATIVE)) {
+			throw new DatastoreDataException("Datastore supports only NullHandling.NATIVE null handling");
+		}
+		return new StructuredQuery.OrderBy(
+				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
+				(order.getDirection() == Sort.Direction.DESC)
+						? StructuredQuery.OrderBy.Direction.DESCENDING
+						: StructuredQuery.OrderBy.Direction.ASCENDING);
+	}
+
+	/**
+	 * Get the mapping context.
+	 * @return the Datastore mapping context.
+	 */
+	public DatastoreMappingContext getDatastoreMappingContext() {
+		return datastoreMappingContext;
+	}
+
 	/**
 	 * Get the {@link DatastoreEntityConverter} used by this template.
 	 * @return the converter.
@@ -163,13 +186,12 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return entitiesForSave;
 	}
 
-	private <T> void saveEntities(List<T> instances, Key[] ancestors) {
-		if (!instances.isEmpty()) {
-			maybeEmitEvent(new BeforeSaveEvent(instances));
-			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
-			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
-			maybeEmitEvent(new AfterSaveEvent(entities, instances));
-		}
+	/**
+	 * Get the object to key factory.
+	 * @return the id factory.
+	 */
+	public ObjectToKeyFactory getObjectToKeyFactory() {
+		return objectToKeyFactory;
 	}
 
 	@Override
@@ -200,7 +222,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return keysToDelete.length;
 	}
 
-	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
+	void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
 		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
 		getDatastoreReadWriter().delete(keys);
 		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
@@ -408,19 +430,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
 
-	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
-			Sort.Order order) {
-		if (order.isIgnoreCase()) {
-			throw new DatastoreDataException("Datastore doesn't support sorting ignoring case");
+	<T> void saveEntities(List<T> instances, Key[] ancestors) {
+		if (!instances.isEmpty()) {
+			maybeEmitEvent(new BeforeSaveEvent(instances));
+			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
+			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
+			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
-		if (!order.getNullHandling().equals(Sort.NullHandling.NATIVE)) {
-			throw new DatastoreDataException("Datastore supports only NullHandling.NATIVE null handling");
-		}
-		return new StructuredQuery.OrderBy(
-				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
-				(order.getDirection() == Sort.Direction.DESC)
-						? StructuredQuery.OrderBy.Direction.DESCENDING
-						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
 
 	private List<Entity> convertToEntityForSave(Object entity, Set<Key> persistedEntities, Key... ancestors) {
@@ -552,7 +568,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				.collect(Collectors.toList());
 	}
 
-	private <T> T convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
+	<T> T convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
 			DatastorePersistentEntity datastorePersistentEntity,
 			BaseKey key, ReadContext context) {
 		T convertedObject;
@@ -655,12 +671,12 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				});
 	}
 
-	private Key getKeyFromId(Object id, Class entityClass) {
+	Key getKeyFromId(Object id, Class entityClass) {
 		return this.objectToKeyFactory.getKeyFromId(id,
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
 	}
 
-	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
+	Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
 		DatastorePersistentProperty idProp = datastorePersistentEntity
@@ -680,20 +696,20 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				false).toArray(Key[]::new);
 	}
 
-	private <T> Set<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
+	<T> Set<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
 		Set<Key> keys = new HashSet<>();
 		ids.forEach((x) -> keys.add(getKeyFromId(x, entityClass)));
 		return keys;
 	}
 
-	private DatastoreReaderWriter getDatastoreReadWriter() {
+	DatastoreReaderWriter getDatastoreReadWriter() {
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransaction()
 				: this.datastore;
 	}
 
-	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
+	<T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
 		validateExample(example);
 
 		T probe = example.getProbe();
@@ -769,7 +785,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	 *
 	 * @author Dmitry Solomakha
 	 */
-	class ReadContext {
+	static class ReadContext {
 		private final Map<BaseKey, Object> convertedEntities = new HashMap<>();
 		private final Map<BaseKey, BaseEntity> readEntities = new HashMap<>();
 
