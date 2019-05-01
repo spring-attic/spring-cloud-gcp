@@ -149,6 +149,7 @@
             <artifactId>spring-cloud-gcp-data-spanner</artifactId>
             <optional>true</optional>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-rest-webmvc</artifactId>
@@ -159,6 +160,13 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-sleuth-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Firestore -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-firestore</artifactId>
             <optional>true</optional>
         </dependency>
 

@@ -39,6 +39,7 @@
 		<module>spring-cloud-gcp-security-iap-sample</module>
 		<module>spring-cloud-gcp-sql-postgres-sample</module>
 		<module>spring-cloud-gcp-vision-ocr-demo</module>
+		<module>spring-cloud-gcp-firestore-sample</module>
 	</modules>
 
 	<build>

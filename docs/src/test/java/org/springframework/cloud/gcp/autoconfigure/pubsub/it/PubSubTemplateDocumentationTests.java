@@ -73,10 +73,10 @@ public class PubSubTemplateDocumentationTests {
 	@Test
 	public void testCreatePublishPullNextAndDelete() {
 		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
-			//some text tag::publish[]
+			//tag::publish[]
 			Map<String, String> headers = Collections.singletonMap("key1", "val1");
 			pubSubTemplate.publish(topicName, "message", headers).get();
-			//some text end::publish[]
+			//end::publish[]
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
