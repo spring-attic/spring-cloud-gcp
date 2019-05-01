@@ -114,8 +114,10 @@ class FirestoreExample {
 
 	//tag::read[]
 	User readDocumentToObject() throws ExecutionException, InterruptedException {
-			ApiFuture<DocumentSnapshot> documentSnapshotApiFuture = this.firestore.document("users/joe").get();
-			User user = documentSnapshotApiFuture.get().toObject(User.class);
+			ApiFuture<DocumentSnapshot> documentFuture =
+					this.firestore.document("users/joe").get();
+
+			User user = documentFuture.get().toObject(User.class);
 
 			LOGGER.info("read: " + user);
 

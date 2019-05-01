@@ -65,7 +65,6 @@ public class GcpFirestoreAutoConfiguration {
 		this.credentialsProvider = (gcpFirestoreProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpFirestoreProperties)
 				: credentialsProvider);
-
 	}
 
 	@Bean
@@ -75,11 +74,10 @@ public class GcpFirestoreAutoConfiguration {
 		FirestoreOptions.Builder builder = FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.setProjectId(this.projectId);
-		transportOptionsObjectProvider.ifUnique(builder::setTransportOptions);
-		transportChannelProviderObjectProvider.ifUnique(builder::setChannelProvider);
 
 		return builder.build();
 	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Firestore firestore(FirestoreOptions firestoreOptions) {
