@@ -241,6 +241,13 @@ $(addBlockSwitches);
 </ul>
 </li>
 <li><a href="#_sample_13">20. Sample</a></li>
+<li><a href="#_cloud_firestore">21. Cloud Firestore</a>
+<ul class="sectlevel2">
+<li><a href="#_sample_14">21.1. Sample</a></li>
+<li><a href="#_using_cloud_firestore">21.2. Using Cloud Firestore</a></li>
+<li><a href="#_configuration_8">21.3. Configuration</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -7705,6 +7712,115 @@ Based on your build system, you will need to include the correct Kotlin build pl
 <div class="sectionbody">
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample">Kotlin sample application</a> is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cloud_firestore"><a class="link" href="#_cloud_firestore">21. Cloud Firestore</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode.</p>
+</div>
+<div class="paragraph">
+<p>See <a href="https://cloud.google.com/firestore/docs/">documentation</a> to learn more about Cloud Firestore.</p>
+</div>
+<div class="paragraph">
+<p>To begin using this library, add the <code>spring-cloud-gcp-starter-firestore</code> artifact to your project.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-firestore&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sample_14"><a class="link" href="#_sample_14">21.1. Sample</a></h3>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">sample application</a> is available.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_cloud_firestore"><a class="link" href="#_using_cloud_firestore">21.2. Using Cloud Firestore</a></h3>
+<div class="paragraph">
+<p>The starter automatically configures and registers a <code>Firestore</code> bean in the Spring application context. To start using it, simply use the <code>@Autowired</code> annotation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"> @Autowired
+ Firestore firestore;
+
+Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+
+Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_8"><a class="link" href="#_configuration_8">21.3. Configuration</a></h3>
+<div class="paragraph">
+<p>The Spring Boot starter for Google Cloud Firestore provides the following configuration options:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP Cloud Datastore credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/datastore" class="bare">https://www.googleapis.com/auth/datastore</a></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
