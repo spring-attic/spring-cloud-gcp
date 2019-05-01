@@ -75,8 +75,8 @@ public class GcpFirestoreAutoConfiguration {
 		FirestoreOptions.Builder builder = FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.setProjectId(this.projectId);
-		transportOptionsObjectProvider.ifAvailable(builder::setTransportOptions);
-		transportChannelProviderObjectProvider.ifAvailable(builder::setChannelProvider);
+		transportOptionsObjectProvider.ifUnique(builder::setTransportOptions);
+		transportChannelProviderObjectProvider.ifUnique(builder::setChannelProvider);
 
 		return builder.build();
 	}
