@@ -17,15 +17,12 @@
 package org.springframework.cloud.gcp.logging.it;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.gax.paging.Page;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,28 +30,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
-import org.springframework.cloud.gcp.logging.extractors.TraceIdExtractor;
-import org.springframework.cloud.gcp.logging.extractors.XCloudTraceIdExtractor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
