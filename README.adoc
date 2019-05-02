@@ -57,7 +57,7 @@ This will allow you to not specify versions for any of the Maven dependencies an
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.1.0.RELEASE</version>
+            <version>1.1.1.RELEASE</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

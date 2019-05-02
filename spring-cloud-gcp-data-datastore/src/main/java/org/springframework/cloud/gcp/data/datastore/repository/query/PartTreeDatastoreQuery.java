@@ -30,6 +30,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
@@ -38,6 +39,7 @@ import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -55,6 +57,7 @@ import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
+import org.springframework.util.Assert;
 
 /**
  * Name-based query method for Cloud Datastore.
@@ -78,8 +81,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * Constructor.
 	 * @param queryMethod the metadata for this query method.
 	 * @param datastoreTemplate used to execute the given query.
-	 * @param datastoreMappingContext used to provide metadata for mapping results to
-	 * objects.
+	 * @param datastoreMappingContext used to provide metadata for mapping results to objects.
 	 * @param entityType the result domain type.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
@@ -116,13 +118,30 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
 		if (isPageQuery()) {
-			List<?> resultEntries = (List) execute(parameters, returnedObjectType, List.class, false);
-			Long totalCount = (Long) execute(parameters, Long.class, null, true);
+			ExecutionResult executionResult = (ExecutionResult) execute(parameters, returnedObjectType, List.class,
+					false);
 
-			ParameterAccessor paramAccessor =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+			List<?> resultEntries = (List) executionResult.getPayload();
 
-			return new PageImpl<>(resultEntries, paramAccessor.getPageable(), totalCount);
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
+
+			Pageable pageableParam = paramAccessor.getPageable();
+
+			Long totalCount;
+			if (pageableParam instanceof DatastorePageable) {
+				Long previousCount = ((DatastorePageable) pageableParam).getTotalCount();
+				Assert.notNull(previousCount, "Previous total count can not be null.");
+
+				totalCount = ((DatastorePageable) pageableParam).getTotalCount();
+			}
+			else {
+				totalCount = (Long) execute(parameters, Long.class, null, true);
+			}
+
+			Pageable pageable = DatastorePageable.from(pageableParam, executionResult.getCursor(), totalCount);
+
+			return new PageImpl<>(resultEntries, pageable, totalCount);
 		}
 
 		if (isSliceQuery()) {
@@ -132,6 +151,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = execute(parameters, returnedObjectType,
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 
+		result = result instanceof PartTreeDatastoreQuery.ExecutionResult ? ((ExecutionResult) result).getPayload()
+				: result;
 		if (result == null) {
 			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
 				return Optional.empty();
@@ -142,14 +163,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			}
 		}
 		return result;
-	}
-
-	protected boolean isPageQuery() {
-		return getQueryMethod().isPageQuery();
-	}
-
-	protected boolean isSliceQuery() {
-		return getQueryMethod().isSliceQuery();
 	}
 
 	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
@@ -163,7 +176,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
 		Collector<?, ?, ?> collector = Collectors.toList();
-		if (isCountingQuery) {
+		if (isCountingQuery && !this.tree.isDelete()) {
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
@@ -178,47 +191,48 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
 		boolean singularResult = !isCountingQuery && collectionType == null;
-		Iterable rawResults = getDatastoreTemplate()
+		DatastoreResultsIterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(
-						applyQueryBody(parameters, structredQueryBuilder, total, singularResult),
+						applyQueryBody(parameters, structredQueryBuilder, total, singularResult, null),
 						this.entityType);
 
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
 
 		if (this.tree.isDelete()) {
-			deleteFoundEntities(returnedTypeIsNumber, rawResults);
+			deleteFoundEntities(returnedTypeIsNumber, (Iterable) result);
 		}
 
-		return (this.tree.isExistsProjection() || isCountingQuery) ? result
-				: convertResultCollection(result, collectionType);
+		if (!this.tree.isExistsProjection() && !isCountingQuery) {
+			return new ExecutionResult(convertResultCollection(result, collectionType), rawResults.getCursor());
+		}
+		else if (isCountingQuery && this.tree.isDelete()) {
+			return ((List) result).size();
+		}
+		else {
+			return result;
+		}
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
 		EntityQuery.Builder builder = StructuredQuery.newEntityQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery query = applyQueryBody(parameters, builder, false, false);
-		List items = this.datastoreTemplate.query((query), (x) -> x);
-		Integer limit = (query.getLimit() == null) ? null : query.getLimit() - 1;
-
-		boolean exceedsLimit = false;
-		if (limit != null) {
-			//for slice queries we retrieve one additional item to check if the next slice exists
-			//the additional item will not be converted on read
-			exceedsLimit = items.size() > limit;
-			if (exceedsLimit) {
-				items = items.subList(0, limit);
-			}
-		}
+		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
+		DatastoreResultsIterable<?> resultList = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-		Pageable pageable = paramAccessor.getPageable();
-		List entities = (List) this.datastoreTemplate
-				.convertEntitiesForRead(items.iterator(), this.entityType).stream()
-				.map((o) -> this.processRawObjectForProjection((T) o)).collect(Collectors.toList());
-		return new SliceImpl(entities, pageable, exceedsLimit);
+
+		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
+
+		EntityQuery.Builder builderNext = StructuredQuery.newEntityQueryBuilder()
+				.setKind(this.datastorePersistentEntity.kindName());
+		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
+		List datastoreResultsList = this.datastoreTemplate.query(queryNext, x -> x);
+
+		return new SliceImpl(StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList()),
+				pageable, !datastoreResultsList.isEmpty());
 	}
 
-	protected Object convertResultCollection(Object result, Class<?> collectionType) {
+	Object convertResultCollection(Object result, Class<?> collectionType) {
 		if (collectionType == null) {
 			List list = (List) result;
 			return list.isEmpty() ? null : list.get(0);
@@ -237,12 +251,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
-			Builder builder, boolean total, boolean singularResult) {
+			Builder builder, boolean total, boolean singularResult, Cursor cursor) {
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 		if (this.tree.hasPredicate()) {
 			applySelectWithFilter(parameters, builder);
 		}
 
+		Pageable pageable = paramAccessor.getPageable();
 		Integer limit = null;
 		Integer offset = null;
 		if (singularResult || this.tree.isExistsProjection()) {
@@ -252,22 +267,33 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			limit = this.tree.getMaxResults();
 		}
 
+		if (!singularResult && !total && pageable.isPaged()) {
+			limit = pageable.getPageSize();
+		}
+
 		Sort sort = this.tree.getSort();
 		if (getQueryMethod().getParameters().hasPageableParameter()) {
-			sort = sort.and(paramAccessor.getPageable().getSort());
+			sort = sort.and(pageable.getSort());
 		}
 		if (getQueryMethod().getParameters().hasSortParameter()) {
 			sort = sort.and(paramAccessor.getSort());
 		}
 
-		if (paramAccessor.getPageable().isPaged() && !total) {
-			//for slice queries we retrieve one additional item to check if the next slice exists
-			limit = paramAccessor.getPageable().getPageSize() + (isSliceQuery() ? 1 : 0);
-			offset = (int) paramAccessor.getPageable().getOffset();
+		if (pageable.isPaged() && !total) {
+			offset = (int) pageable.getOffset();
 		}
 
+		Cursor cursorToApply = null;
+		if (cursor != null) {
+			cursorToApply = cursor;
+		}
+		else if (pageable instanceof DatastorePageable) {
+			cursorToApply = ((DatastorePageable) pageable).getCursor();
+		}
 		DatastoreTemplate.applyQueryOptions(
-				builder, new DatastoreQueryOptions(limit, offset, sort), this.datastorePersistentEntity);
+				builder, new DatastoreQueryOptions.Builder().setLimit(limit).setOffset(offset).setSort(sort)
+						.setCursor(cursorToApply).build(),
+				this.datastorePersistentEntity);
 		return builder.build();
 	}
 
@@ -324,8 +350,26 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		builder.setFilter(
 				(filters.length > 1)
-				? CompositeFilter.and(filters[0],
-						Arrays.copyOfRange(filters, 1, filters.length))
-				: filters[0]);
+						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
+						: filters[0]);
+	}
+
+	private static class ExecutionResult {
+		Object payload;
+
+		Cursor cursor;
+
+		ExecutionResult(Object result, Cursor cursor) {
+			this.payload = result;
+			this.cursor = cursor;
+		}
+
+		public Object getPayload() {
+			return this.payload;
+		}
+
+		public Cursor getCursor() {
+			return this.cursor;
+		}
 	}
 }

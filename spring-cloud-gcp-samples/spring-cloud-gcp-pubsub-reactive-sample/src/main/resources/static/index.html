@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Publish messages to the reactive sample topic</title>
+
+    <style>
+        span {
+          display: inline-block;
+          width: 3em;
+        }
+    </style>
+
+    <script>
+
+        function escapeHTML(text) {
+            return text.replace(/[&<>]/g, (ch) => {
+                return {'&':'&amp;', '>': '&gt;', '<': '&lt;'}[ch];
+            })
+        }
+
+        function showStatus() {
+          const message = new URL(window.location.href).searchParams.get("statusMessage");
+          if (message) {
+            document.getElementById("statusMessage").innerHTML = "Status: " + escapeHTML(message);
+          }
+        }
+    </script>
+</head>
+<body onload="showStatus();">
+
+<form action="/postMessage" method="post">
+    <span>Send</span>
+    <input name="count" type="text" value="1" style="width: 2em">
+    <span>copies</span>
+    <input name="message" type="text" placeholder="message text">
+    <input type="submit">
+</form>
+
+
+<div id="statusMessage">
+
+</div>
+
+</body>
+</html>

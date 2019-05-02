@@ -37,10 +37,8 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 		this.properties = properties;
 		this.databaseType = databaseType;
 		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
-		Assert.hasText(this.properties.getInstanceConnectionName(),
-				"An instance connection name must be provided. Refer to "
-						+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
-						+ " for more information.");
+		Assert.hasText(properties.getInstanceConnectionName(),
+				"An instance connection name must be provided in the format <PROJECT_ID>:<REGION>:<INSTANCE_ID>.");
 	}
 
 	@Override

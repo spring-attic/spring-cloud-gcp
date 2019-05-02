@@ -40,6 +40,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Andreas Berger
  * @author Chengyuan Zhao
+ * @author Stefan Dieringer
  */
 public class StackdriverJsonLayout extends JsonLayout {
 
@@ -55,6 +56,10 @@ public class StackdriverJsonLayout extends JsonLayout {
 	private boolean includeSpanId;
 
 	private boolean includeExceptionInMessage;
+
+	private StackdriverErrorReportingServiceContext serviceContext;
+
+	private Map<String, Object> customJson;
 
 	/**
 	 * creates a layout for a Logback appender compatible to the Stackdriver log format.
@@ -133,6 +138,26 @@ public class StackdriverJsonLayout extends JsonLayout {
 		this.includeExceptionInMessage = includeExceptionInMessage;
 	}
 
+	/**
+	 * set the service context for stackdriver.
+	 * @param serviceContext the service context
+	 * @since 1.2
+	 */
+	public void setServiceContext(StackdriverErrorReportingServiceContext serviceContext) {
+		this.serviceContext = serviceContext;
+	}
+
+	/**
+	 * set custom json data to include in log output.
+	 * @param json json string
+	 * @since 1.2
+	 */
+	public void setCustomJson(String json) {
+		Gson gson = new Gson();
+		this.customJson = gson.fromJson(json, Map.class);
+	}
+
+
 	@Override
 	public void start() {
 		super.start();
@@ -192,6 +217,14 @@ public class StackdriverJsonLayout extends JsonLayout {
 		addTraceId(event, map);
 		add(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, this.includeSpanId,
 				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID), map);
+		if (this.serviceContext != null) {
+			map.put(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE, this.serviceContext);
+		}
+		if (this.customJson != null && !this.customJson.isEmpty()) {
+			for (Map.Entry<String, Object> entry : this.customJson.entrySet()) {
+				map.putIfAbsent(entry.getKey(), entry.getValue());
+			}
+		}
 		addCustomDataToJsonMap(map, event);
 		return map;
 	}

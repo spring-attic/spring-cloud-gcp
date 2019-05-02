@@ -17,6 +17,10 @@
 package com.example;
 
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Sample repository for app.
@@ -25,4 +29,6 @@ import org.springframework.cloud.gcp.data.datastore.repository.DatastoreReposito
  */
 public interface SingerRepository extends DatastoreRepository<Singer, String> {
 
+	@Query("select * from  |com.example.Singer| where last_name = @name")
+	Slice<Singer> findSingersByLastName(@Param("name") String name, Pageable pageable);
 }

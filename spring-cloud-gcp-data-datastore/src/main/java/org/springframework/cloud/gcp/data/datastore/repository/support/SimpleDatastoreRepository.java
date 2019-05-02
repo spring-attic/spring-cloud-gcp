@@ -17,18 +17,25 @@
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsCollection;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.DatastorePageable;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -68,18 +75,26 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	public Iterable<T> findAll(Sort sort) {
 		Assert.notNull(sort, "A non-null Sort is required.");
 		return this.datastoreTemplate
-				.findAll(this.entityType, new DatastoreQueryOptions(null, null, sort));
+				.findAll(this.entityType, new DatastoreQueryOptions.Builder().setSort(sort).build());
 	}
 
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 		Assert.notNull(pageable, "A non-null Pageable is required.");
-		return new PageImpl<>(
-				new ArrayList<>(this.datastoreTemplate
-						.findAll(this.entityType,
-								new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(),
-										pageable.getSort()))),
-				pageable, this.datastoreTemplate.count(this.entityType));
+		Collection<T> entities = this.datastoreTemplate
+				.findAll(this.entityType,
+						new DatastoreQueryOptions.Builder().setLimit(pageable.getPageSize())
+								.setOffset((int) pageable.getOffset()).setSort(pageable.getSort())
+								.setCursor(getCursor(pageable)).build());
+
+		Long totalCount = getOrComputeTotalCount(pageable, () -> this.datastoreTemplate.count(this.entityType));
+		Pageable cursorPageable = DatastorePageable.from(pageable,
+				entities instanceof DatastoreResultsCollection ? ((DatastoreResultsCollection) entities).getCursor()
+						: null,
+				totalCount);
+
+		return new PageImpl<>(entities != null ? new ArrayList<>(entities) : Collections.emptyList(), cursorPageable,
+				totalCount);
 	}
 
 	@Override
@@ -139,7 +154,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Optional<S> findOne(Example<S> example) {
-		Iterable<S> entities = this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions.Builder().setLimit(1).build());
 		Iterator<S> iterator = entities.iterator();
 		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional.empty();
 	}
@@ -151,7 +167,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> Iterable<S> findAll(Example<S> example, Sort sort) {
-		return this.datastoreTemplate.queryByExample(example, new DatastoreQueryOptions(null, null, sort));
+		return this.datastoreTemplate.queryByExample(example,
+				new DatastoreQueryOptions.Builder().setSort(sort).build());
 	}
 
 	@Override
@@ -159,10 +176,17 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 		Assert.notNull(pageable, "A non-null pageable is required.");
 
 		Iterable<S> entities = this.datastoreTemplate.queryByExample(example,
-				new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(), pageable.getSort()));
+				new DatastoreQueryOptions.Builder().setLimit(pageable.getPageSize())
+						.setOffset((int) pageable.getOffset()).setSort(pageable.getSort())
+						.setCursor(getCursor(pageable)).build());
 		List<S> result = StreamSupport.stream(entities.spliterator(), false).collect(Collectors.toList());
 
-		return new PageImpl<>(result, pageable, count(example));
+		Long totalCount = getOrComputeTotalCount(pageable, () -> count(example));
+		Pageable cursorPageable = DatastorePageable.from(pageable,
+				entities instanceof DatastoreResultsIterable ? ((DatastoreResultsIterable) entities).getCursor() : null,
+				totalCount);
+
+		return new PageImpl<>(result, cursorPageable, totalCount);
 	}
 
 	@Override
@@ -174,7 +198,16 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> boolean exists(Example<S> example) {
-		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null));
+		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example,
+				new DatastoreQueryOptions.Builder().setLimit(1).build());
 		return StreamSupport.stream(keys.spliterator(), false).findAny().isPresent();
+	}
+
+	private static Cursor getCursor(Pageable pageable) {
+		return pageable instanceof DatastorePageable ?  ((DatastorePageable) pageable).getCursor() : null;
+	}
+
+	private static Long getOrComputeTotalCount(Pageable pageable, Supplier<Long> countCall) {
+		return pageable instanceof DatastorePageable ? ((DatastorePageable) pageable).getTotalCount() : countCall.get();
 	}
 }

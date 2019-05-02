@@ -109,6 +109,41 @@ In order to get this to work, every tracing system needs to have a `Reporter<Spa
 If you want to override the provided beans you need to give them a specific name.
 To do this you can use respectively `StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME` and `StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME`.
 
+=== Customizing spans
+
+You can add additional tags and annotations to spans by using the `brave.SpanCustomizer`, which is available in the application context.
+
+Here's an example that uses `WebMvcConfigurer` to configure an MVC interceptor that adds two extra tags to all web controller spans.
+
+[source,java]
+----
+@SpringBootApplication
+public class Application implements WebMvcConfigurer {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+	@Autowired
+	private SpanCustomizer spanCustomizer;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new HandlerInterceptor() {
+			@Override
+			public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+				spanCustomizer.tag("session-id", request.getSession().getId());
+				spanCustomizer.tag("environment", "QA");
+
+				return true;
+			}
+		});
+	}
+}
+----
+
+You can then search and filter traces based on these additional tags in the Stackdriver Trace service.
+
 === Integration with Logging
 
 Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].

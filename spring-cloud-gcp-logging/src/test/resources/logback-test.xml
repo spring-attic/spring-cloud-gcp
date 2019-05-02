@@ -9,6 +9,27 @@
 		<appender-ref ref="CONSOLE_JSON"/>
 	</logger>
 
+	<appender name="CONSOLE_JSON_SERVICE_CTX" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+			<layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
+				<projectId>${projectId}</projectId>
+				<serviceContext>
+					<service>service</service>
+					<version>version</version>
+				</serviceContext>
+				<customJson>
+					{
+						"custom-key" : "custom-value"
+					}
+				</customJson>
+			</layout>
+		</encoder>
+	</appender>
+
+	<logger name="StackdriverJsonLayoutServiceCtxLoggerTests" level="WARN">
+		<appender-ref ref="CONSOLE_JSON_SERVICE_CTX"/>
+	</logger>
+
 	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

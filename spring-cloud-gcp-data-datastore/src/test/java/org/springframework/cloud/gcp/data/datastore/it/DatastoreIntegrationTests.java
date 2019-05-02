@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,14 +24,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
-import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,6 +51,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -70,10 +69,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DatastoreIntegrationTestConfiguration.class })
-public class DatastoreIntegrationTests {
-
-	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests {
 
 	// This value is multiplied against recorded actual times needed to wait for eventual
 	// consistency.
@@ -154,13 +150,28 @@ public class DatastoreIntegrationTests {
 				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
-		Page<TestEntity> result = this.testEntityRepository
+		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						PageRequest.of(1, 2));
-		assertThat(result.getTotalElements()).isEqualTo(4);
-		assertThat(result.getNumberOfElements()).isEqualTo(2);
-		assertThat(result.getTotalPages()).isEqualTo(2);
+						PageRequest.of(0, 2, Sort.by("id")));
+		assertThat(result1.getTotalElements()).isEqualTo(4);
+		assertThat(result1.getNumber()).isEqualTo(0);
+		assertThat(result1.getNumberOfElements()).isEqualTo(2);
+		assertThat(result1.getTotalPages()).isEqualTo(2);
+		assertThat(result1.hasNext()).isEqualTo(true);
+		assertThat(result1).containsExactly(this.testEntityA, this.testEntityB);
+
+		Page<TestEntity> result2 = this.testEntityRepository
+				.findAll(
+						Example.of(new TestEntity(null, null, null, null, null)),
+						result1.getPageable().next());
+		assertThat(result2.getTotalElements()).isEqualTo(4);
+		assertThat(result2.getNumber()).isEqualTo(1);
+		assertThat(result2.getNumberOfElements()).isEqualTo(2);
+		assertThat(result2.getTotalPages()).isEqualTo(2);
+		assertThat(result2.hasNext()).isEqualTo(false);
+		assertThat(result2).containsExactly(this.testEntityC, this.testEntityD);
+
 
 		assertThat(this.testEntityRepository
 				.findAll(
@@ -189,6 +200,96 @@ public class DatastoreIntegrationTests {
 	}
 
 	@Test
+	public void testSlice() {
+		List<TestEntity> results = new ArrayList<>();
+		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				PageRequest.of(0, 1));
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isFalse();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testPage() {
+		List<TestEntity> results = new ArrayList<>();
+		Page<TestEntity> page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				PageRequest.of(0, 2));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(2);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
+				page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(3);
+		results.addAll(page.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testProjectionPage() {
+		Page<String> page = this.testEntityRepository
+				.getColorsPage(PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "color")));
+
+		assertThat(page.hasNext()).isTrue();
+		assertThat(page).hasSize(3);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("red", "red", "red");
+
+		page = this.testEntityRepository.getColorsPage(page.getPageable().next());
+
+		assertThat(page.hasNext()).isFalse();
+		assertThat(page).hasSize(1);
+		assertThat(page.getTotalPages()).isEqualTo(2);
+		assertThat(page.getTotalElements()).isEqualTo(4);
+		assertThat(page.getContent()).containsExactly("blue");
+	}
+
+	@Test
+	public void testSliceSort() {
+		List<TestEntity> results = this.testEntityRepository.findEntitiesWithCustomQuerySort(Sort.by("color"));
+
+		assertThat(results.get(0)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
+	}
+
+	@Test
+	public void testSliceSortDesc() {
+		List<TestEntity> results = this.testEntityRepository
+				.findEntitiesWithCustomQuerySort(Sort.by(Sort.Direction.DESC, "color"));
+
+		assertThat(results.get(results.size() - 1)).isEqualTo(this.testEntityB);
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityB, this.testEntityC,
+				this.testEntityD);
+	}
+
+	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
@@ -198,7 +299,16 @@ public class DatastoreIntegrationTests {
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
+		Slice<TestEntity> red1 = this.testEntityRepository.findByColor("red", PageRequest.of(0, 1));
+		assertThat(red1.hasNext()).isTrue();
+		assertThat(red1.getNumber()).isEqualTo(0);
+		Slice<TestEntity> red2 = this.testEntityRepository.findByColor("red", red1.getPageable().next());
+		assertThat(red2.hasNext()).isTrue();
+		assertThat(red2.getNumber()).isEqualTo(1);
+		Slice<TestEntity> red3 = this.testEntityRepository.findByColor("red", red2.getPageable().next());
+		assertThat(red3.hasNext()).isFalse();
+		assertThat(red3.getNumber()).isEqualTo(2);
+
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
 		assertThat(
 				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
@@ -208,6 +318,12 @@ public class DatastoreIntegrationTests {
 		assertThat(circles.getTotalPages()).isEqualTo(2);
 		assertThat(circles.get().count()).isEqualTo(2L);
 		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
+
+		Page<TestEntity> circlesNext = this.testEntityRepository.findByShape(Shape.CIRCLE, circles.nextPageable());
+		assertThat(circlesNext.getTotalElements()).isEqualTo(3L);
+		assertThat(circlesNext.getTotalPages()).isEqualTo(2);
+		assertThat(circlesNext.get().count()).isEqualTo(1L);
+		assertThat(circlesNext.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
@@ -256,6 +372,7 @@ public class DatastoreIntegrationTests {
 		assertThat(foundByCustomQuery.size()).isEqualTo(1);
 		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
+		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
 		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
 		assertThat(foundByCustomProjectionQuery.length).isEqualTo(1);
@@ -463,13 +580,6 @@ public class DatastoreIntegrationTests {
 		SubEntity readSubEntity2 = iterator.next();
 		assertThat(readSubEntity1.sibling).isSameAs(readSubEntity2);
 		assertThat(readSubEntity2.sibling).isSameAs(readSubEntity1);
-	}
-
-	private long waitUntilTrue(Supplier<Boolean> condition) {
-		long startTime = System.currentTimeMillis();
-		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
-
-		return System.currentTimeMillis() - startTime;
 	}
 
 	@Test

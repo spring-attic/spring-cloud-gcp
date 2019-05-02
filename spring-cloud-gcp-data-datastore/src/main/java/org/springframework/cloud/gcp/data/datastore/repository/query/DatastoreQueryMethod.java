@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -35,6 +37,8 @@ import org.springframework.lang.Nullable;
 public class DatastoreQueryMethod extends QueryMethod {
 
 	private final Method method;
+
+	private Boolean isNullable = null;
 
 	/**
 	 * Creates a new {@link QueryMethod} from the given parameters. Looks up the correct
@@ -101,7 +105,13 @@ public class DatastoreQueryMethod extends QueryMethod {
 
 
 	boolean isNullable() {
-		return AnnotatedElementUtils.findMergedAnnotation(this.method, Nullable.class) != null;
+		if (this.isNullable == null) {
+			Optional<Annotation> nullable = Arrays.stream(this.method.getAnnotations())
+					.filter(annotation -> annotation instanceof Nullable)
+					.findFirst();
+			this.isNullable = nullable.isPresent();
+		}
+		return this.isNullable;
 	}
 
 	boolean isOptionalReturnType() {

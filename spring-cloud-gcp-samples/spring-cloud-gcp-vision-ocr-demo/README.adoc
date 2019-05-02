@@ -1,0 +1,112 @@
+= Spring GCP Cloud Vision OCR Demo Application
+
+This demonstrates how to run Google Cloud Vision https://cloud.google.com/vision/docs/ocr[Optical Character Recognition (OCR)] analysis on PDF and TIFF documents.
+OCR is a process which allows you to detect and extract the text from digital documents.
+
+This demo application allows you to upload documents to a specified https://cloud.google.com/storage/docs/key-terms#buckets[Google Cloud Storage bucket] and run OCR on those documents you uploaded.
+After your documents are uploaded and processed, the application will allow you to access the extracted text from each document.
+
+The main work of running OCR in the application occurs in the `submitDocument` method in link:src/main/java/com/example/WebController.java[WebController.java]:
+
+[source,java]
+----
+@PostMapping("/submitDocument")
+public ModelAndView submitDocument(@RequestParam("documentUrl") String documentUrl) throws IOException {
+
+  // Uploads the document to the GCS bucket
+  Resource documentResource = resourceLoader.getResource(documentUrl);
+  BlobId outputBlobId = BlobId.of(ocrBucket, documentResource.getFilename());
+  BlobInfo blobInfo =
+      BlobInfo.newBuilder(outputBlobId)
+          .setContentType(getFileType(documentResource))
+          .build();
+
+  try (WriteChannel writer = storage.writer(blobInfo)) {
+    ByteStreams.copy(documentResource.getInputStream(), Channels.newOutputStream(writer));
+  }
+
+  // Run OCR on the document
+  GoogleStorageLocation documentLocation =
+      GoogleStorageLocation.forFile(outputBlobId.getBucket(), outputBlobId.getName());
+
+  GoogleStorageLocation outputLocation = GoogleStorageLocation.forFolder(
+      outputBlobId.getBucket(), "ocr_results/" + documentLocation.getBlobName());
+
+  ListenableFuture<DocumentOcrResultSet> result =
+      documentOcrTemplate.runOcrForDocument(documentLocation, outputLocation);
+
+  ocrStatusReporter.registerFuture(documentLocation.uriString(), result);
+
+  return new ModelAndView("submit_done");
+}
+----
+
+In this method, the application uploads the specified document to Google Cloud Storage and runs OCR on the document.
+This will be a common pattern in your code when using Cloud Vision to process your documents.
+
+== Running the Demo
+
+This section describes how to run the demo and use it to extract text from some documents.
+
+=== 1. Setting up your GCP Project
+
+a. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
+
+b. Enable the Google Cloud Vision API by following https://cloud.google.com/vision/docs/before-you-begin[these instructions].
++
+If you are using the https://cloud.google.com/sdk/gcloud/[gcloud] command line tool, you may run:
++
+----
+$ gcloud services enable vision.googleapis.com
+----
+
+c. Authenticate in one of two ways:
+
+* Use the Google Cloud SDK to https://developers.google.com/identity/protocols/application-default-credentials#toolcloudsdk[authenticate with application default credentials].
+
+* https://cloud.google.com/iam/docs/creating-managing-service-accounts[Create a new service account], download its private key and point the `spring.cloud.gcp.credentials.location` property to it.
++
+Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
+
+=== 2. Create a Google Storage Bucket
+
+a. Go to the https://console.cloud.google.com/storage[Google Cloud Storage] section of the Google Cloud Console and create a bucket.
+You may specify any name for the bucket.
+
+b. In the `resources/application.properties` file in this directory, set the `application.ocr-bucket` to the name of the bucket you created.
+
+=== 3. Running the App
+
+a. Run the `$ mvn spring-boot:run` command from the same directory as this demo's `pom.xml` file.
+Make sure that you set your bucket name in the application.properties file from the previous step.
++
+Alternatively, you may pass the name of your bucket directly through command line by running:
++
+`$ mvn spring-boot:run -Dapplication.ocr-bucket=YOUR_GCS_BUCKET_NAME`
+
+b. Go to http://localhost:8080 in your browser, and specify the URL of a PDF or TIFF document to process.
++
+The application allows you to specify the URL of documents in several ways:
+
+* From a web URL.
++
+Example: `https://www.google.com/document.pdf`
+
+* From a file on your filesystem.
+Specify the absolute path to your file using `file:` protocol.
++
+Example: `file:/absolute/path/to/file.pdf`
+
+* From a file already on Google Cloud Storage.
+Specify its path using the `gs://` protocol.
++
+Example: `gs://your-gcs-bucket/test.pdf`
+
+* From the `resources/` directory.
+You may specify any document under the `resources/` subdirectory using the `classpath:` protocol.
+Specify its path relative to the `resources/` directory.
++
+Example: `classpath:test_pdfs/test.pdf` references the sample pdf provided at `resources/test_pdfs/test.pdf`.
+
+c. When you submit the document through the application, it will be uploaded to your Google Storage bucket, and OCR analysis will be run on it.
+After a few minutes, you will be able to view the text extracted from each page of the document on the status page at http://localhost:8080/status.

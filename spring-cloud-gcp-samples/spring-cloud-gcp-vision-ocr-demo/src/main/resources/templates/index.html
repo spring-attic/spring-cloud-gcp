@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+  <title>Google Cloud Vision OCR Demo</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" href="css/style.css" rel="stylesheet"/>
+</head>
+<body>
+<h1>Google Cloud Vision OCR Demo</h1>
+
+<nav id="nav_bar">
+  <ul>
+    <li><a href="/">Home</a></li>
+    <li><a href="/status">Document OCR Results</a></li>
+  </ul>
+</nav>
+
+<div id="main_content">
+
+  <div id="description">
+    <h2>OCR Runner Application</h2>
+    <p>
+      This application allows you to specify PDF or TIFF documents to upload to your Google Storage
+      bucket and run optical character recognition (OCR) analysis on it.
+    </p>
+
+    <p>
+      All operations will be done in your Google Storage Bucket specified in application.properties:
+      <a th:href="@{'https://console.cloud.google.com/storage/browser/' + ${ocrBucket}}">
+        <b>[[${ocrBucket}]]</b>
+      </a>
+    </p>
+  </div>
+
+  <div id="submit_form">
+    <form action="/submitDocument" method="post">
+      <b>Specify a document URL to upload and analyze:</b><br/><br/>
+      <input type="text" name="documentUrl" value="classpath:test_pdfs/test.pdf"/>
+      <input type="submit" value="Upload" />
+    </form>
+
+    <br/>
+
+    <div id="note">
+      Note: You may specify any PDF document via the following methods:
+      <ul>
+        <li>Documents accessible online through "http://" (e.g. https://www.example.com/document.pdf)</li>
+        <li>Documents on filesystem via "file:/" (e.g. file:/absolute/path/to/file.pdf)</li>
+        <li>Documents on Google Cloud Storage via "gs://" (e.g. gs://your-gcs-bucket/path/to/file.pdf)</li>
+        <li>
+          PDFs in the application resources/ directory through "classpath:"
+          (e.g. classpath:test_pdfs/test.pdf)
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

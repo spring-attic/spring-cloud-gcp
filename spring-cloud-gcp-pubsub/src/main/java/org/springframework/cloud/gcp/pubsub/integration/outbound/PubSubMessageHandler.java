@@ -18,7 +18,9 @@ package org.springframework.cloud.gcp.pubsub.integration.outbound;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -26,11 +28,13 @@ import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
+import org.springframework.integration.MessageTimeoutException;
 import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -43,6 +47,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Artem Bilan
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
@@ -65,7 +70,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	public PubSubMessageHandler(PubSubPublisherOperations pubSubPublisherOperations, String topic) {
 		Assert.notNull(pubSubPublisherOperations, "Pub/Sub publisher template can't be null.");
 		Assert.hasText(topic, "Pub/Sub topic can't be null or empty.");
-
 		this.pubSubPublisherOperations = pubSubPublisherOperations;
 		this.topicExpression = new LiteralExpression(topic);
 	}
@@ -156,7 +160,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 * @param topicExpressionString topic expression string
 	 */
 	public void setTopicExpressionString(String topicExpressionString) {
-		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
+		this.topicExpression = EXPRESSION_PARSER.parseExpression(topicExpressionString);
 	}
 
 	/**
@@ -170,11 +174,12 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
+	protected void handleMessageInternal(Message<?> message) {
 		Object payload = message.getPayload();
-		String topic = message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
-				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
-				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
+		String topic =
+				message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
+						? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
+						: this.topicExpression.getValue(this.evaluationContext, message, String.class);
 
 		ListenableFuture<String> pubsubFuture;
 
@@ -188,20 +193,32 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		}
 
 		if (this.sync) {
-			Long timeout = this.publishTimeoutExpression.getValue(
-					this.evaluationContext, message, Long.class);
-			if (timeout == null || timeout < 0) {
-				pubsubFuture.get();
+			Long timeout = this.publishTimeoutExpression.getValue(this.evaluationContext, message, Long.class);
+			try {
+				if (timeout == null || timeout < 0) {
+					pubsubFuture.get();
+				}
+				else {
+					pubsubFuture.get(timeout, TimeUnit.MILLISECONDS);
+				}
 			}
-			else {
-				pubsubFuture.get(timeout, TimeUnit.MILLISECONDS);
+			catch (InterruptedException ie) {
+				Thread.currentThread().interrupt();
+				throw new MessageHandlingException(message, ie);
+			}
+			catch (ExecutionException ee) {
+				throw new MessageHandlingException(message, ee.getCause());
+			}
+			catch (TimeoutException te) {
+				throw new MessageTimeoutException(message, "Timeout waiting for response from Pub/Sub publisher", te);
 			}
 		}
 	}
 
 	@Override
-	protected void onInit()  {
+	protected void onInit() {
 		super.onInit();
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}
+
 }

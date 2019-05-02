@@ -39,6 +39,8 @@ include::spring-integration.adoc[]
 
 include::spring-stream.adoc[]
 
+include::spring-cloud-bus-pubsub.adoc[]
+
 include::trace.adoc[]
 
 include::logging.adoc[]
@@ -58,3 +60,5 @@ include::vision.adoc[]
 include::cloudfoundry.adoc[]
 
 include::kotlin.adoc[]
+
+include::firestore.adoc[]

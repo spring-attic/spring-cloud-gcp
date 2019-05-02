@@ -26,6 +26,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Blob;
@@ -147,13 +148,12 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (ValueUtil.isCollectionLike(val.getClass())
 				&& targetCollectionType != null && targetComponentType != null) {
 			try {
-				List elements = (val.getClass().isArray() ? (Arrays.asList(val))
-						: ((List<?>) val))
-						.stream()
+				List elements = val.getClass().isArray() ? (Arrays.asList(val))
+						: StreamSupport.stream(((Iterable<?>) val).spliterator(), false)
 								.map((v) -> readConverter.apply(
 										(v instanceof Value) ? ((Value) v).get() : v,
 										targetComponentType))
-						.collect(Collectors.toList());
+								.collect(Collectors.toList());
 				return (T) convertCollection(elements, targetCollectionType);
 
 			}

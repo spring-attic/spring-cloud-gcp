@@ -20,7 +20,7 @@ import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import java.util.stream.StreamSupport;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -60,11 +60,11 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	protected List applyProjection(List<T> rawResult) {
+	protected List applyProjection(Iterable<T> rawResult) {
 		if (rawResult == null) {
 			return Collections.emptyList();
 		}
-		return rawResult.stream().map(this::processRawObjectForProjection)
+		return StreamSupport.stream(rawResult.spliterator(), false).map(this::processRawObjectForProjection)
 				.collect(Collectors.toList());
 	}
 
@@ -92,4 +92,13 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	public DatastoreTemplate getDatastoreTemplate() {
 		return this.datastoreTemplate;
 	}
+
+	boolean isPageQuery() {
+		return getQueryMethod().isPageQuery();
+	}
+
+	boolean isSliceQuery() {
+		return getQueryMethod().isSliceQuery();
+	}
+
 }

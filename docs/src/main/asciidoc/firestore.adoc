@@ -1,0 +1,59 @@
+== Cloud Firestore
+
+Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode.
+
+See https://cloud.google.com/firestore/docs/[documentation] to learn more about Cloud Firestore.
+
+To begin using this library, add the `spring-cloud-gcp-starter-firestore` artifact to your project.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-firestore</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
+}
+----
+
+=== Sample
+
+A https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
+
+=== Using Cloud Firestore
+
+The starter automatically configures and registers a `Firestore` bean in the Spring application context. To start using it, simply use the `@Autowired` annotation.
+
+[source,java,indent=0]
+----
+ @Autowired
+ Firestore firestore;
+
+include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+
+include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
+----
+
+=== Configuration
+
+The Spring Boot starter for Google Cloud Firestore provides the following configuration options:
+
+|===
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.firestore.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
+| `spring.cloud.gcp.firestore.project-id` | GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
+
+
+
