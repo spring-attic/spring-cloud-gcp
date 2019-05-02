@@ -135,4 +135,4 @@ public interface GcpEnvironmentProvider {
 
 === Spring Initializr
 
-This starter is available from http://start.spring.io/[Spring Initializr] through the `GCP Support` entry.
+This starter is available from https://start.spring.io/[Spring Initializr] through the `GCP Support` entry.

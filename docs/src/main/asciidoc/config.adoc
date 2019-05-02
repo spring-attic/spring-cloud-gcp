@@ -43,7 +43,7 @@ Timeout in milliseconds for connecting to the Google Runtime Configuration API |
 | `spring.cloud.gcp.config.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Config credentials | No | https://www.googleapis.com/auth/cloudruntimeconfig
 |===
 
-NOTE: These properties should be specified in a http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context[`bootstrap.yml`/`bootstrap.properties`] file, rather than the usual `applications.yml`/`application.properties`.
+NOTE: These properties should be specified in a https://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context[`bootstrap.yml`/`bootstrap.properties`] file, rather than the usual `applications.yml`/`application.properties`.
 
 NOTE: Core properties, as described in <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>, do not apply to Spring Cloud GCP Config.
 
@@ -92,7 +92,7 @@ When your Spring application starts, the `queueSize` field value will be set to 
 
 === Refreshing the configuration at runtime
 
-http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring Cloud] provides support to have configuration parameters be reloadable with the POST request to `/actuator/refresh` endpoint.
+https://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring Cloud] provides support to have configuration parameters be reloadable with the POST request to `/actuator/refresh` endpoint.
 
 1.  Add the Spring Boot Actuator dependency:
 +
@@ -126,7 +126,7 @@ $ gcloud beta runtime-config configs variables set \
 5.  Send a POST request to the refresh endpoint:
 +
 ....
-$ curl -XPOST http://myapp.host.com/actuator/refresh
+$ curl -XPOST https://myapp.host.com/actuator/refresh
 ....
 
 === Sample

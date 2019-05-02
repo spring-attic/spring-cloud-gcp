@@ -28,7 +28,7 @@ This allows grouping of log messages by request, for example, in the https://con
 
 NOTE: Due to the way logging is set up, the GCP project ID and credentials defined in `application.properties` are ignored.
 Instead, you should set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_APPLICATION_CREDENTIALS` environment variables to the project ID and credentials private key location, respectively.
-You can do this easily if you're using the http://cloud.google.com/sdk[Google Cloud SDK], using the `gcloud config set project [YOUR_PROJECT_ID]` and `gcloud auth application-default login` commands, respectively.
+You can do this easily if you're using the https://cloud.google.com/sdk[Google Cloud SDK], using the `gcloud config set project [YOUR_PROJECT_ID]` and `gcloud auth application-default login` commands, respectively.
 
 === Web MVC Interceptor
 
