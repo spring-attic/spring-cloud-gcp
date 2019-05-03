@@ -51,18 +51,6 @@ public class TwoStepsConversionsTests {
 	}
 
 	@Test
-	public void convertOnReadThrowsNpeWhenConvertingCollectionWithNullElement() {
-
-		List<String> listWithNull = new ArrayList<>();
-		listWithNull.add(null);
-
-		assertThatThrownBy(() -> {
-			this.twoStepsConversions.convertOnRead(listWithNull, Set.class, String.class);
-		}).isInstanceOf(IllegalArgumentException.class)
-				.hasMessage("Cannot convert a null value.");
-	}
-
-	@Test
 	public void convertOnReadConvertsCollectionAndElementTypesCorrectly() {
 
 		List<String> okayList = new ArrayList<>();
