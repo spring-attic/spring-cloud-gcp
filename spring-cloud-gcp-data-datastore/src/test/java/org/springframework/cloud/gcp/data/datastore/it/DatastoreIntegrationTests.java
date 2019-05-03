@@ -404,6 +404,20 @@ public class DatastoreIntegrationTests {
 		stopwatch.stop();
 		return stopwatch.elapsed(TimeUnit.MILLISECONDS);
 	}
+
+	@Test
+	public void nullPropertyTest() {
+		SubEntity subEntity1 = new SubEntity();
+		subEntity1.stringList = Arrays.asList("a", "b", null, "c");
+		subEntity1.stringProperty = null;
+
+		this.datastoreTemplate.save(subEntity1);
+
+		SubEntity readEntity = this.datastoreTemplate.findById(subEntity1.key, SubEntity.class);
+
+		assertThat(readEntity.stringProperty).isNull();
+		assertThat(readEntity.stringList).containsExactlyInAnyOrder("a", "b", null, "c");
+	}
 }
 
 /**
@@ -447,4 +461,8 @@ class SubEntity {
 
 	@Reference
 	SubEntity sibling;
+
+	List<String> stringList;
+
+	String stringProperty;
 }

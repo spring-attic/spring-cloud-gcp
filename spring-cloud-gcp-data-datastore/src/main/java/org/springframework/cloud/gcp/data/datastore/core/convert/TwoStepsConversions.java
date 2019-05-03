@@ -188,8 +188,10 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnReadSingle(Object val, TypeInformation<?> targetTypeInformation) {
+		if (val == null) {
+			return null;
+		}
 		Class targetType = targetTypeInformation.getType();
-		Assert.notNull(val, "Cannot convert a null value.");
 		Class sourceType = val.getClass();
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
