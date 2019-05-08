@@ -65,7 +65,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
-	 * @param projectIdProvider provides the GCP project ID
+	 * @param projectIdProvider provides the default GCP project ID for selecting the topic
 	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
@@ -128,8 +128,15 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, (key) -> {
 			try {
+				String finalProject = this.projectId;
+				String finalTopic = topic;
+				if (topic.contains("/")) {
+					int splitIndex = topic.indexOf("/");
+					finalProject = topic.substring(0, splitIndex);
+					finalTopic = topic.substring(splitIndex + 1);
+				}
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(ProjectTopicName.of(this.projectId, key));
+						Publisher.newBuilder(ProjectTopicName.of(finalProject, finalTopic));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
