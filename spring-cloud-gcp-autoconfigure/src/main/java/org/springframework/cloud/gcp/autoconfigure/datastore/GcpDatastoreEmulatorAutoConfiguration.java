@@ -71,11 +71,11 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 		}
 
 		try {
-			LOGGER.debug("Stopping datastore emulator.");
+			LOGGER.info("Stopping datastore emulator.");
 
 			this.helper.stop();
 
-			LOGGER.debug("Datastore emulator stopped.");
+			LOGGER.info("Datastore emulator stopped.");
 
 			this.running = false;
 		}
@@ -103,11 +103,11 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 		}
 
 		try {
-			LOGGER.debug("Starting datastore emulator.");
+			LOGGER.info("Starting datastore emulator.");
 
 			this.helper.start();
 
-			LOGGER.debug("Datastore emulator started.");
+			LOGGER.info("Datastore emulator started.");
 
 			this.running = true;
 		}
