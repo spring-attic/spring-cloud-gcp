@@ -153,7 +153,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
 		Collector<?, ?, ?> collector = Collectors.toList();
-		if (isCountingQuery) {
+		if (isCountingQuery && !this.tree.isDelete()) {
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
@@ -173,7 +173,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
 
 		if (this.tree.isDelete()) {
-			deleteFoundEntities(returnedTypeIsNumber, rawResults);
+			deleteFoundEntities(returnedTypeIsNumber, (Iterable) result);
+			if (isCountingQuery) {
+				return ((List) result).size();
+			}
 		}
 
 		return (this.tree.isExistsProjection() || isCountingQuery) ? result
