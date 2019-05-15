@@ -50,6 +50,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.annotation.Id;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -718,6 +719,24 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(read).as("read objects equals the original one").isEqualTo(item);
 	}
 
+	@Test
+	public void testMismatchedStringIdLongProperty() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"The given key doesn't have a numeric ID but a conversion to Long was attempted:");
+		ENTITY_CONVERTER.read(LongIdEntity.class,
+				Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("a")).build());
+	}
+
+	@Test
+	public void testMismatchedLongIdStringProperty() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"The given key doesn't have a String name value but a conversion to String was attempted:");
+		ENTITY_CONVERTER.read(StringIdEntity.class,
+				Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey(1)).build());
+	}
+
 	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}
@@ -738,6 +757,18 @@ public class DefaultDatastoreEntityConverterTests {
 				return new TestItemUnsupportedFields.NewType(source == 1);
 			}
 		};
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	private static class StringIdEntity {
+		@Id
+		String id;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	private static class LongIdEntity {
+		@Id
+		long id;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity

@@ -23,6 +23,7 @@ import java.util.List;
 import com.google.cloud.datastore.BaseKey;
 import com.google.cloud.datastore.Key;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
@@ -50,19 +51,29 @@ public class DatastoreCustomConversions extends CustomConversions {
 		converters.add(new Converter<BaseKey, Long>() {
 			@Override
 			public Long convert(BaseKey key) {
+				Long id = null;
 				if (key instanceof Key) {
-					return ((Key) key).getId();
+					id = ((Key) key).getId();
+					if (id == null) {
+						throw new DatastoreDataException("The given key doesn't have a numeric ID but a conversion" +
+								" to Long was attempted: " + key);
+					}
 				}
-				return 0L;
+				return id;
 			}
 		});
 		converters.add(new Converter<BaseKey, String>() {
 			@Override
 			public String convert(BaseKey key) {
+				String name = null;
 				if (key instanceof Key) {
-					return ((Key) key).getName();
+					name = ((Key) key).getName();
+					if (name == null) {
+						throw new DatastoreDataException("The given key doesn't have a String name value but " +
+								"a conversion to String was attempted: " + key);
+					}
 				}
-				return null;
+				return name;
 			}
 		});
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
