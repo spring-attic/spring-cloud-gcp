@@ -66,6 +66,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
+	private static final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	private static final DatastoreEntityConverter ENTITY_CONVERTER =
 			new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 					new TwoStepsConversions(new DatastoreCustomConversions(
@@ -75,7 +77,7 @@ public class DefaultDatastoreEntityConverterTests {
 								public String convert(HashMap source) {
 									return "Map was converted to String";
 								}
-							})), null));
+							})), null, datastoreMappingContext));
 
 	/**
 	 * Used to check exception messages and types.
@@ -356,7 +358,7 @@ public class DefaultDatastoreEntityConverterTests {
 				Arrays.asList(
 						getIntegerToNewTypeConverter(),
 						getNewTypeToIntegerConverter()
-				)), null));
+						)), null, datastoreMappingContext));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
@@ -435,7 +437,8 @@ public class DefaultDatastoreEntityConverterTests {
 												bcs.iterator().forEachRemaining((s) -> list.add((String) s));
 												return list;
 											}
-										})), null));
+										})),
+								null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -521,7 +524,7 @@ public class DefaultDatastoreEntityConverterTests {
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
-								getNewTypeToIntegerConverter())), null));
+								getNewTypeToIntegerConverter())), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -551,7 +554,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
 								getNewTypeToIntegerConverter()
-						)), null));
+						)), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -569,7 +572,7 @@ public class DefaultDatastoreEntityConverterTests {
 						new TwoStepsConversions(new DatastoreCustomConversions(Arrays.asList(
 								getIntegerToNewTypeConverter(),
 								getNewTypeToIntegerConverter()
-						)), null));
+						)), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);

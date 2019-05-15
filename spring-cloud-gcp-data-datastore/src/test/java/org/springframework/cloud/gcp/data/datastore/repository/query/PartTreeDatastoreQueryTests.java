@@ -109,7 +109,8 @@ public class PartTreeDatastoreQueryTests {
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.datastoreMappingContext = new DatastoreMappingContext();
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
-		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null);
+		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null,
+				datastoreMappingContext);
 		when(this.datastoreTemplate.getDatastoreEntityConverter())
 				.thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions())

@@ -711,7 +711,9 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		matcherAccessor.getPropertySpecifiers();
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
-			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
+			// ID properties are not stored as regular fields in Datastore.
+			if (!persistentProperty.isIdProperty()
+					&& !example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
 				String fieldName = persistentProperty.getFieldName();
 				Value<?> value = probeEntity.getValue(fieldName);
 				if (value instanceof NullValue

@@ -98,7 +98,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
 
-	private final TestEntity testEntityB = new TestEntity(2L, "blue", 1L, Shape.CIRCLE, null);
+	private final TestEntity testEntityB = new TestEntity(2L, "blue", 2L, Shape.CIRCLE, null);
 
 	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
 
@@ -140,7 +140,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.testEntityRepository.saveAll(this.allTestEntities);
 
 		this.millisWaited = waitUntilTrue(
-				() -> this.testEntityRepository.countBySize(1L) == 4);
+				() -> this.testEntityRepository.countBySize(1L) == 3);
 
 	}
 
@@ -153,13 +153,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						PageRequest.of(0, 2, Sort.by("id")));
+						PageRequest.of(0, 2, Sort.by("size")));
 		assertThat(result1.getTotalElements()).isEqualTo(4);
 		assertThat(result1.getNumber()).isEqualTo(0);
 		assertThat(result1.getNumberOfElements()).isEqualTo(2);
 		assertThat(result1.getTotalPages()).isEqualTo(2);
 		assertThat(result1.hasNext()).isEqualTo(true);
-		assertThat(result1).containsExactly(this.testEntityA, this.testEntityB);
+		assertThat(result1).containsExactly(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result2 = this.testEntityRepository
 				.findAll(
@@ -170,13 +170,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(result2.getNumberOfElements()).isEqualTo(2);
 		assertThat(result2.getTotalPages()).isEqualTo(2);
 		assertThat(result2.hasNext()).isEqualTo(false);
-		assertThat(result2).containsExactly(this.testEntityC, this.testEntityD);
+		assertThat(result2).containsExactly(this.testEntityD, this.testEntityB);
 
 
 		assertThat(this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						Sort.by(Sort.Direction.ASC, "id")))
+						Sort.by(Sort.Direction.ASC, "size")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository
@@ -328,12 +328,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
+		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 
 		this.testEntityRepository.saveAll(this.allTestEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
@@ -358,8 +358,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
 				.findEntitiesWithCustomProjectionQuery(1L);
 
-		assertThat(this.testEntityRepository.countBySizeAndColor(1, "blue")).isEqualTo(1);
-		assertThat(this.testEntityRepository.getById(2L).getColor()).isEqualTo("blue");
+		assertThat(this.testEntityRepository.countBySizeAndColor(2, "blue")).isEqualTo(1);
+		assertThat(this.testEntityRepository.getBySize(2L).getColor()).isEqualTo("blue");
 		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
@@ -369,22 +369,22 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
 
-		assertThat(foundByCustomQuery.size()).isEqualTo(1);
-		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);
+		assertThat(foundByCustomQuery.size()).isEqualTo(3);
+		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(3);
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
 		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
-		assertThat(foundByCustomProjectionQuery.length).isEqualTo(1);
+		assertThat(foundByCustomProjectionQuery.length).isEqualTo(3);
 		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
 		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
 
 		this.testEntityA.setBlobField(null);
 
 		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
-		assertThat(this.testEntityRepository.getIds(1L).length).isEqualTo(1);
-		assertThat(this.testEntityRepository.getOneId(1L)).isEqualTo(1);
-		assertThat(this.testEntityRepository.getOneTestEntity(1L)).isNotNull();
+		assertThat(this.testEntityRepository.getSizes(1L).length).isEqualTo(3);
+		assertThat(this.testEntityRepository.getOneSize(2L)).isEqualTo(2);
+		assertThat(this.testEntityRepository.getOneTestEntity(2L)).isNotNull();
 
 		this.testEntityRepository.save(this.testEntityA);
 
@@ -403,7 +403,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
 
 		this.testEntityRepository.deleteAll();
 

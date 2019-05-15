@@ -258,14 +258,14 @@ public class DatastoreTemplateTests {
 
 		doAnswer((invocation) -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
-			builder.set("id", "simple_test_entity");
+			builder.set("color", "simple_test_color");
 			builder.set("int_field", 1);
 			return null;
 		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntity), any());
 
 		doAnswer((invocation) -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
-			builder.set("id", NullValue.of());
+			builder.set("color", NullValue.of());
 			builder.set("int_field", NullValue.of());
 			return null;
 		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntityNullVallues), any());
@@ -865,7 +865,7 @@ public class DatastoreTemplateTests {
 	public void queryByExampleSimpleEntityTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
-				.and(PropertyFilter.eq("id", "simple_test_entity"),
+				.and(PropertyFilter.eq("color", "simple_test_color"),
 						PropertyFilter.eq("int_field", 1));
 		EntityQuery query = builder.setFilter(filter).build();
 		verifyBeforeAndAfterEvents(null, new AfterQueryEvent(Collections.emptyList(), query),
@@ -880,7 +880,7 @@ public class DatastoreTemplateTests {
 				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
-				.and(PropertyFilter.eq("id", "simple_test_entity"));
+				.and(PropertyFilter.eq("color", "simple_test_color"));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
 	}
 
@@ -900,7 +900,7 @@ public class DatastoreTemplateTests {
 				Example.of(this.simpleTestEntityNullVallues, ExampleMatcher.matching().withIncludeNullValues()), null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
-				.and(PropertyFilter.eq("id", NullValue.of()),
+				.and(PropertyFilter.eq("color", NullValue.of()),
 						PropertyFilter.eq("int_field", NullValue.of()));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
 	}
@@ -981,7 +981,7 @@ public class DatastoreTemplateTests {
 						.build());
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
-				.and(PropertyFilter.eq("id", "simple_test_entity"),
+				.and(PropertyFilter.eq("color", "simple_test_color"),
 						PropertyFilter.eq("int_field", 1));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter)
 				.addOrderBy(StructuredQuery.OrderBy.asc("int_field")).setLimit(10).setOffset(1).build());
@@ -1081,6 +1081,8 @@ public class DatastoreTemplateTests {
 	private static class SimpleTestEntity {
 		@Id
 		String id;
+
+		String color;
 
 		@Field(name = "int_field")
 		int intField;

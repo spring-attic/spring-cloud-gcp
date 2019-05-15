@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.cloud.datastore.BaseKey;
+import com.google.cloud.datastore.Key;
+
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
@@ -36,13 +40,31 @@ public class DatastoreCustomConversions extends CustomConversions {
 
 	private static final StoreConversions STORE_CONVERSIONS;
 
-	private static final List<Object> STORE_CONVERTERS;
+	private static final List<Converter<?, ?>> STORE_CONVERTERS;
 
 	static {
-		ArrayList<Object> converters = new ArrayList<>();
+		ArrayList<Converter<?, ?>> converters = new ArrayList<>();
 		converters.addAll(JodaTimeConverters.getConvertersToRegister());
 		converters.addAll(Jsr310Converters.getConvertersToRegister());
 		converters.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+		converters.add(new Converter<BaseKey, Long>() {
+			@Override
+			public Long convert(BaseKey key) {
+				if (key instanceof Key) {
+					return ((Key) key).getId();
+				}
+				return 0L;
+			}
+		});
+		converters.add(new Converter<BaseKey, String>() {
+			@Override
+			public String convert(BaseKey key) {
+				if (key instanceof Key) {
+					return ((Key) key).getName();
+				}
+				return null;
+			}
+		});
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 
 		STORE_CONVERSIONS =
