@@ -52,6 +52,7 @@ public class DatastoreCustomConversions extends CustomConversions {
 			@Override
 			public Long convert(BaseKey key) {
 				Long id = null;
+				// embedded entities have IncompleteKey, and have no inner value
 				if (key instanceof Key) {
 					id = ((Key) key).getId();
 					if (id == null) {
@@ -66,6 +67,7 @@ public class DatastoreCustomConversions extends CustomConversions {
 			@Override
 			public String convert(BaseKey key) {
 				String name = null;
+				// embedded entities have IncompleteKey, and have no inner value
 				if (key instanceof Key) {
 					name = ((Key) key).getName();
 					if (name == null) {
