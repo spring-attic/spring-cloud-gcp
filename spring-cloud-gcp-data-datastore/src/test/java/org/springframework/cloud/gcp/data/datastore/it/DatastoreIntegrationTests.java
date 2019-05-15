@@ -147,12 +147,14 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Test
 	public void testFindByExample() {
 		assertThat(this.testEntityRepository
-				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
+				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
+						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
 						PageRequest.of(0, 2, Sort.by("size")));
 		assertThat(result1.getTotalElements()).isEqualTo(4);
 		assertThat(result1.getNumber()).isEqualTo(0);
@@ -163,7 +165,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		Page<TestEntity> result2 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
 						result1.getPageable().next());
 		assertThat(result2.getTotalElements()).isEqualTo(4);
 		assertThat(result2.getNumber()).isEqualTo(1);
@@ -175,7 +178,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
 						Sort.by(Sort.Direction.ASC, "size")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
@@ -191,11 +195,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null),
-						ExampleMatcher.matching().withIncludeNullValues())))
+						ExampleMatcher.matching().withIgnorePaths("id").withIncludeNullValues())))
 				.isEqualTo(false);
 
 		assertThat(this.testEntityRepository
-				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
+				.exists(Example.of(new TestEntity(null, "red", null, null, null),
+						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.isEqualTo(true);
 	}
 

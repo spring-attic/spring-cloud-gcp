@@ -869,7 +869,8 @@ public class DatastoreTemplateTests {
 						PropertyFilter.eq("int_field", 1));
 		EntityQuery query = builder.setFilter(filter).build();
 		verifyBeforeAndAfterEvents(null, new AfterQueryEvent(Collections.emptyList(), query),
-				() -> this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity), null),
+				() -> this.datastoreTemplate.queryByExample(
+						Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("id")), null),
 				x -> x.verify(this.datastore, times(1)).run(query));
 	}
 
@@ -877,11 +878,21 @@ public class DatastoreTemplateTests {
 	public void queryByExampleIgnoreFieldTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
-				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
+				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("id", "intField")), null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("color", "simple_test_color"));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
+	}
+
+	@Test
+	public void queryByExampleIdPropertyExceptionTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage(
+				"ID properties cannot be used in query-by-example because they are stored in the Key, not a field");
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
 	}
 
 	@Test
@@ -897,7 +908,9 @@ public class DatastoreTemplateTests {
 	public void queryByExampleIncludeNullValuesTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
-				Example.of(this.simpleTestEntityNullVallues, ExampleMatcher.matching().withIncludeNullValues()), null);
+				Example.of(this.simpleTestEntityNullVallues,
+						ExampleMatcher.matching().withIgnorePaths("id").withIncludeNullValues()),
+				null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("color", NullValue.of()),
@@ -909,7 +922,7 @@ public class DatastoreTemplateTests {
 	public void queryByExampleNoNullValuesTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
-				Example.of(this.simpleTestEntityNullVallues), null);
+				Example.of(this.simpleTestEntityNullVallues, ExampleMatcher.matching().withIgnorePaths("id")), null);
 
 		verify(this.datastore, times(1)).run(builder.build());
 	}
@@ -976,7 +989,8 @@ public class DatastoreTemplateTests {
 	@Test
 	public void queryByExampleOptions() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
-		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity),
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("id")),
 				new DatastoreQueryOptions.Builder().setLimit(10).setOffset(1).setSort(Sort.by("intField"))
 						.build());
 
