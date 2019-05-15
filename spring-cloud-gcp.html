@@ -6596,6 +6596,9 @@ It enables dynamic query generation based on a user-provided object. See <a href
 <li>
 <p>Embedded entities matching is not supported.</p>
 </li>
+<li>
+<p>The <code>@Id</code> annotated property is ignored in the example, because Cloud Datastore doesn&#8217;t store the ID as a regular field.</p>
+</li>
 </ol>
 </div>
 <div class="paragraph">
@@ -6648,8 +6651,8 @@ It enables dynamic query generation based on a user-provided object. See <a href
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List&lt;Trader&gt; tradersByName(@Param("trader_name") String traderName);
 
-  @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
-  TestEntity getOneTestEntity(@Param("id_val") long id);
+  @Query("SELECT * FROM  test_entities_ci WHERE name = @trader_name")
+  TestEntity getOneTestEntity(@Param("trader_name") String traderName);
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List&lt;Trader&gt; tradersByNameSort(@Param("trader_name") String traderName, Sort sort);
@@ -6753,11 +6756,11 @@ Selecting this special `<em>key</em></code> column is especially useful and effi
 	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
 	Key getKey();
 
-	@Query("SELECT id FROM test_entities_ci WHERE id &lt;= @id_val")
-	List&lt;String&gt; getIds(@Param("id_val") long id);
+	@Query("SELECT id FROM test_entities_ci WHERE size &lt;= @size")
+	List&lt;String&gt; getIds(@Param("size") long size);
 
-	@Query("SELECT id FROM test_entities_ci WHERE id &lt;= @id_val limit 1")
-	String getOneId(@Param("id_val") long id);</code></pre>
+	@Query("SELECT id FROM test_entities_ci WHERE size &lt;= @size limit 1")
+	String getOneId(@Param("size") long size);</code></pre>
 </div>
 </div>
 <div class="paragraph">
