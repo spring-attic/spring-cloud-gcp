@@ -975,6 +975,8 @@ It enables dynamic query generation based on a user-provided object. See https:/
 . Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
 . Per-field matchers are not supported.
 . Embedded entities matching is not supported.
+. The `@Id` annotated property is ignored in the example, because Cloud Datastore doesn't store the ID as a regular field.
+
 
 For example, if you want to find all users with the last name "Smith", you would use the following code:
 [source, java]
@@ -1009,8 +1011,8 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByName(@Param("trader_name") String traderName);
 
-  @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
-  TestEntity getOneTestEntity(@Param("id_val") long id);
+  @Query("SELECT * FROM  test_entities_ci WHERE name = @trader_name")
+  TestEntity getOneTestEntity(@Param("trader_name") String traderName);
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByNameSort(@Param("trader_name") String traderName, Sort sort);
@@ -1067,11 +1069,11 @@ You can also query for non-entity types:
 	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
 	Key getKey();
 
-	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val")
-	List<String> getIds(@Param("id_val") long id);
+	@Query("SELECT id FROM test_entities_ci WHERE size <= @size")
+	List<String> getIds(@Param("size") long size);
 
-	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val limit 1")
-	String getOneId(@Param("id_val") long id);
+	@Query("SELECT id FROM test_entities_ci WHERE size <= @size limit 1")
+	String getOneId(@Param("size") long size);
 ----
 
 SpEL can be used to provide GQL parameters:

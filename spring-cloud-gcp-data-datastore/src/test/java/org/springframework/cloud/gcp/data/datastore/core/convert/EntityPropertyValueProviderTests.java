@@ -43,9 +43,12 @@ public class EntityPropertyValueProviderTests {
 
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
+	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	private Datastore datastore;
 
-	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
+	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null,
+			this.datastoreMappingContext);
 
 	/**
 	 * used to check exception messages and types.
@@ -55,7 +58,7 @@ public class EntityPropertyValueProviderTests {
 
 	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =
 			(DatastorePersistentEntity<TestDatastoreItem>)
-					new DatastoreMappingContext().getPersistentEntity(TestDatastoreItem.class);
+			this.datastoreMappingContext.getPersistentEntity(TestDatastoreItem.class);
 
 	@Before
 	public void setUp() {

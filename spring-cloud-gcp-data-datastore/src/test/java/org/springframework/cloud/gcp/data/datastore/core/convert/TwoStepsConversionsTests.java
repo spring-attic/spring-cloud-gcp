@@ -24,6 +24,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.core.convert.converter.Converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,8 +41,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 public class TwoStepsConversionsTests {
 
+	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	private final TwoStepsConversions twoStepsConversions = new TwoStepsConversions(
-			new DatastoreCustomConversions(Arrays.asList()), null);
+			new DatastoreCustomConversions(Arrays.asList()), null, this.datastoreMappingContext);
 
 	@Test
 	public void convertOnReadReturnsNullWhenConvertingNullSimpleValue() {
@@ -93,7 +96,7 @@ public class TwoStepsConversionsTests {
 		};
 
 		TwoStepsConversions twoStepsConversionsThatSpeaksEnglish = new TwoStepsConversions(
-				new DatastoreCustomConversions(Arrays.asList(converter)), null);
+				new DatastoreCustomConversions(Arrays.asList(converter)), null, this.datastoreMappingContext);
 		String result = twoStepsConversionsThatSpeaksEnglish.<String>convertOnRead(3L, null, String.class);
 		assertThat(result).isEqualTo("three");
 	}

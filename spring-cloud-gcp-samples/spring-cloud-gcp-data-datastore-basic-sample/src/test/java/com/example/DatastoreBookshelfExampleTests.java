@@ -48,6 +48,9 @@ public class DatastoreBookshelfExampleTests {
 	@Autowired
 	private DatastoreTemplate datastoreTemplate;
 
+	@Autowired
+	private BookRepository bookRepository;
+
 	@After
 	public void cleanUp() {
 		this.datastoreTemplate.deleteAll(Book.class);

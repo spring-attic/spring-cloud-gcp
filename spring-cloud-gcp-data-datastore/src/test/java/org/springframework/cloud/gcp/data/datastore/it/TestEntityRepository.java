@@ -41,8 +41,8 @@ import org.springframework.lang.Nullable;
  */
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, Long> {
 
-	@Query("select * from  test_entities_ci where id = @id_val")
-	LinkedList<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") long id);
+	@Query("select * from  test_entities_ci where size = @size ")
+	LinkedList<TestEntity> findEntitiesWithCustomQuery(@Param("size") long size);
 
 	@Query("select * from  test_entities_ci where color = @color")
 	Slice<TestEntity> findEntitiesWithCustomQuerySlice(@Param("color") String color, Pageable pageable);
@@ -68,11 +68,11 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
 
 	@Query(value = "select __key__ from |org.springframework.cloud.gcp.data.datastore.it.TestEntity| "
-			+ "where id = :#{#id_val}", exists = true)
-	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
+			+ "where size = :#{#size}", exists = true)
+	boolean existsByEntitiesWithCustomQuery(@Param("size") long size);
 
-	@Query("select id from  test_entities_ci where id <= @id_val ")
-	TestEntity[] findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
+	@Query("select size from  test_entities_ci where size <= @size ")
+	TestEntity[] findEntitiesWithCustomProjectionQuery(@Param("size") long size);
 
 	@Query("select __key__ from test_entities_ci")
 	Set<Key> getKeys();
@@ -84,22 +84,22 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	Key getKey();
 
 	// Also involves conversion from long id to String
-	@Query("select id from  test_entities_ci where id <= @id_val ")
-	Long[] getIds(@Param("id_val") long id);
+	@Query("select size from  test_entities_ci where size <= @size ")
+	long[] getSizes(@Param("size") long size);
 
 	// Also involves conversion from long id to String
-	@Query("select id from  test_entities_ci where id <= @id_val")
-	long getOneId(@Param("id_val") long id);
+	@Query("select size from  test_entities_ci where size <= @size and size >= @size")
+	long getOneSize(@Param("size") long size);
 
-	@Query("select * from  test_entities_ci where id = @id_val")
-	TestEntity getOneTestEntity(@Param("id_val") long id);
+	@Query("select * from  test_entities_ci where size= @size")
+	TestEntity getOneTestEntity(@Param("size") long size);
 
 	long countBySizeAndColor(long size, String color);
 
 	LinkedList<TestEntity> findTop3BySizeAndColor(long size, String color);
 
-	@Query("select * from  test_entities_ci where id = @id")
-	TestEntityProjection getById(@Param("id") long id);
+	@Query("select * from  test_entities_ci where size = @size")
+	TestEntityProjection getBySize(@Param("size") long size);
 
 	Page<TestEntity> findByShape(Shape shape, Pageable pageable);
 

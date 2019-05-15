@@ -66,7 +66,7 @@ public class ParallelDatastoreIntegrationTests extends AbstractDatastoreIntegrat
 
 		waitUntilTrue(() -> this.testEntityRepository.count() == PARALLEL_OPERATIONS - 1);
 
-		performOperation(x -> assertThat(this.testEntityRepository.getIds(x).length).isEqualTo(x));
+		performOperation(x -> assertThat(this.testEntityRepository.getSizes(x).length).isEqualTo(x));
 
 		performOperation(x -> this.testEntityRepository.deleteBySize((long) x));
 
