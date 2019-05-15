@@ -287,6 +287,9 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	private EntityValue applyEntityValueBuilder(Object val, String kindName,
 			Consumer<Builder> consumer) {
 
+		/* The following does 3 sequential null checks. We only want an ID value if the object isn't null,
+			has an ID property, and the ID property isn't null.
+		* */
 		Optional idProp = Optional.ofNullable(val)
 				.map(v -> this.datastoreMappingContext.getPersistentEntity(v.getClass()))
 				.map(datastorePersistentEntity -> datastorePersistentEntity.getIdProperty())
