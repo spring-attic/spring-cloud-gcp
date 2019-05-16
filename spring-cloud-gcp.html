@@ -5416,10 +5416,28 @@ The following configuration options are available:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">the Default namespace of Cloud Datastore in your GCP project</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.datastore.emulator-host</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The <code>hostname:port</code> of the <a href="https://cloud.google.com/datastore/docs/tools/datastore-emulator">Datastore Emulator</a> to connect to</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.datastore.host</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <code>hostname:port</code> of the datastore service or emulator to connect to. Can be used to connect to a manually started <a href="https://cloud.google.com/datastore/docs/tools/datastore-emulator">Datastore Emulator</a>. If the autoconfigured emulator is enabled, this property will be ignored and <code>localhost:&lt;emulator_port&gt;</code> will be used.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.datastore.emulator.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">To enable the auto configuration to start a local instance of the Datastore Emulator.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.datastore.emulator.port</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The local port to use for the Datastore Emulator</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>8081</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.datastore.emulator.consistency</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The <a href="https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start?#--consistency">consistency</a> to use for the Datastore Emulator instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>0.9</code></p></td>
 </tr>
 </tbody>
 </table>
@@ -5449,6 +5467,22 @@ It is not required to add it to any other class, unless there is a need to overr
 <p>an instance of <code>Datastore</code> from the Google Cloud Java Client for Datastore, for convenience and lower level API access</p>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_datastore_emulator_autoconfiguration"><a class="link" href="#_datastore_emulator_autoconfiguration">14.1.4. Datastore Emulator Autoconfiguration</a></h4>
+<div class="paragraph">
+<p>This Spring Boot autoconfiguration can also configure and start a local Datastore Emulator server if enabled by property.</p>
+</div>
+<div class="paragraph">
+<p>It is useful for integration testing, but not for production.</p>
+</div>
+<div class="paragraph">
+<p>When enabled, the <code>spring.cloud.gcp.datastore.host</code> property will be ignored and the Datastore autoconfiguration itself will be forced to connect to the autoconfigured local emulator instance.</p>
+</div>
+<div class="paragraph">
+<p>It will create an instance of <code>LocalDatastoreHelper</code> as a bean that stores the <code>DatastoreOptions</code> to get the <code>Datastore</code> client connection to the emulator for convenience and lower level API for local access.
+The emulator will be properly stopped after the Spring application context shutdown.</p>
 </div>
 </div>
 </div>
