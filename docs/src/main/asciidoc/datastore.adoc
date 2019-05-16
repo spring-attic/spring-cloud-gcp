@@ -71,7 +71,10 @@ The following configuration options are available:
 | `spring.cloud.gcp.datastore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.datastore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
 | `spring.cloud.gcp.datastore.namespace` | The Cloud Datastore namespace to use | No | the Default namespace of Cloud Datastore in your GCP project
-| `spring.cloud.gcp.datastore.emulator-host` | The `hostname:port` of the https://cloud.google.com/datastore/docs/tools/datastore-emulator[Datastore Emulator] to connect to | No |
+| `spring.cloud.gcp.datastore.host` | The `hostname:port` of the datastore service or emulator to connect to. Can be used to connect to a manually started https://cloud.google.com/datastore/docs/tools/datastore-emulator[Datastore Emulator]. If the autoconfigured emulator is enabled, this property will be ignored and `localhost:<emulator_port>` will be used. | No |
+| `spring.cloud.gcp.datastore.emulator.enabled` | To enable the auto configuration to start a local instance of the Datastore Emulator. | No | `false`
+| `spring.cloud.gcp.datastore.emulator.port` | The local port to use for the Datastore Emulator | No | `8081`
+| `spring.cloud.gcp.datastore.emulator.consistency` | The https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start?#--consistency[consistency] to use for the Datastore Emulator instance | No | `0.9`
 |===
 
 ==== Repository settings
@@ -88,6 +91,16 @@ Our Spring Boot autoconfiguration creates the following beans available in the S
 - an instance of all user defined repositories extending `CrudRepository`, `PagingAndSortingRepository`, and `DatastoreRepository` (an extension of `PagingAndSortingRepository` with additional Cloud Datastore features) when repositories are enabled
 - an instance of `Datastore` from the Google Cloud Java Client for Datastore, for convenience and lower level API access
 
+==== Datastore Emulator Autoconfiguration
+
+This Spring Boot autoconfiguration can also configure and start a local Datastore Emulator server if enabled by property.
+
+It is useful for integration testing, but not for production.
+
+When enabled, the `spring.cloud.gcp.datastore.host` property will be ignored and the Datastore autoconfiguration itself will be forced to connect to the autoconfigured local emulator instance.
+
+It will create an instance of `LocalDatastoreHelper` as a bean that stores the `DatastoreOptions` to get the `Datastore` client connection to the emulator for convenience and lower level API for local access.
+The emulator will be properly stopped after the Spring application context shutdown.
 
 === Object Mapping
 

@@ -23,6 +23,8 @@ import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -60,13 +62,15 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpDatastoreProperties.class)
 public class GcpDatastoreAutoConfiguration {
 
+	private static final Log LOGGER = LogFactory.getLog(GcpDatastoreEmulatorAutoConfiguration.class);
+
 	private final String projectId;
 
 	private final String namespace;
 
 	private final Credentials credentials;
 
-	private final String emulatorHost;
+	private final String host;
 
 	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -77,7 +81,13 @@ public class GcpDatastoreAutoConfiguration {
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();
 
-		if (gcpDatastoreProperties.getEmulatorHost() == null) {
+		String hostToConnect = gcpDatastoreProperties.getHost();
+		if (gcpDatastoreProperties.getEmulator().isEnabled()) {
+			hostToConnect = "localhost:" + gcpDatastoreProperties.getEmulator().getPort();
+			LOGGER.info("Connecting to a local datastore emulator.");
+		}
+
+		if (hostToConnect == null) {
 			this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpDatastoreProperties)
 					: credentialsProvider).getCredentials();
@@ -87,7 +97,7 @@ public class GcpDatastoreAutoConfiguration {
 			this.credentials = NoCredentials.getInstance();
 		}
 
-		this.emulatorHost = gcpDatastoreProperties.getEmulatorHost();
+		this.host = hostToConnect;
 	}
 
 	@Bean
@@ -101,8 +111,8 @@ public class GcpDatastoreAutoConfiguration {
 			builder.setNamespace(this.namespace);
 		}
 
-		if (emulatorHost != null) {
-			builder.setHost(emulatorHost);
+		if (this.host != null) {
+			builder.setHost(this.host);
 		}
 
 		return builder.build().getService();
