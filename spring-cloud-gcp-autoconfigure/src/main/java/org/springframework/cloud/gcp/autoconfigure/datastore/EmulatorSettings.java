@@ -25,17 +25,17 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
  */
 public class EmulatorSettings {
 	/**
-	 * Is datastore emulator auto configuration enabled. If enabled the Datastore client
-	 * instance itself will point to the local Datastore instance with the specified
-	 * {@link #port}.
+	 * If enabled the Datastore client will connect to an local datastore emulator.
 	 */
 	private boolean enabled;
 
-	/** Is the datastore emulator port. Default: 8081 */
+	/**
+	 * Is the datastore emulator port. Default: {@code 8081}
+	 */
 	private int port = 8081;
 
 	/**
-	 * Consistency to use creating the Datastore server instance. Default: <code>0.9</code>
+	 * Consistency to use creating the Datastore server instance. Default: {@code 0.9}
 	 */
 	private double consistency = 0.9D;
 

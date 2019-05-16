@@ -29,8 +29,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * If <code>spring.cloud.gcp.datastore.emulator.enabled</code> is set to <code>true</code>
- * the emulator will be started as a local datastore server using the
+ * If spring.cloud.gcp.datastore.emulator.enabled is set to true the emulator will be
+ * started as a local datastore server using the
  * {@link com.google.cloud.datastore.testing.LocalDatastoreHelper}.
  *
  * @author Lucas Soares
@@ -94,7 +94,9 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 		return this.running;
 	}
 
-	/** Starts the instance of the emulator. */
+	/**
+	 * Starts the instance of the emulator.
+	 */
 	@Override
 	public void start() {
 		if (isRunning()) {

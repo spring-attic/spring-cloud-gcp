@@ -24,6 +24,8 @@ import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,6 +61,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({ DatastoreOperations.class, Datastore.class })
 @EnableConfigurationProperties(GcpDatastoreProperties.class)
 public class GcpDatastoreAutoConfiguration {
+	private static final Log LOGGER = LogFactory.getLog(GcpDatastoreEmulatorAutoConfiguration.class);
 
 	private final String projectId;
 
@@ -80,6 +83,7 @@ public class GcpDatastoreAutoConfiguration {
 		String hostToConnect = gcpDatastoreProperties.getHost();
 		if (gcpDatastoreProperties.getEmulator().isEnabled()) {
 			hostToConnect = "localhost:" + gcpDatastoreProperties.getEmulator().getPort();
+			LOGGER.info("Connecting to a local datastore emulator.");
 		}
 
 		if (hostToConnect == null) {
