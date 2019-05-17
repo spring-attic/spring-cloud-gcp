@@ -24,7 +24,6 @@ import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
-
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
