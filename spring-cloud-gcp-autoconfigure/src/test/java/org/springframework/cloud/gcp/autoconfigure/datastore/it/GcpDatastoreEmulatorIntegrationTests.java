@@ -24,6 +24,7 @@ import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
+
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -34,6 +35,7 @@ import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreRepositori
 import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreEmulatorAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.Id;
@@ -46,10 +48,12 @@ import static org.mockito.Mockito.mock;
  * Tests for Datastore Emulator integration with the datastore itself.
  *
  * @author Lucas Soares
+ * @author Artem Bilan
  *
  * @since 1.2
  */
 public class GcpDatastoreEmulatorIntegrationTests {
+
 	@Test
 	public void testDatastoreEmulatorConfiguration() {
 		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder();
@@ -69,8 +73,10 @@ public class GcpDatastoreEmulatorIntegrationTests {
 				.run((context) -> {
 					DatastoreTemplate datastore = context.getBean(DatastoreTemplate.class);
 					Datastore datastoreClient = context.getBean(Datastore.class);
+					GcpProjectIdProvider projectIdProvider = context.getBean(GcpProjectIdProvider.class);
 
-					builder.setServiceFactory(datastoreOptions -> datastoreClient);
+					builder.setServiceFactory(datastoreOptions -> datastoreClient)
+							.setProjectId(projectIdProvider.getProjectId());
 
 					EmulatorEntityTest entity = new EmulatorEntityTest();
 					entity.setProperty("property-test");
@@ -103,6 +109,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
 		}
+
 	}
 
 	/**
@@ -110,6 +117,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 	 */
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
 	static class EmulatorEntityTest {
+
 		@Id
 		private Long id;
 
@@ -130,5 +138,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 		String getProperty() {
 			return this.property;
 		}
+
 	}
+
 }
