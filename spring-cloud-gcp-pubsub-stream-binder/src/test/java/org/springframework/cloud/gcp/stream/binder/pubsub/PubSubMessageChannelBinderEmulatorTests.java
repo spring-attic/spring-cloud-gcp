@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -30,6 +32,7 @@ import org.springframework.cloud.stream.binder.Spy;
  *
  * @author João André Martins
  * @author Elena Felder
+ * @author Artem Bilan
  */
 public class PubSubMessageChannelBinderEmulatorTests extends
 		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
@@ -65,5 +68,12 @@ public class PubSubMessageChannelBinderEmulatorTests extends
 	public void testClean() {
 		// Do nothing. Original test tests for Lifecycle logic that we don't need.
 	}
+
+	@Test
+	@Ignore("Looks like there is no Kryo support in SCSt")
+	public void testSendPojoReceivePojoKryoWithStreamListener() {
+
+	}
+
 
 }
