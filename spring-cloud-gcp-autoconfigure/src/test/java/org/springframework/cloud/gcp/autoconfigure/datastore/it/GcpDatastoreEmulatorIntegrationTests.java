@@ -64,7 +64,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 						DatastoreRepositoriesAutoConfiguration.class,
 						GcpDatastoreEmulatorAutoConfiguration.class))
 				.withUserConfiguration(TestConfiguration.class)
-				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+				.withPropertyValues("spring.cloud.gcp.project-id=test-project",
 						"spring.cloud.gcp.datastore.namespace=test-namespace",
 						"spring.cloud.gcp.datastore.emulator.port=8181",
 						"spring.cloud.gcp.datastore.emulator.enabled=true",
