@@ -38,6 +38,7 @@ import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
@@ -50,6 +51,8 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+
+import static org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil.boxIfNeeded;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
@@ -86,12 +89,16 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private final ObjectToKeyFactory objectToKeyFactory;
 
+	private final DatastoreMappingContext datastoreMappingContext;
+
 	private DatastoreEntityConverter datastoreEntityConverter;
 
 	private final Map<Class, Optional<Class<?>>> writeConverters = new ConcurrentHashMap<>();
 
-	public TwoStepsConversions(CustomConversions customConversions, ObjectToKeyFactory objectToKeyFactory) {
+	public TwoStepsConversions(CustomConversions customConversions,
+			ObjectToKeyFactory objectToKeyFactory, DatastoreMappingContext datastoreMappingContext) {
 		this.objectToKeyFactory = objectToKeyFactory;
+		this.datastoreMappingContext = datastoreMappingContext;
 		this.conversionService = new DefaultConversionService();
 		this.internalConversionService = new DefaultConversionService();
 		this.customConversions = customConversions;
@@ -191,7 +198,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (val == null) {
 			return null;
 		}
-		Class targetType = targetTypeInformation.getType();
+		Class targetType = boxIfNeeded(targetTypeInformation.getType());
 		Class sourceType = val.getClass();
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
@@ -277,9 +284,20 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return writeConverter.apply(val);
 	}
 
-	private EntityValue applyEntityValueBuilder(String kindName,
+	private EntityValue applyEntityValueBuilder(Object val, String kindName,
 			Consumer<Builder> consumer) {
-		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(kindName);
+
+		/* The following does 3 sequential null checks. We only want an ID value if the object isn't null,
+			has an ID property, and the ID property isn't null.
+		* */
+		Optional idProp = Optional.ofNullable(val)
+				.map(v -> this.datastoreMappingContext.getPersistentEntity(v.getClass()))
+				.map(datastorePersistentEntity -> datastorePersistentEntity.getIdProperty())
+				.map(id -> this.datastoreMappingContext.getPersistentEntity(val.getClass())
+						.getPropertyAccessor(val).getProperty(id));
+
+		IncompleteKey key = idProp.isPresent() ? this.objectToKeyFactory.getKeyFromId(idProp.get(), kindName)
+				: this.objectToKeyFactory.getIncompleteKey(kindName);
 		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
 		consumer.accept(builder);
 		return EntityValue.of(builder.build());
@@ -287,7 +305,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private EntityValue convertOnWriteSingleEmbeddedMap(Object val, String kindName,
 			TypeInformation valueTypeInformation) {
-		return applyEntityValueBuilder(kindName, (builder) -> {
+		return applyEntityValueBuilder(null, kindName, (builder) -> {
 			Map map = (Map) val;
 			for (Object key : map.keySet()) {
 				String field = convertOnReadSingle(key,
@@ -301,7 +319,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName) {
-		return applyEntityValueBuilder(kindName,
+		return applyEntityValueBuilder(val, kindName,
 				(builder) -> this.datastoreEntityConverter.write(val, builder));
 	}
 

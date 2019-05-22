@@ -49,7 +49,11 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	@Override
 	public <T> T getPropertyValue(DatastorePersistentProperty persistentProperty) {
-		if (!persistentProperty.isColumnBacked()) {
+		if (persistentProperty.isIdProperty()) {
+			return this.conversion.convertOnRead(this.entity.getKey(), EmbeddedType.NOT_EMBEDDED,
+					persistentProperty.getTypeInformation());
+		}
+		else if (!persistentProperty.isColumnBacked()) {
 			return null;
 		}
 		return getPropertyValue(persistentProperty.getFieldName(),

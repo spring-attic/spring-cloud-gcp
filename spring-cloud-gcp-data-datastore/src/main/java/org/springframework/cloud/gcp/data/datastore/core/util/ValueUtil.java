@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.util;
 
+import java.lang.reflect.Array;
+
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -37,6 +39,15 @@ public final class ValueUtil {
 			return CollectionUtils.arrayToList(val);
 		}
 		return val;
+	}
+
+	public static Class boxIfNeeded(Class propertyType) {
+		if (propertyType == null) {
+			return null;
+		}
+		return propertyType.isPrimitive()
+				? Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+				: propertyType;
 	}
 
 	public static boolean isCollectionLike(Class type) {

@@ -75,6 +75,8 @@ public class GqlDatastoreQueryTests {
 	/** Constant for which if two doubles are within DELTA, they are considered equal. */
 	private static final Offset<Double> DELTA = Offset.offset(0.00001);
 
+	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	private DatastoreTemplate datastoreTemplate;
 
 	private DatastoreEntityConverter datastoreEntityConverter;
@@ -90,7 +92,8 @@ public class GqlDatastoreQueryTests {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
-		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null);
+		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null,
+				this.datastoreMappingContext);
 		when(this.datastoreTemplate.getDatastoreEntityConverter()).thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions()).thenReturn(this.readWriteConversions);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
@@ -98,7 +101,7 @@ public class GqlDatastoreQueryTests {
 
 	private GqlDatastoreQuery<Trade> createQuery(String gql, boolean isPageQuery, boolean isSliceQuery) {
 		GqlDatastoreQuery<Trade> spy = spy(new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
-				this.datastoreTemplate, gql, this.evaluationContextProvider, new DatastoreMappingContext()));
+				this.datastoreTemplate, gql, this.evaluationContextProvider, this.datastoreMappingContext));
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
 		return spy;

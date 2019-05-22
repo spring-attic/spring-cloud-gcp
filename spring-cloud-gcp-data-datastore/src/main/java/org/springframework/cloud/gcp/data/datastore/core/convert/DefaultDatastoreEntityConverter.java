@@ -58,7 +58,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory));
+		this(mappingContext,
+				new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory, mappingContext));
 	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext, ReadWriteConversions conversions) {
@@ -118,6 +119,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		try {
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
+
 			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
 				// if a property is a constructor argument, it was already computed on instantiation
 				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
@@ -169,6 +171,10 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
 				(DatastorePersistentProperty persistentProperty) -> {
+					// Datastore doesn't store its Key as a regular field.
+					if (persistentProperty.isIdProperty()) {
+						return;
+					}
 					try {
 						Object val = accessor.getProperty(persistentProperty);
 						Value convertedVal = this.conversions.convertOnWrite(val, persistentProperty);
