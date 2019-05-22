@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
@@ -129,6 +130,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(SubEntity.class);
 		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.deleteAll(PetOwner.class);
+		this.datastoreTemplate.deleteAll(Event.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -651,6 +653,26 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(pugCount).isEqualTo(1);
 		assertThat(dogCount).isEqualTo(1);
 	}
+
+	@Test
+	public void enumKeys() {
+		Map<CommunicationChannels, String> phone = new HashMap<>();
+		phone.put(CommunicationChannels.SMS, "123456");
+
+		Map<CommunicationChannels, String> email = new HashMap<>();
+		phone.put(CommunicationChannels.EMAIL, "a@b.c");
+
+		Event event1 = new Event("event1", phone);
+		Event event2 = new Event("event2", email);
+
+		this.datastoreTemplate.saveAll(Arrays.asList(event1, event2));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Event.class) == 2);
+
+		Collection<Event> events = this.datastoreTemplate.findAll(Event.class);
+
+		assertThat(events).containsExactlyInAnyOrder(event1, event2);
+	}
 }
 
 /**
@@ -771,4 +793,39 @@ interface DogRepository extends DatastoreRepository<Dog, Long> {
 
 	@Query("select * from Pet")
 	List<Dog> findByCustomQuery();
+}
+
+@Entity
+class Event {
+	@Id
+	private String eventName;
+
+	private Map<CommunicationChannels, String> preferences;
+
+	Event(String eventName, Map<CommunicationChannels, String> preferences) {
+		this.eventName = eventName;
+		this.preferences = preferences;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Event event = (Event) o;
+		return Objects.equals(this.eventName, event.eventName) &&
+				Objects.equals(this.preferences, event.preferences);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.eventName, this.preferences);
+	}
+}
+
+enum CommunicationChannels {
+	EMAIL, SMS;
 }
