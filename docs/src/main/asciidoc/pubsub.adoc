@@ -39,6 +39,7 @@ It provides the common set of operations needed to interact with Google Cloud Pu
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
 The `publish()` method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.
+The topic name could either be a canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the `projects/<project_name>/topics/<topic_name>` format.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
@@ -191,6 +192,8 @@ flux.doOnNext(AcknowledgeablePubsubMessage::ack);
 
 `PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.
+
+NOTE: Generally when referring to topics, you can either use the short canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the `projects/<project_name>/topics/<topic_name>` format.
 
 `PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a `TopicAdminClient` and a `SubscriptionAdminClient`.
 If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient` with the Google Cloud Java Library for Pub/Sub default settings.

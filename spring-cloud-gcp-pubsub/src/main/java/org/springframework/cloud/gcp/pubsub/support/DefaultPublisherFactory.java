@@ -27,7 +27,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.pubsub.v1.ProjectTopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
@@ -65,7 +64,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
-	 * @param projectIdProvider provides the GCP project ID
+	 * @param projectIdProvider provides the default GCP project ID for selecting the topic
 	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
@@ -129,7 +128,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		return this.publishers.computeIfAbsent(topic, (key) -> {
 			try {
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(ProjectTopicName.of(this.projectId, key));
+						Publisher.newBuilder(PubSubTopicUtils.toProjectTopicName(topic, this.projectId));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
