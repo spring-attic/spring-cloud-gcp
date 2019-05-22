@@ -308,7 +308,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return applyEntityValueBuilder(null, kindName, (builder) -> {
 			Map map = (Map) val;
 			for (Object key : map.keySet()) {
-				String field = convertOnReadSingle(key,
+				String field = convertOnReadSingle(convertOnWriteSingle(key).get(),
 						ClassTypeInformation.from(String.class));
 				builder.set(field,
 						convertOnWrite(map.get(key),

@@ -653,10 +653,14 @@ public class DefaultDatastoreEntityConverterTests {
 		nestedInnerEmbeddedMap.put(1L, mapSimpleValues);
 		nestedEmbeddedMap.put("outer1", nestedInnerEmbeddedMap);
 
+		Map<TestDatastoreItem.Color, String> enumKeysMap = new HashMap<>();
+		enumKeysMap.put(TestDatastoreItem.Color.BLACK, "black");
+		enumKeysMap.put(TestDatastoreItem.Color.WHITE, "white");
+
 		TestItemWithEmbeddedEntity item = new TestItemWithEmbeddedEntity(123,
 				new EmbeddedEntity("abc"), embeddedEntities, mapSimpleValues,
 				mapListValues, embeddedEntityMapEmbeddedEntity,
-				embeddedEntityMapListOfEmbeddedEntities);
+				embeddedEntityMapListOfEmbeddedEntities, enumKeysMap);
 
 		item.setNestedEmbeddedMaps(nestedEmbeddedMap);
 
