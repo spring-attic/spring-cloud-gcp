@@ -847,7 +847,8 @@ It provides the common set of operations needed to interact with Google Cloud Pu
 <h4 id="_publishing_to_a_topic"><a class="link" href="#_publishing_to_a_topic">4.2.1. Publishing to a topic</a></h4>
 <div class="paragraph">
 <p><code>PubSubTemplate</code> provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
-The <code>publish()</code> method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.</p>
+The <code>publish()</code> method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.
+The topic name could either be a canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the <code>projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;</code> format.</p>
 </div>
 <div class="paragraph">
 <p>Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:</p>
@@ -1085,6 +1086,18 @@ For example, if you only want to fetch 5 messages, you can use <code>limitReques
 <div class="paragraph">
 <p><code>PubSubAdmin</code> is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Generally when referring to topics, you can either use the short canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the <code>projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;</code> format.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p><code>PubSubAdmin</code> depends on <code>GcpProjectIdProvider</code> and either a <code>CredentialsProvider</code> or a <code>TopicAdminClient</code> and a <code>SubscriptionAdminClient</code>.
