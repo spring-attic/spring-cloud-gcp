@@ -27,7 +27,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.pubsub.v1.ProjectTopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
@@ -128,15 +127,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, (key) -> {
 			try {
-				String finalProject = this.projectId;
-				String finalTopic = topic;
-				if (topic.contains("/")) {
-					int splitIndex = topic.indexOf("/");
-					finalProject = topic.substring(0, splitIndex);
-					finalTopic = topic.substring(splitIndex + 1);
-				}
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(ProjectTopicName.of(finalProject, finalTopic));
+						Publisher.newBuilder(PubSubTopicUtils.parseTopic(this.projectId, topic));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
