@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.pubsub.v1.ProjectTopicName;
 
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -36,11 +37,11 @@ public final class PubSubTopicUtils {
 	 * fully-qualified topic name. If the specified topic is in the
 	 * projects/&lt;project_name&gt;/topics/&lt;topic_name&gt; format, then the {@code projectId} is
 	 * ignored}
-	 * @param projectId the project ID to use if the topic is not a fully-qualified name
 	 * @param topic the topic name in the project or the fully-qualified project name
+	 * @param projectId the project ID to use if the topic is not a fully-qualified name
 	 * @return the Pub/Sub object representing the topic name
 	 */
-	public static ProjectTopicName parseTopic(String projectId, String topic) {
+	public static ProjectTopicName toProjectTopicName(String topic, @Nullable String projectId) {
 		Assert.notNull(topic, "The topic can't be null.");
 
 		ProjectTopicName projectTopicName = null;

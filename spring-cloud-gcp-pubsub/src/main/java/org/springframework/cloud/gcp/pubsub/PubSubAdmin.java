@@ -104,7 +104,7 @@ public class PubSubAdmin implements AutoCloseable {
 	public Topic createTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		return this.topicAdminClient.createTopic(PubSubTopicUtils.parseTopic(this.projectId, topicName));
+		return this.topicAdminClient.createTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class PubSubAdmin implements AutoCloseable {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		try {
-			return this.topicAdminClient.getTopic(PubSubTopicUtils.parseTopic(this.projectId, topicName));
+			return this.topicAdminClient.getTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -138,7 +138,7 @@ public class PubSubAdmin implements AutoCloseable {
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		this.topicAdminClient.deleteTopic(PubSubTopicUtils.parseTopic(this.projectId, topicName));
+		this.topicAdminClient.deleteTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 	}
 
 	/**
@@ -224,7 +224,7 @@ public class PubSubAdmin implements AutoCloseable {
 
 		return this.subscriptionAdminClient.createSubscription(
 				ProjectSubscriptionName.of(this.projectId, subscriptionName),
-				PubSubTopicUtils.parseTopic(this.projectId, topicName),
+				PubSubTopicUtils.toProjectTopicName(topicName, this.projectId),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
 	}

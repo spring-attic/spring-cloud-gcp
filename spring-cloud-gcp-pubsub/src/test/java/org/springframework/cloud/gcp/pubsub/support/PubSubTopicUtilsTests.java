@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@
 package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.pubsub.v1.ProjectTopicName;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for {@link PubSubTopicUtils}.
@@ -30,68 +29,53 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class PubSubTopicUtilsTests {
 
-	/**
-	 * used to check exception messages and types.
-	 */
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-
 	@Test
-	public void testParseTopic_canonical() {
+	public void testToProjectTopicName_canonical() {
 		String project = "projectA";
 		String topic = "topicA";
 		String fqn = "projects/" + project + "/topics/" + topic;
 
-		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.parseTopic(project, topic);
+		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.toProjectTopicName(topic, project);
 
 		assertThat(parsedProjectTopicName).isEqualTo(ProjectTopicName.of(project, topic));
 		assertThat(parsedProjectTopicName.toString()).isEqualTo(fqn);
 	}
 
 	@Test
-	public void testParseTopic_no_topic() {
-		expectedEx.expect(IllegalArgumentException.class);
-		expectedEx.expectMessage("The topic can't be null.");
-
-		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.parseTopic("topicA", null);
+	public void testToProjectTopicName_no_topic() {
+		assertThatThrownBy(() -> PubSubTopicUtils.toProjectTopicName(null, "topicA"))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("The topic can't be null.");
 	}
 
 	@Test
-	public void testParseTopic_canonical_no_project() {
-		expectedEx.expect(IllegalArgumentException.class);
-		expectedEx.expectMessage("The project ID can't be null when using canonical topic name.");
+	public void testToProjectTopicName_canonical_no_project() {
+		assertThatThrownBy(() -> PubSubTopicUtils.toProjectTopicName("topicA", null))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("The project ID can't be null when using canonical topic name.");
+	}
 
+	@Test
+	public void testToProjectTopicName_fqn() {
 		String project = "projectA";
 		String topic = "topicA";
 		String fqn = "projects/" + project + "/topics/" + topic;
 
-		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.parseTopic(null, topic);
+		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.toProjectTopicName(fqn, project);
 
 		assertThat(parsedProjectTopicName).isEqualTo(ProjectTopicName.of(project, topic));
 		assertThat(parsedProjectTopicName.toString()).isEqualTo(fqn);
 	}
 
 	@Test
-	public void testParseTopic_fqn() {
+	public void testToProjectTopicName_fqn_no_project() {
 		String project = "projectA";
 		String topic = "topicA";
 		String fqn = "projects/" + project + "/topics/" + topic;
 
-		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.parseTopic(project, fqn);
+		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.toProjectTopicName(fqn, null);
 
 		assertThat(parsedProjectTopicName).isEqualTo(ProjectTopicName.of(project, topic));
-		assertThat(parsedProjectTopicName.toString()).isEqualTo("projects/" + project + "/topics/" + topic);
-	}
-
-	@Test
-	public void testParseTopic_fqn_no_project() {
-		String project = "projectA";
-		String topic = "topicA";
-		String fqn = "projects/" + project + "/topics/" + topic;
-
-		ProjectTopicName parsedProjectTopicName = PubSubTopicUtils.parseTopic(null, fqn);
-
-		assertThat(parsedProjectTopicName).isEqualTo(ProjectTopicName.of(project, topic));
-		assertThat(parsedProjectTopicName.toString()).isEqualTo("projects/" + project + "/topics/" + topic);
+		assertThat(parsedProjectTopicName.toString()).isEqualTo(fqn);
 	}
 }
