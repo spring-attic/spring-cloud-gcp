@@ -28,6 +28,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -97,7 +98,8 @@ public class DatastoreRepositoryExample {
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
 
 		//Query by example: find all singers with the last name "Doe"
-		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
+		Iterable<Singer> singers = this.singerRepository.findAll(
+				Example.of(new Singer(null, null, "Doe", null), ExampleMatcher.matching().withIgnorePaths("singerId")));
 		System.out.println("Query by example");
 		singers.forEach(System.out::println);
 
