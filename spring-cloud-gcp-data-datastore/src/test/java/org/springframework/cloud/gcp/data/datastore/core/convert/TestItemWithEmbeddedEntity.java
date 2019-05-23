@@ -46,12 +46,15 @@ public class TestItemWithEmbeddedEntity {
 
 	private Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps;
 
+	Map<TestDatastoreItem.Color, String> mapEnumKeys;
+
 	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
 			List<EmbeddedEntity> listOfEmbeddedEntities,
 			Map<String, String> embeddedMapSimpleValues,
 			Map<String, String[]> embeddedMapListOfValues,
 			Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity,
-			Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities) {
+			Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities,
+			Map<TestDatastoreItem.Color, String> mapEnumKeys) {
 		this.intField = intField;
 		this.embeddedEntityField = embeddedEntityField;
 		this.listOfEmbeddedEntities = listOfEmbeddedEntities;
@@ -59,6 +62,7 @@ public class TestItemWithEmbeddedEntity {
 		this.embeddedMapListOfValues = embeddedMapListOfValues;
 		this.embeddedEntityMapEmbeddedEntity = embeddedEntityMapEmbeddedEntity;
 		this.embeddedEntityMapListOfEmbeddedEntities = embeddedEntityMapListOfEmbeddedEntities;
+		this.mapEnumKeys = mapEnumKeys;
 	}
 
 	@Override
