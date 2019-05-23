@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
@@ -140,11 +139,4 @@ public class DatastoreRepositoryExample {
 		});
 	}
 
-	@Bean
-	public DatastoreCustomConversions datastoreCustomConversions() {
-		return new DatastoreCustomConversions(Arrays.asList(
-				// Converters to read and write custom Singer.Album type
-				ConvertersExample.ALBUM_STRING_CONVERTER,
-				ConvertersExample.STRING_ALBUM_CONVERTER));
-	}
 }

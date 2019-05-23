@@ -16,9 +16,12 @@
 
 package com.example;
 
+import java.util.Arrays;
+
 import com.google.cloud.datastore.Datastore;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.repository.config.EnableDatastoreAuditing;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,5 +45,13 @@ public class SampleApplicationConfiguration {
 	@Bean
 	public TransactionalRepositoryService transactionalRepositoryService() {
 		return new TransactionalRepositoryService();
+	}
+
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(Arrays.asList(
+				// Converters to read and write custom Singer.Album type
+				ConvertersExample.ALBUM_STRING_CONVERTER,
+				ConvertersExample.STRING_ALBUM_CONVERTER));
 	}
 }
