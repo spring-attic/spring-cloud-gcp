@@ -22,7 +22,7 @@ import java.io.IOException;
 import javax.sql.DataSource;
 
 import com.google.cloud.sql.CredentialFactory;
-import com.google.cloud.sql.core.SslSocketFactory;
+import com.google.cloud.sql.core.CoreSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -207,7 +207,7 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 				setCredentialsFileProperty(gcpCloudSqlProperties, gcpProperties);
 			}
 
-			System.setProperty(SslSocketFactory.USER_TOKEN_PROPERTY_NAME,
+			System.setProperty(CoreSocketFactory.USER_TOKEN_PROPERTY_NAME,
 					"spring-cloud-gcp-sql/"
 							+ this.getClass().getPackage().getImplementationVersion());
 
