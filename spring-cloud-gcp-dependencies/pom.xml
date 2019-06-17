@@ -16,9 +16,9 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.90.0-alpha</google-cloud-bom.version>
-		<google-auth-library-oauth2-http.version>0.13.0</google-auth-library-oauth2-http.version>
-		<cloud-sql-socket-factory.version>1.0.12</cloud-sql-socket-factory.version>
+		<google-cloud-bom.version>0.96.0-alpha</google-cloud-bom.version>
+		<google-auth-library-oauth2-http.version>0.16.1</google-auth-library-oauth2-http.version>
+		<cloud-sql-socket-factory.version>1.0.14</cloud-sql-socket-factory.version>
 	</properties>
 
 	<dependencyManagement>
