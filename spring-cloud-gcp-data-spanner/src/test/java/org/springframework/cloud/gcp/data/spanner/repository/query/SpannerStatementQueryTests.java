@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -70,8 +73,11 @@ public class SpannerStatementQueryTests {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Before
-	public void initMocks() {
+	public void initMocks() throws NoSuchMethodException {
 		this.queryMethod = mock(SpannerQueryMethod.class);
+		// this is a dummy object. it is not mockable otherwise.
+		Method method = Object.class.getMethod("toString");
+		when(this.queryMethod.getMethod()).thenReturn(method);
 		this.spannerTemplate = mock(SpannerTemplate.class);
 		SpannerEntityProcessor spannerEntityProcessor = mock(SpannerEntityProcessor.class);
 		when(this.spannerTemplate.getSpannerEntityProcessor()).thenReturn(spannerEntityProcessor);
@@ -85,18 +91,18 @@ public class SpannerStatementQueryTests {
 	}
 
 	@Test
-	public void compoundNameConventionTest() {
+	public void compoundNameConventionTest() throws NoSuchMethodException {
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
-						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
+						+ "AndPriceGreaterThanAndPriceLessThanEqualAndPriceInOrderByIdDesc");
 		this.partTreeSpannerQuery = spy(createQuery());
 
 		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123",
 				8, // an int is not a natively supported type, and is intentionally used to use custom
 					// converters
 				3.33, "ignored",
-				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
+				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, Arrays.asList(1, 2) };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
 				.thenAnswer((invocation) -> {
@@ -108,7 +114,7 @@ public class SpannerStatementQueryTests {
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3";
+									+ "price>@tag10 AND price<=@tag11 AND price IN UNNEST(@tag12) ) ORDER BY id DESC LIMIT 3";
 
 					assertThat(statement.getSql()).isEqualTo(expectedQuery);
 
@@ -126,6 +132,7 @@ public class SpannerStatementQueryTests {
 					assertThat(paramMap.get("tag9").getString()).isEqualTo(params[9]);
 					assertThat(paramMap.get("tag10").getFloat64()).isEqualTo(params[10]);
 					assertThat(paramMap.get("tag11").getFloat64()).isEqualTo(params[11]);
+					assertThat(paramMap.get("tag12").getInt64Array()).isEqualTo(Arrays.asList(1L, 2L));
 
 					return null;
 				});
@@ -134,6 +141,13 @@ public class SpannerStatementQueryTests {
 				.getReturnedSimpleConvertableItemType();
 		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
 				any());
+
+		// This dummy method was created so the metadata for the ARRAY param inner type is
+		// provided.
+		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Object.class, Object.class,
+				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
+				Object.class, Object.class, List.class);
+		when(this.queryMethod.getMethod()).thenReturn(method);
 
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1)).query((Class<Object>) any(), any(), any());
@@ -255,6 +269,14 @@ public class SpannerStatementQueryTests {
 		enum Action {
 			BUY,
 			SELL
+		}
+	}
+
+	private static class QueryHolder {
+		public long dummyMethod(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11, List<Integer> tag12) {
+			// tag12 is intentionally List<Integer> instead of List<Long> to trigger conversion.
+			return 0;
 		}
 	}
 }

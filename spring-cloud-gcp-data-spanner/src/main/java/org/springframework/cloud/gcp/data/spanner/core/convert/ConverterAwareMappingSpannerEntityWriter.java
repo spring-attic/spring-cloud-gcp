@@ -65,6 +65,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 */
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemTypeValueBinderMethodMap;
 
+	/**
+	 * A map of inner types to functions that bind the List parameter.
+	 */
 	public static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
 			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
 

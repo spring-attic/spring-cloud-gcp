@@ -91,7 +91,7 @@ public final class SpannerStatementQueryExecutor {
 	private static Map<String, Parameter> preparePartTreeSqlTagParameterMap(Parameter[] queryMethodParamsMetadata,
 			Pair<String, List<String>> sqlAndTags) {
 		Map<String, Parameter> paramMetadataMap = new HashMap<>();
-		for (int i = 0; i < sqlAndTags.getSecond().size(); i++) {
+		for (int i = 0; i < queryMethodParamsMetadata.length; i++) {
 			paramMetadataMap.put(sqlAndTags.getSecond().get(i), queryMethodParamsMetadata[i]);
 		}
 		return paramMetadataMap;
@@ -241,6 +241,7 @@ public final class SpannerStatementQueryExecutor {
 			for (Object item : originalParam) {
 				((ArrayList) param).add(spannerCustomConverter.convert(item, compatible));
 			}
+			toMethod = getIterableValueBinderBiConsumer(compatible);
 		}
 		toMethod.accept(bind, param);
 	}
