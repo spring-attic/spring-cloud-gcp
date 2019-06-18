@@ -224,7 +224,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
 								entityClass, options, sql, this.mappingContext),
-						null, null, null, null),
+						null, null, null, null, null),
 				options);
 	}
 

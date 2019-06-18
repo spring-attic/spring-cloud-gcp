@@ -102,7 +102,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 					.contains(originalType)) {
 				return originalType;
 			}
-			compatible = ConverterAwareMappingSpannerEntityWriter.findFirstCompatibleSpannerMultupleItemNativeType(
+			compatible = ConverterAwareMappingSpannerEntityWriter.findFirstCompatibleSpannerMultipleItemNativeType(
 					(spannerType) -> canHandlePropertyTypeForArrayRead(originalType, spannerType)
 							&& this.writeConverter.canConvert(originalType, spannerType));
 		}

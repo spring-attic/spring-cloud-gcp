@@ -1038,6 +1038,8 @@ The following filter options are supported:
 * Not like a string
 * Contains a string
 * Not contains a string
+* In
+* Not in
 
 Note that the phrase `SymbolIgnoreCase` is translated to `LOWER(SYMBOL) = LOWER(?)` indicating a non-case-sensitive matching.
 The `IgnoreCase` phrase may only be appended to fields that correspond to columns of type STRING or BYTES.

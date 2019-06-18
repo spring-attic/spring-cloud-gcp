@@ -85,6 +85,14 @@ public class SpannerQueryMethod extends QueryMethod {
 	}
 
 	/**
+	 * Get the method metadata.
+	 * @return the method metadata.
+	 */
+	public Method getMethod() {
+		return this.method;
+	}
+
+	/**
 	 * Returns the {@link Query} annotation that is applied to the method or {@code null}
 	 * if none available.
 	 *

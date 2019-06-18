@@ -65,7 +65,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 */
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemTypeValueBinderMethodMap;
 
-	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
+	public static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
 			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
 
 	@SuppressWarnings("unchecked")
@@ -123,7 +123,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		return compatible.isPresent() ? compatible.get() : null;
 	}
 
-	public static Class<?> findFirstCompatibleSpannerMultupleItemNativeType(Predicate<Class> testFunc) {
+	public static Class<?> findFirstCompatibleSpannerMultipleItemNativeType(Predicate<Class> testFunc) {
 		Optional<Class<?>> compatible = iterablePropertyType2ToMethodMap.keySet().stream().filter(testFunc).findFirst();
 		return compatible.isPresent() ? compatible.get() : null;
 	}
