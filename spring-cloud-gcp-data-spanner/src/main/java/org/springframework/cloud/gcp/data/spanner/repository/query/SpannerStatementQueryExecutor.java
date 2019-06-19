@@ -153,12 +153,14 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Gets a query that returns the rows associated with a parent entity. This function
-	 * is intended to be used with parent-child interleaved tables, so that the retrieval
-	 * of all child rows having the parent's key values is efficient.
+	 * Gets a query that returns the rows associated with a parent entity. This function is
+	 * intended to be used with parent-child interleaved tables, so that the retrieval of all
+	 * child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
 	 * @param <T> the type of the child persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query
+	 *     statement.
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
@@ -239,7 +241,8 @@ public final class SpannerStatementQueryExecutor {
 						+ " is not a supported type: " + originalParam.getClass());
 			}
 			try {
-				((BiFunction<ValueBinder, Object, Struct>) ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+				Object unused = ((BiFunction<ValueBinder, Object, Struct>)
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
 						.get(Struct.class)).apply(bind, paramStructConvertFunc.apply(originalParam));
 			}
 			catch (SpannerDataException ex) {
