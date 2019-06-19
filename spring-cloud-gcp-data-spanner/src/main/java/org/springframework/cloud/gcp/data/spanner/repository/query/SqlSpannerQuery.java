@@ -269,7 +269,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		}
 		return SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 				queryTagValue.sql, queryTagValue.tags,
-				this.paramStructConvertFunc, null,
+				this.paramStructConvertFunc, this.spannerTemplate.getSpannerEntityProcessor().getWriteConverter(),
 				queryTagValue.params.toArray(), paramMetadataMap);
 	}
 

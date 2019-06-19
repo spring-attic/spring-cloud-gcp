@@ -51,6 +51,7 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -121,6 +122,7 @@ public class SpannerTemplateTests {
 				true);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
+		when(this.objectMapper.getWriteConverter()).thenReturn(new SpannerWriteConverter());
 		this.spannerTemplate = new SpannerTemplate(() -> this.databaseClient,
 				this.mappingContext, this.objectMapper, this.mutationFactory,
 				this.schemaUtils);

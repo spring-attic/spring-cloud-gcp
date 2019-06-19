@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -71,8 +72,8 @@ public class SpannerQueryLookupStrategyTests {
 
 	@Before
 	public void initMocks() {
-		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerMappingContext = new SpannerMappingContext();
+		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 		this.spelExpressionParser = new SpelExpressionParser();
@@ -161,7 +162,7 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerMappingContext.getPersistentEntity(ChildEntity.class));
+				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter());
 		assertThat(statement.getSql())
 				.isEqualTo("SELECT id3 , id , id_2 FROM child_test_table WHERE id = @tag0 and id_2 = @tag1");
 		assertThat(statement.getParameters()).hasSize(2);

@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -163,7 +162,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
-			SpannerPersistentEntity<T> childPersistentEntity) {
+			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter) {
 		StringBuilder sb = new StringBuilder(
 				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
 						+ childPersistentEntity.tableName() + " WHERE ");
@@ -182,7 +181,7 @@ public final class SpannerStatementQueryExecutor {
 			keyParts.add(parentKeyParts.next());
 			tagNum++;
 		}
-		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, null,
+		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, writeConverter,
 				keyParts.toArray(), null);
 	}
 
@@ -221,69 +220,33 @@ public final class SpannerStatementQueryExecutor {
 		return builder.build();
 	}
 
-	private static void bindArrayParameter(ValueBinder<Statement.Builder> bind,
-			SpannerCustomConverter spannerCustomConverter,
-			Iterable originalParam, Parameter paramMetadata) {
-		Iterable param = originalParam;
-		Class innerType = (Class) ((ParameterizedType) paramMetadata.getParameterizedType())
-				.getActualTypeArguments()[0];
-		BiConsumer<ValueBinder<?>, Iterable> toMethod = getIterableValueBinderBiConsumer(innerType);
-
-		// attempt conversion of elements inside
-		if (toMethod == null) {
-			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-					.findFirstCompatibleSpannerSingleItemNativeType(
-							(type) -> spannerCustomConverter.canConvert(innerType, type));
-			if (compatible == null) {
-				throw new IllegalArgumentException("Could not convert to an ARRAY of compatible type: " + innerType);
-			}
-			param = new ArrayList();
-			for (Object item : originalParam) {
-				((ArrayList) param).add(spannerCustomConverter.convert(item, compatible));
-			}
-			toMethod = getIterableValueBinderBiConsumer(compatible);
-		}
-		toMethod.accept(bind, param);
-	}
-
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object originalParam, Parameter paramMetadata) {
 		if (ConversionUtils.isIterableNonByteArrayType(originalParam.getClass())) {
-			bindArrayParameter(bind, spannerCustomConverter, (Iterable) originalParam, paramMetadata);
+			if (!ConverterAwareMappingSpannerEntityWriter.attemptSetIterableValueOnBinder((Iterable) originalParam,
+					bind, spannerCustomConverter, (Class) ((ParameterizedType) paramMetadata.getParameterizedType())
+							.getActualTypeArguments()[0])) {
+				throw new IllegalArgumentException(
+						"Could not convert to an ARRAY of compatible type: " + paramMetadata);
+			}
 			return;
 		}
-		Object param = originalParam;
-		BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>) getSingleValueBinderBiFunction(
-				param);
-		// the param is not a native Cloud Spanner type
-		if (toMethod == null && spannerCustomConverter != null) {
-			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-					.findFirstCompatibleSpannerSingleItemNativeType(
-							(type) -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
-			if (compatible != null) {
-				param = spannerCustomConverter.convert(originalParam, compatible);
-				toMethod = (BiFunction<ValueBinder, Object, ?>) getSingleValueBinderBiFunction(param);
-			}
-		}
-		// could not be converted, attempting to use it as a struct
-		if (toMethod == null) {
+		if (!ConverterAwareMappingSpannerEntityWriter.attemptBindSingleValue(originalParam, originalParam.getClass(),
+				bind, spannerCustomConverter)) {
 			if (paramStructConvertFunc == null) {
-				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass());
+				throw new IllegalArgumentException("Param: " + originalParam.toString()
+						+ " is not a supported type: " + originalParam.getClass());
 			}
 			try {
-				toMethod = (BiFunction<ValueBinder, Object, ?>)
-					ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
-						.get(Struct.class);
-				param = paramStructConvertFunc.apply(param);
+				((BiFunction<ValueBinder, Object, Struct>) ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+						.get(Struct.class)).apply(bind, paramStructConvertFunc.apply(originalParam));
 			}
 			catch (SpannerDataException ex) {
-				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass(), ex);
+				throw new IllegalArgumentException("Param: " + originalParam.toString()
+						+ " is not a supported type: " + originalParam.getClass(), ex);
 			}
 		}
-		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set
 	}
 
 	public static String getColumnsStringForSelect(
@@ -304,10 +267,6 @@ public final class SpannerStatementQueryExecutor {
 		else {
 			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(param.getClass());
 		}
-	}
-
-	private static BiConsumer<ValueBinder<?>, Iterable> getIterableValueBinderBiConsumer(Class innerType) {
-		return ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap.get(innerType);
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,

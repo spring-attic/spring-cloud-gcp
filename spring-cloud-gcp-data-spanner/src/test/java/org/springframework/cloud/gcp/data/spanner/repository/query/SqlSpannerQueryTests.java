@@ -38,6 +38,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -105,6 +106,7 @@ public class SqlSpannerQueryTests {
 		// this is a dummy object. it is not mockable otherwise.
 		Method method = Object.class.getMethod("toString");
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		when(this.spannerEntityProcessor.getWriteConverter()).thenReturn(new SpannerWriteConverter());
 		this.spannerTemplate = spy(new SpannerTemplate(() -> mock(DatabaseClient.class),
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(

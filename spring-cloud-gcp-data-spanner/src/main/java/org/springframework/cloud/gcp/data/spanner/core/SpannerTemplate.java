@@ -545,7 +545,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity),
+									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter()),
 							null);
 
 					accessor.setProperty(spannerPersistentProperty,
