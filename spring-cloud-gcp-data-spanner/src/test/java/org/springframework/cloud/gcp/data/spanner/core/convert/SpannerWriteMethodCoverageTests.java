@@ -63,7 +63,7 @@ public class SpannerWriteMethodCoverageTests {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
 				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.keySet())
+						ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap.keySet())
 								.contains(innerParamType);
 			}
 			else {

@@ -307,7 +307,7 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	private static BiConsumer<ValueBinder<?>, Iterable> getIterableValueBinderBiConsumer(Class innerType) {
-		return ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.get(innerType);
+		return ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap.get(innerType);
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,

@@ -69,7 +69,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * A map of inner types to functions that bind the List parameter.
 	 */
 	public static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
-			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
+			iterablePropertyTypeToMethodMap = createIterableTypeMapping();
 
 	@SuppressWarnings("unchecked")
 	private static Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> createIterableTypeMapping() {
@@ -127,7 +127,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	}
 
 	public static Class<?> findFirstCompatibleSpannerMultipleItemNativeType(Predicate<Class> testFunc) {
-		Optional<Class<?>> compatible = iterablePropertyType2ToMethodMap.keySet().stream().filter(testFunc).findFirst();
+		Optional<Class<?>> compatible = iterablePropertyTypeToMethodMap.keySet().stream().filter(testFunc).findFirst();
 		return compatible.isPresent() ? compatible.get() : null;
 	}
 
@@ -331,15 +331,15 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 			// attempt check if there is directly a write method that can accept the
 			// property
-			if (!valueSet && iterablePropertyType2ToMethodMap.containsKey(innerType)) {
-				iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+			if (!valueSet && iterablePropertyTypeToMethodMap.containsKey(innerType)) {
+				iterablePropertyTypeToMethodMap.get(innerType).accept(valueBinder,
 						value);
 				valueSet = true;
 			}
 
 			// Finally find any compatible conversion
 			if (!valueSet) {
-				for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
+				for (Class<?> targetType : iterablePropertyTypeToMethodMap.keySet()) {
 					valueSet = attemptSetIterablePropertyWithType(value, valueBinder,
 							innerType, targetType);
 					if (valueSet) {
@@ -355,7 +355,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	private boolean attemptSetIterablePropertyWithType(Iterable<Object> value,
 			ValueBinder<WriteBuilder> valueBinder, Class innerType, Class<?> targetType) {
 		if (this.writeConverter.canConvert(innerType, targetType)) {
-			BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyType2ToMethodMap
+			BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyTypeToMethodMap
 					.get(targetType);
 			toMethod.accept(valueBinder,
 					(value != null) ? ConversionUtils.convertIterable(value, targetType, this.writeConverter) : null);
