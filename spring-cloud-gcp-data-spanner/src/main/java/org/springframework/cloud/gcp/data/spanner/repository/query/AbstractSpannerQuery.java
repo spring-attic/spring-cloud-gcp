@@ -20,10 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
@@ -104,7 +102,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	}
 
 	@Override
-	public QueryMethod getQueryMethod() {
+	public SpannerQueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
 

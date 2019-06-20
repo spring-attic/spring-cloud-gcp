@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,6 +38,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -44,6 +48,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
@@ -96,8 +101,12 @@ public class SqlSpannerQueryTests {
 	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Before
-	public void initMocks() {
+	public void initMocks() throws NoSuchMethodException {
 		this.queryMethod = mock(SpannerQueryMethod.class);
+		// this is a dummy object. it is not mockable otherwise.
+		Method method = Object.class.getMethod("toString");
+		when(this.queryMethod.getMethod()).thenReturn(method);
+		when(this.spannerEntityProcessor.getWriteConverter()).thenReturn(new SpannerWriteConverter());
 		this.spannerTemplate = spy(new SpannerTemplate(() -> mock(DatabaseClient.class),
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
@@ -114,7 +123,7 @@ public class SqlSpannerQueryTests {
 	}
 
 	@Test
-	public void compoundNameConventionTest() {
+	public void compoundNameConventionTest() throws NoSuchMethodException {
 
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:"
@@ -124,7 +133,7 @@ public class SqlSpannerQueryTests {
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3;";
 
 		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
 				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
@@ -132,18 +141,18 @@ public class SqlSpannerQueryTests {
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3) "
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3) "
 				+ "ORDER BY COLA ASC , COLB DESC LIMIT 10 OFFSET 30";
 
 		Object[] params = new Object[] { "BUY", this.pageable, "abcd", "abc123", 8.88,
 				3.33, "blahblah",
 				1.11, 2.22, Struct.newBuilder().set("symbol").to("ABCD").set("action")
 						.to("BUY").build(),
-				new SymbolAction("ABCD", "BUY") };
+				new SymbolAction("ABCD", "BUY"), Arrays.asList("a", "b") };
 
 		String[] paramNames = new String[] { "tag0", "ignoredPageable", "tag1", "tag2",
 				"tag3", "tag4",
-				"tag5", "tag6", "tag7", "tag8", "tag9" };
+				"tag5", "tag6", "tag7", "tag8", "tag9", "tag10" };
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -193,6 +202,7 @@ public class SqlSpannerQueryTests {
 			assertThat(paramMap.get("tag6").getFloat64()).isEqualTo(params[7]);
 			assertThat(paramMap.get("tag7").getFloat64()).isEqualTo(params[8]);
 			assertThat(paramMap.get("tag8").getStruct()).isEqualTo(params[9]);
+			assertThat(paramMap.get("tag10").getStringArray()).isEqualTo(params[11]);
 			verify(this.spannerEntityProcessor, times(1)).write(same(params[10]), any());
 
 			assertThat(paramMap.get("SpELtag1").getFloat64()).isEqualTo(-8.88, DELTA);
@@ -200,6 +210,13 @@ public class SqlSpannerQueryTests {
 
 			return null;
 		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+		// This dummy method was created so the metadata for the ARRAY param inner type is
+		// provided.
+		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Object.class, Object.class,
+				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
+				Object.class, List.class);
+		when(this.queryMethod.getMethod()).thenReturn(method);
 
 		sqlSpannerQuery.execute(params);
 
@@ -310,5 +327,14 @@ public class SqlSpannerQueryTests {
 
 		@Column(name = "trader_id")
 		String traderId;
+	}
+
+	private static class QueryHolder {
+		public long dummyMethod(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+				Object tag6, Object tag7, Object tag8, Object tag9, Object tag11,
+				@Param("tag10") List<String> blahblah) {
+			// tag10 is intentionally named via annotation.
+			return 0;
+		}
 	}
 }

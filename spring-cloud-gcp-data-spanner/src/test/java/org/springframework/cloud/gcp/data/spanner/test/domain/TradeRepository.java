@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.util.List;
+import java.util.Set;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Struct;
@@ -59,7 +60,7 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	boolean existsByActionQuery(@Param("action") String action);
 
 	@Query("select action from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
-			+ "where action = @action limit 1")
+			+ "where action in (@action) limit 1")
 	String getFirstString(@Param("action") String action);
 
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
@@ -97,4 +98,12 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
 			+ " WHERE STRUCT(symbol,action) = @pairTag ORDER BY LOWER(action) DESC")
 	List<Trade> findBySymbolAndActionPojo(@Param("pairTag") SymbolAction symbolAction);
+
+	long countByActionIn(List<String> action);
+
+	@Query("SELECT count(1) FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:" +
+			" where action in unnest(@actions)")
+	long countWithInQuery(@Param("actions") List<String> actions);
+
+	List<Trade> findByActionIn(Set<String> action);
 }

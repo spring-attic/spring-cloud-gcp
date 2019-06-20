@@ -1038,6 +1038,8 @@ The following filter options are supported:
 * Not like a string
 * Contains a string
 * Not contains a string
+* In
+* Not in
 
 Note that the phrase `SymbolIgnoreCase` is translated to `LOWER(SYMBOL) = LOWER(?)` indicating a non-case-sensitive matching.
 The `IgnoreCase` phrase may only be appended to fields that correspond to columns of type STRING or BYTES.
@@ -1056,6 +1058,8 @@ The `Contains` and `NotContains` naming conventions:
 List<Trade> findBySymbolContains(String symbolFragment);
 ----
 The param `symbolFragment` is a https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains[regular expression] that is checked for occurrences.
+
+The `In` and `NotIn` keywords must be used with `Iterable` corresponding parameters.
 
 Delete queries are also supported.
 For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
@@ -1176,6 +1180,9 @@ SpEL can also be used to provide SQL parameters:
   AND price > #{#priceRadius * -1} AND price < #{#priceRadius * 2}")
 List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 ----
+
+When using the `IN` SQL clause, remember to use `IN UNNEST(@iterableParam)` to specify a single `Iterable` parameter.
+You can also use a fixed number of singular parameters such as `IN (@stringParam1, @stringParam2)`.
 
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections].
