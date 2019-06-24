@@ -98,7 +98,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public Class<?> getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType) {
 		Class<?> compatible;
 		if (isIterableInnerType) {
-			if (ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.keySet()
+			if (ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap.keySet()
 					.contains(originalType)) {
 				return originalType;
 			}

@@ -1059,6 +1059,8 @@ List<Trade> findBySymbolContains(String symbolFragment);
 ----
 The param `symbolFragment` is a https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains[regular expression] that is checked for occurrences.
 
+The `In` and `NotIn` keywords must be used with `Iterable` corresponding parameters.
+
 Delete queries are also supported.
 For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
 The delete operation happens in a single transaction.
@@ -1178,6 +1180,9 @@ SpEL can also be used to provide SQL parameters:
   AND price > #{#priceRadius * -1} AND price < #{#priceRadius * 2}")
 List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 ----
+
+When using the `IN` SQL clause, remember to use `IN UNNEST(@iterableParam)` to specify a single `Iterable` parameter.
+You can also use a fixed number of singular parameters such as `IN (@stringParam1, @stringParam2)`.
 
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections].
