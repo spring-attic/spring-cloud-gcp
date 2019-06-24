@@ -75,15 +75,15 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 	public void readWriteTransactionTest() {
 		Trade trade = Trade.aTrade();
 		this.spannerOperations.performReadWriteTransaction((transactionOperations) -> {
+
+			long beforeCount = transactionOperations.count(Trade.class);
 			transactionOperations.insert(trade);
 
-			// because the insert happens within the same transaction, this count is still
-			// 0
-			assertThat(transactionOperations.count(Trade.class)).isEqualTo(0L);
+			// because the insert happens within the same transaction, this count is unchanged.
+			assertThat(transactionOperations.count(Trade.class)).isEqualTo(beforeCount);
 			return null;
 		});
 
-		// now that the transaction has completed, the count should be 1
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 		this.transactionalService.testTransactionalAnnotation();
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(2L);
@@ -113,12 +113,12 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		@Transactional
 		public void testTransactionalAnnotation() {
+			long beforeCount = this.spannerTemplate.count(Trade.class);
 			Trade trade = Trade.aTrade();
 			this.spannerTemplate.insert(trade);
 
-			// because the insert happens within the same transaction, this count is still
-			// 1
-			assertThat(this.spannerTemplate.count(Trade.class)).isEqualTo(1L);
+			// because the insert happens within the same transaction, this count is unchanged.
+			assertThat(this.spannerTemplate.count(Trade.class)).isEqualTo(beforeCount);
 		}
 	}
 }
