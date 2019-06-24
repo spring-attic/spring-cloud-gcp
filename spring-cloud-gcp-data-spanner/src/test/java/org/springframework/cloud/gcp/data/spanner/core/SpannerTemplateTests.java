@@ -166,10 +166,22 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void executeDmlTest() {
-		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+		TransactionContext context = mock(TransactionContext.class);
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+			TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(context);
+		});
+
+		when(context.executeUpdate(eq(DML))).thenReturn(333L);
+
 		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
 				() -> this.spannerTemplate.executeDmlStatement(DML),
-				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML)));
+				x -> {
+				});
+		verify(context, times(1)).executeUpdate(eq(DML));
 	}
 
 	@Test

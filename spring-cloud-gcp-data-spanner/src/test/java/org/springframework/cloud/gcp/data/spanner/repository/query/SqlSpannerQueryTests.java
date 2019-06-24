@@ -25,6 +25,8 @@ import java.util.Optional;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.Value;
 import org.assertj.core.data.Offset;
 import org.junit.Before;
@@ -94,6 +96,8 @@ public class SqlSpannerQueryTests {
 	private final SpannerEntityProcessor spannerEntityProcessor = mock(
 			SpannerEntityProcessor.class);
 
+	private final DatabaseClient databaseClient = mock(DatabaseClient.class);
+
 	/**
 	 * checks messages and types for exceptions.
 	 */
@@ -107,7 +111,7 @@ public class SqlSpannerQueryTests {
 		Method method = Object.class.getMethod("toString");
 		when(this.queryMethod.getMethod()).thenReturn(method);
 		when(this.spannerEntityProcessor.getWriteConverter()).thenReturn(new SpannerWriteConverter());
-		this.spannerTemplate = spy(new SpannerTemplate(() -> mock(DatabaseClient.class),
+		this.spannerTemplate = spy(new SpannerTemplate(() -> this.databaseClient,
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
 						this.spannerMappingContext, this.spannerEntityProcessor, true)));
@@ -280,6 +284,15 @@ public class SqlSpannerQueryTests {
 	@Test
 	public void dmlTest() {
 		String sql = "dml statement here";
+
+		TransactionContext context = mock(TransactionContext.class);
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+			TransactionRunner.TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(context);
+		});
 
 		Parameters parameters = mock(Parameters.class);
 		// @formatter:off
