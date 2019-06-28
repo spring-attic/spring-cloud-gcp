@@ -4645,10 +4645,7 @@ If a method annotated with <code>@Transactional</code> calls another method also
 <h4 id="_dml_statements"><a class="link" href="#_dml_statements">13.3.7. DML Statements</a></h4>
 <div class="paragraph">
 <p><code>SpannerTemplate</code> supports [DML](<a href="https://cloud.google.com/spanner/docs/dml-tasks" class="bare">https://cloud.google.com/spanner/docs/dml-tasks</a>) <code>Statements</code>.
-DML statements can be executed in transactions via <code>performReadWriteTransaction</code> or using the <code>@Transactional</code> annotation.</p>
-</div>
-<div class="paragraph">
-<p>When DML statements are executed outside of transactions, they are executed in [partitioned-mode](<a href="https://cloud.google.com/spanner/docs/dml-tasks#partitioned-dml" class="bare">https://cloud.google.com/spanner/docs/dml-tasks#partitioned-dml</a>).</p>
+DML statements can also be executed in transactions via <code>performReadWriteTransaction</code> or using the <code>@Transactional</code> annotation.</p>
 </div>
 </div>
 </div>
@@ -4849,6 +4846,12 @@ LIMIT 3</code></pre>
 <li>
 <p>Not contains a string</p>
 </li>
+<li>
+<p>In</p>
+</li>
+<li>
+<p>Not in</p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
@@ -4877,6 +4880,9 @@ The Spring Data "AllIgnoreCase" phrase appended at the end of the method name is
 </div>
 <div class="paragraph">
 <p>The param <code>symbolFragment</code> is a <a href="https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains">regular expression</a> that is checked for occurrences.</p>
+</div>
+<div class="paragraph">
+<p>The <code>In</code> and <code>NotIn</code> keywords must be used with <code>Iterable</code> corresponding parameters.</p>
 </div>
 <div class="paragraph">
 <p>Delete queries are also supported.
@@ -5022,6 +5028,10 @@ List&lt;Trade&gt; fetchByActionNamedQuery(String action);</code></pre>
   AND price &gt; #{#priceRadius * -1} AND price &lt; #{#priceRadius * 2}")
 List&lt;Trade&gt; fetchByActionNamedQuery(String action, Double priceRadius);</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>When using the <code>IN</code> SQL clause, remember to use <code>IN UNNEST(@iterableParam)</code> to specify a single <code>Iterable</code> parameter.
+You can also use a fixed number of singular parameters such as <code>IN (@stringParam1, @stringParam2)</code>.</p>
 </div>
 </div>
 </div>
