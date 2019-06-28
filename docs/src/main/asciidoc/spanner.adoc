@@ -881,9 +881,7 @@ If a method annotated with `@Transactional` calls another method also annotated,
 ==== DML Statements
 
 `SpannerTemplate` supports [DML](https://cloud.google.com/spanner/docs/dml-tasks) `Statements`.
-DML statements can be executed in transactions via `performReadWriteTransaction` or using the `@Transactional` annotation.
-
-When DML statements are executed outside of transactions, they are executed in [partitioned-mode](https://cloud.google.com/spanner/docs/dml-tasks#partitioned-dml).
+DML statements can also be executed in transactions via `performReadWriteTransaction` or using the `@Transactional` annotation.
 
 === Repositories
 
