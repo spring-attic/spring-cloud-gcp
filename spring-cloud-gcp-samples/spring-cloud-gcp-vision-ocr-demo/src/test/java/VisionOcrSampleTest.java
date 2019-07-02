@@ -32,10 +32,8 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		classes = { Application.class },
-		properties = {
-				"application.ocr-bucket=vision-integration-test-bucket"
-		})
+		classes = Application.class,
+		properties = "application.ocr-bucket=vision-integration-test-bucket")
 public class VisionOcrSampleTest {
 
 	@Autowired
