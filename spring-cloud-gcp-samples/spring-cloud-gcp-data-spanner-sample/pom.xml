@@ -19,7 +19,7 @@
 			<artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
 		</dependency>
 
-        <!-- Used to test that multiple Spring Data modules can be used together -->
+		<!-- Used to test that multiple Spring Data modules can be used together -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
