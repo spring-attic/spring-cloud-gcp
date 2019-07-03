@@ -84,10 +84,9 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 			return null;
 		});
 
-		// now that the transaction has completed, the count should be 3
-		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(3L);
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 		this.transactionalService.testTransactionalAnnotation();
-		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(4L);
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(2L);
 	}
 
 	@Test
