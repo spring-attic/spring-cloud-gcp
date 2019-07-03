@@ -5,6 +5,7 @@ This code sample demonstrates how to use both link:../../spring-cloud-gcp-starte
 == Running the example
 
 . Follow the instructions in the individual link:../../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Cloud Spanner] and link:../../spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Spring Data Cloud Datastore] sample modules to set up Databases, Instances, and Namespaces for Cloud Spanner and Cloud Datastore.
+Enter these names in `application.properties`.
 
 . Run the `MultipleDataModuleExample` Spring Boot console app:
 +
