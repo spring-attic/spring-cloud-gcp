@@ -27,7 +27,7 @@ import org.springframework.data.repository.query.Param;
  *
  * @author Chengyuan Zhao
  */
-public interface DatastorePersonRepository extends DatastoreRepository<Person, Long> {
+public interface PersonRepository extends DatastoreRepository<Person, Long> {
 
 	@Query("select * from |com.example.Person| where id = @id")
 	List<Person> findSingersById(@Param("id") Long id);

@@ -32,7 +32,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
  * @author Chengyuan
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource("classpath:application-test.properties")
+@TestPropertySource("classpath:application.properties")
 @EnableAutoConfiguration
 public class MultipleDataModuleTest {
 
@@ -42,7 +42,7 @@ public class MultipleDataModuleTest {
 
 	// The Datastore Repo
 	@Autowired
-	DatastorePersonRepository datastorePersonRepository;
+	PersonRepository datastorePersonRepository;
 
 	@Test
 	public void testMultipleModulesTogether() {
