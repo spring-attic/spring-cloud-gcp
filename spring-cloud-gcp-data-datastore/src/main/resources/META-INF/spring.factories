@@ -1,0 +1,1 @@
+org.springframework.data.repository.core.support.RepositoryFactorySupport=org.springframework.cloud.gcp.data.spanner.repository.support.DatastoreRepositoryFactory

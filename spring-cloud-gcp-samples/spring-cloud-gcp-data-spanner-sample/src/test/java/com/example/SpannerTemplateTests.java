@@ -45,7 +45,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@TestPropertySource("classpath:application.properties")
+@TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(classes = { SpannerExampleDriver.class })
 public class SpannerTemplateTests {
 	@Autowired

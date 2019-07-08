@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.spanner;
+package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
 
 /**
- * A repository for testing instantiation.
+ * A test class for Spring Data Datastore. Used to test that it works with Spring Data
+ * Cloud Spanner in a single application.
  *
  * @author Chengyuan Zhao
  */
-@Repository
-public interface TestRepository extends SpannerRepository {
+@Entity
+public class Person {
 
+	@Id
+	Long id;
+
+	String name;
+
+	public Person(Long id, String name) {
+		this.id = id;
+		this.name = name;
+	}
 }
