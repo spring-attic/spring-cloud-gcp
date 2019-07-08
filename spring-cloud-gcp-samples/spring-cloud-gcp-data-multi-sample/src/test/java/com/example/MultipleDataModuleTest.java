@@ -49,10 +49,12 @@ public class MultipleDataModuleTest {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat(
-				"Spanner integration tests are disabled. "
+		assumeThat("Spanner integration tests are disabled. "
 						+ "Please use '-Dit.spanner=true' to enable them. ",
 				System.getProperty("it.spanner"), is("true"));
+		assumeThat("Datastore integration tests are disabled. "
+				+ "Please use '-Dit.datastore=true' to enable them.",
+				System.getProperty("it.datastore"), is("true"));
 	}
 
 	@Test
