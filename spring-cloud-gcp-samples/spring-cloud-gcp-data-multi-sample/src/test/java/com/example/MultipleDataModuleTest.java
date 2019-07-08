@@ -16,6 +16,7 @@
 
 package com.example;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -25,6 +26,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests that our Spring Data modules can be used with each other.
@@ -43,6 +46,14 @@ public class MultipleDataModuleTest {
 	// The Datastore Repo
 	@Autowired
 	PersonRepository datastorePersonRepository;
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Spanner integration tests are disabled. "
+						+ "Please use '-Dit.spanner=true' to enable them. ",
+				System.getProperty("it.spanner"), is("true"));
+	}
 
 	@Test
 	public void testMultipleModulesTogether() {
