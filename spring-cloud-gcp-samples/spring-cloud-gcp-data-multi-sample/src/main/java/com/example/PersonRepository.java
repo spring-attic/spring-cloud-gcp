@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.spanner;
+package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
+
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
- * A repository for testing instantiation.
+ * Sample repository for testing.
  *
  * @author Chengyuan Zhao
  */
-@Repository
-public interface TestRepository extends SpannerRepository {
+public interface PersonRepository extends DatastoreRepository<Person, Long> {
 
+	@Query("select * from |com.example.Person| where id = @id")
+	List<Person> findSingersById(@Param("id") Long id);
 }

@@ -1,0 +1,23 @@
+= Spring Cloud GCP Cloud Cloud Spanner and Datastore Combined Usage Example
+
+This code sample demonstrates how to use both link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Data Cloud Spanner] and link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Data Cloud Datastore] using the Spring Data Cloud Datastore modules in a single Spring application.
+
+== Running the example
+
+. Follow the instructions in the individual link:../../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Cloud Spanner] and link:../../spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Spring Data Cloud Datastore] sample modules to set up Databases, Instances, and Namespaces for Cloud Spanner and Cloud Datastore.
+Enter these names in `application.properties`.
+
+. Run the `MultipleDataModuleExample` Spring Boot console app:
++
+`mvn spring-boot:run`
+
+. The following output shows that both Cloud Spanner and Cloud Datastore are being used:
++
+----
+Deleting all entities.
+The number of Person entities is now: 0
+The number of Trader entities is now: 0
+Saving one entity with each repository.
+The number of Person entities is now: 1
+The number of Trader entities is now: 1
+----

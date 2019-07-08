@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.spanner;
+package com.example;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.stereotype.Repository;
 
 /**
- * A repository for testing instantiation.
+ * A sample repository.
  *
+ * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@Repository
-public interface TestRepository extends SpannerRepository {
+public interface TraderRepository extends SpannerRepository<Trader, String> {
 
 }
