@@ -41,6 +41,8 @@ public class SpannerQueryOptions implements Serializable {
 
 	private Timestamp timestamp;
 
+	private boolean boundedTimestamp = false;
+
 	private Set<String> includeProperties;
 
 	private boolean allowPartialRead;
@@ -64,6 +66,26 @@ public class SpannerQueryOptions implements Serializable {
 
 	public SpannerQueryOptions setIncludeProperties(Set<String> includeProperties) {
 		this.includeProperties = includeProperties;
+		return this;
+	}
+
+	/**
+	 * Return whether this options object holds a bounded staleness timestamp.
+	 * @return {@code true} if the timestamp set in this options object is a bounded
+	 * staleness. {@code false} if it is an exact staleness. Default is {@code false}.
+	 */
+	public boolean isBoundedTimestamp() {
+		return this.boundedTimestamp;
+	}
+
+	/**
+	 * Set if this query should be executed with bounded staleness.
+	 * @param boundedTimestamp {@code true} if the timestamp set in this options object is a
+	 *     bounded staleness. {@code false} if it is an exact staleness.
+	 * @return this options object.
+	 */
+	public SpannerQueryOptions setBoundedTimestamp(boolean boundedTimestamp) {
+		this.boundedTimestamp = boundedTimestamp;
 		return this;
 	}
 

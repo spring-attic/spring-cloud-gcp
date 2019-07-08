@@ -218,7 +218,9 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
-				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+				// setBoundedTimestamp(true) was used, so this bounded MinReadTimestamp staleness is
+				// expected.
+				eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
 						.thenReturn(readOnlyTransaction);
 
 		String finalResult = this.spannerTemplate
@@ -228,7 +230,7 @@ public class SpannerTemplateTests {
 							Key.of("key"));
 					return "all done";
 				}, new SpannerReadOptions()
-						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)).setBoundedTimestamp(true));
 
 		assertThat(finalResult).isEqualTo("all done");
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
@@ -241,6 +243,7 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
+				// no setBoundedTimestamp was called, so exact staleness is expected.
 				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
 						.thenReturn(readOnlyTransaction);
 
@@ -352,9 +355,12 @@ public class SpannerTemplateTests {
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
-		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption)
+				.setTimestamp(Timestamp.ofTimeMicroseconds(333L)).setBoundedTimestamp(true);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+				.thenReturn(this.readContext);
 
 		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keySet, options),
 				() -> this.spannerTemplate.read(TestEntity.class, keySet, options), x -> {
@@ -363,7 +369,8 @@ public class SpannerTemplateTests {
 					verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 							any(), same(readOption));
 				});
-		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.databaseClient, times(1))
+				.singleUse(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)));
 	}
 
 	@Test
@@ -626,11 +633,16 @@ public class SpannerTemplateTests {
 		Sort sort = mock(Sort.class);
 		Pageable pageable = mock(Pageable.class);
 
+		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+				.thenReturn(this.readContext);
+
 		long offset = 5L;
 		int limit = 3;
 		SpannerPageableQueryOptions queryOption = new SpannerPageableQueryOptions()
 				.setOffset(offset)
-				.setLimit(limit);
+				.setLimit(limit)
+				.setTimestamp(Timestamp.ofTimeMicroseconds(333L))
+				.setBoundedTimestamp(true);
 
 		when(pageable.getOffset()).thenReturn(offset);
 		when(pageable.getPageSize()).thenReturn(limit);

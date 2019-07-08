@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import com.google.cloud.Timestamp;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -66,6 +68,18 @@ public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 	@Override
 	public SpannerPageableQueryOptions setAllowPartialRead(boolean allowPartialRead) {
 		super.setAllowPartialRead(allowPartialRead);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setTimestamp(Timestamp timestamp) {
+		super.setTimestamp(timestamp);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setBoundedTimestamp(boolean boundedTimestamp) {
+		super.setBoundedTimestamp(boundedTimestamp);
 		return this;
 	}
 }

@@ -669,6 +669,9 @@ SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp
 List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 ----
 
+You can also read with https://cloud.google.com/spanner/docs/timestamp-bounds[bounded staleness] by setting `.setBoundedTimestamp(true)` on the query and read options objects.
+Bounded staleness lets Cloud Spanner choose any point in time later than or equal to the given timestamp, but it cannot be used inside transactions.
+
 
 ===== Read from a secondary index
 
@@ -864,7 +867,7 @@ The final returned value and type of the function is determined by the user.
 You can use this object just as you would a regular `SpannerOperations` with
 a few exceptions:
 
-- Its read functionality cannot perform stale reads, because all reads happen at the single point in time of the transaction.
+- Its read functionality cannot perform stale reads (other than the staleness set on the entire transaction), because all reads happen at the single point in time of the transaction.
 - It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`
 - It cannot perform any write operations.
 

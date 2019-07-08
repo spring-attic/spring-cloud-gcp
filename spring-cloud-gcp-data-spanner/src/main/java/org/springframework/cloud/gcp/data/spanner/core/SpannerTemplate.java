@@ -129,10 +129,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClientProvider.get()::singleUse);
 	}
 
-	protected ReadContext getReadContext(Timestamp timestamp) {
+	protected ReadContext getReadContext(TimestampBound timestampBound) {
 		return doWithOrWithoutTransactionContext((x) -> x,
-				() -> this.databaseClientProvider.get()
-						.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
+				() -> this.databaseClientProvider.get().singleUse(timestampBound));
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -380,7 +379,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
 			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
 					? this.databaseClientProvider.get().readOnlyTransaction(
-							TimestampBound.ofReadTimestamp(options.getTimestamp()))
+							getStaleness(options.getTimestamp(), options.isBoundedTimestamp()))
 					: this.databaseClientProvider.get().readOnlyTransaction()) {
 				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 						SpannerTemplate.this.databaseClientProvider,
@@ -413,9 +412,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
 		String message;
-		StringBuilder logSb = new StringBuilder("Executing query").append(
-				(options.getTimestamp() != null) ? " at timestamp" + options.getTimestamp()
-						: "");
+		StringBuilder logSb = new StringBuilder("Executing query");
+		if (options.getTimestamp() != null) {
+			logSb.append(" at timestamp" + options.getTimestamp() + " with "
+					+ (options.isBoundedTimestamp() ? "bounded" : "exact") + " staleness");
+		}
 		for (QueryOption queryOption : options.getQueryOptions()) {
 			logSb.append(" with option: " + queryOption);
 		}
@@ -430,7 +431,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = ((options.getTimestamp() != null) ? getReadContext(options.getTimestamp())
+			resultSet = ((options.getTimestamp() != null)
+					? getReadContext(getStaleness(options.getTimestamp(), options.isBoundedTimestamp()))
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
@@ -445,7 +447,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		ResultSet resultSet;
 
 		ReadContext readContext = (options != null && options.getTimestamp() != null)
-				? getReadContext(options.getTimestamp())
+				? getReadContext(getStaleness(options.getTimestamp(), options.isBoundedTimestamp()))
 				: getReadContext();
 
 		if (options == null) {
@@ -475,7 +477,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			return;
 		}
 		if (options.getTimestamp() != null) {
-			logs.append(" at timestamp " + options.getTimestamp());
+			logs.append(" at timestamp " + options.getTimestamp() + " with "
+					+ (options.isBoundedTimestamp() ? "bounded" : "exact") + " staleness");
 		}
 		for (ReadOption readOption : options.getReadOptions()) {
 			logs.append(" with option: " + readOption);
@@ -580,5 +583,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	private TimestampBound getStaleness(Timestamp timestamp, boolean isBoundedStaleness) {
+		return isBoundedStaleness ? TimestampBound.ofMinReadTimestamp(timestamp)
+				: TimestampBound.ofReadTimestamp(timestamp);
 	}
 }
