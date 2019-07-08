@@ -47,6 +47,7 @@ before_install:
           -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
       export GOOGLE_CLOUD_PROJECT=spring-cloud-gcp-ci;
+      export NO_GCE_CHECK=true;
     fi;
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
