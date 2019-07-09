@@ -646,8 +646,8 @@ Main benefit of reads over queries is reading multiple rows of a certain pattern
 ===== Stale read
 
 All reads and queries are *strong reads* by default.
-A *strong read* is a read at a current timestamp and is guaranteed to see all data that has been committed up until the start of this read.
-A *stale read* on the other hand is read at a timestamp in the past.
+A *strong read* is a read at a current time and is guaranteed to see all data that has been committed up until the start of this read.
+An *exact staleness read* is read at a timestamp in the past.
 Cloud Spanner allows you to determine how current the data should be when you read data.
 With `SpannerTemplate` you can specify the `Timestamp` by setting it on `SpannerQueryOptions` or `SpannerReadOptions` to the appropriate read or query methods:
 
@@ -656,7 +656,7 @@ Reads:
 [source,java]
 ----
 // a read with options:
-SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
+SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(myTimestamp);
 List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
 ----
 
@@ -665,9 +665,12 @@ Queries:
 [source,java]
 ----
 // a query with options:
-SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
+SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(myTimestamp);
 List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 ----
+
+You can also read with https://cloud.google.com/spanner/docs/timestamp-bounds[*bounded staleness*] by setting `.setTimestampBound(TimestampBound.ofMinReadTimestamp(myTimestamp))` on the query and read options objects.
+Bounded staleness lets Cloud Spanner choose any point in time later than or equal to the given timestampBound, but it cannot be used inside transactions.
 
 
 ===== Read from a secondary index
@@ -864,7 +867,7 @@ The final returned value and type of the function is determined by the user.
 You can use this object just as you would a regular `SpannerOperations` with
 a few exceptions:
 
-- Its read functionality cannot perform stale reads, because all reads happen at the single point in time of the transaction.
+- Its read functionality cannot perform stale reads (other than the staleness set on the entire transaction), because all reads happen at the single point in time of the transaction.
 - It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`
 - It cannot perform any write operations.
 
