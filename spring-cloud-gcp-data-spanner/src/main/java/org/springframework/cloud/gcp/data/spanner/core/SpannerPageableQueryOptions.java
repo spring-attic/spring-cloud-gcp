@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.TimestampBound;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -30,7 +27,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerPageableQueryOptions extends SpannerQueryOptions {
+public class SpannerPageableQueryOptions extends SpannerQueryOptions<SpannerPageableQueryOptions> {
 
 	private Integer limit;
 
@@ -63,24 +60,6 @@ public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 	public SpannerPageableQueryOptions setSort(Sort sort) {
 		Assert.notNull(sort, "A valid sort is required.");
 		this.sort = sort;
-		return this;
-	}
-
-	@Override
-	public SpannerPageableQueryOptions setAllowPartialRead(boolean allowPartialRead) {
-		super.setAllowPartialRead(allowPartialRead);
-		return this;
-	}
-
-	@Override
-	public SpannerPageableQueryOptions setTimestamp(Timestamp timestamp) {
-		super.setTimestamp(timestamp);
-		return this;
-	}
-
-	@Override
-	public SpannerPageableQueryOptions setTimestampBound(TimestampBound timestampBound) {
-		super.setTimestampBound(timestampBound);
 		return this;
 	}
 }

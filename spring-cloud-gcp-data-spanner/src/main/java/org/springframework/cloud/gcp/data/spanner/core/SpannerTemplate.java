@@ -414,7 +414,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		if (options.getTimestampBound() != null) {
 			logSb.append(" at timestamp" + options.getTimestampBound());
 		}
-		for (QueryOption queryOption : options.getQueryOptions()) {
+		for (QueryOption queryOption : (QueryOption[]) options.getOptions()) {
 			logSb.append(" with option: " + queryOption);
 		}
 		logSb.append(" : ").append(statement);
@@ -430,8 +430,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		else {
 			resultSet = ((options.getTimestampBound() != null)
 					? getReadContext(options.getTimestampBound())
-					: getReadContext()).executeQuery(statement,
-							options.getQueryOptions());
+					: getReadContext()).executeQuery(statement, (QueryOption[]) options.getOptions());
 		}
 		return resultSet;
 	}
@@ -452,10 +451,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		}
 		else if (options.getIndex() != null) {
 			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getReadOptions());
+					columns, options.getOptions());
 		}
 		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
+			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
 		}
 
 		if (LOGGER.isDebugEnabled()) {
@@ -476,7 +475,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		if (options.getTimestampBound() != null) {
 			logs.append(" at timestamp " + options.getTimestampBound());
 		}
-		for (ReadOption readOption : options.getReadOptions()) {
+		for (ReadOption readOption : options.getOptions()) {
 			logs.append(" with option: " + readOption);
 		}
 		if (options.getIndex() != null) {

@@ -17,13 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
-import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.util.Assert;
 
@@ -35,62 +30,22 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerReadOptions implements Serializable {
-
-	private transient List<ReadOption> readOptions = new ArrayList<>();
-
-	private TimestampBound timestampBound;
+public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption, SpannerReadOptions>
+		implements Serializable {
 
 	private String index;
-
-	private Set<String> includeProperties;
-
-	private boolean allowPartialRead;
 
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
 	 */
 	public SpannerReadOptions() {
+		this.requestOptionType = ReadOption.class;
 	}
 
 	public SpannerReadOptions addReadOption(ReadOption readOption) {
 		Assert.notNull(readOption, "Valid read option is required!");
-		this.readOptions.add(readOption);
-		return this;
-	}
-
-	public Set<String> getIncludeProperties() {
-		return this.includeProperties;
-	}
-
-	public SpannerReadOptions setIncludeProperties(Set<String> includeProperties) {
-		this.includeProperties = includeProperties;
-		return this;
-	}
-
-	public TimestampBound getTimestampBound() {
-		return this.timestampBound;
-	}
-
-	public Timestamp getTimestamp() {
-		return this.timestampBound.getMode() == TimestampBound.Mode.READ_TIMESTAMP
-				? this.timestampBound.getReadTimestamp()
-				: this.timestampBound.getMinReadTimestamp();
-	}
-
-	/**
-	 * Set if this query should be executed with bounded staleness.
-	 * @param timestampBound the timestamp bound. Can be exact or bounded staleness.
-	 * @return this options object.
-	 */
-	public SpannerReadOptions setTimestampBound(TimestampBound timestampBound) {
-		this.timestampBound = timestampBound;
-		return this;
-	}
-
-	public SpannerReadOptions setTimestamp(Timestamp timestamp) {
-		this.timestampBound = TimestampBound.ofReadTimestamp(timestamp);
+		this.requestOptions.add(readOption);
 		return this;
 	}
 
@@ -103,16 +58,4 @@ public class SpannerReadOptions implements Serializable {
 		return this;
 	}
 
-	public ReadOption[] getReadOptions() {
-		return this.readOptions.toArray(new ReadOption[this.readOptions.size()]);
-	}
-
-	public boolean isAllowPartialRead() {
-		return this.allowPartialRead;
-	}
-
-	public SpannerReadOptions setAllowPartialRead(boolean allowPartialRead) {
-		this.allowPartialRead = allowPartialRead;
-		return this;
-	}
 }
