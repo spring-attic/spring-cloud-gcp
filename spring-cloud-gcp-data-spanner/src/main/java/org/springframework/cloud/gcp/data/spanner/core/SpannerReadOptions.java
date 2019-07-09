@@ -20,8 +20,8 @@ import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
-
 import com.google.cloud.spanner.TimestampBound;
+
 import org.springframework.util.Assert;
 
 /**
