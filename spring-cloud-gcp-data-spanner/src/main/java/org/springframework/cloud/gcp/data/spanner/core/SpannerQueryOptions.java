@@ -23,6 +23,7 @@ import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.util.Assert;
 
@@ -39,9 +40,7 @@ public class SpannerQueryOptions implements Serializable {
 
 	private transient List<QueryOption> queryOptions = new ArrayList<>();
 
-	private Timestamp timestamp;
-
-	private boolean boundedTimestamp = false;
+	private TimestampBound timestampBound;
 
 	private Set<String> includeProperties;
 
@@ -69,33 +68,23 @@ public class SpannerQueryOptions implements Serializable {
 		return this;
 	}
 
-	/**
-	 * Return whether this options object holds a bounded staleness timestamp.
-	 * @return {@code true} if the timestamp set in this options object is a bounded
-	 * staleness. {@code false} if it is an exact staleness. Default is {@code false}.
-	 */
-	public boolean isBoundedTimestamp() {
-		return this.boundedTimestamp;
+	public TimestampBound getTimestampBound() {
+		return this.timestampBound;
 	}
 
 	/**
 	 * Set if this query should be executed with bounded staleness.
-	 * @param boundedTimestamp {@code true} if the timestamp set in this options object is a
-	 *     bounded staleness. {@code false} if it is an exact staleness.
+	 * @param timestampBound the timestamp bound. Can be exact or bounded staleness.
 	 * @return this options object.
 	 */
-	public SpannerQueryOptions setBoundedTimestamp(boolean boundedTimestamp) {
-		this.boundedTimestamp = boundedTimestamp;
+	public SpannerQueryOptions setTimestampBound(TimestampBound timestampBound) {
+		this.timestampBound = timestampBound;
 		return this;
-	}
-
-	public Timestamp getTimestamp() {
-		return this.timestamp;
 	}
 
 	public SpannerQueryOptions setTimestamp(Timestamp timestamp) {
 		Assert.notNull(timestamp, "A valid timestamp is required!");
-		this.timestamp = timestamp;
+		this.timestampBound = TimestampBound.ofReadTimestamp(timestamp);
 		return this;
 	}
 

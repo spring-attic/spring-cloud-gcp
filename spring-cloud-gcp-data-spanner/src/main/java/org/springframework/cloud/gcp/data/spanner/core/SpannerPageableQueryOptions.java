@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -78,8 +79,8 @@ public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 	}
 
 	@Override
-	public SpannerPageableQueryOptions setBoundedTimestamp(boolean boundedTimestamp) {
-		super.setBoundedTimestamp(boundedTimestamp);
+	public SpannerPageableQueryOptions setTimestampBound(TimestampBound timestampBound) {
+		super.setTimestampBound(timestampBound);
 		return this;
 	}
 }
