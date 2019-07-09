@@ -73,4 +73,13 @@ public class SpannerQueryOptions extends AbstractSpannerRequestOptions<QueryOpti
 		return this;
 	}
 
+	/**
+	 * Deprecated. Please use {@code getOptions}.
+	 * @return the array of query request options.
+	 */
+	@Deprecated
+	public QueryOption[] getQueryOptions() {
+		return this.getOptions();
+	}
+
 }
