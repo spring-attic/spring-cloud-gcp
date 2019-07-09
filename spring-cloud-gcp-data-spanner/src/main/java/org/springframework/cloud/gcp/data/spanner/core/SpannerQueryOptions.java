@@ -72,6 +72,12 @@ public class SpannerQueryOptions implements Serializable {
 		return this.timestampBound;
 	}
 
+	public Timestamp getTimestamp() {
+		return this.timestampBound.getMode() == TimestampBound.Mode.READ_TIMESTAMP
+				? this.timestampBound.getReadTimestamp()
+				: this.timestampBound.getMinReadTimestamp();
+	}
+
 	/**
 	 * Set if this query should be executed with bounded staleness.
 	 * @param timestampBound the timestamp bound. Can be exact or bounded staleness.
