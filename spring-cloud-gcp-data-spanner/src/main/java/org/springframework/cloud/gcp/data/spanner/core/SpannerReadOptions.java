@@ -84,7 +84,7 @@ public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption
 	}
 
 	/**
-	 * Deprecated. Please use {@code getOptions}.
+	 * @deprecated  as of 1.2. Please use {@code getOptions}.
 	 * @return the array of read request options.
 	 */
 	@Deprecated
