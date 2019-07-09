@@ -108,7 +108,6 @@ public class CloudVisionAutoConfiguration {
 	/**
 	 * Configures the {@link DocumentOcrTemplate} class.
 	 */
-	@EnableConfigurationProperties(CloudVisionProperties.class)
 	@ConditionalOnClass(Storage.class)
 	@ConditionalOnMissingBean(DocumentOcrTemplate.class)
 	static class VisionOcrConfiguration {
