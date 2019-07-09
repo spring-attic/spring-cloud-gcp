@@ -56,7 +56,7 @@ public class SpannerReadOptionsTests {
 		ReadOption r1 = mock(ReadOption.class);
 		ReadOption r2 = mock(ReadOption.class);
 		spannerReadOptions.addReadOption(r1).addReadOption(r2);
-		assertThat(Arrays.asList(spannerReadOptions.getReadOptions()))
+		assertThat(Arrays.asList(spannerReadOptions.getOptions()))
 				.containsExactlyInAnyOrder(r1, r2);
 	}
 

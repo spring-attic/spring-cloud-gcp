@@ -31,7 +31,6 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -129,10 +128,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClientProvider.get()::singleUse);
 	}
 
-	protected ReadContext getReadContext(Timestamp timestamp) {
+	protected ReadContext getReadContext(TimestampBound timestampBound) {
 		return doWithOrWithoutTransactionContext((x) -> x,
-				() -> this.databaseClientProvider.get()
-						.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
+				() -> this.databaseClientProvider.get().singleUse(timestampBound));
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -378,9 +376,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		}, () -> {
 
 			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
-			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
-					? this.databaseClientProvider.get().readOnlyTransaction(
-							TimestampBound.ofReadTimestamp(options.getTimestamp()))
+			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestampBound() != null)
+					? this.databaseClientProvider.get().readOnlyTransaction(options.getTimestampBound())
 					: this.databaseClientProvider.get().readOnlyTransaction()) {
 				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 						SpannerTemplate.this.databaseClientProvider,
@@ -413,10 +410,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
 		String message;
-		StringBuilder logSb = new StringBuilder("Executing query").append(
-				(options.getTimestamp() != null) ? " at timestamp" + options.getTimestamp()
-						: "");
-		for (QueryOption queryOption : options.getQueryOptions()) {
+		StringBuilder logSb = new StringBuilder("Executing query");
+		if (options.getTimestampBound() != null) {
+			logSb.append(" at timestamp" + options.getTimestampBound());
+		}
+		for (QueryOption queryOption : (QueryOption[]) options.getOptions()) {
 			logSb.append(" with option: " + queryOption);
 		}
 		logSb.append(" : ").append(statement);
@@ -430,9 +428,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = ((options.getTimestamp() != null) ? getReadContext(options.getTimestamp())
-					: getReadContext()).executeQuery(statement,
-							options.getQueryOptions());
+			resultSet = ((options.getTimestampBound() != null)
+					? getReadContext(options.getTimestampBound())
+					: getReadContext()).executeQuery(statement, (QueryOption[]) options.getOptions());
 		}
 		return resultSet;
 	}
@@ -444,8 +442,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		ResultSet resultSet;
 
-		ReadContext readContext = (options != null && options.getTimestamp() != null)
-				? getReadContext(options.getTimestamp())
+		ReadContext readContext = (options != null && options.getTimestampBound() != null)
+				? getReadContext(options.getTimestampBound())
 				: getReadContext();
 
 		if (options == null) {
@@ -453,10 +451,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		}
 		else if (options.getIndex() != null) {
 			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getReadOptions());
+					columns, options.getOptions());
 		}
 		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
+			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
 		}
 
 		if (LOGGER.isDebugEnabled()) {
@@ -474,10 +472,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		if (options == null) {
 			return;
 		}
-		if (options.getTimestamp() != null) {
-			logs.append(" at timestamp " + options.getTimestamp());
+		if (options.getTimestampBound() != null) {
+			logs.append(" at timestamp " + options.getTimestampBound());
 		}
-		for (ReadOption readOption : options.getReadOptions()) {
+		for (ReadOption readOption : options.getOptions()) {
 			logs.append(" with option: " + readOption);
 		}
 		if (options.getIndex() != null) {
