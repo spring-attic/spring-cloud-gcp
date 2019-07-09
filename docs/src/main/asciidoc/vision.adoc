@@ -33,35 +33,6 @@ dependencies {
 }
 ----
 
-==== Cloud Vision OCR Dependencies
-
-If you are interested in applying optical character recognition (OCR) on documents for your project, you'll need to add both `spring-cloud-gcp-starter-vision` and `spring-cloud-gcp-starter-storage` to your dependencies.
-The storage starter is necessary because the Cloud Vision API will process your documents and write OCR output files all within your Google Cloud Storage buckets.
-
-Maven coordinates using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
-
-[source,xml]
-----
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-gcp-starter-vision</artifactId>
-</dependency>
-<dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-gcp-starter-storage</artifactId>
-</dependency>
-----
-
-Gradle coordinates:
-
-[source]
-----
-dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
-}
-----
-
 === Image Analysis
 
 The `CloudVisionTemplate` allows you to easily analyze images; it provides the following method for interfacing with Cloud Vision:

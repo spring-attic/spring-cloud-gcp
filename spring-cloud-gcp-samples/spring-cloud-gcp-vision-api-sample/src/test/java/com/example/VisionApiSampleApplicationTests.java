@@ -16,8 +16,9 @@
 
 package com.example;
 
-import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -77,13 +78,11 @@ public class VisionApiSampleApplicationTests {
 					ModelAndView result = response.getModelAndView();
 					Map<String, Float> annotations = (Map<String, Float>) result.getModelMap().get("annotations");
 
-					// This represents the annotation on the image with the best score
-					String bestAnnotation = annotations.entrySet().stream()
-							.max(Comparator.comparingDouble((e) -> e.getValue()))
-							.get()
-							.getKey();
+					List<String> annotationNames = annotations.keySet().stream()
+							.map(name -> name.toLowerCase().trim())
+							.collect(Collectors.toList());
 
-					assertThat(bestAnnotation).isEqualTo("boston terrier");
+					assertThat(annotationNames).contains("boston terrier");
 				});
 	}
 }
