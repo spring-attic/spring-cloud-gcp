@@ -4379,8 +4379,8 @@ Using <code>SpannerTemplate</code> you can execute SQL queries that map to POJOs
 <h5 id="_stale_read"><a class="link" href="#_stale_read">Stale read</a></h5>
 <div class="paragraph">
 <p>All reads and queries are <strong>strong reads</strong> by default.
-A <strong>strong read</strong> is a read at a current timestamp and is guaranteed to see all data that has been committed up until the start of this read.
-A <strong>stale read</strong> on the other hand is read at a timestamp in the past.
+A <strong>strong read</strong> is a read at a current time and is guaranteed to see all data that has been committed up until the start of this read.
+An <strong>exact staleness read</strong> is read at a timestamp in the past.
 Cloud Spanner allows you to determine how current the data should be when you read data.
 With <code>SpannerTemplate</code> you can specify the <code>Timestamp</code> by setting it on <code>SpannerQueryOptions</code> or <code>SpannerReadOptions</code> to the appropriate read or query methods:</p>
 </div>
@@ -4390,7 +4390,7 @@ With <code>SpannerTemplate</code> you can specify the <code>Timestamp</code> by 
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// a read with options:
-SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
+SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(myTimestamp);
 List&lt;Trade&gt; trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);</code></pre>
 </div>
 </div>
@@ -4400,9 +4400,13 @@ List&lt;Trade&gt; trades = this.spannerTemplate.readAll(Trade.class, spannerRead
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// a query with options:
-SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
+SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(myTimestamp);
 List&lt;Trade&gt; trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>You can also read with <a href="https://cloud.google.com/spanner/docs/timestamp-bounds"><strong>bounded staleness</strong></a> by setting <code>.setTimestampBound(TimestampBound.ofMinReadTimestamp(myTimestamp))</code> on the query and read options objects.
+Bounded staleness lets Cloud Spanner choose any point in time later than or equal to the given timestampBound, but it cannot be used inside transactions.</p>
 </div>
 </div>
 <div class="sect4">
@@ -4676,7 +4680,7 @@ a few exceptions:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Its read functionality cannot perform stale reads, because all reads happen at the single point in time of the transaction.</p>
+<p>Its read functionality cannot perform stale reads (other than the staleness set on the entire transaction), because all reads happen at the single point in time of the transaction.</p>
 </li>
 <li>
 <p>It cannot perform sub-transactions via <code>performReadWriteTransaction</code> or <code>performReadOnlyTransaction</code></p>
