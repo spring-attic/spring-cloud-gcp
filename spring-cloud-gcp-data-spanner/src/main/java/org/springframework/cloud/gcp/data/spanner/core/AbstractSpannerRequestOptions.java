@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import com.google.cloud.spanner.TimestampBound;
  *
  * @author Chengyuan Zhao
  */
-public class AbstractSpannerRequestOptions<A, B extends AbstractSpannerRequestOptions> {
+public class AbstractSpannerRequestOptions<A> implements Serializable {
 
 	protected transient List<A> requestOptions = new ArrayList<>();
 
@@ -45,9 +46,9 @@ public class AbstractSpannerRequestOptions<A, B extends AbstractSpannerRequestOp
 		return this.includeProperties;
 	}
 
-	public B setIncludeProperties(Set<String> includeProperties) {
+	public AbstractSpannerRequestOptions setIncludeProperties(Set<String> includeProperties) {
 		this.includeProperties = includeProperties;
-		return (B) this;
+		return this;
 	}
 
 	public TimestampBound getTimestampBound() {
@@ -59,9 +60,9 @@ public class AbstractSpannerRequestOptions<A, B extends AbstractSpannerRequestOp
 	 * @param timestampBound the timestamp bound. Can be exact or bounded staleness.
 	 * @return this options object.
 	 */
-	public B setTimestampBound(TimestampBound timestampBound) {
+	public AbstractSpannerRequestOptions setTimestampBound(TimestampBound timestampBound) {
 		this.timestampBound = timestampBound;
-		return (B) this;
+		return this;
 	}
 
 	public Timestamp getTimestamp() {
@@ -70,9 +71,9 @@ public class AbstractSpannerRequestOptions<A, B extends AbstractSpannerRequestOp
 				: this.timestampBound.getMinReadTimestamp();
 	}
 
-	public B setTimestamp(Timestamp timestamp) {
+	public AbstractSpannerRequestOptions setTimestamp(Timestamp timestamp) {
 		this.timestampBound = TimestampBound.ofReadTimestamp(timestamp);
-		return (B) this;
+		return this;
 	}
 
 	public A[] getOptions() {
@@ -83,9 +84,9 @@ public class AbstractSpannerRequestOptions<A, B extends AbstractSpannerRequestOp
 		return this.allowPartialRead;
 	}
 
-	public B setAllowPartialRead(boolean allowPartialRead) {
+	public AbstractSpannerRequestOptions setAllowPartialRead(boolean allowPartialRead) {
 		this.allowPartialRead = allowPartialRead;
-		return (B) this;
+		return this;
 	}
 
 }

@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.io.Serializable;
+import java.util.Set;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 
+import com.google.cloud.spanner.TimestampBound;
 import org.springframework.util.Assert;
 
 /**
@@ -31,8 +33,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerQueryOptions<B extends SpannerQueryOptions> extends AbstractSpannerRequestOptions<QueryOption, B>
-		implements Serializable {
+public class SpannerQueryOptions extends AbstractSpannerRequestOptions<QueryOption> {
 
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
@@ -47,4 +48,29 @@ public class SpannerQueryOptions<B extends SpannerQueryOptions> extends Abstract
 		this.requestOptions.add(queryOption);
 		return this;
 	}
+
+	@Override
+	public SpannerQueryOptions setIncludeProperties(Set<String> includeProperties) {
+		super.setIncludeProperties(includeProperties);
+		return this;
+	}
+
+	@Override
+	public SpannerQueryOptions setTimestampBound(TimestampBound timestampBound) {
+		super.setTimestampBound(timestampBound);
+		return this;
+	}
+
+	@Override
+	public SpannerQueryOptions setTimestamp(Timestamp timestamp) {
+		super.setTimestamp(timestamp);
+		return this;
+	}
+
+	@Override
+	public SpannerQueryOptions setAllowPartialRead(boolean allowPartialRead) {
+		super.setAllowPartialRead(allowPartialRead);
+		return this;
+	}
+
 }

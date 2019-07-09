@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.TimestampBound;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
+
+import java.util.Set;
 
 /**
  * Encapsulates Cloud Spanner query options with sort and paging.
@@ -27,7 +32,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerPageableQueryOptions extends SpannerQueryOptions<SpannerPageableQueryOptions> {
+public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 
 	private Integer limit;
 
@@ -62,4 +67,35 @@ public class SpannerPageableQueryOptions extends SpannerQueryOptions<SpannerPage
 		this.sort = sort;
 		return this;
 	}
+
+	@Override
+	public SpannerPageableQueryOptions addQueryOption(Options.QueryOption queryOption) {
+		super.addQueryOption(queryOption);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setIncludeProperties(Set<String> includeProperties) {
+		super.setIncludeProperties(includeProperties);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setTimestampBound(TimestampBound timestampBound) {
+		super.setTimestampBound(timestampBound);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setTimestamp(Timestamp timestamp) {
+		super.setTimestamp(timestamp);
+		return this;
+	}
+
+	@Override
+	public SpannerPageableQueryOptions setAllowPartialRead(boolean allowPartialRead) {
+		super.setAllowPartialRead(allowPartialRead);
+		return this;
+	}
+
 }

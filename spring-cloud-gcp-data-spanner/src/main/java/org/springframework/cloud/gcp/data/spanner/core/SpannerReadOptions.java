@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.io.Serializable;
+import java.util.Set;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
 
+import com.google.cloud.spanner.TimestampBound;
 import org.springframework.util.Assert;
 
 /**
@@ -30,8 +32,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption, SpannerReadOptions>
-		implements Serializable {
+public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption> {
 
 	private String index;
 
@@ -55,6 +56,30 @@ public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption
 
 	public SpannerReadOptions setIndex(String index) {
 		this.index = index;
+		return this;
+	}
+
+	@Override
+	public SpannerReadOptions setIncludeProperties(Set<String> includeProperties) {
+		super.setIncludeProperties(includeProperties);
+		return this;
+	}
+
+	@Override
+	public SpannerReadOptions setTimestampBound(TimestampBound timestampBound) {
+		super.setTimestampBound(timestampBound);
+		return this;
+	}
+
+	@Override
+	public SpannerReadOptions setTimestamp(Timestamp timestamp) {
+		super.setTimestamp(timestamp);
+		return this;
+	}
+
+	@Override
+	public SpannerReadOptions setAllowPartialRead(boolean allowPartialRead) {
+		super.setAllowPartialRead(allowPartialRead);
 		return this;
 	}
 
