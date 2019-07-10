@@ -772,6 +772,9 @@ public class ExampleItem {
 
 	@Unindexed
 	long unindexedField;
+
+	@Unindexed
+	List<String> unindexedListField;
 }
 ----
 

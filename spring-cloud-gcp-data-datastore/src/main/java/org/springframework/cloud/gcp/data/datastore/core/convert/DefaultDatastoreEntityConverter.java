@@ -24,9 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
-import com.google.cloud.datastore.ValueBuilder;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -180,9 +180,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 						Value convertedVal = this.conversions.convertOnWrite(val, persistentProperty);
 
 						if (persistentProperty.isUnindexed()) {
-							ValueBuilder valueBuilder = convertedVal.toBuilder();
-							valueBuilder.setExcludeFromIndexes(true);
-							convertedVal = valueBuilder.build();
+							convertedVal = setExcludeFromIndexes(convertedVal);
 						}
 						sink.set(persistentProperty.getFieldName(), convertedVal);
 					}
@@ -193,5 +191,17 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 								ex);
 					}
 				});
+	}
+
+	private Value setExcludeFromIndexes(Value convertedVal) {
+		// ListValues must have its contents individually excluded instead.
+		// the entire list must NOT be excluded or there will be an exception.
+		if (convertedVal.getClass().equals(ListValue.class)) {
+			return ListValue.of(((ListValue) convertedVal).get().stream()
+					.map(val -> val.toBuilder().setExcludeFromIndexes(true).build()).collect(Collectors.toList()));
+		}
+		else {
+			return convertedVal.toBuilder().setExcludeFromIndexes(true).build();
+		}
 	}
 }
