@@ -607,6 +607,7 @@ public class DefaultDatastoreEntityConverterTests {
 		UnindexedTestDatastoreItem item = new UnindexedTestDatastoreItem();
 		item.setIndexedField(1L);
 		item.setUnindexedField(2L);
+		item.setUnindexedStringListField(Arrays.asList("a", "b"));
 
 		Entity.Builder builder = getEntityBuilder();
 		ENTITY_CONVERTER.write(item, builder);
@@ -622,6 +623,14 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate excludeFromIndexes on indexed field").isFalse();
 		assertThat(entity.getValue("unindexedField").excludeFromIndexes())
 				.as("validate excludeFromIndexes on unindexed field").isTrue();
+
+		// the ListValue itself must NOT be unindexed or it will cause exception. the contents
+		// individually must be.
+		assertThat(entity.getValue("unindexedStringListField").excludeFromIndexes()).isFalse();
+		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(0).excludeFromIndexes())
+				.isTrue();
+		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(1).excludeFromIndexes())
+				.isTrue();
 	}
 
 	@Test

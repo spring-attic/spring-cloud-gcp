@@ -43,6 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
@@ -550,6 +551,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		SubEntity subEntity3 = new SubEntity();
 		SubEntity subEntity4 = new SubEntity();
 
+		subEntity1.stringList = Arrays.asList("a", "b");
+
 		ParentEntity parentEntity = new ParentEntity(Arrays.asList(subEntity1, subEntity2),
 				Collections.singletonList(subEntity4), subEntity3);
 		subEntity1.parent = parentEntity;
@@ -717,6 +720,7 @@ class SubEntity {
 	@Reference
 	SubEntity sibling;
 
+	@Unindexed
 	List<String> stringList;
 
 	String stringProperty;
