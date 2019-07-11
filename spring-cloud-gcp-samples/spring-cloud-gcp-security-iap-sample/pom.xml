@@ -9,10 +9,10 @@
     <description>Spring Cloud IAP Security Sample</description>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.BUILD-SNAPSHOT</version>
-        <relativePath/>
+        <!-- Your own application should inherit from spring-boot-starter-parent -->
+        <artifactId>spring-cloud-gcp-samples</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <version>1.2.0.BUILD-SNAPSHOT</version>
     </parent>
 
     <properties>
