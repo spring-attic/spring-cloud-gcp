@@ -51,6 +51,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
@@ -148,6 +149,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
 				() -> this.databaseClientProvider.get().readWriteTransaction()
 						.run(transactionContext -> transactionContext.executeUpdate(statement)));
+		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
+		return rowsAffected;
+	}
+
+	@Override
+	public long executePartitionedDmlStatement(Statement statement) {
+		Assert.notNull(statement, "A non-null statement is required.");
+		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
+		long rowsAffected = doWithOrWithoutTransactionContext(x -> {
+			throw new SpannerDataException("Cannot execute partitioned DML in a transaction.");
+		}, () -> this.databaseClientProvider.get().executePartitionedUpdate(statement));
 		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
 		return rowsAffected;
 	}

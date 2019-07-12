@@ -68,6 +68,12 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
+	public long executePartitionedDmlStatement(Statement statement) {
+		throw new SpannerDataException(
+				"A read-only transaction template cannot execute partitioned DML.");
+	}
+
+	@Override
 	protected ReadContext getReadContext() {
 		return this.readOnlyTransaction;
 	}

@@ -71,6 +71,12 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
+	public long executePartitionedDmlStatement(Statement statement) {
+		throw new SpannerDataException(
+				"A read-write transaction template cannot execute partitioned DML.");
+	}
+
+	@Override
 	protected ReadContext getReadContext(TimestampBound timestampBound) {
 		throw new SpannerDataException(
 				"Getting stale snapshot read contexts is not supported"

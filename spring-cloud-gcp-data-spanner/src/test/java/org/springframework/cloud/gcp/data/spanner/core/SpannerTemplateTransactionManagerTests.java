@@ -220,6 +220,12 @@ public class SpannerTemplateTransactionManagerTests {
 		this.transactionalService.dmlInReadOnly();
 	}
 
+	@Test
+	public void partitionedDmlInTransactionTest() {
+		this.expectedException.expectMessage("Cannot execute partitioned DML in a transaction.");
+		this.transactionalService.partitionedDmlInTransaction();
+	}
+
 	/**
 	 * Spring config for the tests.
 	 */
@@ -301,6 +307,11 @@ public class SpannerTemplateTransactionManagerTests {
 		@Transactional(readOnly = true)
 		public void dmlInReadOnly() {
 			this.spannerTemplate.executeDmlStatement(Statement.of("fake"));
+		}
+
+		@Transactional
+		public void partitionedDmlInTransaction() {
+			this.spannerTemplate.executePartitionedDmlStatement(Statement.of("partitioned dml statement here"));
 		}
 	}
 
