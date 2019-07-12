@@ -44,6 +44,14 @@ public interface SpannerOperations {
 	long executeDmlStatement(Statement statement);
 
 	/**
+	 * Execute a DML statement in partitioned mode. This is not available inside of
+	 * transactions.
+	 * @param statement the DML statement to execute.
+	 * @return the lower-bound of number of rows affected.
+	 */
+	long executePartitionedDmlStatement(Statement statement);
+
+	/**
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.

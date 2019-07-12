@@ -185,6 +185,14 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void executePartitionedDmlTest() {
+		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
+				() -> this.spannerTemplate.executePartitionedDmlStatement(DML),
+				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML)));
+	}
+
+	@Test
 	public void readWriteTransactionTest() {
 
 		TransactionRunner transactionRunner = mock(TransactionRunner.class);
@@ -251,6 +259,48 @@ public class SpannerTemplateTests {
 					return null;
 				}, new SpannerReadOptions()
 						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+	}
+
+	@Test
+	public void readOnlyTransactionPartitionedDmlTest() {
+
+		this.expectedException.expectMessage("A read-only transaction template cannot execute partitioned" +
+				" DML.");
+
+		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
+		when(this.databaseClient.readOnlyTransaction(
+				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+						.thenReturn(readOnlyTransaction);
+
+		this.spannerTemplate
+				.performReadOnlyTransaction((spannerOperations) -> {
+					spannerOperations.executePartitionedDmlStatement(Statement.of("fail"));
+					return null;
+				}, new SpannerReadOptions()
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+	}
+
+	@Test
+	public void readWriteTransactionPartitionedDmlTest() {
+
+		this.expectedException.expectMessage("A read-write transaction template cannot execute partitioned" +
+				" DML.");
+
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		TransactionContext transactionContext = mock(TransactionContext.class);
+
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+			TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(transactionContext);
+		});
+
+		this.spannerTemplate
+				.performReadWriteTransaction((spannerTemplate) -> {
+					spannerTemplate.executePartitionedDmlStatement(Statement.of("DML statement here"));
+					return "all done";
+				});
 	}
 
 	@Test

@@ -153,6 +153,15 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
+	public long executePartitionedDmlStatement(Statement statement) {
+		Assert.notNull(statement, "A non-null statement is required.");
+		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
+		long rowsAffected = this.databaseClientProvider.get().executePartitionedUpdate(statement);
+		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
+		return rowsAffected;
+	}
+
+	@Override
 	public <T> T read(Class<T> entityClass, Key key) {
 		return read(entityClass, key, null);
 	}

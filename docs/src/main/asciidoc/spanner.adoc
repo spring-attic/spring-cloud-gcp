@@ -801,6 +801,8 @@ this.spannerTemplate.update(t, "symbol", "action");
 DML statements can be executed using `SpannerOperations.executeDmlStatement`.
 Inserts, updates, and deletions can affect any number of rows and entities.
 
+You can execute https://cloud.google.com/spanner/docs/dml-partitioned[partitioned DML] updates by using the `executePartitionedDmlStatement` method.
+Partitioned DML queries have performance benefits but also have restrictions and cannot be used inside transactions.
 
 ==== Transactions
 
