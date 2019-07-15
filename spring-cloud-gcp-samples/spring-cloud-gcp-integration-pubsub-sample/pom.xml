@@ -7,18 +7,34 @@
 		<groupId>org.springframework.cloud</groupId>
 		<version>1.2.0.BUILD-SNAPSHOT</version>
 	</parent>
-	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-integration-pubsub-sample</artifactId>
+	<groupId>com.example</groupId>
+	<version>1.2.0.BUILD-SNAPSHOT</version>
+
+	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP Integration Pub/Sub Channel Adapters Code Sample</name>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-dependencies</artifactId>
+				<version>1.2.0.BUILD-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<modules>
 		<module>spring-cloud-gcp-integration-pubsub-sample-sender</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample-receiver</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample-polling-receiver</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample-test</module>
 	</modules>
+
 	<build>
 		<plugins>
 			<plugin>

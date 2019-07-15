@@ -2,16 +2,21 @@
 <project xmlns="https://maven.apache.org/POM/4.0.0"
 		 xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<artifactId>spring-cloud-gcp</artifactId>
-		<groupId>org.springframework.cloud</groupId>
-		<version>1.2.0.BUILD-SNAPSHOT</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-samples</artifactId>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.0.BUILD-SNAPSHOT</version>
+		<relativePath/>
+	</parent>
+
 	<name>Spring Cloud GCP Code Samples</name>
+	<artifactId>spring-cloud-gcp-samples</artifactId>
+	<groupId>org.springframework.cloud</groupId>
+	<version>1.2.0.BUILD-SNAPSHOT</version>
+
 	<packaging>pom</packaging>
+	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
 		<main.basedir>${basedir}/..</main.basedir>
@@ -46,9 +51,52 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.0.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>8.18</version>
+					</dependency>
+					<dependency>
+						<groupId>io.spring.javaformat</groupId>
+						<artifactId>spring-javaformat-checkstyle</artifactId>
+						<version>0.0.9</version>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.cloud</groupId>
+						<artifactId>spring-cloud-build-tools</artifactId>
+						<version>2.2.0.BUILD-SNAPSHOT</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>checkstyle-validation</id>
+						<phase>validate</phase>
+						<configuration>
+							<propertyExpansion>
+								checkstyle.build.directory=${project.build.directory}
+								checkstyle.suppressions.file=${checkstyle.suppressions.file}
+								checkstyle.additional.suppressions.file=${checkstyle.additional.suppressions.file}
+							</propertyExpansion>
+							<configLocation>checkstyle.xml</configLocation>
+							<headerLocation>checkstyle-header.txt</headerLocation>
+							<consoleOutput>true</consoleOutput>
+							<includeTestSourceDirectory>true</includeTestSourceDirectory>
+							<failsOnError>true</failsOnError>
+							<failOnViolation>true</failOnViolation>
+							<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+							<violationSeverity>warning</violationSeverity>
+						</configuration>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
+
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
@@ -57,4 +105,36 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+		</pluginRepository>
+	</pluginRepositories>
 </project>
