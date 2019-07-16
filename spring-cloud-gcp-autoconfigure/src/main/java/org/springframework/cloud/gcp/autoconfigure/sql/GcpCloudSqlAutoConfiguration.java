@@ -184,12 +184,12 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 				LOGGER.warn("spring.datasource.driver-class-name is specified. " +
 								"Not using generated Cloud SQL configuration");
 			}
-			if (StringUtils.isEmpty(properties.getUrl())) {
-				properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-			}
-			else {
-				LOGGER.warn("spring.datasource.url is specified. "
-						+ "Not using generated Cloud SQL configuration");
+
+			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+
+			if (StringUtils.hasText(properties.getUrl())) {
+				LOGGER.warn("Ignoring provided spring.datasource.url. Overwriting it based on the " +
+						"spring.cloud.gcp.sql.instance-connection-name.");
 			}
 
 			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
