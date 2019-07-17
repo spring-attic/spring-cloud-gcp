@@ -854,54 +854,50 @@ Coupled with Spring JDBC, it provides a
 In other words, properties like the SQL username, <literal>spring.datasource.username</literal>, and password, <literal>spring.datasource.password</literal> can be used.
 There is also some configuration specific to Google Cloud SQL:</simpara>
 <informaltable frame="all" rowsep="1" colsep="1">
-<tgroup cols="4">
-<colspec colname="col_1" colwidth="25*"/>
-<colspec colname="col_2" colwidth="25*"/>
-<colspec colname="col_3" colwidth="25*"/>
-<colspec colname="col_4" colwidth="25*"/>
+<tgroup cols="3">
+<colspec colname="col_1" colwidth="33.3333*"/>
+<colspec colname="col_2" colwidth="33.3333*"/>
+<colspec colname="col_3" colwidth="33.3334*"/>
 <tbody>
 <row>
 <entry align="left" valign="top"><simpara>Property name</simpara></entry>
 <entry align="left" valign="top"><simpara>Description</simpara></entry>
 <entry align="left" valign="top"><simpara>Default value</simpara></entry>
-<entry align="left" valign="top"><simpara>Unused if specified property(ies)</simpara></entry>
 </row>
 <row>
 <entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.sql.enabled</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>Enables or disables Cloud SQL auto configuration</simpara></entry>
 <entry align="left" valign="top"><simpara><literal>true</literal></simpara></entry>
-<entry align="left" valign="top"></entry>
 </row>
 <row>
 <entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.sql.database-name</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>Name of the database to connect to.</simpara></entry>
 <entry align="left" valign="top"></entry>
-<entry align="left" valign="top"><simpara><literal>spring.datasource.url</literal></simpara></entry>
 </row>
 <row>
 <entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.sql.instance-connection-name</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>A string containing a Google Cloud SQL instance&#8217;s project ID, region and name, each separated by a colon.
 For example, <literal>my-project-id:my-region:my-instance-name</literal>.</simpara></entry>
 <entry align="left" valign="top"></entry>
-<entry align="left" valign="top"><simpara><literal>spring.datasource.url</literal></simpara></entry>
 </row>
 <row>
 <entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.sql.credentials.location</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>File system path to the Google OAuth2 credentials private key file.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.</simpara></entry>
 <entry align="left" valign="top"><simpara>Default credentials provided by the Spring GCP Boot starter</simpara></entry>
-<entry align="left" valign="top"></entry>
 </row>
 <row>
 <entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.sql.credentials.encoded-key</literal></simpara></entry>
 <entry align="left" valign="top"><simpara>Base64-encoded contents of OAuth2 account private key in JSON format.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.</simpara></entry>
 <entry align="left" valign="top"><simpara>Default credentials provided by the Spring GCP Boot starter</simpara></entry>
-<entry align="left" valign="top"></entry>
 </row>
 </tbody>
 </tgroup>
 </informaltable>
+<note>
+<simpara>If you provide your own <literal>spring.datasource.url</literal>, it will be ignored, unless you disable Cloud SQL auto configuration with <literal>spring.cloud.gcp.sql.enabled=false</literal>.</simpara>
+</note>
 <section xml:id="_datasource_creation_flow">
 <title><literal>DataSource</literal> creation flow</title>
 <simpara>Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a <literal>CloudSqlJdbcInfoProvider</literal> object which is used to obtain an instance&#8217;s JDBC URL and driver class name.
