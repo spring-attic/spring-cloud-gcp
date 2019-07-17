@@ -41,6 +41,7 @@ import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -73,7 +74,7 @@ import org.springframework.context.annotation.Primary;
  */
 @Configuration
 @EnableConfigurationProperties(
-		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class, ZipkinProperties.class })
+		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
@@ -134,12 +135,12 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean(REPORTER_BEAN_NAME)
 	@ConditionalOnMissingBean(name = REPORTER_BEAN_NAME)
-	public Reporter<Span> stackdriverReporter(ReporterMetrics reporterMetrics,
-			GcpTraceProperties trace, ZipkinProperties zipkinProperties,
+	public Reporter<Span> stackdriverReporter(ReporterMetrics reporterMetrics, GcpTraceProperties trace,
+			@Value("${spring.zipkin.messageTimeout:1}") int fallbackZipkinTimeout,
 			@Qualifier(SENDER_BEAN_NAME) Sender sender) {
 		Integer timeout = trace.getMessageTimeout();
 		if (timeout == null) {
-			timeout = zipkinProperties.getMessageTimeout();
+			timeout = fallbackZipkinTimeout;
 		}
 		return AsyncReporter.builder(sender)
 				// historical constraint. Note: AsyncReporter supports memory bounds
