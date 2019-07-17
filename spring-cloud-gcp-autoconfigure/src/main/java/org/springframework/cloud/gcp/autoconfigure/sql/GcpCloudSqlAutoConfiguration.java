@@ -185,12 +185,11 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 								"Not using generated Cloud SQL configuration");
 			}
 
-			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-
 			if (StringUtils.hasText(properties.getUrl())) {
 				LOGGER.warn("Ignoring provided spring.datasource.url. Overwriting it based on the " +
 						"spring.cloud.gcp.sql.instance-connection-name.");
 			}
+			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
 
 			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
 				setCredentialsEncodedKeyProperty(gcpCloudSqlProperties);
