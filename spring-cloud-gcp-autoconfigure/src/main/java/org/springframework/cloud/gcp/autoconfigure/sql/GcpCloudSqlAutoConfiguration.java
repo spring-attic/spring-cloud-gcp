@@ -197,9 +197,7 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 				LOGGER.warn("Ignoring provided spring.datasource.url. Overwriting it based on the " +
 						"spring.cloud.gcp.sql.instance-connection-name.");
 			}
-
 			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-
 
 			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
 				setCredentialsEncodedKeyProperty(gcpCloudSqlProperties);
