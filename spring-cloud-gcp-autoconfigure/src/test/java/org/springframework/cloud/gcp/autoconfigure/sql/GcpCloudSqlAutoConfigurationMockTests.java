@@ -68,6 +68,29 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@Test
+	public void testCloudSqlDataSourceWithIgnoredProvidedUrl() {
+		this.contextRunner.withPropertyValues(
+				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance",
+				"spring.datasource.password=",
+				"spring.datasource.url=test-url")
+				.run((context) -> {
+					HikariDataSource dataSource =
+							(HikariDataSource) context.getBean(DataSource.class);
+					CloudSqlJdbcInfoProvider urlProvider =
+							context.getBean(CloudSqlJdbcInfoProvider.class);
+					assertThat(dataSource.getDriverClassName()).matches("com.mysql.jdbc.Driver");
+					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
+							"jdbc:mysql://google/test-database?"
+									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance"
+									+ "&useSSL=false");
+					assertThat(dataSource.getUsername()).matches("root");
+					assertThat(dataSource.getPassword()).isNull();
+					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
+				});
+	}
+
+	@Test
 	public void testCloudSqlAppEngineDataSourceTest() {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.project-id=im-not-used-for-anything",
