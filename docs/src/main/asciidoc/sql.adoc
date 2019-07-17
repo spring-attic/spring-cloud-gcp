@@ -59,19 +59,20 @@ In other words, properties like the SQL username, `spring.datasource.username`, 
 There is also some configuration specific to Google Cloud SQL:
 
 |===
-| Property name | Description | Default value | Unused if specified property(ies)
-| `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | `true` |
-| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. | |
-`spring.datasource.url`
+| Property name | Description | Default value
+| `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | `true`
+| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. |
 | `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL instance's project ID, region and name, each separated by a colon.
-For example, `my-project-id:my-region:my-instance-name`. | | `spring.datasource.url`
+For example, `my-project-id:my-region:my-instance-name`. |
 | `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials private key file.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.
-| Default credentials provided by the Spring GCP Boot starter |
+| Default credentials provided by the Spring GCP Boot starter
 | `spring.cloud.gcp.sql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.
-| Default credentials provided by the Spring GCP Boot starter |
+| Default credentials provided by the Spring GCP Boot starter
 |===
+
+NOTE: If you provide your own `spring.datasource.url`, it will be ignored, unless you disable Cloud SQL auto configuration with `spring.cloud.gcp.sql.enabled=false`.
 
 ==== `DataSource` creation flow
 
