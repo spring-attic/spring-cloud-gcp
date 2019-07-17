@@ -22,7 +22,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import io.grpc.ManagedChannel;
 import org.junit.Test;
-import zipkin2.codec.BytesEncoder;
+import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -32,6 +32,8 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinBackwardsCompatibilityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,6 +53,8 @@ public class StackdriverTraceAutoConfigurationTests {
 			.withConfiguration(AutoConfigurations.of(
 					StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
 					StackdriverTraceAutoConfiguration.class,
+					ZipkinBackwardsCompatibilityAutoConfiguration.class,
+					ZipkinAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					TraceAutoConfiguration.class,
 					SleuthLogAutoConfiguration.class,
@@ -59,17 +63,34 @@ public class StackdriverTraceAutoConfigurationTests {
 					"spring.sleuth.sampler.probability=1.0");
 
 	@Test
-	public void test() {
-		this.contextRunner.run((context) -> {
-			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
-			assertThat(sleuthProperties.isTraceId128()).isTrue();
-			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
-			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
-			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
-			assertThat(context.getBean(BytesEncoder.class)).isNotNull();
-			assertThat(context.getBean(Sender.class)).isNotNull();
-			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
-		});
+	public void supportsStackdriverAndZipkin() {
+		this.contextRunner
+				.run((context) -> {
+					SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
+					assertThat(sleuthProperties.isTraceId128()).isTrue();
+					assertThat(sleuthProperties.isSupportsJoin()).isFalse();
+					assertThat(context.getBean(HttpClientParser.class)).isNotNull();
+					assertThat(context.getBean(HttpServerParser.class)).isNotNull();
+					assertThat(context.getBean(ManagedChannel.class)).isNotNull();
+					assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
+					assertThat(context.getBeansOfType(Reporter.class)).hasSize(2);
+				});
+	}
+
+	@Test
+	public void supportsStackdriverWhenZipkinIsDisabled() {
+		this.contextRunner
+				.withPropertyValues("spring.zipkin.enabled=false")
+				.run((context) -> {
+					SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
+					assertThat(sleuthProperties.isTraceId128()).isTrue();
+					assertThat(sleuthProperties.isSupportsJoin()).isFalse();
+					assertThat(context.getBean(HttpClientParser.class)).isNotNull();
+					assertThat(context.getBean(HttpServerParser.class)).isNotNull();
+					assertThat(context.getBean(ManagedChannel.class)).isNotNull();
+					assertThat(context.getBean(Sender.class)).isNotNull();
+					assertThat(context.getBean(Reporter.class)).isNotNull();
+				});
 	}
 
 	/**
