@@ -1736,53 +1736,58 @@ There is also some configuration specific to Google Cloud SQL:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
 </colgroup>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Property name</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Unused if specified property(ies)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.sql.enabled</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Cloud SQL auto configuration</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.sql.database-name</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Name of the database to connect to.</p></td>
 <td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.datasource.url</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.sql.instance-connection-name</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">A string containing a Google Cloud SQL instance&#8217;s project ID, region and name, each separated by a colon.
 For example, <code>my-project-id:my-region:my-instance-name</code>.</p></td>
 <td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.datasource.url</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.sql.credentials.location</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">File system path to the Google OAuth2 credentials private key file.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Default credentials provided by the Spring GCP Boot starter</p></td>
-<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.sql.credentials.encoded-key</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded contents of OAuth2 account private key in JSON format.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Default credentials provided by the Spring GCP Boot starter</p></td>
-<td class="tableblock halign-left valign-top"></td>
 </tr>
 </tbody>
 </table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you provide your own <code>spring.datasource.url</code>, it will be ignored, unless you disable Cloud SQL auto configuration with <code>spring.cloud.gcp.sql.enabled=false</code>.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect3">
 <h4 id="_datasource_creation_flow"><a class="link" href="#_datasource_creation_flow">6.2.1. <code>DataSource</code> creation flow</a></h4>
 <div class="paragraph">
