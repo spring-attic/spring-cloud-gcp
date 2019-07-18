@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,16 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import zipkin2.Span;
-import zipkin2.codec.BytesEncoder;
 import zipkin2.propagation.stackdriver.StackdriverTracePropagation;
+import zipkin2.reporter.AsyncReporter;
+import zipkin2.reporter.Reporter;
+import zipkin2.reporter.ReporterMetrics;
 import zipkin2.reporter.Sender;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -56,7 +59,6 @@ import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
-import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -68,14 +70,27 @@ import org.springframework.context.annotation.Primary;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Tim Ysewyn
  */
 @Configuration
 @EnableConfigurationProperties(
 		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
-@ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
-@AutoConfigureBefore({ ZipkinAutoConfiguration.class, TraceAutoConfiguration.class})
+@AutoConfigureBefore(TraceAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
+
+	/**
+	 * Stackdriver reporter bean name. Name of the bean matters for supporting multiple tracing
+	 * systems.
+	 */
+	public static final String REPORTER_BEAN_NAME = "stackdriverReporter";
+
+	/**
+	 * Stackdriver sender bean name. Name of the bean matters for supporting multiple tracing
+	 * systems.
+	 */
+	public static final String SENDER_BEAN_NAME = "stackdriverSender";
 
 	private GcpProjectIdProvider finalProjectIdProvider;
 
@@ -118,8 +133,24 @@ public class StackdriverTraceAutoConfiguration {
 				.build();
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
+	@Bean(REPORTER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = REPORTER_BEAN_NAME)
+	public Reporter<Span> stackdriverReporter(ReporterMetrics reporterMetrics, GcpTraceProperties trace,
+			@Value("${spring.zipkin.messageTimeout:1}") int fallbackZipkinTimeout,
+			@Qualifier(SENDER_BEAN_NAME) Sender sender) {
+		Integer timeout = trace.getMessageTimeout();
+		if (timeout == null) {
+			timeout = fallbackZipkinTimeout;
+		}
+		return AsyncReporter.builder(sender)
+				// historical constraint. Note: AsyncReporter supports memory bounds
+				.queuedMaxSpans(1000)
+				.messageTimeout(timeout, TimeUnit.SECONDS)
+				.metrics(reporterMetrics).build(StackdriverEncoder.V1);
+	}
+
+	@Bean(SENDER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = SENDER_BEAN_NAME)
 	public Sender stackdriverSender(GcpTraceProperties traceProperties,
 			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("stackdriverSenderChannel") ManagedChannel channel)
@@ -163,12 +194,6 @@ public class StackdriverTraceAutoConfiguration {
 				.projectId(this.finalProjectIdProvider.getProjectId())
 				.callOptions(callOptions)
 				.build();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public BytesEncoder<Span> spanBytesEncoder() {
-		return StackdriverEncoder.V1;
 	}
 
 	@Bean

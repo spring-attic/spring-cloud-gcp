@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.runner.ReactiveWebApplicationContex
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.mock;
  * @author Mike Eltsufin
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Tim Ysewyn
  */
 public class StackdriverLoggingAutoConfigurationTests {
 
@@ -88,6 +90,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	public void testWithSleuth() {
 		this.contextRunner
 				.withConfiguration(AutoConfigurations.of(Configuration.class,
+						TraceAutoConfiguration.class,
 						StackdriverTraceAutoConfiguration.class))
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
 				.run((context) -> assertThat(context

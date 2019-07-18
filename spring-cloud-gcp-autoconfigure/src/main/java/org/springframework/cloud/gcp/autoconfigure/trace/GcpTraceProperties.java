@@ -79,6 +79,11 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	 */
 	private Boolean waitForReady;
 
+	/**
+	 * Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace.
+	 */
+	private Integer messageTimeout;
+
 	public String getProjectId() {
 		return this.projectId;
 	}
@@ -145,5 +150,13 @@ public class GcpTraceProperties implements CredentialsSupplier {
 
 	public void setWaitForReady(boolean waitForReady) {
 		this.waitForReady = waitForReady;
+	}
+
+	public Integer getMessageTimeout() {
+		return this.messageTimeout;
+	}
+
+	public void setMessageTimeout(Integer messageTimeout) {
+		this.messageTimeout = messageTimeout;
 	}
 }

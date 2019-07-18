@@ -182,12 +182,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>io.zipkin.gcp</groupId>
             <artifactId>brave-propagation-stackdriver</artifactId>
             <optional>true</optional>
