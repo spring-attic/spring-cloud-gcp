@@ -1379,6 +1379,12 @@ This field forces the decision of whether or not to trace the request; if omitte
 <entry align="left" valign="top"><simpara>No</simpara></entry>
 <entry align="left" valign="top"><simpara><literal>false</literal></simpara></entry>
 </row>
+<row>
+<entry align="left" valign="top"><simpara><literal>spring.cloud.gcp.trace.messageTimeout</literal></simpara></entry>
+<entry align="left" valign="top"><simpara>Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace. Added for forward compatibility.</simpara></entry>
+<entry align="left" valign="top"><simpara>No</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>spring.zipkin.messageTimeout</literal></simpara></entry>
+</row>
 </tbody>
 </tgroup>
 </informaltable>
@@ -1402,6 +1408,13 @@ Stackdriver requires that every Span ID within a Trace to be unique, so Span joi
 <simpara>Uses <literal>StackdriverHttpClientParser</literal> and <literal>StackdriverHttpServerParser</literal> by default to populate Stackdriver related fields.</simpara>
 </listitem>
 </itemizedlist>
+</section>
+<section xml:id="_overriding_the_auto_configuration">
+<title>Overriding the auto-configuration</title>
+<simpara>Spring Cloud Sleuth supports sending traces to multiple tracing systems as of version 2.1.0.
+In order to get this to work, every tracing system needs to have a <literal>Reporter&lt;Span&gt;</literal> and <literal>Sender</literal>.
+If you want to override the provided beans you need to give them a specific name.
+To do this you can use respectively <literal>StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME</literal> and <literal>StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME</literal>.</simpara>
 </section>
 <section xml:id="_integration_with_logging">
 <title>Integration with Logging</title>
