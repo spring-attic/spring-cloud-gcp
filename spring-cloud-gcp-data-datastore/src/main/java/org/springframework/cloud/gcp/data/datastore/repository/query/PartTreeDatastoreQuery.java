@@ -20,8 +20,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -38,6 +39,7 @@ import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -58,6 +60,12 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 
+import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
+import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
+import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_PROPERTY;
+
 /**
  * Name-based query method for Cloud Datastore.
  *
@@ -75,6 +83,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private final DatastorePersistentEntity datastorePersistentEntity;
 
 	private List<Part> filterParts;
+
+	private  static final Map<Part.Type, BiFunction<String, Value, PropertyFilter>> FILTER_FACTORIES =
+			new MapBuilder<Part.Type, BiFunction<String, Value, PropertyFilter>>()
+					.put(SIMPLE_PROPERTY, PropertyFilter::eq)
+					.put(GREATER_THAN_EQUAL, PropertyFilter::ge)
+					.put(GREATER_THAN, PropertyFilter::gt)
+					.put(LESS_THAN_EQUAL, PropertyFilter::le)
+					.put(LESS_THAN, PropertyFilter::lt)
+					.build();
 
 	/**
 	 * Constructor.
@@ -299,62 +316,35 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
-			Filter filter;
 			DatastorePersistentProperty persistentProperty = (DatastorePersistentProperty) this.datastorePersistentEntity
 					.getPersistentProperty(part.getProperty().getSegment());
 
-			try {
-				Supplier<Value> valueSupplier = () ->  convertValue(it, part, persistentProperty);
-				switch (part.getType()) {
-				case IS_NULL:
-					filter = PropertyFilter.isNull(persistentProperty.getFieldName());
-					break;
-				case SIMPLE_PROPERTY:
-					filter = PropertyFilter.eq(persistentProperty.getFieldName(), valueSupplier.get());
-					break;
-				case GREATER_THAN_EQUAL:
-					filter = PropertyFilter.ge(persistentProperty.getFieldName(), valueSupplier.get());
-					break;
-				case GREATER_THAN:
-					filter = PropertyFilter.gt(persistentProperty.getFieldName(), valueSupplier.get());
-					break;
-				case LESS_THAN_EQUAL:
-					filter = PropertyFilter.le(persistentProperty.getFieldName(), valueSupplier.get());
-					break;
-				case LESS_THAN:
-					filter = PropertyFilter.lt(persistentProperty.getFieldName(), valueSupplier.get());
-					break;
-				default:
-					throw new DatastoreDataException(
-							"Unsupported predicate keyword: " + part.getType());
+			if (part.getType() == Part.Type.IS_NULL) {
+				return PropertyFilter.isNull(persistentProperty.getFieldName());
+			}
 
-				}
-				return filter;
+			BiFunction<String, Value, PropertyFilter> filterFactory = FILTER_FACTORIES.get(part.getType());
+			if (filterFactory == null) {
+				throw new DatastoreDataException("Unsupported predicate keyword: " + part.getType());
 			}
-			catch (NoSuchElementException ex) {
+			if (!it.hasNext()) {
 				throw new DatastoreDataException(
-						"Too few parameters are provided for query method: "
-								+ getQueryMethod().getName());
+						"Too few parameters are provided for query method: " + getQueryMethod().getName());
 			}
+			Object val = it.next();
+			Value convertedValue = persistentProperty.isIdProperty()
+					? KeyValue.of(
+							this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), val))
+					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+							.convertOnWriteSingle(val);
+
+			return filterFactory.apply(persistentProperty.getFieldName(), convertedValue);
 		}).toArray(Filter[]::new);
 
 		builder.setFilter(
 				(filters.length > 1)
 						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
 						: filters[0]);
-	}
-
-	private Value convertValue(Iterator it, Part part, DatastorePersistentProperty persistentProperty) {
-		if (part.getType() == Part.Type.IS_NULL) {
-			return null;
-		}
-
-		if (persistentProperty.isIdProperty()) {
-				return KeyValue.of(
-						this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), it.next()));
-		}
-
-		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(it.next());
 	}
 
 	private static class ExecutionResult {
