@@ -104,46 +104,46 @@ public class StackdriverTraceAutoConfigurationTests {
 		this.contextRunner
 				.withUserConfiguration(MultipleReportersConfig.class)
 				.run((context) -> {
-					SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
-					assertThat(sleuthProperties.isTraceId128()).isTrue();
-					assertThat(sleuthProperties.isSupportsJoin()).isFalse();
-					assertThat(context.getBean(HttpClientParser.class)).isNotNull();
-					assertThat(context.getBean(HttpServerParser.class)).isNotNull();
-					assertThat(context.getBean(ManagedChannel.class)).isNotNull();
-					assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
-					assertThat(context.getBeansOfType(Sender.class)).containsKeys("stackdriverSender",
-							"otherSender");
-					assertThat(context.getBeansOfType(Reporter.class)).hasSize(2);
-					assertThat(context.getBeansOfType(Reporter.class)).containsKeys("stackdriverReporter",
-							"otherReporter");
+			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
+			assertThat(sleuthProperties.isTraceId128()).isTrue();
+			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
+			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
+			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
+			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
+			assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
+			assertThat(context.getBeansOfType(Sender.class)).containsKeys("stackdriverSender",
+					"otherSender");
+			assertThat(context.getBeansOfType(Reporter.class)).hasSize(2);
+			assertThat(context.getBeansOfType(Reporter.class)).containsKeys("stackdriverReporter",
+					"otherReporter");
 
-					Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
-							.tag("foo", "bar").start();
-					span.finish();
-					String traceId = span.context().traceIdString();
+			Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
+					.tag("foo", "bar").start();
+			span.finish();
+			String traceId = span.context().traceIdString();
 
-					MultipleReportersConfig.GcpTraceService gcpTraceService
-							= context.getBean(MultipleReportersConfig.GcpTraceService.class);
-					await().atMost(2, TimeUnit.SECONDS)
-							.pollInterval(Duration.ONE_SECOND)
-							.untilAsserted(() -> {
-								assertThat(gcpTraceService.hasTraceFor(traceId)).isTrue();
+			MultipleReportersConfig.GcpTraceService gcpTraceService
+					= context.getBean(MultipleReportersConfig.GcpTraceService.class);
+			await().atMost(10, TimeUnit.SECONDS)
+					.pollInterval(Duration.ONE_SECOND)
+					.untilAsserted(() -> {
+						assertThat(gcpTraceService.hasTraceFor(traceId)).isTrue();
 
-								Trace trace = gcpTraceService.getTraceFor(traceId);
-								assertThat(trace.getProjectId()).isEqualTo("proj");
-								assertThat(trace.getSpansCount()).isEqualTo(1);
+						Trace trace = gcpTraceService.getTraceFor(traceId);
+						assertThat(trace.getProjectId()).isEqualTo("proj");
+						assertThat(trace.getSpansCount()).isEqualTo(1);
 
-								TraceSpan traceSpan = trace.getSpans(0);
-								assertThat(traceSpan.getName()).isEqualTo("foo");
-								assertThat(traceSpan.getLabelsMap()).containsKey("foo");
-								assertThat(traceSpan.getLabelsMap()).containsValue("bar");
-							});
+						TraceSpan traceSpan = trace.getSpans(0);
+						assertThat(traceSpan.getName()).isEqualTo("foo");
+						assertThat(traceSpan.getLabelsMap()).containsKey("foo");
+						assertThat(traceSpan.getLabelsMap()).containsValue("bar");
+					});
 
-					MultipleReportersConfig.OtherSender sender
-							= (MultipleReportersConfig.OtherSender) context.getBean("otherSender");
-					await().atMost(5, TimeUnit.SECONDS)
-							.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
-				});
+			MultipleReportersConfig.OtherSender sender
+					= (MultipleReportersConfig.OtherSender) context.getBean("otherSender");
+			await().atMost(10, TimeUnit.SECONDS)
+					.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
+		});
 	}
 
 	/**
@@ -157,14 +157,14 @@ public class StackdriverTraceAutoConfigurationTests {
 			return () -> {
 				Credentials creds = mock(Credentials.class);
 				doAnswer((Answer<Void>)
-						(invocationOnMock) -> {
-							RequestMetadataCallback callback =
-									(RequestMetadataCallback) invocationOnMock.getArguments()[2];
-							callback.onSuccess(Collections.emptyMap());
-							return null;
-						})
-						.when(creds)
-						.getRequestMetadata(any(), any(), any());
+					(invocationOnMock) -> {
+						RequestMetadataCallback callback =
+								(RequestMetadataCallback) invocationOnMock.getArguments()[2];
+						callback.onSuccess(Collections.emptyMap());
+						return null;
+					})
+				.when(creds)
+				.getRequestMetadata(any(), any(), any());
 				return creds;
 			};
 		}
