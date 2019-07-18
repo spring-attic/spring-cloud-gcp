@@ -18,12 +18,10 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -32,16 +30,17 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -299,40 +298,31 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
-		Set<String> equalityComparedFields = new HashSet<>();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
 			Filter filter;
-			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
-					.getPersistentProperty(part.getProperty().getSegment()))
-							.getFieldName();
+			DatastorePersistentProperty persistentProperty = (DatastorePersistentProperty) this.datastorePersistentEntity
+					.getPersistentProperty(part.getProperty().getSegment());
+
 			try {
-
-				ReadWriteConversions converter = this.datastoreTemplate.getDatastoreEntityConverter().getConversions();
-
+				Supplier<Value> valueSupplier = () ->  convertValue(it, part, persistentProperty);
 				switch (part.getType()) {
 				case IS_NULL:
-					filter = PropertyFilter.isNull(fieldName);
+					filter = PropertyFilter.isNull(persistentProperty.getFieldName());
 					break;
 				case SIMPLE_PROPERTY:
-					filter = PropertyFilter.eq(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					equalityComparedFields.add(fieldName);
+					filter = PropertyFilter.eq(persistentProperty.getFieldName(), valueSupplier.get());
 					break;
 				case GREATER_THAN_EQUAL:
-					filter = PropertyFilter.ge(fieldName,
-							converter.convertOnWriteSingle(it.next()));
+					filter = PropertyFilter.ge(persistentProperty.getFieldName(), valueSupplier.get());
 					break;
 				case GREATER_THAN:
-					filter = PropertyFilter.gt(fieldName,
-							converter.convertOnWriteSingle(it.next()));
+					filter = PropertyFilter.gt(persistentProperty.getFieldName(), valueSupplier.get());
 					break;
 				case LESS_THAN_EQUAL:
-					filter = PropertyFilter.le(fieldName,
-							converter.convertOnWriteSingle(it.next()));
+					filter = PropertyFilter.le(persistentProperty.getFieldName(), valueSupplier.get());
 					break;
 				case LESS_THAN:
-					filter = PropertyFilter.lt(fieldName,
-							converter.convertOnWriteSingle(it.next()));
+					filter = PropertyFilter.lt(persistentProperty.getFieldName(), valueSupplier.get());
 					break;
 				default:
 					throw new DatastoreDataException(
@@ -352,6 +342,19 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				(filters.length > 1)
 						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
 						: filters[0]);
+	}
+
+	private Value convertValue(Iterator it, Part part, DatastorePersistentProperty persistentProperty) {
+		if (part.getType() == Part.Type.IS_NULL) {
+			return null;
+		}
+
+		if (persistentProperty.isIdProperty()) {
+				return KeyValue.of(
+						this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), it.next()));
+		}
+
+		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(it.next());
 	}
 
 	private static class ExecutionResult {

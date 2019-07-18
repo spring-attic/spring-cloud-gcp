@@ -36,6 +36,8 @@ public class DatastorePersistentPropertyImpl
 		extends AnnotationBasedPersistentProperty<DatastorePersistentProperty>
 		implements DatastorePersistentProperty {
 
+	private static final String KEY_FIELD_NAME = "__key__";
+
 	private final FieldNamingStrategy fieldNamingStrategy;
 
 	/**
@@ -78,6 +80,9 @@ public class DatastorePersistentPropertyImpl
 
 	@Override
 	public String getFieldName() {
+		if (isIdProperty()) {
+			return KEY_FIELD_NAME;
+		}
 		if (StringUtils.hasText(getAnnotatedFieldName())) {
 			return getAnnotatedFieldName();
 		}

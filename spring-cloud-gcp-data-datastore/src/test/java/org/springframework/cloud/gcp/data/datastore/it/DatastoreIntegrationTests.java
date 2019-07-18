@@ -304,6 +304,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
+		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
+				.containsExactly(this.testEntityC, this.testEntityD);
+
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 

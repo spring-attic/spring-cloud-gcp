@@ -58,6 +58,9 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	int countBySize(long size);
 
+	@Nullable
+	List<TestEntity> getByColorAndIdGreaterThanEqualOrderById(String color, Long id);
+
 	int deleteBySize(long size);
 
 	List<TestEntity> removeByColor(String color);
