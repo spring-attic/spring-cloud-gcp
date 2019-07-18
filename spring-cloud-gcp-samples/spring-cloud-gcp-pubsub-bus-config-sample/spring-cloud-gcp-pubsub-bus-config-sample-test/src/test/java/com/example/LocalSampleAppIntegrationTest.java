@@ -30,7 +30,6 @@ import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.web.client.RestTemplate;
@@ -50,7 +49,6 @@ import static org.junit.Assume.assumeThat;
  *
  * @since 1.2
  */
-@Ignore("Until Spring Cloud Stream is compatible with Spring Integration 5.2 (GH-1648)")
 public class LocalSampleAppIntegrationTest {
 
 	static final String CONFIG_DIR = "/tmp/config";

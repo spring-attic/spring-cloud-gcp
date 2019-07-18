@@ -23,7 +23,6 @@ import java.util.UUID;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,7 +50,6 @@ import static org.junit.Assume.assumeThat;
 		"spring.cloud.stream.bindings.input.destination=sub1",
 		"spring.cloud.stream.bindings.output.destination=sub1" })
 @DirtiesContext
-@Ignore("Until Spring Cloud Stream is compatible with Spring Integration 5.2 (GH-1648)")
 public class SampleAppIntegrationTest {
 
 	@Autowired
