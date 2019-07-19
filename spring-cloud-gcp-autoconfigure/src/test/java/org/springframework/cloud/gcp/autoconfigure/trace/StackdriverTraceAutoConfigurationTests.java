@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
-import brave.sampler.Sampler;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
