@@ -154,6 +154,15 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
+
+		assertThat(this.testEntityRepository
+				.findAll(Example.of(new TestEntity(2L, "blue", null, null, null))))
+				.containsExactly(this.testEntityB);
+
+		assertThat(this.testEntityRepository
+				.findAll(Example.of(new TestEntity(2L, "red", null, null, null))))
+				.isEmpty();
+
 		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null),
@@ -304,6 +313,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
+		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
+				.containsExactly(this.testEntityC, this.testEntityD);
+
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
@@ -360,6 +372,10 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		this.millisWaited = Math.max(this.millisWaited, waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
+
+		assertThat(this.testEntityRepository
+				.findEntitiesWithCustomQueryWithId(1L, this.datastoreTemplate.createKey(TestEntity.class, 1L)))
+				.containsOnly(this.testEntityA);
 
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
 				.findEntitiesWithCustomQuery(1L);

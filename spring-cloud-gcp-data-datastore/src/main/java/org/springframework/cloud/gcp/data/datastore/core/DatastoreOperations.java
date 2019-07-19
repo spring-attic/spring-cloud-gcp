@@ -222,11 +222,18 @@ public interface DatastoreOperations {
 	/**
 	 * Create a {@link com.google.cloud.datastore.Key} from kind name and id.
 	 * @param kind the Cloud Datastore kind name
-	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it is
-	 * converted to String
+	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it isconverted to String
 	 * @return created key
 	 */
 	Key createKey(String kind, Object id);
+
+	/**
+	 * Create a {@link com.google.cloud.datastore.Key} from entity class and id value.
+	 * @param aClass the Cloud Datastore entity class
+	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it is converted to String
+	 * @return created key
+	 */
+	Key createKey(Class aClass, Object id);
 
 	/**
 	 * Run query by example.

@@ -408,6 +408,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
 
+	@Override
+	public Key createKey(Class aClass, Object id) {
+		return this.objectToKeyFactory.getKeyFromId(id,
+				this.datastoreMappingContext.getPersistentEntity(aClass).kindName());
+	}
+
+
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
 			Sort.Order order) {
 		if (order.isIgnoreCase()) {
@@ -714,13 +721,16 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
 				// ID properties are not stored as regular fields in Datastore.
-				if (persistentProperty.isIdProperty()) {
-					throw new DatastoreDataException("ID properties cannot be used in query-by-example " +
-							"because they are stored in the Key, not a field: " + persistentProperty);
-				}
-
 				String fieldName = persistentProperty.getFieldName();
-				Value<?> value = probeEntity.getValue(fieldName);
+				Value<?> value;
+				if (persistentProperty.isIdProperty()) {
+					PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(probe);
+					value = KeyValue.of(
+							createKey(persistentEntity.kindName(), accessor.getProperty(persistentProperty)));
+				}
+				else {
+					value = probeEntity.getValue(fieldName);
+				}
 				if (value instanceof NullValue
 						&& example.getMatcher().getNullHandler() != ExampleMatcher.NullHandler.INCLUDE) {
 					//skip null value

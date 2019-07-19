@@ -18,12 +18,11 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
@@ -32,16 +31,18 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.cloud.datastore.Value;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -58,6 +59,12 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
+
+import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
+import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
+import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_PROPERTY;
 
 /**
  * Name-based query method for Cloud Datastore.
@@ -76,6 +83,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private final DatastorePersistentEntity datastorePersistentEntity;
 
 	private List<Part> filterParts;
+
+	private  static final Map<Part.Type, BiFunction<String, Value, PropertyFilter>> FILTER_FACTORIES =
+			new MapBuilder<Part.Type, BiFunction<String, Value, PropertyFilter>>()
+					.put(SIMPLE_PROPERTY, PropertyFilter::eq)
+					.put(GREATER_THAN_EQUAL, PropertyFilter::ge)
+					.put(GREATER_THAN, PropertyFilter::gt)
+					.put(LESS_THAN_EQUAL, PropertyFilter::le)
+					.put(LESS_THAN, PropertyFilter::lt)
+					.build();
 
 	/**
 	 * Constructor.
@@ -299,53 +315,30 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
-		Set<String> equalityComparedFields = new HashSet<>();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
-			Filter filter;
-			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
-					.getPersistentProperty(part.getProperty().getSegment()))
-							.getFieldName();
-			try {
+			DatastorePersistentProperty persistentProperty = (DatastorePersistentProperty) this.datastorePersistentEntity
+					.getPersistentProperty(part.getProperty().getSegment());
 
-				ReadWriteConversions converter = this.datastoreTemplate.getDatastoreEntityConverter().getConversions();
-
-				switch (part.getType()) {
-				case IS_NULL:
-					filter = PropertyFilter.isNull(fieldName);
-					break;
-				case SIMPLE_PROPERTY:
-					filter = PropertyFilter.eq(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					equalityComparedFields.add(fieldName);
-					break;
-				case GREATER_THAN_EQUAL:
-					filter = PropertyFilter.ge(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					break;
-				case GREATER_THAN:
-					filter = PropertyFilter.gt(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					break;
-				case LESS_THAN_EQUAL:
-					filter = PropertyFilter.le(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					break;
-				case LESS_THAN:
-					filter = PropertyFilter.lt(fieldName,
-							converter.convertOnWriteSingle(it.next()));
-					break;
-				default:
-					throw new DatastoreDataException(
-							"Unsupported predicate keyword: " + part.getType());
-
-				}
-				return filter;
+			if (part.getType() == Part.Type.IS_NULL) {
+				return PropertyFilter.isNull(persistentProperty.getFieldName());
 			}
-			catch (NoSuchElementException ex) {
+
+			BiFunction<String, Value, PropertyFilter> filterFactory = FILTER_FACTORIES.get(part.getType());
+			if (filterFactory == null) {
+				throw new DatastoreDataException("Unsupported predicate keyword: " + part.getType());
+			}
+			if (!it.hasNext()) {
 				throw new DatastoreDataException(
-						"Too few parameters are provided for query method: "
-								+ getQueryMethod().getName());
+						"Too few parameters are provided for query method: " + getQueryMethod().getName());
 			}
+			Object val = it.next();
+			Value convertedValue = persistentProperty.isIdProperty()
+					? KeyValue.of(
+							this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), val))
+					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+							.convertOnWriteSingle(val);
+
+			return filterFactory.apply(persistentProperty.getFieldName(), convertedValue);
 		}).toArray(Filter[]::new);
 
 		builder.setFilter(

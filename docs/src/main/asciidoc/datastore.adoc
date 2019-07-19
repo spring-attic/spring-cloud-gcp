@@ -740,9 +740,7 @@ These methods, respectively, allow querying for:
 
 ==== Find by ID(s)
 
-Datstore reading a single entity or multiple entities in a kind.
-
-Using `DatastoreTemplate` you can execute reads, for example:
+Using `DatastoreTemplate` you can find entities by id. For example:
 
 [source,java]
 ----
@@ -949,7 +947,7 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 }
 ----
 
-In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
 Cloud Datastore only supports filter components joined by AND, and the following operations:
 
@@ -991,8 +989,6 @@ It enables dynamic query generation based on a user-provided object. See https:/
 . Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
 . Per-field matchers are not supported.
 . Embedded entities matching is not supported.
-. The `@Id` annotated property is ignored in the example, because Cloud Datastore doesn't store the ID as a regular field.
-
 
 For example, if you want to find all users with the last name "Smith", you would use the following code:
 [source, java]
@@ -1072,24 +1068,33 @@ With the exception of `Cursor`, array forms of each of the types are also suppor
 If you would like to obtain the count of items of a query or if there are any items returned by the query, set the `count = true` or `exists = true` properties of the `@Query` annotation, respectively.
 The return type of the query method in these cases should be an integer type or a boolean type.
 
-Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row.
-Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
+Cloud Datastore provides provides the `SELECT +++__key__+++ FROM ...` special column for all kinds that retrieves the `Key` of each row.
+Selecting this special `+++__key__+++` column is especially useful and efficient for `count` and `exists` queries.
 
 You can also query for non-entity types:
 
 [source, java]
 ----
-	@Query(value = "SELECT __key__ from test_entities_ci")
-	List<Key> getKeys();
+@Query(value = "SELECT __key__ from test_entities_ci")
+List<Key> getKeys();
 
-	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
-	Key getKey();
+@Query(value = "SELECT __key__ from test_entities_ci limit 1")
+Key getKey();
+----
 
-	@Query("SELECT id FROM test_entities_ci WHERE size <= @size")
-	List<String> getIds(@Param("size") long size);
+In order to use `@Id` annotated fields in custom queries, use `+++__key__+++` keyword for the field name. The parameter type should be of `Key`, as in the following example.
 
-	@Query("SELECT id FROM test_entities_ci WHERE size <= @size limit 1")
-	String getOneId(@Param("size") long size);
+Repository method:
+[source, java]
+----
+@Query("select * from  test_entities_ci where size = @size and __key__ = @id")
+LinkedList<TestEntity> findEntities(@Param("size") long size, @Param("id") Key id);
+----
+
+Generate a key from id value using `DatastoreTemplate.createKey` method and use it as a parameter for the repository method:
+[source, java]
+----
+this.testEntityRepository.findEntities(1L, datastoreTemplate.createKey(TestEntity.class, 1L))
 ----
 
 SpEL can be used to provide GQL parameters:

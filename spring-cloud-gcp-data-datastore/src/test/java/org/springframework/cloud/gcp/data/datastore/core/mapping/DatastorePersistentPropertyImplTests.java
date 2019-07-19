@@ -52,7 +52,7 @@ public class DatastorePersistentPropertyImplTests {
 				.doWithProperties(
 						(PropertyHandler<DatastorePersistentProperty>) (property) -> {
 							if (property.isIdProperty()) {
-								assertThat(property.getFieldName()).isEqualTo("id");
+								assertThat(property.getFieldName()).isEqualTo("__key__");
 							}
 							else if (property.getFieldName().equals("custom_field")) {
 								assertThat(property.getType()).isEqualTo(String.class);
