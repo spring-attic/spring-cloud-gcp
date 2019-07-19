@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
+import brave.sampler.Sampler;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -143,6 +144,25 @@ public class StackdriverTraceAutoConfigurationTests {
 					= (MultipleReportersConfig.OtherSender) context.getBean("otherSender");
 			await().atMost(10, TimeUnit.SECONDS)
 					.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
+		});
+	}
+
+	@Test
+	public void nullProbabilityThrowsException() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(
+				StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
+				StackdriverTraceAutoConfiguration.class,
+				GcpContextAutoConfiguration.class,
+				TraceAutoConfiguration.class,
+				SleuthLogAutoConfiguration.class,
+				RefreshAutoConfiguration.class))
+			.withPropertyValues("spring.cloud.gcp.trace.enabled", "true");
+
+		contextRunner.run(ctx -> {
+			assertThat(ctx.getStartupFailure()).isNotNull();
+			assertThat(ctx.getStartupFailure()).hasMessageContaining(
+				"spring.sleuth.sampler.probability property is required for the default ProbabilityBasedSampler");
 		});
 	}
 

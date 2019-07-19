@@ -61,6 +61,7 @@ import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.util.Assert;
 
 /**
  * Config for Stackdriver Trace.
@@ -206,6 +207,8 @@ public class StackdriverTraceAutoConfiguration {
 		@RefreshScope
 		@ConditionalOnMissingBean
 		public Sampler defaultTraceSampler(SamplerProperties config) {
+			Assert.notNull(config.getProbability(),
+				"spring.sleuth.sampler.probability property is required for the default ProbabilityBasedSampler");
 			return new ProbabilityBasedSampler(config);
 		}
 	}
@@ -219,6 +222,8 @@ public class StackdriverTraceAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public Sampler defaultTraceSampler(SamplerProperties config) {
+			Assert.notNull(config.getProbability(),
+				"spring.sleuth.sampler.probability property is required for the default ProbabilityBasedSampler");
 			return new ProbabilityBasedSampler(config);
 		}
 	}
