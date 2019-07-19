@@ -6379,10 +6379,7 @@ public class DatastoreTemplateExample {
 <div class="sect3">
 <h4 id="_find_by_ids"><a class="link" href="#_find_by_ids">14.4.2. Find by ID(s)</a></h4>
 <div class="paragraph">
-<p>Datstore reading a single entity or multiple entities in a kind.</p>
-</div>
-<div class="paragraph">
-<p>Using <code>DatastoreTemplate</code> you can execute reads, for example:</p>
+<p>Using <code>DatastoreTemplate</code> you can find entities by id. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6636,7 +6633,7 @@ Filtering parameters can be of types supported by your configured custom convert
 </div>
 </div>
 <div class="paragraph">
-<p>In the example above the <a href="https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods">query methods</a> in <code>TradeRepository</code> are generated based on the name of the methods using thehttps://docs.spring.io/spring-data/data-commons/docs/current/reference/html#repositories.query-methods.query-creation[Spring Data Query creation naming convention].</p>
+<p>In the example above the <a href="https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods">query methods</a> in <code>TradeRepository</code> are generated based on the name of the methods using the <a href="https://docs.spring.io/spring-data/data-commons/docs/current/reference/html#repositories.query-methods.query-creation">Spring Data Query creation naming convention</a>.</p>
 </div>
 <div class="paragraph">
 <p>Cloud Datastore only supports filter components joined by AND, and the following operations:</p>
@@ -6729,9 +6726,6 @@ It enables dynamic query generation based on a user-provided object. See <a href
 </li>
 <li>
 <p>Embedded entities matching is not supported.</p>
-</li>
-<li>
-<p>The <code>@Id</code> annotated property is ignored in the example, because Cloud Datastore doesn&#8217;t store the ID as a regular field.</p>
 </li>
 </ol>
 </div>
@@ -6876,25 +6870,39 @@ These are queried as <code>String</code> values.</p>
 The return type of the query method in these cases should be an integer type or a boolean type.</p>
 </div>
 <div class="paragraph">
-<p>Cloud Datastore provides provides the <code>SELECT <em>key</em> FROM &#8230;&#8203;</code> special column for all kinds that retrieves the <code>Key`s of each row.
-Selecting this special `<em>key</em></code> column is especially useful and efficient for <code>count</code> and <code>exists</code> queries.</p>
+<p>Cloud Datastore provides provides the <code>SELECT __key__ FROM &#8230;&#8203;</code> special column for all kinds that retrieves the <code>Key</code> of each row.
+Selecting this special <code>__key__</code> column is especially useful and efficient for <code>count</code> and <code>exists</code> queries.</p>
 </div>
 <div class="paragraph">
 <p>You can also query for non-entity types:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">	@Query(value = "SELECT __key__ from test_entities_ci")
-	List&lt;Key&gt; getKeys();
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Query(value = "SELECT __key__ from test_entities_ci")
+List&lt;Key&gt; getKeys();
 
-	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
-	Key getKey();
-
-	@Query("SELECT id FROM test_entities_ci WHERE size &lt;= @size")
-	List&lt;String&gt; getIds(@Param("size") long size);
-
-	@Query("SELECT id FROM test_entities_ci WHERE size &lt;= @size limit 1")
-	String getOneId(@Param("size") long size);</code></pre>
+@Query(value = "SELECT __key__ from test_entities_ci limit 1")
+Key getKey();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In order to use <code>@Id</code> annotated fields in custom queries, use <code>__key__</code> keyword for the field name. The parameter type should be of <code>Key</code>, as in the following example.</p>
+</div>
+<div class="paragraph">
+<p>Repository method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Query("select * from  test_entities_ci where size = @size and __key__ = @id")
+LinkedList&lt;TestEntity&gt; findEntities(@Param("size") long size, @Param("id") Key id);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Generate a key from id value using <code>DatastoreTemplate.createKey</code> method and use it as a parameter for the repository method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">this.testEntityRepository.findEntities(1L, datastoreTemplate.createKey(TestEntity.class, 1L))</code></pre>
 </div>
 </div>
 <div class="paragraph">
