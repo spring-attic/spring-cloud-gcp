@@ -1080,12 +1080,6 @@ List<Key> getKeys();
 
 @Query(value = "SELECT __key__ from test_entities_ci limit 1")
 Key getKey();
-
-@Query("SELECT id FROM test_entities_ci WHERE size <= @size")
-List<String> getIds(@Param("size") long size);
-
-@Query("SELECT id FROM test_entities_ci WHERE size <= @size limit 1")
-String getOneId(@Param("size") long size);
 ----
 
 In order to use `@Id` annotated fields in custom queries, use `+++__key__+++` keyword for the field name. The parameter type should be of `Key`, as in the following example.
