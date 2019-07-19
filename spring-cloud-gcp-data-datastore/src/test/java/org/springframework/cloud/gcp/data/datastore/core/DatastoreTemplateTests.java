@@ -886,16 +886,6 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExampleIdPropertyExceptionTest() {
-		this.expectedEx.expect(DatastoreDataException.class);
-		this.expectedEx.expectMessage(
-				"ID properties cannot be used in query-by-example because they are stored in the Key, not a field");
-		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
-		this.datastoreTemplate.queryByExample(
-				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
-	}
-
-	@Test
 	public void queryByExampleDeepPathTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Ignored paths deeper than 1 are not supported");
