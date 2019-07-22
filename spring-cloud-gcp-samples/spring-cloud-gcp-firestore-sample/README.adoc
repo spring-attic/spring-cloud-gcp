@@ -19,5 +19,3 @@ Then, uncomment the `spring.cloud.gcp.firestore.credentials.location` property i
 ```
 mvn spring-boot:run
 ```
-
-This sample shows common operations of writing, reading, and deleting entities in Cloud Firestore.
