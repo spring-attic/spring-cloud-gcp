@@ -1,6 +1,6 @@
 = Spring Cloud GCP Firestore Starter Example
 
-This code sample demonstrates how to read from and write to Google Cloud Firestore with Spring Boot autoconfiguration from the Spring Cloud GCP Firestore starter module link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-firestore[Spring Cloud GCP Firestore Starter].
+This code sample demonstrates how to read from and write to Google Cloud Firestore with Spring Boot autoconfiguration from the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-firestore[Spring Cloud GCP Firestore Starter] module.
 
 == Running the example
 
