@@ -29,6 +29,7 @@ import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties;
+import org.springframework.cloud.gcp.autoconfigure.firestore.GcpFirestoreProperties;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties;
@@ -91,6 +92,13 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 					assertThat(datastoreProperties.getCredentials().getEncodedKey())
 							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-datastore"));
 
+					GcpFirestoreProperties firestoreProperties =
+							context.getBean(GcpFirestoreProperties.class);
+					assertThat(firestoreProperties.getProjectId())
+							.isEqualTo("pcf-dev-01-17031");
+					assertThat(firestoreProperties.getCredentials().getEncodedKey())
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-firestore"));
+
 					GcpTraceProperties traceProperties = context.getBean(GcpTraceProperties.class);
 					assertThat(traceProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
@@ -141,7 +149,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 	 */
 	@EnableConfigurationProperties({ GcpPubSubProperties.class, GcpStorageProperties.class,
 			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class,
-			GcpCloudSqlProperties.class, DataSourceProperties.class })
+			GcpCloudSqlProperties.class, DataSourceProperties.class, GcpFirestoreProperties.class })
 	static class GcpCfEnvPPTestConfiguration {
 
 	}
