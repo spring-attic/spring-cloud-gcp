@@ -84,6 +84,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Assert;
 import org.springframework.util.TypeUtils;
 
+import javax.xml.crypto.Data;
+
 /**
  * An implementation of {@link DatastoreOperations}.
  *
