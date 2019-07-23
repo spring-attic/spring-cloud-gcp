@@ -25,7 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
@@ -70,6 +72,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
+import org.springframework.cloud.gcp.data.datastore.core.util.CachingDatastoreProvider;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
@@ -81,6 +84,7 @@ import org.springframework.data.util.ClassTypeInformation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
@@ -330,6 +334,44 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.childKey6);
 		when(this.objectToKeyFactory.getKeyFromObject(same(this.childEntity6), any()))
 				.thenReturn(this.childKey6);
+	}
+
+	@Test
+	public void multipleNamespaceTest() {
+		Datastore databaseClient1 = mock(Datastore.class);
+		Datastore databaseClient2 = mock(Datastore.class);
+
+		AtomicInteger currentClient = new AtomicInteger(1);
+
+		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
+
+		// this client selector will alternate between the two clients
+		Supplier<Datastore> clientProvider = new CachingDatastoreProvider<>(regionProvider,
+				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
+
+		DatastoreTemplate template = new DatastoreTemplate(clientProvider,
+				this.datastoreEntityConverter, new DatastoreMappingContext(),
+				this.objectToKeyFactory);
+
+		ChildEntity childEntity = new ChildEntity();
+		childEntity.id = createFakeKey("key");
+
+		when(this.objectToKeyFactory.getKeyFromObject(same(childEntity), any())).thenReturn(childEntity.id);
+
+		// this first save should use the first client
+		template.save(childEntity);
+		verify(databaseClient1, times(1)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(0)).put((FullEntity<?>[]) any());
+
+		// this second save should use the second client
+		template.save(childEntity);
+		verify(databaseClient1, times(1)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(1)).put((FullEntity<?>[]) any());
+
+		// this third save should use the first client again
+		template.save(childEntity);
+		verify(databaseClient1, times(2)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(1)).put((FullEntity<?>[]) any());
 	}
 
 	@Test

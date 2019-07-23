@@ -17,6 +17,7 @@
 package com.example;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Datastore;
 
@@ -38,7 +39,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class SampleApplicationConfiguration {
 
 	@Bean
-	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
+	DatastoreTransactionManager datastoreTransactionManager(Supplier<Datastore> datastore) {
 		return new DatastoreTransactionManager(datastore);
 	}
 
