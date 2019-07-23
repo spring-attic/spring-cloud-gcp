@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
+import java.util.function.Supplier;
+
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Query;
 
@@ -32,28 +34,29 @@ import org.springframework.util.Assert;
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  *
  * @since 1.2
  */
 @Component
 public class DatastoreHealthIndicator extends AbstractHealthIndicator {
 
-	private final Datastore datastore;
+	private final Supplier<Datastore> datastore;
 
 	/**
 	 * DatastoreHealthIndicator constructor.
 	 *
-	 * @param datastore Datastore
+	 * @param datastore Datastore supplier
 	 */
-	public DatastoreHealthIndicator(final Datastore datastore) {
+	public DatastoreHealthIndicator(final Supplier<Datastore> datastore) {
 		super("Datastore health check failed");
-		Assert.notNull(datastore, "Datastore must not be null");
+		Assert.notNull(datastore, "Datastore supplier must not be null");
 		this.datastore = datastore;
 	}
 
 	@Override
-	protected void doHealthCheck(Health.Builder builder) throws Exception {
-		datastore.run(Query.newKeyQueryBuilder().setKind("__Stat_Total__").build());
+	protected void doHealthCheck(Health.Builder builder) {
+		datastore.get().run(Query.newKeyQueryBuilder().setKind("__Stat_Total__").build());
 		builder.up();
 	}
 }

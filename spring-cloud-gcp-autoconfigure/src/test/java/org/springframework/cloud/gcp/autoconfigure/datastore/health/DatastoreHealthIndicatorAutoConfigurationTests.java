@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.datastore.Datastore;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -37,6 +36,7 @@ import static org.mockito.Mockito.mock;
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  *
  * @since 1.2
  */
@@ -50,11 +50,6 @@ public class DatastoreHealthIndicatorAutoConfigurationTests {
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 					"spring.cloud.gcp.datastore.namespace-id=testNamespace",
 					"management.health.datastore.enabled=true");
-
-	@Test
-	public void testDatastoreCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(Datastore.class)).isNotNull());
-	}
 
 	@Test
 	public void testDatastoreHealthIndicatorCreated() {

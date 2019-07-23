@@ -17,12 +17,14 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.DatastoreReaderWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -45,6 +47,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFact
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.util.CachingDatastoreProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -102,20 +105,27 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Datastore datastore() {
-		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
-				.setProjectId(this.projectId)
-				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials);
-		if (this.namespace != null) {
-			builder.setNamespace(this.namespace);
-		}
+	public NamespaceProvider namespaceProvider() {
+		return () -> this.namespace;
+	}
 
-		if (this.host != null) {
-			builder.setHost(this.host);
-		}
+	@Bean
+	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
+	public Supplier<Datastore> datastore(Supplier<String> namespaceProvider) {
+		return new CachingDatastoreProvider<>(namespaceProvider, namespace -> {
+			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
+					.setProjectId(this.projectId)
+					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
+					.setCredentials(this.credentials);
+			if (namespace != null) {
+				builder.setNamespace(namespace);
+			}
 
-		return builder.build().getService();
+			if (this.host != null) {
+				builder.setHost(this.host);
+			}
+			return builder.build().getService();
+		});
 	}
 
 	@Bean
@@ -139,7 +149,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
+	public ObjectToKeyFactory objectToKeyFactory(Supplier<Datastore> datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
@@ -152,8 +162,16 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreTemplate datastoreTemplate(Datastore datastore, DatastoreMappingContext datastoreMappingContext,
+	public DatastoreTemplate datastoreTemplate(Supplier<? extends DatastoreReaderWriter> datastore,
+			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
+	}
+
+	/**
+	 * This interface is the return type for the bean that provides namespaces.
+	 */
+	public interface NamespaceProvider extends Supplier<String> {
+
 	}
 }

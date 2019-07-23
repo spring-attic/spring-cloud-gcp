@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -92,7 +93,7 @@ import org.springframework.util.TypeUtils;
  */
 public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
 
-	private final DatastoreReaderWriter datastore;
+	private final Supplier<? extends DatastoreReaderWriter> datastore;
 
 	private final DatastoreEntityConverter datastoreEntityConverter;
 
@@ -102,7 +103,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
-	public DatastoreTemplate(DatastoreReaderWriter datastore,
+	public DatastoreTemplate(Supplier<? extends DatastoreReaderWriter> datastore,
 			DatastoreEntityConverter datastoreEntityConverter,
 			DatastoreMappingContext datastoreMappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
@@ -375,7 +376,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		return ((Datastore) getDatastoreReadWriter())
 				.runInTransaction(
-				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(readerWriter,
+				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(() -> readerWriter,
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
@@ -697,7 +698,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransaction()
-				: this.datastore;
+				: this.datastore.get();
 	}
 
 	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {

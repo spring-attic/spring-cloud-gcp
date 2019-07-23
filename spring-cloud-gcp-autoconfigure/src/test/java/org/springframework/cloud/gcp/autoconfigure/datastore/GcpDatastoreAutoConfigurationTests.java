@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
+import java.util.function.Supplier;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.auth.Credentials;
@@ -33,7 +35,9 @@ import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHea
 import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ResolvableType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -62,7 +66,7 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
 		this.contextRunner.run((context) -> {
-			DatastoreOptions datastoreOptions = context.getBean(Datastore.class).getOptions();
+			DatastoreOptions datastoreOptions = getDatastoreBean(context).getOptions();
 			assertThat(datastoreOptions.getProjectId()).isEqualTo("test-project");
 			assertThat(datastoreOptions.getNamespace()).isEqualTo("testNamespace");
 			assertThat(datastoreOptions.getHost()).isEqualTo("localhost:8081");
@@ -75,7 +79,7 @@ public class GcpDatastoreAutoConfigurationTests {
 			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
 			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
 
-			DatastoreOptions datastoreOptions = context.getBean(Datastore.class).getOptions();
+			DatastoreOptions datastoreOptions = getDatastoreBean(context).getOptions();
 			assertThat(datastoreOptions.getCredentials()).isInstanceOf(NoCredentials.class);
 		});
 	}
@@ -105,6 +109,12 @@ public class GcpDatastoreAutoConfigurationTests {
 	public void testDatastoreHealthIndicatorNotCreated() {
 		this.contextRunner.run((context) -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
 				.isThrownBy(() -> context.getBean(DatastoreHealthIndicator.class)));
+	}
+
+	private Datastore getDatastoreBean(ApplicationContext context) {
+		return (Datastore) ((Supplier) context.getBean(
+				context.getBeanNamesForType(ResolvableType.forClassWithGenerics(Supplier.class, Datastore.class))[0]))
+						.get();
 	}
 
 	/**

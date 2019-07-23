@@ -190,7 +190,7 @@ public class DatastoreTransactionTemplateTests {
 		@Bean
 		DatastoreTemplate datastoreTemplateTemplate(Datastore datastore,
 				ObjectToKeyFactory objectToKeyFactory) {
-			return new DatastoreTemplate(datastore, mock(DatastoreEntityConverter.class),
+			return new DatastoreTemplate(() -> datastore, mock(DatastoreEntityConverter.class),
 					new DatastoreMappingContext(), objectToKeyFactory);
 		}
 
@@ -211,7 +211,7 @@ public class DatastoreTransactionTemplateTests {
 
 		@Bean
 		DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
-			return new DatastoreTransactionManager(datastore);
+			return new DatastoreTransactionManager(() -> datastore);
 		}
 	}
 

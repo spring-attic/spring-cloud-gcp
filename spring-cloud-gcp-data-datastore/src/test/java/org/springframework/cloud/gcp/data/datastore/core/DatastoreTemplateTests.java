@@ -179,7 +179,7 @@ public class DatastoreTemplateTests {
 
 	@Before
 	public void setup() {
-		this.datastoreTemplate = new DatastoreTemplate(this.datastore,
+		this.datastoreTemplate = new DatastoreTemplate(() -> this.datastore,
 				this.datastoreEntityConverter, new DatastoreMappingContext(),
 				this.objectToKeyFactory);
 
