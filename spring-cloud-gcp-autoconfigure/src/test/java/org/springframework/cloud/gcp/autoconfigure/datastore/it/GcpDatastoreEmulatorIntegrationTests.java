@@ -51,6 +51,7 @@ import static org.mockito.Mockito.mock;
  *
  * @author Lucas Soares
  * @author Artem Bilan
+ * @author Chengyuan Zhao
  *
  * @since 1.2
  */
