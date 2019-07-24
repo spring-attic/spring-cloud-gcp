@@ -2,7 +2,7 @@ language: java
 git:
   depth: 9999999
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 branches:
   only:
     - master
