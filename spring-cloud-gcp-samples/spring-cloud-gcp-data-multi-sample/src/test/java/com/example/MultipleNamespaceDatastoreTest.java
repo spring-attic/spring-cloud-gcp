@@ -98,7 +98,7 @@ public class MultipleNamespaceDatastoreTest {
 		}
 
 		@Bean
-		public GcpDatastoreAutoConfiguration.NamespaceProvider namespaceProvider() {
+		public GcpDatastoreAutoConfiguration.DatastoreNamespaceProvider namespaceProvider() {
 			return () -> namespaceFlipper ? "n1" : "n2";
 		}
 	}

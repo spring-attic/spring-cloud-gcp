@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -105,13 +106,17 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public NamespaceProvider namespaceProvider() {
+	public DatastoreNamespaceProvider namespaceProvider() {
 		return () -> this.namespace;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
-	public Supplier<Datastore> datastore(Supplier<String> namespaceProvider) {
+	public Supplier<Datastore> datastoreSupplier(DatastoreNamespaceProvider namespaceProvider,
+			Optional<Datastore> datastore) {
+		if (datastore.isPresent()) {
+			return () -> datastore.get();
+		}
 		return new CachingDatastoreProvider<>(namespaceProvider, namespace -> {
 			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
 					.setProjectId(this.projectId)
@@ -171,7 +176,7 @@ public class GcpDatastoreAutoConfiguration {
 	/**
 	 * This interface is the return type for the bean that provides namespaces.
 	 */
-	public interface NamespaceProvider extends Supplier<String> {
+	public interface DatastoreNamespaceProvider extends Supplier<String> {
 
 	}
 }

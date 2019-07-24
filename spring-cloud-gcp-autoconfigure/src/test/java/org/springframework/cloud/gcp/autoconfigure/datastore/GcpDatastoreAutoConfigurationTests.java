@@ -37,6 +37,7 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ResolvableType;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +63,21 @@ public class GcpDatastoreAutoConfigurationTests {
 					"spring.cloud.gcp.datastore.namespace=testNamespace",
 					"spring.cloud.gcp.datastore.host=localhost:8081",
 					"management.health.datastore.enabled=false");
+
+	@Test
+	public void testUserDatastoreBean() {
+		ApplicationContextRunner runner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
+						GcpContextAutoConfiguration.class,
+						TestConfigurationWithDatastoreBean.class))
+				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+						"spring.cloud.gcp.datastore.namespace=testNamespace",
+						"spring.cloud.gcp.datastore.host=localhost:8081",
+						"management.health.datastore.enabled=false");
+
+		runner.run(context -> assertThat(getDatastoreBean(context))
+				.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT));
+	}
 
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
@@ -126,6 +142,25 @@ public class GcpDatastoreAutoConfigurationTests {
 		@Bean
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
+		}
+	}
+
+	/**
+	 * Spring Boot config for tests with custom Datastore Bean.
+	 */
+	@Configuration
+	static class TestConfigurationWithDatastoreBean {
+
+		public static Datastore MOCK_CLIENT = mock(Datastore.class);
+
+		@Bean
+		public CredentialsProvider credentialsProvider() {
+			return () -> mock(Credentials.class);
+		}
+
+		@Bean
+		public Datastore datastore() {
+			return MOCK_CLIENT;
 		}
 	}
 }
