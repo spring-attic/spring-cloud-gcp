@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.util.function.Supplier;
