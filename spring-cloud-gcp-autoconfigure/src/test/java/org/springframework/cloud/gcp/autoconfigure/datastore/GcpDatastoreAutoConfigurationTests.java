@@ -24,7 +24,9 @@ import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -52,6 +54,12 @@ import static org.mockito.Mockito.mock;
  */
 public class GcpDatastoreAutoConfigurationTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
@@ -77,6 +85,21 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		runner.run(context -> assertThat(getDatastoreBean(context))
 				.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT));
+	}
+
+	@Test
+	public void testUserDatastoreBeanNamespace() {
+		ApplicationContextRunner runner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
+						GcpContextAutoConfiguration.class,
+						TestConfigurationWithDatastoreBeanNamespaceProvider.class))
+				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+						"spring.cloud.gcp.datastore.namespace=testNamespace",
+						"spring.cloud.gcp.datastore.host=localhost:8081",
+						"management.health.datastore.enabled=false");
+
+		this.expectedException.expectMessage("failed to start");
+		runner.run(context -> getDatastoreBean(context));
 	}
 
 	@Test
@@ -161,6 +184,30 @@ public class GcpDatastoreAutoConfigurationTests {
 		@Bean
 		public Datastore datastore() {
 			return MOCK_CLIENT;
+		}
+	}
+
+	/**
+	 * Spring Boot config for tests with custom Datastore Bean.
+	 */
+	@Configuration
+	static class TestConfigurationWithDatastoreBeanNamespaceProvider {
+
+		public static Datastore MOCK_CLIENT = mock(Datastore.class);
+
+		@Bean
+		public CredentialsProvider credentialsProvider() {
+			return () -> mock(Credentials.class);
+		}
+
+		@Bean
+		public Datastore datastore() {
+			return MOCK_CLIENT;
+		}
+
+		@Bean
+		public DatastoreNamespaceProvider datastoreNamespaceProvider() {
+			return () -> "blah";
 		}
 	}
 }

@@ -47,6 +47,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastor
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.util.CachingDatastoreProvider;
 import org.springframework.context.annotation.Bean;
@@ -110,6 +111,11 @@ public class GcpDatastoreAutoConfiguration {
 			ObjectProvider<org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreNamespaceProvider> namespaceProvider,
 			ObjectProvider<Datastore> datastore) {
 		if (datastore.getIfAvailable() != null) {
+			namespaceProvider.ifAvailable(unused -> {
+				throw new DatastoreDataException(
+						"A Datastore namespace provider and Datastore client were both configured. " +
+								"Only one can be configured.");
+			});
 			return () -> datastore.getIfAvailable();
 		}
 		return new CachingDatastoreProvider<>(
