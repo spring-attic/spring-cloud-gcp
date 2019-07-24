@@ -105,19 +105,15 @@ public class GcpDatastoreAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public DatastoreNamespaceProvider namespaceProvider() {
-		return () -> this.namespace;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
-	public Supplier<Datastore> datastoreSupplier(DatastoreNamespaceProvider namespaceProvider,
+	public Supplier<Datastore> datastoreSupplier(ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
 			ObjectProvider<Datastore> datastore) {
 		if (datastore.getIfAvailable() != null) {
 			return () -> datastore.getIfAvailable();
 		}
-		return new CachingDatastoreProvider<>(namespaceProvider, namespace -> {
+		return new CachingDatastoreProvider<>(
+				namespaceProvider.getIfAvailable() == null ? () -> this.namespace : namespaceProvider.getIfAvailable(),
+				namespace -> {
 			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
 					.setProjectId(this.projectId)
 					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
