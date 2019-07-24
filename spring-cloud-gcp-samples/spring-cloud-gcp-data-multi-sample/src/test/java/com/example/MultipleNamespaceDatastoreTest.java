@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreNamespaceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
@@ -98,7 +98,7 @@ public class MultipleNamespaceDatastoreTest {
 		}
 
 		@Bean
-		public GcpDatastoreAutoConfiguration.DatastoreNamespaceProvider namespaceProvider() {
+		public DatastoreNamespaceProvider namespaceProvider() {
 			return () -> namespaceFlipper ? "n1" : "n2";
 		}
 	}

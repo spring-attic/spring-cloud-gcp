@@ -106,7 +106,8 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
-	public Supplier<Datastore> datastoreSupplier(ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
+	public Supplier<Datastore> datastoreSupplier(
+			ObjectProvider<org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreNamespaceProvider> namespaceProvider,
 			ObjectProvider<Datastore> datastore) {
 		if (datastore.getIfAvailable() != null) {
 			return () -> datastore.getIfAvailable();
@@ -167,12 +168,5 @@ public class GcpDatastoreAutoConfiguration {
 			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
-	}
-
-	/**
-	 * This interface is the return type for the bean that provides namespaces.
-	 */
-	public interface DatastoreNamespaceProvider extends Supplier<String> {
-
 	}
 }
