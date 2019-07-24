@@ -170,6 +170,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- BigQuery -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-bigquery</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>io.zipkin.gcp</groupId>
             <artifactId>zipkin-sender-stackdriver</artifactId>
