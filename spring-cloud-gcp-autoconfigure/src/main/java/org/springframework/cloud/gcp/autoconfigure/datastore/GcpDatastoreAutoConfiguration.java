@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -29,6 +28,7 @@ import com.google.cloud.datastore.DatastoreReaderWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -113,9 +113,9 @@ public class GcpDatastoreAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
 	public Supplier<Datastore> datastoreSupplier(DatastoreNamespaceProvider namespaceProvider,
-			Optional<Datastore> datastore) {
-		if (datastore.isPresent()) {
-			return () -> datastore.get();
+			ObjectProvider<Datastore> datastore) {
+		if (datastore.getIfAvailable() != null) {
+			return () -> datastore.getIfAvailable();
 		}
 		return new CachingDatastoreProvider<>(namespaceProvider, namespace -> {
 			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
