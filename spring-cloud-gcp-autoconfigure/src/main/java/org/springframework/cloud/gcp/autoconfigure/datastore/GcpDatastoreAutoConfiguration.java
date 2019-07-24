@@ -108,7 +108,7 @@ public class GcpDatastoreAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
 	public Supplier<Datastore> datastoreSupplier(
-			ObjectProvider<org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreNamespaceProvider> namespaceProvider,
+			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
 			ObjectProvider<Datastore> datastore) {
 		if (datastore.getIfAvailable() != null) {
 			namespaceProvider.ifAvailable(unused -> {
