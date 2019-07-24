@@ -129,6 +129,11 @@ public class GcpDatastoreAutoConfigurationTests {
 	}
 
 	@Test
+	public void testDatastoreSimpleClient() {
+		this.contextRunner.run((context) -> assertThat(context.getBean(Datastore.class)).isNotNull());
+	}
+
+	@Test
 	public void testTestRepositoryCreated() {
 		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
 	}
