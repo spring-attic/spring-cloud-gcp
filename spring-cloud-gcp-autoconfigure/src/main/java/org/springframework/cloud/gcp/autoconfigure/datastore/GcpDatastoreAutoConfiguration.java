@@ -120,18 +120,20 @@ public class GcpDatastoreAutoConfiguration {
 		}
 		return new CachingDatastoreProvider<>(
 				namespaceProvider.getIfAvailable() == null ? () -> this.namespace : namespaceProvider.getIfAvailable(),
-				namespace -> getDatastore(namespace));
-	}
+				namespace -> {
+			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
+					.setProjectId(this.projectId)
+					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
+					.setCredentials(this.credentials);
+			if (namespace != null) {
+				builder.setNamespace(namespace);
+			}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Datastore datastore(ObjectProvider<DatastoreNamespaceProvider> datastoreNamespaceProviderObjectProvider) {
-		datastoreNamespaceProviderObjectProvider.ifAvailable(unused -> {
-			throw new DatastoreDataException(
-					"A Datastore namespace provider and Datastore client were both configured. " +
-							"Only one can be configured.");
+			if (this.host != null) {
+				builder.setHost(this.host);
+			}
+			return builder.build().getService();
 		});
-		return getDatastore(this.namespace);
 	}
 
 	@Bean
@@ -173,20 +175,4 @@ public class GcpDatastoreAutoConfiguration {
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
 	}
-
-	private Datastore getDatastore(String namespace) {
-		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
-				.setProjectId(this.projectId)
-				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials);
-		if (namespace != null) {
-			builder.setNamespace(namespace);
-		}
-
-		if (this.host != null) {
-			builder.setHost(this.host);
-		}
-		return builder.build().getService();
-	}
-
 }
