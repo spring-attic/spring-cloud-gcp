@@ -1307,12 +1307,12 @@ This is the recommended method for multi-tenancy in Cloud Datastore.
 [source,java]
 ----
     @Bean
-    public NamespaceProvider namespaceProvider() {
+    public DatastoreNamespaceProvider namespaceProvider() {
         // return custom Supplier of a namespace string.
     }
 ----
 
-The `NamespaceProvider` is a synonym for `Supplier<String>`.
+The `DatastoreNamespaceProvider` is a synonym for `Supplier<String>`.
 By providing a custom implementation of this bean (for example, supplying a thread-local namespace name), you can direct your application to use multiple namespaces.
 Every read, write, query, and transaction you perform will utilize the namespace provided by this supplier.
 
