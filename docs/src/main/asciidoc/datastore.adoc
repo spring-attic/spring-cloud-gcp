@@ -1316,6 +1316,8 @@ The `DatastoreNamespaceProvider` is a synonym for `Supplier<String>`.
 By providing a custom implementation of this bean (for example, supplying a thread-local namespace name), you can direct your application to use multiple namespaces.
 Every read, write, query, and transaction you perform will utilize the namespace provided by this supplier.
 
+Note that your provided namespace in `application.properties` will be ignored if you define a namespace provider bean.
+
 === Spring Boot Actuator Support
 
 ==== Cloud Datastore Health Indicator
