@@ -217,8 +217,9 @@ $(addBlockSwitches);
 <li><a href="#_repositories_2">14.5. Repositories</a></li>
 <li><a href="#_events_2">14.6. Events</a></li>
 <li><a href="#_auditing_2">14.7. Auditing</a></li>
-<li><a href="#_spring_boot_actuator_support">14.8. Spring Boot Actuator Support</a></li>
-<li><a href="#_sample_10">14.9. Sample</a></li>
+<li><a href="#_partitioning_data_by_namespace">14.8. Partitioning Data by Namespace</a></li>
+<li><a href="#_spring_boot_actuator_support">14.9. Spring Boot Actuator Support</a></li>
+<li><a href="#_sample_10">14.10. Sample</a></li>
 </ul>
 </li>
 <li><a href="#_cloud_memorystore_for_redis">15. Cloud Memorystore for Redis</a>
@@ -7189,9 +7190,32 @@ One alternative is to use Spring Security&#8217;s <code>User</code> type:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_spring_boot_actuator_support"><a class="link" href="#_spring_boot_actuator_support">14.8. Spring Boot Actuator Support</a></h3>
+<h3 id="_partitioning_data_by_namespace"><a class="link" href="#_partitioning_data_by_namespace">14.8. Partitioning Data by Namespace</a></h3>
+<div class="paragraph">
+<p>You can <a href="https://cloud.google.com/datastore/docs/concepts/multitenancy">partition your data by using more than one namespace</a>.
+This is the recommended method for multi-tenancy in Cloud Datastore.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    @Bean
+    public DatastoreNamespaceProvider namespaceProvider() {
+        // return custom Supplier of a namespace string.
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>DatastoreNamespaceProvider</code> is a synonym for <code>Supplier&lt;String&gt;</code>.
+By providing a custom implementation of this bean (for example, supplying a thread-local namespace name), you can direct your application to use multiple namespaces.
+Every read, write, query, and transaction you perform will utilize the namespace provided by this supplier.</p>
+</div>
+<div class="paragraph">
+<p>Note that your provided namespace in <code>application.properties</code> will be ignored if you define a namespace provider bean.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_boot_actuator_support"><a class="link" href="#_spring_boot_actuator_support">14.9. Spring Boot Actuator Support</a></h3>
 <div class="sect3">
-<h4 id="_cloud_datastore_health_indicator"><a class="link" href="#_cloud_datastore_health_indicator">14.8.1. Cloud Datastore Health Indicator</a></h4>
+<h4 id="_cloud_datastore_health_indicator"><a class="link" href="#_cloud_datastore_health_indicator">14.9.1. Cloud Datastore Health Indicator</a></h4>
 <div class="paragraph">
 <p>If you are using Spring Boot Actuator, you can take advantage of the Cloud Datastore health indicator called <code>datastore</code>.
 The health indicator will verify whether Cloud Datastore is up and accessible by your application.
@@ -7208,7 +7232,7 @@ To enable it, all you need to do is add the <a href="https://docs.spring.io/spri
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sample_10"><a class="link" href="#_sample_10">14.9. Sample</a></h3>
+<h3 id="_sample_10"><a class="link" href="#_sample_10">14.10. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample">Simple Spring Boot Application</a> and more advanced <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample">Sample Spring Boot Application</a> are provided to show how to use the Spring Data Cloud Datastore starter and template.</p>
 </div>
