@@ -1299,6 +1299,25 @@ class SpringSecurityAuditorAware implements AuditorAware<User> {
 
 You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableDatastoreAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
 
+=== Partitioning Data by Namespace
+
+You can https://cloud.google.com/datastore/docs/concepts/multitenancy[partition your data by using more than one namespace].
+This is the recommended method for multi-tenancy in Cloud Datastore.
+
+[source,java]
+----
+    @Bean
+    public DatastoreNamespaceProvider namespaceProvider() {
+        // return custom Supplier of a namespace string.
+    }
+----
+
+The `DatastoreNamespaceProvider` is a synonym for `Supplier<String>`.
+By providing a custom implementation of this bean (for example, supplying a thread-local namespace name), you can direct your application to use multiple namespaces.
+Every read, write, query, and transaction you perform will utilize the namespace provided by this supplier.
+
+Note that your provided namespace in `application.properties` will be ignored if you define a namespace provider bean.
+
 === Spring Boot Actuator Support
 
 ==== Cloud Datastore Health Indicator

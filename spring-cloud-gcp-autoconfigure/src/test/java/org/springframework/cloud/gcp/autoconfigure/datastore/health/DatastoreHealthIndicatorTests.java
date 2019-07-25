@@ -44,7 +44,7 @@ public class DatastoreHealthIndicatorTests {
 
 	@Test
 	public void testdoHealthCheckUp() throws Exception {
-		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
+		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(() -> datastore);
 
 		when(datastore.run(any())).thenReturn(null);
 
@@ -57,7 +57,7 @@ public class DatastoreHealthIndicatorTests {
 
 	@Test(expected = Exception.class)
 	public void testdoHealthCheckDown() throws Exception {
-		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
+		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(() -> datastore);
 
 		when(datastore.run(any())).thenThrow(new RuntimeException("Cloud Datastore is down!!!"));
 
@@ -68,7 +68,7 @@ public class DatastoreHealthIndicatorTests {
 
 	@Test
 	public void testHealthy()  {
-		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
+		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(() -> datastore);
 
 		when(datastore.run(any())).thenReturn(null);
 
@@ -77,7 +77,7 @@ public class DatastoreHealthIndicatorTests {
 
 	@Test
 	public void testUnhealthy() {
-		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(datastore);
+		DatastoreHealthIndicator datastoreHealthIndicator = new DatastoreHealthIndicator(() -> datastore);
 
 		when(datastore.run(any())).thenThrow(new RuntimeException("Cloud Datastore is down!!!"));
 

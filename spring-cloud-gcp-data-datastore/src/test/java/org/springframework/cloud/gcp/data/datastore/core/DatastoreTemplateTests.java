@@ -25,7 +25,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
@@ -98,88 +101,61 @@ import static org.mockito.Mockito.when;
  */
 public class DatastoreTemplateTests {
 
+	private final Datastore datastore = mock(Datastore.class);
+	private final DatastoreEntityConverter datastoreEntityConverter = mock(
+			DatastoreEntityConverter.class);
+	private final ObjectToKeyFactory objectToKeyFactory = mock(ObjectToKeyFactory.class);
+	private final ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
+	// A fake entity query used for testing.
+	private final Query testEntityQuery = GqlQuery
+			.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, "fake query").build();
+	// This is the query that is expected to be constructed by the template.
+	private final Query findAllTestEntityQuery = Query.newEntityQueryBuilder()
+			.setKind("custom_test_kind").build();
+	// The keys, entities, and objects below are constructed for all tests below. the
+	// number of each
+	// object here corresponds to the same thing across keys, entities, objects.
+	private final Key key1 = createFakeKey("key1");
+	private final Key key2 = createFakeKey("key2");
+	private final Key keyChild1 = createFakeKey("key3");
+	private final Key badKey = createFakeKey("badkey");
+	private final Entity e1 = Entity.newBuilder(this.key1)
+			.set("singularReference", this.keyChild1)
+			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
+			.build();
+	private final Entity e2 = Entity.newBuilder(this.key2)
+			.set("singularReference", this.keyChild1)
+			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
+			.build();
 	/**
 	 * used to check exception messages and types.
 	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
-
-	private final Datastore datastore = mock(Datastore.class);
-
-	private final DatastoreEntityConverter datastoreEntityConverter = mock(
-			DatastoreEntityConverter.class);
-
-	private final ObjectToKeyFactory objectToKeyFactory = mock(ObjectToKeyFactory.class);
-
 	private DatastoreTemplate datastoreTemplate;
-
 	private ChildEntity childEntity2;
-
 	private ChildEntity childEntity3;
-
 	private ChildEntity childEntity4;
-
 	private ChildEntity childEntity5;
-
 	private ChildEntity childEntity6;
-
 	private Key childKey2;
-
 	private Key childKey3;
-
 	private Key childKey4;
-
 	private Key childKey5;
-
 	private Key childKey6;
-
 	private SimpleTestEntity simpleTestEntity = new SimpleTestEntity();
 	private SimpleTestEntity simpleTestEntityNullVallues = new SimpleTestEntity();
-
-	private final ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
+	private TestEntity ob1;
+	private TestEntity ob2;
+	private ChildEntity childEntity1;
 
 	private Key createFakeKey(String val) {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
 	}
 
-	// A fake entity query used for testing.
-	private final Query testEntityQuery = GqlQuery
-			.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, "fake query").build();
-
-	// This is the query that is expected to be constructed by the template.
-	private final Query findAllTestEntityQuery = Query.newEntityQueryBuilder()
-			.setKind("custom_test_kind").build();
-
-	// The keys, entities, and objects below are constructed for all tests below. the
-	// number of each
-	// object here corresponds to the same thing across keys, entities, objects.
-	private final Key key1 = createFakeKey("key1");
-
-	private final Key key2 = createFakeKey("key2");
-
-	private final Key keyChild1 = createFakeKey("key3");
-
-	private final Key badKey = createFakeKey("badkey");
-
-	private final Entity e1 = Entity.newBuilder(this.key1)
-			.set("singularReference", this.keyChild1)
-			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
-			.build();
-
-	private final Entity e2 = Entity.newBuilder(this.key2)
-			.set("singularReference", this.keyChild1)
-			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
-			.build();
-
-	private TestEntity ob1;
-
-	private TestEntity ob2;
-
-	private ChildEntity childEntity1;
-
 	@Before
 	public void setup() {
-		this.datastoreTemplate = new DatastoreTemplate(this.datastore,
+		this.datastoreTemplate = new DatastoreTemplate(() -> this.datastore,
 				this.datastoreEntityConverter, new DatastoreMappingContext(),
 				this.objectToKeyFactory);
 
@@ -221,7 +197,6 @@ public class DatastoreTemplateTests {
 
 		this.childEntity6 = new ChildEntity();
 		this.ob1.multipleReference.add(this.childEntity6);
-
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
@@ -333,6 +308,45 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void multipleNamespaceTest() {
+		Datastore databaseClient1 = mock(Datastore.class);
+		Datastore databaseClient2 = mock(Datastore.class);
+
+		AtomicInteger currentClient = new AtomicInteger(1);
+
+		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
+
+		// this client selector will alternate between the two clients
+		ConcurrentHashMap<Integer, Datastore> store = new ConcurrentHashMap<>();
+		Supplier<Datastore> clientProvider = () -> store.computeIfAbsent(regionProvider.get(),
+				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
+
+		DatastoreTemplate template = new DatastoreTemplate(clientProvider,
+				this.datastoreEntityConverter, new DatastoreMappingContext(),
+				this.objectToKeyFactory);
+
+		ChildEntity childEntity = new ChildEntity();
+		childEntity.id = createFakeKey("key");
+
+		when(this.objectToKeyFactory.getKeyFromObject(same(childEntity), any())).thenReturn(childEntity.id);
+
+		// this first save should use the first client
+		template.save(childEntity);
+		verify(databaseClient1, times(1)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(0)).put((FullEntity<?>[]) any());
+
+		// this second save should use the second client
+		template.save(childEntity);
+		verify(databaseClient1, times(1)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(1)).put((FullEntity<?>[]) any());
+
+		// this third save should use the first client again
+		template.save(childEntity);
+		verify(databaseClient1, times(2)).put((FullEntity<?>[]) any());
+		verify(databaseClient2, times(1)).put((FullEntity<?>[]) any());
+	}
+
+	@Test
 	public void performTransactionTest() {
 
 		DatastoreReaderWriter transactionContext = mock(DatastoreReaderWriter.class);
@@ -393,7 +407,8 @@ public class DatastoreTemplateTests {
 				.thenReturn(Arrays.asList(this.e1, this.e2));
 		List<Key> keys = Arrays.asList(this.key1, this.key2);
 
-		verifyBeforeAndAfterEvents(null, new AfterFindByKeyEvent(Arrays.asList(this.ob1, this.ob2), new HashSet<>(keys)),
+		verifyBeforeAndAfterEvents(null,
+				new AfterFindByKeyEvent(Arrays.asList(this.ob1, this.ob2), new HashSet<>(keys)),
 				() -> assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1,
 						this.ob2),
 				x -> {
@@ -443,7 +458,8 @@ public class DatastoreTemplateTests {
 				.thenAnswer(invocationOnMock -> referenceTestEntity);
 
 		verifyBeforeAndAfterEvents(null,
-				new AfterFindByKeyEvent(Collections.singletonList(referenceTestEntity), Collections.singleton(this.key1)),
+				new AfterFindByKeyEvent(Collections.singletonList(referenceTestEntity),
+						Collections.singleton(this.key1)),
 				() -> {
 					ReferenceTestEntity readReferenceTestEntity = this.datastoreTemplate.findById(this.key1,
 							ReferenceTestEntity.class);
@@ -530,11 +546,10 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void saveTestNullDescendantsAndReferences() {
-		//making sure save works when descendants are null
+		// making sure save works when descendants are null
 		assertThat(this.ob2.childEntities).isNull();
 		assertThat(this.ob2.singularReference).isNull();
 		assertThat(this.ob2.multipleReference).isNull();
-
 
 		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
 				Collections.singletonList(this.e1));
@@ -858,7 +873,8 @@ public class DatastoreTemplateTests {
 		verify(this.datastore, times(1)).run(
 				builder.setLimit(2).setOffset(3)
 						.setOrderBy(
-						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
+								new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING))
+						.build());
 	}
 
 	@Test
@@ -916,6 +932,7 @@ public class DatastoreTemplateTests {
 
 		verify(this.datastore, times(1)).run(builder.build());
 	}
+
 	@Test
 	public void queryByExampleExactMatchTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
@@ -923,7 +940,8 @@ public class DatastoreTemplateTests {
 
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(),
-						ExampleMatcher.matching().withStringMatcher(ExampleMatcher.StringMatcher.REGEX)), null);
+						ExampleMatcher.matching().withStringMatcher(ExampleMatcher.StringMatcher.REGEX)),
+				null);
 	}
 
 	@Test
@@ -935,7 +953,6 @@ public class DatastoreTemplateTests {
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnoreCase()), null);
 	}
 
-
 	@Test
 	public void queryByExampleAllMatchTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
@@ -944,7 +961,6 @@ public class DatastoreTemplateTests {
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matchingAny()), null);
 	}
-
 
 	@Test
 	public void queryByExamplePropertyMatchersTest() {
@@ -1092,14 +1108,6 @@ public class DatastoreTemplateTests {
 		int intField;
 	}
 
-	class ReferenceTestEntity {
-		@Id
-		Long id;
-
-		@Reference
-		ReferenceTestEntity sibling;
-	}
-
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "test_kind")
 	@DiscriminatorField(field = "discrimination_field")
 	@DiscriminatorValue("A")
@@ -1109,6 +1117,14 @@ public class DatastoreTemplateTests {
 
 		@Field(name = "int_field")
 		int intField;
+	}
+
+	class ReferenceTestEntity {
+		@Id
+		Long id;
+
+		@Reference
+		ReferenceTestEntity sibling;
 	}
 
 }

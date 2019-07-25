@@ -68,7 +68,7 @@ public class DatastoreIntegrationTestConfiguration {
 
 	@Bean
 	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
-		return new DatastoreTransactionManager(datastore);
+		return new DatastoreTransactionManager(() -> datastore);
 	}
 
 	@Bean
@@ -96,7 +96,7 @@ public class DatastoreIntegrationTestConfiguration {
 
 	@Bean
 	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
-		return new DatastoreServiceObjectToKeyFactory(datastore);
+		return new DatastoreServiceObjectToKeyFactory(() -> datastore);
 	}
 
 	@Bean
@@ -104,7 +104,7 @@ public class DatastoreIntegrationTestConfiguration {
 			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter,
 			ObjectToKeyFactory objectToKeyFactory) {
-		return new DatastoreTemplate(datastore, datastoreEntityConverter,
+		return new DatastoreTemplate(() -> datastore, datastoreEntityConverter,
 				datastoreMappingContext, objectToKeyFactory);
 	}
 }

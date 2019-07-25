@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreException;
@@ -45,9 +46,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 1.1
  */
 public class DatastoreTransactionManager extends AbstractPlatformTransactionManager {
-	private final Datastore datastore;
+	private final Supplier<Datastore> datastore;
 
-	public DatastoreTransactionManager(final Datastore datastore) {
+	public DatastoreTransactionManager(final Supplier<Datastore> datastore) {
 		this.datastore = datastore;
 	}
 
@@ -86,7 +87,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 							+ "TransactionDefinition.PROPAGATION_REQUIRED");
 		}
 		Tx tx = (Tx) transactionObject;
-		Transaction transaction = this.datastore.newTransaction();
+		Transaction transaction = this.datastore.get().newTransaction();
 		if (transactionDefinition.isReadOnly()) {
 			tx.transaction = new ReadOnlyTransaction(transaction);
 		}

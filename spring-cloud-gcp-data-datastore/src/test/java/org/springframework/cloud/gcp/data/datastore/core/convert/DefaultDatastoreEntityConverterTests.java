@@ -675,7 +675,7 @@ public class DefaultDatastoreEntityConverterTests {
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
 				new DatastoreMappingContext(),
-				new DatastoreServiceObjectToKeyFactory(this.datastore));
+				new DatastoreServiceObjectToKeyFactory(() -> this.datastore));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);

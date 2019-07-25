@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore.it;
 
+import java.util.function.Supplier;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.datastore.Datastore;
@@ -37,6 +39,7 @@ import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreEmulato
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.annotation.Id;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +51,7 @@ import static org.mockito.Mockito.mock;
  *
  * @author Lucas Soares
  * @author Artem Bilan
+ * @author Chengyuan Zhao
  *
  * @since 1.2
  */
@@ -71,7 +75,8 @@ public class GcpDatastoreEmulatorIntegrationTests {
 						"spring.cloud.gcp.datastore.emulator.consistency=0.9")
 				.run((context) -> {
 					DatastoreTemplate datastore = context.getBean(DatastoreTemplate.class);
-					Datastore datastoreClient = context.getBean(Datastore.class);
+					Datastore datastoreClient = (Datastore) ((Supplier) context.getBean(context.getBeanNamesForType(
+							ResolvableType.forClassWithGenerics(Supplier.class, Datastore.class))[0])).get();
 					GcpProjectIdProvider projectIdProvider = context.getBean(GcpProjectIdProvider.class);
 
 					builder.setServiceFactory(datastoreOptions -> datastoreClient)
