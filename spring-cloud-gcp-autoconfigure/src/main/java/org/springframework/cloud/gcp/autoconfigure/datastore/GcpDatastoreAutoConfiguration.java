@@ -106,6 +106,12 @@ public class GcpDatastoreAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class })
+	public Datastore datastore() {
+		return getDatastore(this.namespace);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public DatastoreProvider datastoreSupplier(
 			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
@@ -118,14 +124,7 @@ public class GcpDatastoreAutoConfiguration {
 			});
 			return datastoreProvider::getIfAvailable;
 		}
-		return getDatastoreProvider(
-				namespaceProvider.getIfAvailable() == null ? () -> this.namespace : namespaceProvider.getIfAvailable());
-	}
-
-	@Bean
-	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class })
-	public Datastore datastore() {
-		return getDatastore(this.namespace);
+		return getDatastoreProvider(namespaceProvider.getIfAvailable());
 	}
 
 	@Bean
@@ -149,7 +148,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Supplier<Datastore> datastore) {
+	public ObjectToKeyFactory objectToKeyFactory(DatastoreProvider datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 

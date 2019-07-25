@@ -16,14 +16,12 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
-import java.util.function.Supplier;
-
-import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Query;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -41,14 +39,14 @@ import org.springframework.util.Assert;
 @Component
 public class DatastoreHealthIndicator extends AbstractHealthIndicator {
 
-	private final Supplier<Datastore> datastore;
+	private final DatastoreProvider datastore;
 
 	/**
 	 * DatastoreHealthIndicator constructor.
 	 *
 	 * @param datastore Datastore supplier
 	 */
-	public DatastoreHealthIndicator(final Supplier<Datastore> datastore) {
+	public DatastoreHealthIndicator(final DatastoreProvider datastore) {
 		super("Datastore health check failed");
 		Assert.notNull(datastore, "Datastore supplier must not be null");
 		this.datastore = datastore;
