@@ -113,7 +113,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreProvider datastoreSupplier(
+	public DatastoreProvider datastoreProvider(
 			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
 			ObjectProvider<Datastore> datastoreProvider) {
 		if (datastoreProvider.getIfAvailable() != null) {
