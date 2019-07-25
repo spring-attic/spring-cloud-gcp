@@ -106,7 +106,7 @@ public class GcpDatastoreAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class })
+	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class, DatastoreProvider.class })
 	public Datastore datastore() {
 		return getDatastore(this.namespace);
 	}
