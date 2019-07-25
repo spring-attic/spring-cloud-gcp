@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -72,7 +73,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
-import org.springframework.cloud.gcp.data.datastore.core.util.CachingDatastoreProvider;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
@@ -317,7 +317,8 @@ public class DatastoreTemplateTests {
 		Supplier<Integer> regionProvider = currentClient::getAndIncrement;
 
 		// this client selector will alternate between the two clients
-		Supplier<Datastore> clientProvider = new CachingDatastoreProvider<>(regionProvider,
+		ConcurrentHashMap<Integer, Datastore> store = new ConcurrentHashMap<>();
+		Supplier<Datastore> clientProvider = () -> store.computeIfAbsent(regionProvider.get(),
 				u -> u % 2 == 1 ? databaseClient1 : databaseClient2);
 
 		DatastoreTemplate template = new DatastoreTemplate(clientProvider,

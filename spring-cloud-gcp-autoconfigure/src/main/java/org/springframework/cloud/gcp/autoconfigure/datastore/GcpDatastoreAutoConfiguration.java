@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -49,7 +50,6 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConver
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
-import org.springframework.cloud.gcp.data.datastore.core.util.CachingDatastoreProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -106,34 +106,26 @@ public class GcpDatastoreAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(value = Datastore.class, parameterizedContainer = Supplier.class)
-	public Supplier<Datastore> datastoreSupplier(
+	@ConditionalOnMissingBean
+	public DatastoreProvider datastoreSupplier(
 			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
-			ObjectProvider<Datastore> datastore) {
-		if (datastore.getIfAvailable() != null) {
+			ObjectProvider<Datastore> datastoreProvider) {
+		if (datastoreProvider.getIfAvailable() != null) {
 			namespaceProvider.ifAvailable(unused -> {
 				throw new DatastoreDataException(
 						"A Datastore namespace provider and Datastore client were both configured. " +
 								"Only one can be configured.");
 			});
-			return () -> datastore.getIfAvailable();
+			return datastoreProvider::getIfAvailable;
 		}
-		return new CachingDatastoreProvider<>(
-				namespaceProvider.getIfAvailable() == null ? () -> this.namespace : namespaceProvider.getIfAvailable(),
-				namespace -> {
-			DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
-					.setProjectId(this.projectId)
-					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
-					.setCredentials(this.credentials);
-			if (namespace != null) {
-				builder.setNamespace(namespace);
-			}
+		return getDatastoreProvider(
+				namespaceProvider.getIfAvailable() == null ? () -> this.namespace : namespaceProvider.getIfAvailable());
+	}
 
-			if (this.host != null) {
-				builder.setHost(this.host);
-			}
-			return builder.build().getService();
-		});
+	@Bean
+	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class })
+	public Datastore datastore() {
+		return getDatastore(this.namespace);
 	}
 
 	@Bean
@@ -174,5 +166,25 @@ public class GcpDatastoreAutoConfiguration {
 			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
+	}
+
+	private DatastoreProvider getDatastoreProvider(DatastoreNamespaceProvider keySupplier) {
+		ConcurrentHashMap<String, Datastore> store = new ConcurrentHashMap<>();
+		return () -> store.computeIfAbsent(keySupplier.get(), this::getDatastore);
+	}
+
+	private Datastore getDatastore(String namespace) {
+		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
+				.setProjectId(this.projectId)
+				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
+				.setCredentials(this.credentials);
+		if (namespace != null) {
+			builder.setNamespace(namespace);
+		}
+
+		if (this.host != null) {
+			builder.setHost(this.host);
+		}
+		return builder.build().getService();
 	}
 }
