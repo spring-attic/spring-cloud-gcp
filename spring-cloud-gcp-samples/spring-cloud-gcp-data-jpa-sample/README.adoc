@@ -42,7 +42,7 @@ It writes a few house tuples to the database and then reads and prints each hous
 
 == Running with Cloud SQL (PostgreSQL)
 
-To run the sample with PostgreSQL instead of MySQL, follow the same basic steps, but replace MySQL starter in the `pom.xml` with the PostgreSQL starter, and change the Hibernate dialect in `application.properties` to `PostgreSQL9Dialect`.
+To run the sample with PostgreSQL instead of MySQL, follow the same basic steps, but replace MySQL starter in the `pom.xml` with the PostgreSQL starter.
 
 In `pom.xml` comment out `spring-cloud-gcp-starter-sql-mysql` and uncomment `spring-cloud-gcp-starter-sql-postgresql`:
 [source,xml]
@@ -53,7 +53,3 @@ In `pom.xml` comment out `spring-cloud-gcp-starter-sql-mysql` and uncomment `spr
 </dependency>
 ----
 
-In `src/main/resources/application.properties` change the dialect to `PostgreSQL9Dialect`:
-----
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL9Dialect
-----
