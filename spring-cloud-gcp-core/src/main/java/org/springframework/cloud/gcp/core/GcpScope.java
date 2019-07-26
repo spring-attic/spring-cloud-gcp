@@ -54,7 +54,10 @@ public enum GcpScope {
 	CLOUD_PLATFORM("https://www.googleapis.com/auth/cloud-platform"),
 
 	/** scope for Vision. **/
-	CLOUD_VISION("https://www.googleapis.com/auth/cloud-vision");
+	CLOUD_VISION("https://www.googleapis.com/auth/cloud-vision"),
+
+	/** scope for BigQuery. */
+	BIG_QUERY("https://www.googleapis.com/auth/bigquery");
 
 	private String url;
 
