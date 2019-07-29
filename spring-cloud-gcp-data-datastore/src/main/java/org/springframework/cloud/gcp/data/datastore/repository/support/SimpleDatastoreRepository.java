@@ -204,7 +204,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	}
 
 	private static Cursor getCursor(Pageable pageable) {
-		return pageable instanceof DatastorePageable ?  ((DatastorePageable) pageable).getCursor() : null;
+		return pageable instanceof DatastorePageable ?  ((DatastorePageable) pageable).toCursor() : null;
 	}
 
 	private static Long getOrComputeTotalCount(Pageable pageable, Supplier<Long> countCall) {

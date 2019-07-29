@@ -16,6 +16,9 @@
 
 package com.example;
 
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -76,7 +79,13 @@ public class DatastoreBookshelfExampleTests {
 
 	@Test
 	public void testSerializedPage() {
-		assertThat(sendRequest("/allbooksserialized", null, HttpMethod.GET)).isEqualTo("asdfasdf");
+		Book book = new Book("Book1", "Author1", 2019);
+		book.id = 12345678L;
+		this.bookRepository.save(book);
+		Awaitility.await().atMost(15, TimeUnit.SECONDS)
+				.until(() -> this.bookRepository.count() == 1);
+		assertThat(sendRequest("/allbooksserialized", null, HttpMethod.GET))
+				.contains("content\":[{\"id\":12345678}],\"pageable\":");
 	}
 
 	@Test

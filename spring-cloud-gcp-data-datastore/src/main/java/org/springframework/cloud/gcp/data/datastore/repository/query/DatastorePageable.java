@@ -58,7 +58,7 @@ public class DatastorePageable extends PageRequest {
 		return from(super.next(), this.urlSafeCursor, this.totalCount);
 	}
 
-	public Cursor getCursor() {
+	public Cursor toCursor() {
 		return this.urlSafeCursor == null ? null : Cursor.fromUrlSafe(this.urlSafeCursor);
 	}
 

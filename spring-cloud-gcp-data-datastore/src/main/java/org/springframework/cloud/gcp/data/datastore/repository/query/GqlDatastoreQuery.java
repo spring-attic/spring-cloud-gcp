@@ -363,8 +363,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				this.finalGql += OFFSET_CLAUSE;
 				this.tagsOrdered.add(OFFSET_TAG_NAME);
 				this.cursorPosition = this.params.size();
-				if (pageable instanceof DatastorePageable && ((DatastorePageable) pageable).getCursor() != null) {
-					this.params.add(((DatastorePageable) pageable).getCursor());
+				if (pageable instanceof DatastorePageable && ((DatastorePageable) pageable).toCursor() != null) {
+					this.params.add(((DatastorePageable) pageable).toCursor());
 				}
 				else {
 					this.params.add(pageable.getOffset());

@@ -35,7 +35,7 @@ public class PagedBooksController {
 
 	@GetMapping("/allbooksserialized")
 	public Page<Book> findAllUsers() {
-		return this.pagedBookRepository.getAllBooksByPage(PageRequest.of(1, 1));
+		return this.pagedBookRepository.getAllBooksByPage(PageRequest.of(0, 1));
 	}
 
 }
