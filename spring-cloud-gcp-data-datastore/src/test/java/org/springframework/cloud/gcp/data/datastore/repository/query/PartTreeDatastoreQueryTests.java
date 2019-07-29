@@ -27,7 +27,9 @@ import java.util.function.Function;
 
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyQuery;
+import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
@@ -61,6 +63,7 @@ import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.doAnswer;
@@ -149,9 +152,9 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8L),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
-					.setOrderBy(OrderBy.desc("id")).setLimit(333).build();
+					.setOrderBy(OrderBy.desc("__key__")).setLimit(333).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -182,11 +185,11 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setOffset(444)
 					.setLimit(444)
-					.setOrderBy(OrderBy.desc("id"), OrderBy.asc("price")).build();
+					.setOrderBy(OrderBy.desc("__key__"), OrderBy.asc("price")).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -217,10 +220,10 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setLimit(333)
-					.setOrderBy(OrderBy.desc("id")).build();
+					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -251,9 +254,9 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
-					.setOrderBy(OrderBy.desc("id"), OrderBy.asc("price")).build();
+					.setOrderBy(OrderBy.desc("__key__"), OrderBy.asc("price")).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -284,9 +287,9 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
-					.setOrderBy(OrderBy.desc("id")).build();
+					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -343,10 +346,10 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setOffset(444)
-					.setOrderBy(OrderBy.desc("id")).setLimit(444).build();
+					.setOrderBy(OrderBy.desc("__key__")).setLimit(444).build();
 
 			assertThat(statement).isEqualTo(expected);
 
@@ -522,11 +525,11 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setStartCursor(cursor)
 					.setOffset(cursor != null ? 0 : offset)
-					.setOrderBy(OrderBy.desc("id")).setLimit(limit).build();
+					.setOrderBy(OrderBy.desc("__key__")).setLimit(limit).build();
 
 			assertThat(statement).isEqualTo(expected);
 			List<Integer> results = Arrays.asList(3, 4);
@@ -540,9 +543,9 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
-					.setOrderBy(OrderBy.desc("id")).build();
+					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
 			List<Integer> results = Arrays.asList(1, 2, 3, 4);
@@ -560,10 +563,10 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("id")))
+							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setOffset(offset)
-					.setOrderBy(OrderBy.desc("id")).setLimit(queryLimit).build();
+					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
 
 			assertThat(statement).isEqualTo(expected);
 			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
@@ -576,10 +579,10 @@ public class PartTreeDatastoreQueryTests {
 									PropertyFilter.eq("ticker", "abcd"),
 									PropertyFilter.lt("price", 8.88),
 									PropertyFilter.ge("price", 3.33),
-									PropertyFilter.isNull("id")))
+									PropertyFilter.isNull("__key__")))
 							.setKind("trades")
 							.setStartCursor(cursor)
-							.setOrderBy(OrderBy.desc("id")).setLimit(1).build();
+							.setOrderBy(OrderBy.desc("__key__")).setLimit(1).build();
 
 					assertThat(statement).isEqualTo(expected);
 					return hasNext ? datastoreMatchingRecords.subList(0, 1) : Collections.emptyList();
@@ -716,6 +719,39 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
+	public void usingIdField() throws NoSuchMethodException {
+		Trade trade = new Trade();
+		queryWithMockResult("findByActionAndId", null,
+				getClass().getMethod("findByActionAndId", String.class, String.class), true);
+
+		Object[] params = new Object[] { "BUY", "id1"};
+		when(this.datastoreTemplate.createKey(eq("trades"), eq("id1")))
+				.thenAnswer((invocation) ->
+						Key.newBuilder("project", invocation.getArgument(0), invocation.getArgument(1)).build());
+
+			when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			EntityQuery statement = invocation.getArgument(0);
+
+			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
+					.setFilter(
+							CompositeFilter.and(
+									PropertyFilter.eq("action", "BUY"),
+									PropertyFilter.eq("__key__",
+											KeyValue.of(Key.newBuilder("project", "trades", "id1").build()))))
+					.setKind("trades")
+					.setLimit(1).build();
+
+			assertThat(statement).isEqualTo(expected);
+
+			List<Trade> results = Collections.singletonList(trade);
+			return new DatastoreResultsIterable(results.iterator(), null);
+		});
+
+		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
+	}
+
+
+	@Test
 	public void nonCollectionReturnTypeNoResults() throws NoSuchMethodException {
 		this.expectedException.expectMessage("Expecting at least 1 result, but none found");
 
@@ -778,6 +814,11 @@ public class PartTreeDatastoreQueryTests {
 
 	@Nullable
 	public Trade findByActionNullable(String action) {
+		return null;
+	}
+
+	@Nullable
+	public Trade findByActionAndId(String action, String id) {
 		return null;
 	}
 

@@ -3,6 +3,7 @@
 		xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
+		<!-- Your own application should inherit from spring-boot-starter-parent -->
 		<artifactId>spring-cloud-gcp-samples</artifactId>
 		<groupId>org.springframework.cloud</groupId>
 		<version>1.2.0.BUILD-SNAPSHOT</version>
@@ -12,6 +13,19 @@
 	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner-sample</artifactId>
 	<name>Spring Cloud GCP Spanner Code Sample</name>
+
+	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-dependencies</artifactId>
+				<version>1.2.0.BUILD-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -25,6 +39,24 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-hateoas</artifactId>
+		</dependency>
+
+		<!-- Test-related dependencies. -->
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>3.1.6</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

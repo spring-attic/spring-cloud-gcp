@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import brave.propagation.Propagation;
-import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
@@ -44,10 +43,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpClientParser;
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpServerParser;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
@@ -56,10 +53,11 @@ import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
-import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
+import org.springframework.cloud.sleuth.sampler.SamplerAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -77,6 +75,7 @@ import org.springframework.context.annotation.Primary;
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
+@Import(SamplerAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
 	/**
@@ -194,33 +193,6 @@ public class StackdriverTraceAutoConfiguration {
 	@ConditionalOnMissingBean
 	public Propagation.Factory stackdriverPropagation() {
 		return StackdriverTracePropagation.FACTORY;
-	}
-
-	/**
-	 * Configuration for refresh scope probability based sampler.
-	 */
-	@Configuration
-	@ConditionalOnClass(RefreshScope.class)
-	protected static class RefreshScopedProbabilityBasedSamplerConfiguration {
-		@Bean
-		@RefreshScope
-		@ConditionalOnMissingBean
-		public Sampler defaultTraceSampler(SamplerProperties config) {
-			return new ProbabilityBasedSampler(config);
-		}
-	}
-
-	/**
-	 * Configuration for non-refresh scope probability based sampler.
-	 */
-	@Configuration
-	@ConditionalOnMissingClass("org.springframework.cloud.context.config.annotation.RefreshScope")
-	protected static class NonRefreshScopeProbabilityBasedSamplerConfiguration {
-		@Bean
-		@ConditionalOnMissingBean
-		public Sampler defaultTraceSampler(SamplerProperties config) {
-			return new ProbabilityBasedSampler(config);
-		}
 	}
 
 	/**

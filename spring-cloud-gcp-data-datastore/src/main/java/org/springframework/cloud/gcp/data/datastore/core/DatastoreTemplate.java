@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -92,7 +93,7 @@ import org.springframework.util.TypeUtils;
  */
 public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
 
-	private final DatastoreReaderWriter datastore;
+	private final Supplier<? extends DatastoreReaderWriter> datastore;
 
 	private final DatastoreEntityConverter datastoreEntityConverter;
 
@@ -102,7 +103,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private @Nullable ApplicationEventPublisher eventPublisher;
 
-	public DatastoreTemplate(DatastoreReaderWriter datastore,
+	public DatastoreTemplate(Supplier<? extends DatastoreReaderWriter> datastore,
 			DatastoreEntityConverter datastoreEntityConverter,
 			DatastoreMappingContext datastoreMappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
@@ -375,7 +376,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		return ((Datastore) getDatastoreReadWriter())
 				.runInTransaction(
-				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(readerWriter,
+				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(() -> readerWriter,
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
@@ -407,6 +408,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	public Key createKey(String kind, Object id) {
 		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
+
+	@Override
+	public Key createKey(Class aClass, Object id) {
+		return this.objectToKeyFactory.getKeyFromId(id,
+				this.datastoreMappingContext.getPersistentEntity(aClass).kindName());
+	}
+
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
 			Sort.Order order) {
@@ -690,7 +698,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransaction()
-				: this.datastore;
+				: this.datastore.get();
 	}
 
 	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
@@ -714,13 +722,16 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
 				// ID properties are not stored as regular fields in Datastore.
-				if (persistentProperty.isIdProperty()) {
-					throw new DatastoreDataException("ID properties cannot be used in query-by-example " +
-							"because they are stored in the Key, not a field: " + persistentProperty);
-				}
-
 				String fieldName = persistentProperty.getFieldName();
-				Value<?> value = probeEntity.getValue(fieldName);
+				Value<?> value;
+				if (persistentProperty.isIdProperty()) {
+					PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(probe);
+					value = KeyValue.of(
+							createKey(persistentEntity.kindName(), accessor.getProperty(persistentProperty)));
+				}
+				else {
+					value = probeEntity.getValue(fieldName);
+				}
 				if (value instanceof NullValue
 						&& example.getMatcher().getNullHandler() != ExampleMatcher.NullHandler.INCLUDE) {
 					//skip null value

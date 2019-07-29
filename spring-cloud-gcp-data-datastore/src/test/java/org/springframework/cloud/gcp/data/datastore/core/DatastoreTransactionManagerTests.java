@@ -70,7 +70,7 @@ public class DatastoreTransactionManagerTests {
 		MockitoAnnotations.initMocks(this);
 		when(this.datastore.newTransaction()).thenReturn(this.transaction);
 		when(this.status.getTransaction()).thenReturn(this.tx);
-		this.manager = new DatastoreTransactionManager(this.datastore) {
+		this.manager = new DatastoreTransactionManager(() -> this.datastore) {
 			@Override
 			protected Tx getCurrentTX() {
 				return DatastoreTransactionManagerTests.this.tx;

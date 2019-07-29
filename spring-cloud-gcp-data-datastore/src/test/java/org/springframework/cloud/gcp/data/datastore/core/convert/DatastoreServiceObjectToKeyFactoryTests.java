@@ -54,7 +54,7 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
 
 	private final DatastoreServiceObjectToKeyFactory datastoreServiceObjectToKeyFactory =
-			new DatastoreServiceObjectToKeyFactory(this.datastore);
+			new DatastoreServiceObjectToKeyFactory(() -> this.datastore);
 
 	@Test
 	public void getKeyFromIdKeyTest() {

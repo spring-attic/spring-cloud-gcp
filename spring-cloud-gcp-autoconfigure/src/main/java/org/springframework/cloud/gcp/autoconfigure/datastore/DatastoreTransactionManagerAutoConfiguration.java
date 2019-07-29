@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
-import com.google.cloud.datastore.Datastore;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -47,11 +45,11 @@ public class DatastoreTransactionManagerAutoConfiguration {
 	@Configuration
 	static class DatastoreTransactionManagerConfiguration {
 
-		private final Datastore datastore;
+		private final DatastoreProvider datastore;
 
 		private final TransactionManagerCustomizers transactionManagerCustomizers;
 
-		DatastoreTransactionManagerConfiguration(Datastore datastore,
+		DatastoreTransactionManagerConfiguration(DatastoreProvider datastore,
 				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
 			this.datastore = datastore;
 			this.transactionManagerCustomizers = transactionManagerCustomizers

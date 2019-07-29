@@ -17,15 +17,19 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.DatastoreReaderWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,6 +48,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastor
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,21 +106,25 @@ public class GcpDatastoreAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class, DatastoreProvider.class })
 	public Datastore datastore() {
-		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
-				.setProjectId(this.projectId)
-				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials);
-		if (this.namespace != null) {
-			builder.setNamespace(this.namespace);
-		}
+		return getDatastore(this.namespace);
+	}
 
-		if (this.host != null) {
-			builder.setHost(this.host);
+	@Bean
+	@ConditionalOnMissingBean
+	public DatastoreProvider datastoreProvider(
+			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
+			ObjectProvider<Datastore> datastoreProvider) {
+		if (datastoreProvider.getIfAvailable() != null) {
+			namespaceProvider.ifAvailable(unused -> {
+				throw new DatastoreDataException(
+						"A Datastore namespace provider and Datastore client were both configured. " +
+								"Only one can be configured.");
+			});
+			return datastoreProvider::getIfAvailable;
 		}
-
-		return builder.build().getService();
+		return getDatastoreProvider(namespaceProvider.getIfAvailable());
 	}
 
 	@Bean
@@ -139,7 +148,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
+	public ObjectToKeyFactory objectToKeyFactory(DatastoreProvider datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
@@ -152,8 +161,29 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreTemplate datastoreTemplate(Datastore datastore, DatastoreMappingContext datastoreMappingContext,
+	public DatastoreTemplate datastoreTemplate(Supplier<? extends DatastoreReaderWriter> datastore,
+			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
+	}
+
+	private DatastoreProvider getDatastoreProvider(DatastoreNamespaceProvider keySupplier) {
+		ConcurrentHashMap<String, Datastore> store = new ConcurrentHashMap<>();
+		return () -> store.computeIfAbsent(keySupplier.get(), this::getDatastore);
+	}
+
+	private Datastore getDatastore(String namespace) {
+		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
+				.setProjectId(this.projectId)
+				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
+				.setCredentials(this.credentials);
+		if (namespace != null) {
+			builder.setNamespace(namespace);
+		}
+
+		if (this.host != null) {
+			builder.setHost(this.host);
+		}
+		return builder.build().getService();
 	}
 }
