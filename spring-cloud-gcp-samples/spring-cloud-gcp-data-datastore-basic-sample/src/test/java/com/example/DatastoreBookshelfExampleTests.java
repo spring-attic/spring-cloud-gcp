@@ -16,6 +16,9 @@
 
 package com.example;
 
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,10 +26,16 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -39,7 +48,8 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DatastoreBookshelfExample.class,
-		properties = { InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=" + false })
+		properties = { InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "="
+				+ false }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class DatastoreBookshelfExampleTests {
 
 	@Autowired
@@ -50,6 +60,9 @@ public class DatastoreBookshelfExampleTests {
 
 	@Autowired
 	private BookRepository bookRepository;
+
+	@Autowired
+	private TestRestTemplate restTemplate;
 
 	@After
 	public void cleanUp() {
@@ -62,6 +75,18 @@ public class DatastoreBookshelfExampleTests {
 				"Datastore-sample integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
 				System.getProperty("it.datastore"), is("true"));
+	}
+
+	@Test
+	public void testSerializedPage() {
+		Book book = new Book("Book1", "Author1", 2019);
+		book.id = 12345678L;
+		this.bookRepository.save(book);
+		Awaitility.await().atMost(15, TimeUnit.SECONDS)
+				.until(() -> this.bookRepository.count() == 1);
+		String responseBody = sendRequest("/allbooksserialized", null, HttpMethod.GET);
+		assertThat(responseBody).contains("content\":[{\"id\":12345678}],\"pageable\":");
+		assertThat(responseBody).containsPattern("\"urlSafeCursor\":\".+\"");
 	}
 
 	@Test
@@ -82,6 +107,16 @@ public class DatastoreBookshelfExampleTests {
 		this.shell.evaluate(() -> "remove-all-books");
 
 		assertThat(this.shell.evaluate(() -> "find-all-books")).isEqualTo("[]");
+	}
+
+	private String sendRequest(String url, String json, HttpMethod method) {
+		MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+		map.add("Content-Type", "application/json");
+
+		HttpEntity<String> entity = new HttpEntity<>(json, map);
+		ResponseEntity<String> response = this.restTemplate.exchange(url, method, entity,
+				String.class);
+		return response.getBody();
 	}
 
 }

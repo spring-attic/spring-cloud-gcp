@@ -22,33 +22,48 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 /**
+ * A pageable implementation for Cloud Datastore that uses the cursor for efficient reads.
+ *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
 public class DatastorePageable extends PageRequest {
-	private final Cursor cursor;
+	private final String urlSafeCursor;
 
 	private final Long totalCount;
 
-	DatastorePageable(Pageable pageable, Cursor cursor, Long totalCount) {
+	private DatastorePageable(Pageable pageable, String urlSafeCursor, Long totalCount) {
 		super(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-		this.cursor = cursor;
+		this.urlSafeCursor = urlSafeCursor;
 		this.totalCount = totalCount;
 	}
 
+	DatastorePageable(Pageable pageable, Cursor cursor, Long totalCount) {
+		this(pageable, cursor.toUrlSafe(), totalCount);
+	}
+
 	public static Pageable from(Pageable pageable, Cursor cursor, Long totalCount) {
+		return from(pageable, cursor == null ? null : cursor.toUrlSafe(), totalCount);
+	}
+
+	public static Pageable from(Pageable pageable, String urlSafeCursor, Long totalCount) {
 		if (pageable.isUnpaged()) {
 			return pageable;
 		}
-		return new DatastorePageable(pageable, cursor, totalCount);
+		return new DatastorePageable(pageable, urlSafeCursor, totalCount);
+	}
+
+	public String getUrlSafeCursor() {
+		return this.urlSafeCursor;
 	}
 
 	@Override
 	public Pageable next() {
-		return from(super.next(), this.cursor, this.totalCount);
+		return from(super.next(), this.urlSafeCursor, this.totalCount);
 	}
 
-	public Cursor getCursor() {
-		return this.cursor;
+	public Cursor toCursor() {
+		return this.urlSafeCursor == null ? null : Cursor.fromUrlSafe(this.urlSafeCursor);
 	}
 
 	public Long getTotalCount() {

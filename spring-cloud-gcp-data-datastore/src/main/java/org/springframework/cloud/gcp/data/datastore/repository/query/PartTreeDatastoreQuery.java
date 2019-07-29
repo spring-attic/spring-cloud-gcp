@@ -304,7 +304,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			cursorToApply = cursor;
 		}
 		else if (pageable instanceof DatastorePageable) {
-			cursorToApply = ((DatastorePageable) pageable).getCursor();
+			cursorToApply = ((DatastorePageable) pageable).toCursor();
 		}
 		DatastoreTemplate.applyQueryOptions(
 				builder, new DatastoreQueryOptions.Builder().setLimit(limit).setOffset(offset).setSort(sort)

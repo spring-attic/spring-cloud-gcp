@@ -304,7 +304,7 @@ public class GqlDatastoreQueryTests {
 
 		Slice result = (Slice) gqlDatastoreQuery.execute(paramVals);
 
-		assertThat(((DatastorePageable) result.getPageable()).getCursor()).isEqualTo(cursor);
+		assertThat(((DatastorePageable) result.getPageable()).toCursor()).isEqualTo(cursor);
 
 		verify(this.datastoreTemplate, times(2))
 				.queryKeysOrEntities(any(), eq(Trade.class));
@@ -366,7 +366,7 @@ public class GqlDatastoreQueryTests {
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
 
-		assertThat(((DatastorePageable) result.getPageable()).getCursor()).isEqualTo(cursor);
+		assertThat(((DatastorePageable) result.getPageable()).toCursor()).isEqualTo(cursor);
 		assertThat(((DatastorePageable) result.getPageable()).getTotalCount()).isEqualTo(2L);
 
 		assertThat(((Page) result).getTotalElements()).isEqualTo(2L);
@@ -415,7 +415,7 @@ public class GqlDatastoreQueryTests {
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
 
-		assertThat(((DatastorePageable) result.getPageable()).getCursor()).isEqualTo(cursor);
+		assertThat(((DatastorePageable) result.getPageable()).toCursor()).isEqualTo(cursor);
 		assertThat(((DatastorePageable) result.getPageable()).getTotalCount()).isEqualTo(countInPageable);
 
 		assertThat(((Page) result).getTotalElements()).isEqualTo(countInPageable);
