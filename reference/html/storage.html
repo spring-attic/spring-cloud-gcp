@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.7.1">
+<title>Spring Resources</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_spring_resources">Spring Resources</a>
+<ul class="sectlevel2">
+<li><a href="#_google_cloud_storage">Google Cloud Storage</a></li>
+<li><a href="#_configuration">Configuration</a></li>
+<li><a href="#_sample">Sample</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_spring_resources"><a class="link" href="#_spring_resources">Spring Resources</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html">Spring Resources</a> are an abstraction for a number of low-level resources, such as file system files, classpath files, servlet context-relative files, etc.
+Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.</p>
+</div>
+<div class="paragraph">
+<p>A Spring Boot starter is provided to auto-configure the various Storage components.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-storage&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This starter is also available from <a href="https://start.spring.io/">Spring Initializr</a> through the <code>GCP Storage</code> entry.</p>
+</div>
+<div class="sect2">
+<h3 id="_google_cloud_storage"><a class="link" href="#_google_cloud_storage">Google Cloud Storage</a></h3>
+<div class="paragraph">
+<p>The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their GCS URL using the <code>@Value</code> annotation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+private Resource gcsResource;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;or the Spring application context</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">SpringApplication.run(...).getResource("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]");</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates a <code>Resource</code> object that can be used to read the object, among <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-resource">other possible operations</a>.</p>
+</div>
+<div class="paragraph">
+<p>It is also possible to write to a <code>Resource</code>, although a <code>WriteableResource</code> is required.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+private Resource gcsResource;
+...
+try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
+  os.write("foo".getBytes());
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To work with the <code>Resource</code> as a Google Cloud Storage resource, cast it to <code>GoogleStorageResource</code>.</p>
+</div>
+<div class="paragraph">
+<p>If the resource path refers to an object on Google Cloud Storage (as opposed to a bucket), then the <code>getBlob</code> method can be called to obtain a <a href="https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-storage/src/main/java/com/google/cloud/storage/Blob.java"><code>Blob</code></a>.
+This type represents a GCS file, which has associated <a href="https://cloud.google.com/storage/docs/gsutil/addlhelp/WorkingWithObjectMetadata">metadata</a>, such as content-type, that can be set.
+The <code>createSignedUrl</code> method can also be used to obtain <a href="https://cloud.google.com/storage/docs/access-control/signed-urls">signed URLs</a> for GCS objects.
+However, creating signed URLs requires that the resource was created using service account credentials.</p>
+</div>
+<div class="paragraph">
+<p>The Spring Boot Starter for Google Cloud Storage auto-configures the <code>Storage</code> bean required by the <code>spring-cloud-gcp-storage</code> module, based on the <code>CredentialsProvider</code> provided by the Spring Boot GCP starter.</p>
+</div>
+<div class="sect3">
+<h4 id="_setting_the_content_type"><a class="link" href="#_setting_the_content_type">Setting the Content Type</a></h4>
+<div class="paragraph">
+<p>You can set the content-type of Google Cloud Storage files from their corresponding <code>Resource</code> objects:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">((GoogleStorageResource)gcsResource).getBlob().toBuilder().setContentType("text/html").build().update();</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
+<div class="paragraph">
+<p>The Spring Boot Starter for Google Cloud Storage provides the following configuration options:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.storage.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables the GCP storage APIs.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.storage.auto-create-files</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Creates files and buckets on Google Cloud Storage when writes are made to non-existent files</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.storage.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the Google Cloud Storage API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.storage.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded contents of OAuth2 account private key for authenticating with the Google Cloud Storage API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.storage.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP Storage credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/devstorage.read_write" class="bare">https://www.googleapis.com/auth/devstorage.read_write</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sample"><a class="link" href="#_sample">Sample</a></h3>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample">sample application</a> and a <a href="https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html">codelab</a> are available.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
