@@ -20,7 +20,7 @@ Depending on your application's needs, you may need to augment your build config
 
 Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within your application without any additional setup.
 
-== Sample
+=== Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample[Kotlin sample application] is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.
 
