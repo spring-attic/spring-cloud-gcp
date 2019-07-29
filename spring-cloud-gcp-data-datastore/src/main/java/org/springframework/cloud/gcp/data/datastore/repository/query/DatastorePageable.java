@@ -53,6 +53,10 @@ public class DatastorePageable extends PageRequest {
 		return new DatastorePageable(pageable, urlSafeCursor, totalCount);
 	}
 
+	public String getUrlSafeCursor() {
+		return this.urlSafeCursor;
+	}
+
 	@Override
 	public Pageable next() {
 		return from(super.next(), this.urlSafeCursor, this.totalCount);

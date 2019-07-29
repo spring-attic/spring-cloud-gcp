@@ -84,8 +84,9 @@ public class DatastoreBookshelfExampleTests {
 		this.bookRepository.save(book);
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.until(() -> this.bookRepository.count() == 1);
-		assertThat(sendRequest("/allbooksserialized", null, HttpMethod.GET))
-				.contains("content\":[{\"id\":12345678}],\"pageable\":");
+		String responseBody = sendRequest("/allbooksserialized", null, HttpMethod.GET);
+		assertThat(responseBody).contains("content\":[{\"id\":12345678}],\"pageable\":");
+		assertThat(responseBody).contains("\"urlSafeCursor\":");
 	}
 
 	@Test
