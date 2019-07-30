@@ -222,38 +222,38 @@ $(addBlockSwitches);
 <li><a href="#_sample_10">14.10. Sample</a></li>
 </ul>
 </li>
-<li><a href="#_cloud_memorystore_for_redis">15. Cloud Memorystore for Redis</a>
+<li><a href="#_cloud_firestore">15. Cloud Firestore</a>
 <ul class="sectlevel2">
-<li><a href="#_spring_caching">15.1. Spring Caching</a></li>
+<li><a href="#_using_cloud_firestore">15.1. Using Cloud Firestore</a></li>
+<li><a href="#_configuration_6">15.2. Configuration</a></li>
+<li><a href="#_sample_11">15.3. Sample</a></li>
 </ul>
 </li>
-<li><a href="#_cloud_identity_aware_proxy_iap_authentication">16. Cloud Identity-Aware Proxy (IAP) Authentication</a>
+<li><a href="#_cloud_memorystore_for_redis">16. Cloud Memorystore for Redis</a>
 <ul class="sectlevel2">
-<li><a href="#_configuration_6">16.1. Configuration</a></li>
-<li><a href="#_sample_11">16.2. Sample</a></li>
+<li><a href="#_spring_caching">16.1. Spring Caching</a></li>
 </ul>
 </li>
-<li><a href="#_google_cloud_vision">17. Google Cloud Vision</a>
+<li><a href="#_cloud_identity_aware_proxy_iap_authentication">17. Cloud Identity-Aware Proxy (IAP) Authentication</a>
 <ul class="sectlevel2">
-<li><a href="#_dependency_setup">17.1. Dependency Setup</a></li>
-<li><a href="#_image_analysis">17.2. Image Analysis</a></li>
-<li><a href="#_document_ocr_template">17.3. Document OCR Template</a></li>
-<li><a href="#_configuration_7">17.4. Configuration</a></li>
-<li><a href="#_sample_12">17.5. Sample</a></li>
+<li><a href="#_configuration_7">17.1. Configuration</a></li>
+<li><a href="#_sample_12">17.2. Sample</a></li>
 </ul>
 </li>
-<li><a href="#_cloud_foundry">18. Cloud Foundry</a></li>
-<li><a href="#_kotlin_support">19. Kotlin Support</a>
+<li><a href="#_google_cloud_vision">18. Google Cloud Vision</a>
 <ul class="sectlevel2">
-<li><a href="#_prerequisites_2">19.1. Prerequisites</a></li>
+<li><a href="#_dependency_setup">18.1. Dependency Setup</a></li>
+<li><a href="#_image_analysis">18.2. Image Analysis</a></li>
+<li><a href="#_document_ocr_template">18.3. Document OCR Template</a></li>
+<li><a href="#_configuration_8">18.4. Configuration</a></li>
+<li><a href="#_sample_13">18.5. Sample</a></li>
 </ul>
 </li>
-<li><a href="#_sample_13">20. Sample</a></li>
-<li><a href="#_cloud_firestore">21. Cloud Firestore</a>
+<li><a href="#_cloud_foundry">19. Cloud Foundry</a></li>
+<li><a href="#_kotlin_support">20. Kotlin Support</a>
 <ul class="sectlevel2">
-<li><a href="#_sample_14">21.1. Sample</a></li>
-<li><a href="#_using_cloud_firestore">21.2. Using Cloud Firestore</a></li>
-<li><a href="#_configuration_8">21.3. Configuration</a></li>
+<li><a href="#_prerequisites_2">20.1. Prerequisites</a></li>
+<li><a href="#_sample_14">20.2. Sample</a></li>
 </ul>
 </li>
 </ul>
@@ -7240,10 +7240,139 @@ To enable it, all you need to do is add the <a href="https://docs.spring.io/spri
 </div>
 </div>
 <div class="sect1">
-<h2 id="_cloud_memorystore_for_redis"><a class="link" href="#_cloud_memorystore_for_redis">15. Cloud Memorystore for Redis</a></h2>
+<h2 id="_cloud_firestore"><a class="link" href="#_cloud_firestore">15. Cloud Firestore</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode.</p>
+</div>
+<div class="paragraph">
+<p>See <a href="https://cloud.google.com/firestore/docs/">documentation</a> to learn more about Cloud Firestore.</p>
+</div>
+<div class="paragraph">
+<p>To begin using this library, add the <code>spring-cloud-gcp-starter-firestore</code> artifact to your project.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-firestore&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_cloud_firestore"><a class="link" href="#_using_cloud_firestore">15.1. Using Cloud Firestore</a></h3>
+<div class="paragraph">
+<p>The starter automatically configures and registers a <code>Firestore</code> bean in the Spring application context. To start using it, simply use the <code>@Autowired</code> annotation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+Firestore firestore;
+
+void writeDocumentFromObject() throws ExecutionException, InterruptedException {
+	// Add document data with id "joe" using a custom User class
+	User data = new User("Joe",
+			Arrays.asList(
+					new Phone(12345, PhoneType.CELL),
+					new Phone(54321, PhoneType.WORK)));
+
+	// .get() blocks on response
+	WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
+
+	LOGGER.info("Update time: " + writeResult.getUpdateTime());
+}
+
+User readDocumentToObject() throws ExecutionException, InterruptedException {
+		ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
+				this.firestore.document("users/joe").get();
+
+		User user = documentFuture.get().toObject(User.class);
+
+		LOGGER.info("read: " + user);
+
+		return user;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_6"><a class="link" href="#_configuration_6">15.2. Configuration</a></h3>
+<div class="paragraph">
+<p>The Spring Boot starter for Google Cloud Firestore provides the following configuration options:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP Cloud Datastore credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/datastore" class="bare">https://www.googleapis.com/auth/datastore</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_sample_11"><a class="link" href="#_sample_11">15.3. Sample</a></h3>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">sample application</a> is available.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cloud_memorystore_for_redis"><a class="link" href="#_cloud_memorystore_for_redis">16. Cloud Memorystore for Redis</a></h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_spring_caching"><a class="link" href="#_spring_caching">15.1. Spring Caching</a></h3>
+<h3 id="_spring_caching"><a class="link" href="#_spring_caching">16.1. Spring Caching</a></h3>
 <div class="paragraph">
 <p><a href="https://cloud.google.com/memorystore/">Cloud Memorystore for Redis</a> provides a fully managed in-memory data store service.
 Cloud Memorystore is compatible with the Redis protocol, allowing easy integration with <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html">Spring Caching</a>.</p>
@@ -7302,7 +7431,7 @@ public String hello(@PathVariable String name) {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_cloud_identity_aware_proxy_iap_authentication"><a class="link" href="#_cloud_identity_aware_proxy_iap_authentication">16. Cloud Identity-Aware Proxy (IAP) Authentication</a></h2>
+<h2 id="_cloud_identity_aware_proxy_iap_authentication"><a class="link" href="#_cloud_identity_aware_proxy_iap_authentication">17. Cloud Identity-Aware Proxy (IAP) Authentication</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><a href="https://cloud.google.com/iap/">Cloud Identity-Aware Proxy (IAP)</a> provides a security layer over applications deployed to Google Cloud.</p>
@@ -7391,7 +7520,7 @@ If you create a custom <a href="https://docs.spring.io/spring-security/site/docs
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuration_6"><a class="link" href="#_configuration_6">16.1. Configuration</a></h3>
+<h3 id="_configuration_7"><a class="link" href="#_configuration_7">17.1. Configuration</a></h3>
 <div class="paragraph">
 <p>The following properties are available.</p>
 </div>
@@ -7457,7 +7586,7 @@ Modifying registry, algorithm, and header properties might be useful for testing
 </table>
 </div>
 <div class="sect2">
-<h3 id="_sample_11"><a class="link" href="#_sample_11">16.2. Sample</a></h3>
+<h3 id="_sample_12"><a class="link" href="#_sample_12">17.2. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample">sample application</a> is available.</p>
 </div>
@@ -7465,7 +7594,7 @@ Modifying registry, algorithm, and header properties might be useful for testing
 </div>
 </div>
 <div class="sect1">
-<h2 id="_google_cloud_vision"><a class="link" href="#_google_cloud_vision">17. Google Cloud Vision</a></h2>
+<h2 id="_google_cloud_vision"><a class="link" href="#_google_cloud_vision">18. Google Cloud Vision</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://cloud.google.com/vision/">Google Cloud Vision API</a> allows users to leverage machine learning algorithms for processing images and documents including: image classification, face detection, text extraction, optical character recognition, and others.</p>
@@ -7497,7 +7626,7 @@ Modifying registry, algorithm, and header properties might be useful for testing
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_dependency_setup"><a class="link" href="#_dependency_setup">17.1. Dependency Setup</a></h3>
+<h3 id="_dependency_setup"><a class="link" href="#_dependency_setup">18.1. Dependency Setup</a></h3>
 <div class="paragraph">
 <p>To begin using this library, add the <code>spring-cloud-gcp-starter-vision</code> artifact to your project.</p>
 </div>
@@ -7523,7 +7652,7 @@ Modifying registry, algorithm, and header properties might be useful for testing
 </div>
 </div>
 <div class="sect3">
-<h4 id="_cloud_vision_ocr_dependencies"><a class="link" href="#_cloud_vision_ocr_dependencies">17.1.1. Cloud Vision OCR Dependencies</a></h4>
+<h4 id="_cloud_vision_ocr_dependencies"><a class="link" href="#_cloud_vision_ocr_dependencies">18.1.1. Cloud Vision OCR Dependencies</a></h4>
 <div class="paragraph">
 <p>If you are interested in applying optical character recognition (OCR) on documents for your project, you&#8217;ll need to add both <code>spring-cloud-gcp-starter-vision</code> and <code>spring-cloud-gcp-starter-storage</code> to your dependencies.
 The storage starter is necessary because the Cloud Vision API will process your documents and write OCR output files all within your Google Cloud Storage buckets.</p>
@@ -7557,7 +7686,7 @@ The storage starter is necessary because the Cloud Vision API will process your 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_image_analysis"><a class="link" href="#_image_analysis">17.2. Image Analysis</a></h3>
+<h3 id="_image_analysis"><a class="link" href="#_image_analysis">18.2. Image Analysis</a></h3>
 <div class="paragraph">
 <p>The <code>CloudVisionTemplate</code> allows you to easily analyze images; it provides the following method for interfacing with Cloud Vision:</p>
 </div>
@@ -7598,7 +7727,7 @@ Additionally, you may consult the <a href="https://cloud.google.com/vision/docs/
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_detect_image_labels_example"><a class="link" href="#_detect_image_labels_example">17.2.1. Detect Image Labels Example</a></h4>
+<h4 id="_detect_image_labels_example"><a class="link" href="#_detect_image_labels_example">18.2.1. Detect Image Labels Example</a></h4>
 <div class="paragraph">
 <p><a href="https://cloud.google.com/vision/docs/detecting-labels">Image labeling</a> refers to producing labels that describe the contents of an image.
 Below is a code sample of how this is done using the Cloud Vision Spring Template.</p>
@@ -7622,7 +7751,7 @@ public void processImage() {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_document_ocr_template"><a class="link" href="#_document_ocr_template">17.3. Document OCR Template</a></h3>
+<h3 id="_document_ocr_template"><a class="link" href="#_document_ocr_template">18.3. Document OCR Template</a></h3>
 <div class="paragraph">
 <p>The <code>DocumentOcrTemplate</code> allows you to easily run <a href="https://cloud.google.com/vision/docs/pdf">optical character recognition (OCR)</a> on your PDF and TIFF documents stored in your Google Storage bucket.</p>
 </div>
@@ -7630,7 +7759,7 @@ public void processImage() {
 <p>First, you will need to create a bucket in <a href="https://console.cloud.google.com/storage">Google Cloud Storage</a> and <a href="https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-java">upload the documents you wish to process into the bucket</a>.</p>
 </div>
 <div class="sect3">
-<h4 id="_running_ocr_on_a_document"><a class="link" href="#_running_ocr_on_a_document">17.3.1. Running OCR on a Document</a></h4>
+<h4 id="_running_ocr_on_a_document"><a class="link" href="#_running_ocr_on_a_document">18.3.1. Running OCR on a Document</a></h4>
 <div class="paragraph">
 <p>When OCR is run on a document, the Cloud Vision APIs will output a collection of OCR output files in JSON which describe the text content, bounding rectangles of words and letters, and other information about the document.</p>
 </div>
@@ -7659,7 +7788,7 @@ It is recommended to register callbacks to the returned ListenableFuture or igno
 </div>
 </div>
 <div class="sect3">
-<h4 id="_running_ocr_example"><a class="link" href="#_running_ocr_example">17.3.2. Running OCR Example</a></h4>
+<h4 id="_running_ocr_example"><a class="link" href="#_running_ocr_example">18.3.2. Running OCR Example</a></h4>
 <div class="paragraph">
 <p>Below is a code snippet of how to run OCR on a document stored in a Google Storage bucket and read the text in the first page of the document.</p>
 </div>
@@ -7687,7 +7816,7 @@ public void runOcrOnDocument() {
 </div>
 </div>
 <div class="sect3">
-<h4 id="_reading_ocr_output_files"><a class="link" href="#_reading_ocr_output_files">17.3.3. Reading OCR Output Files</a></h4>
+<h4 id="_reading_ocr_output_files"><a class="link" href="#_reading_ocr_output_files">18.3.3. Reading OCR Output Files</a></h4>
 <div class="paragraph">
 <p>In some use-cases, you may need to directly read OCR output files stored in Google Cloud Storage.</p>
 </div>
@@ -7709,7 +7838,7 @@ Reads a single OCR output file and returns the parsed contents.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_reading_ocr_output_files_example"><a class="link" href="#_reading_ocr_output_files_example">17.3.4. Reading OCR Output Files Example</a></h4>
+<h4 id="_reading_ocr_output_files_example"><a class="link" href="#_reading_ocr_output_files_example">18.3.4. Reading OCR Output Files Example</a></h4>
 <div class="paragraph">
 <p>The code snippet below describes how to read the OCR output files of a single document.</p>
 </div>
@@ -7740,7 +7869,7 @@ public void parseSingleOutputFile() {
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuration_7"><a class="link" href="#_configuration_7">17.4. Configuration</a></h3>
+<h3 id="_configuration_8"><a class="link" href="#_configuration_8">18.4. Configuration</a></h3>
 <div class="paragraph">
 <p>The following options may be configured with Spring Cloud GCP Vision libraries.</p>
 </div>
@@ -7780,7 +7909,7 @@ public void parseSingleOutputFile() {
 </table>
 </div>
 <div class="sect2">
-<h3 id="_sample_12"><a class="link" href="#_sample_12">17.5. Sample</a></h3>
+<h3 id="_sample_13"><a class="link" href="#_sample_13">18.5. Sample</a></h3>
 <div class="paragraph">
 <p>Samples are provided to show example usages of Spring Cloud GCP with Google Cloud Vision.</p>
 </div>
@@ -7799,7 +7928,7 @@ The application generates labels describing the content inside the images you sp
 </div>
 </div>
 <div class="sect1">
-<h2 id="_cloud_foundry"><a class="link" href="#_cloud_foundry">18. Cloud Foundry</a></h2>
+<h2 id="_cloud_foundry"><a class="link" href="#_cloud_foundry">19. Cloud Foundry</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Spring Cloud GCP provides support for Cloud Foundry&#8217;s <a href="https://docs.pivotal.io/partners/gcp-sb/index.html">GCP Service Broker</a>.
@@ -7839,7 +7968,7 @@ Otherwise, Cloud Foundry will produce a <code>DataSource</code> with an invalid 
 </div>
 </div>
 <div class="sect1">
-<h2 id="_kotlin_support"><a class="link" href="#_kotlin_support">19. Kotlin Support</a></h2>
+<h2 id="_kotlin_support"><a class="link" href="#_kotlin_support">20. Kotlin Support</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The latest version of the Spring Framework provides first-class support for Kotlin.
@@ -7849,7 +7978,7 @@ For Kotlin users of Spring, the Spring Cloud GCP libraries work out-of-the-box a
 <p>For more information on building a Spring application in Kotlin, please consult the <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin">Spring Kotlin documentation</a>.</p>
 </div>
 <div class="sect2">
-<h3 id="_prerequisites_2"><a class="link" href="#_prerequisites_2">19.1. Prerequisites</a></h3>
+<h3 id="_prerequisites_2"><a class="link" href="#_prerequisites_2">20.1. Prerequisites</a></h3>
 <div class="paragraph">
 <p>Ensure that your Kotlin application is properly set up.
 Based on your build system, you will need to include the correct Kotlin build plugin in your project:</p>
@@ -7881,142 +8010,11 @@ Based on your build system, you will need to include the correct Kotlin build pl
 <p>Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within your application without any additional setup.</p>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_sample_13"><a class="link" href="#_sample_13">20. Sample</a></h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_sample_14"><a class="link" href="#_sample_14">20.2. Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample">Kotlin sample application</a> is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_cloud_firestore"><a class="link" href="#_cloud_firestore">21. Cloud Firestore</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode.</p>
-</div>
-<div class="paragraph">
-<p>See <a href="https://cloud.google.com/firestore/docs/">documentation</a> to learn more about Cloud Firestore.</p>
-</div>
-<div class="paragraph">
-<p>To begin using this library, add the <code>spring-cloud-gcp-starter-firestore</code> artifact to your project.</p>
-</div>
-<div class="paragraph">
-<p>Maven coordinates, using <a href="#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-cloud-gcp-starter-firestore&lt;/artifactId&gt;
-&lt;/dependency&gt;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Gradle coordinates:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code>dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
-}</code></pre>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_sample_14"><a class="link" href="#_sample_14">21.1. Sample</a></h3>
-<div class="paragraph">
-<p>A <a href="https://github.com/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">sample application</a> is available.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_using_cloud_firestore"><a class="link" href="#_using_cloud_firestore">21.2. Using Cloud Firestore</a></h3>
-<div class="paragraph">
-<p>The starter automatically configures and registers a <code>Firestore</code> bean in the Spring application context. To start using it, simply use the <code>@Autowired</code> annotation.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
-Firestore firestore;
-
-void writeDocumentFromObject() throws ExecutionException, InterruptedException {
-	// Add document data with id "joe" using a custom User class
-	User data = new User("Joe",
-			Arrays.asList(
-					new Phone(12345, PhoneType.CELL),
-					new Phone(54321, PhoneType.WORK)));
-
-	// .get() blocks on response
-	WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
-
-	LOGGER.info("Update time: " + writeResult.getUpdateTime());
-}
-
-User readDocumentToObject() throws ExecutionException, InterruptedException {
-		ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
-				this.firestore.document("users/joe").get();
-
-		User user = documentFuture.get().toObject(User.class);
-
-		LOGGER.info("read: " + user);
-
-		return user;
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_configuration_8"><a class="link" href="#_configuration_8">21.3. Configuration</a></h3>
-<div class="paragraph">
-<p>The Spring Boot starter for Google Cloud Firestore provides the following configuration options:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.project-id</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.location</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.encoded-key</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.scopes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP Cloud Datastore credentials</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/datastore" class="bare">https://www.googleapis.com/auth/datastore</a></p></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>
