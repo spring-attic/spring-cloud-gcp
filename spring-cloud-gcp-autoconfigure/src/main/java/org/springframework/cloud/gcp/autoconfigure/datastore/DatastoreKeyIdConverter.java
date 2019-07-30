@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 
 import com.google.cloud.datastore.Key;
 
@@ -49,7 +50,7 @@ public class DatastoreKeyIdConverter implements BackendIdConverter {
 	@Override
 	public Serializable fromRequestId(String s, Class<?> aClass) {
 		try {
-			return Key.fromUrlSafe(URLDecoder.decode(s, "UTF-8"));
+			return Key.fromUrlSafe(URLDecoder.decode(s, Charset.defaultCharset().name()));
 		}
 		catch (UnsupportedEncodingException e) {
 			throw new DatastoreDataException("Could not decode URL key param: " + s);
@@ -62,9 +63,9 @@ public class DatastoreKeyIdConverter implements BackendIdConverter {
 	}
 
 	@Override
-	public boolean supports(Class<?> delimiter) {
+	public boolean supports(Class<?> entityType) {
 		// This ID converter only covers the Datastore key type. Returning false here causes the
 		// default converter from Spring Data to be used.
-		return this.datastoreMappingContext.getPersistentEntity(delimiter).getIdProperty().getType().equals(Key.class);
+		return this.datastoreMappingContext.getPersistentEntity(entityType).getIdProperty().getType().equals(Key.class);
 	}
 }
