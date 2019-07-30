@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -176,6 +177,19 @@ public class DatastoreSampleApplicationTests {
 				"albums=[Album{albumName='a', date=2012-01-20}");
 
 		assertThat(baos.toString()).contains("This concludes the sample.");
+	}
+
+	@Test
+	public void testCompoundKeyRestResource() throws IOException {
+		String allInstrumentsResponse = sendRequest("/instruments", null, HttpMethod.GET);
+		Map<String, Object> parsedResponse = this.mapper.readValue(allInstrumentsResponse,
+				new TypeReference<HashMap<String, Object>>() {
+				});
+		String instrumentUrl = (String) ((Map) ((Map) ((Map) ((List) ((Map) parsedResponse.get("_embedded"))
+				.get("instruments")).get(0)).get("_links")).get("instrument")).get("href");
+		String instrumentResponse = sendRequest(instrumentUrl, null, HttpMethod.GET);
+		// An instrument JSON object is expected. In this case a recorder.
+		assertThat(instrumentResponse).contains("{\n" + "  \"type\" : \"recorder\"");
 	}
 
 	private String sendRequest(String url, String json, HttpMethod method) {

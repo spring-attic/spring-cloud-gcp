@@ -41,6 +41,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ResolvableType;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -136,6 +137,15 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testTestRepositoryCreated() {
 		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+	}
+
+	@Test
+	public void testIdConverterCreated() {
+		this.contextRunner.run((context) -> {
+			BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
+			assertThat(idConverter).isNotNull();
+			assertThat(idConverter).isInstanceOf(DatastoreKeyIdConverter.class);
+		});
 	}
 
 	@Test

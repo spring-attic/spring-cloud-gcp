@@ -52,6 +52,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
  * Provides Spring Data classes to use with Cloud Datastore.
@@ -185,5 +186,17 @@ public class GcpDatastoreAutoConfiguration {
 			builder.setHost(this.host);
 		}
 		return builder.build().getService();
+	}
+
+	/**
+	 * REST settings.
+	 */
+	@ConditionalOnClass(BackendIdConverter.class)
+	static class DatastoreKeyRestSupportAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public BackendIdConverter datastoreKeyIdConverter(DatastoreMappingContext datastoreMappingContext) {
+			return new DatastoreKeyIdConverter(datastoreMappingContext);
+		}
 	}
 }
