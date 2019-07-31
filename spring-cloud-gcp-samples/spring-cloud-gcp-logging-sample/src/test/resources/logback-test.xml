@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+	<include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
+
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<!-- encoders are assigned the type
 		ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
@@ -10,5 +12,6 @@
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
+		<appender-ref ref="STACKDRIVER" />
 	</root>
 </configuration>
