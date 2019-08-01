@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import java.util.List;
-
-import com.google.protobuf.Empty;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -30,18 +27,27 @@ import reactor.core.publisher.Mono;
  */
 public interface FirestoreReactiveOperations {
 	/**
+	 * Saves an instance of an object to Cloud Firestore.
+	 * Behaves as update or insert.
+	 * @param <T> the type of the object to save.
+	 * @param instance the instance to save.
+	 * @return the instance that was saved.
+	 */
+	<T> Mono<T> save(T instance);
+
+	/**
 	 * Get all the entities of the given domain type.
-	 * @param entityClass the domain type to get.
 	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type to get.
 	 * @return the entities that were found.
 	 */
-	<T> Mono<List<T>> findAll(Class<T> entityClass);
+	<T> Flux<T> findAll(Class<T> entityClass);
 
 	/**
 	 * Delete all entities of a given domain type.
-	 * @param entityClass the domain type to delete from Cloud Datastore.
 	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type to delete from Cloud Datastore.
 	 * @return the number of entities that were deleted.
 	 */
-	<T> Flux<Empty> deleteAll(Class<T> entityClass);
+	<T> Mono<Long> deleteAll(Class<T> entityClass);
 }

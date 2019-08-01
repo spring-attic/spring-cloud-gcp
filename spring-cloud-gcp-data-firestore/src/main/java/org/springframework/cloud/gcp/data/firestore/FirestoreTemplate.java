@@ -17,17 +17,16 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc;
-import com.google.firestore.v1.ListDocumentsRequest;
-import com.google.firestore.v1.ListDocumentsResponse;
+import com.google.firestore.v1.RunQueryRequest;
+import com.google.firestore.v1.RunQueryResponse;
+import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
 import com.google.protobuf.Empty;
 import reactor.core.publisher.Flux;
@@ -54,7 +53,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.parent = parent;
 	}
 
-	public <T> Mono<Document> save(T entity) {
+	public <T> Mono<T> save(T entity) {
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
@@ -68,30 +67,18 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 						.setDocumentId(idVal.toString())
 						.setDocument(Document.newBuilder().putAllFields(valuesMap))
 						.build();
-			return ObservableReactiveUtil.unaryCall(
-					obs -> this.firestore.createDocument(createDocumentRequest, obs));
+			return ObservableReactiveUtil.<Document>unaryCall(
+					obs -> this.firestore.createDocument(createDocumentRequest, obs)).then(Mono.just(entity));
 	}
 
-	public <T> Mono<List<T>> findAll(Class<T> clazz) {
-		Mono<ListDocumentsResponse> listDocumentsResponseMono = runListDocumentsResponse(clazz);
-		return listDocumentsResponseMono
-				.flatMap(listDocumentsResponse -> {
-					List<T> collect = listDocumentsResponse.getDocumentsList().stream()
-							.map(doc -> PublicClassMapper.convertToCustomClass(doc, clazz))
-							.collect(Collectors.toList());
-					return Mono.just(collect);
-				}
-		);
+	public <T> Flux<T> findAll(Class<T> clazz) {
+		return findAllDocuments(clazz)
+				.map(document -> PublicClassMapper.convertToCustomClass(document, clazz));
 	}
 
-	public <T> Flux<Empty> deleteAll(Class<T> clazz) {
-		Mono<ListDocumentsResponse> listDocumentsResponseMono = runListDocumentsResponse(clazz);
 
-		return listDocumentsResponseMono.flatMapMany(listDocumentsResponse -> {
-			List<Mono<Empty>> responses = listDocumentsResponse.getDocumentsList().stream()
-					.map(this::callDelete).collect(Collectors.toList());
-			return Flux.merge(responses);
-		});
+	public <T> Mono<Long> deleteAll(Class<T> clazz) {
+		return findAllDocuments(clazz).flatMap(this::callDelete).count();
 	}
 
 	private Mono<Empty> callDelete(Document doc) {
@@ -110,14 +97,18 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return name;
 	}
 
-	private <T> Mono<ListDocumentsResponse> runListDocumentsResponse(Class<T> clazz) {
-		ListDocumentsRequest listDocumentsRequest =
-				ListDocumentsRequest.newBuilder()
-						.setParent(this.parent)
-						.setCollectionId(findCollectionName(clazz))
-						.build();
+	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {
+		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
+				.addFrom(
+						StructuredQuery.CollectionSelector.newBuilder()
+								.setCollectionId(findCollectionName(clazz)).build())
+				.build();
+		RunQueryRequest request = RunQueryRequest.newBuilder()
+				.setParent(this.parent)
+				.setStructuredQuery(structuredQuery)
+				.build();
 
-		return ObservableReactiveUtil.unaryCall(
-						obs -> this.firestore.listDocuments(listDocumentsRequest, obs));
+		return ObservableReactiveUtil.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
+				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
 }

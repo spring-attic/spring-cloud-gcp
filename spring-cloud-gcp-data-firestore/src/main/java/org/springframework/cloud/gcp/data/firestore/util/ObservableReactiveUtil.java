@@ -52,11 +52,10 @@ public final class ObservableReactiveUtil {
 	 * {@link Flux} stream.
 	 *
 	 * @param remoteCall call to make
-	 * @param <RequestT> request type
 	 * @param <ResponseT> response type
 	 * @return {@link Flux} of response objects resulting from the streaming call.
 	 */
-	public static <RequestT, ResponseT> Flux<ResponseT> streamingCall(
+	public static <ResponseT> Flux<ResponseT> streamingCall(
 			Consumer<StreamObserver<ResponseT>> remoteCall) {
 
 		return Flux.create(sink -> {

@@ -81,12 +81,12 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
-		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).block();
+		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
 
-		this.firestoreTemplate.deleteAll(User.class).last().block();
+		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
-		assertThat(this.firestoreTemplate.findAll(User.class).block()).isEmpty();
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 	}
 
 }
