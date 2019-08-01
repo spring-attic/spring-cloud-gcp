@@ -18,33 +18,59 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.cloud.firestore.PublicClassMapper;
+import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
+import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc;
 import com.google.firestore.v1.ListDocumentsRequest;
 import com.google.firestore.v1.ListDocumentsResponse;
+import com.google.firestore.v1.Value;
 import com.google.protobuf.Empty;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 
 /**
  * @author Dmitry Solomakha
  */
-public class FirestoreTemplate implements FirestoreOperations {
+public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private final FirestoreGrpc.FirestoreStub firestore;
 
 	private final String parent;
+
+	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
 	public FirestoreTemplate(FirestoreGrpc.FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
 	}
 
+	public <T> Mono<Document> save(T entity) {
+		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
+		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
+		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
+
+		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+
+		CreateDocumentRequest createDocumentRequest =
+				CreateDocumentRequest.newBuilder()
+						.setParent(this.parent)
+						.setCollectionId(findCollectionName(entity.getClass()))
+						.setDocumentId(idVal.toString())
+						.setDocument(Document.newBuilder().putAllFields(valuesMap))
+						.build();
+			return ObservableReactiveUtil.unaryCall(
+					obs -> this.firestore.createDocument(createDocumentRequest, obs));
+	}
 
 	public <T> Mono<List<T>> findAll(Class<T> clazz) {
 		Mono<ListDocumentsResponse> listDocumentsResponseMono = runListDocumentsResponse(clazz);
@@ -59,21 +85,21 @@ public class FirestoreTemplate implements FirestoreOperations {
 	}
 
 	public <T> Flux<Empty> deleteAll(Class<T> clazz) {
-
 		Mono<ListDocumentsResponse> listDocumentsResponseMono = runListDocumentsResponse(clazz);
 
 		return listDocumentsResponseMono.flatMapMany(listDocumentsResponse -> {
-			List<Mono<Empty>> responses = listDocumentsResponse.getDocumentsList().stream().map(doc -> {
-				DeleteDocumentRequest deleteDocumentRequest = DeleteDocumentRequest.newBuilder().setName(doc.getName())
-						.build();
-				return ObservableReactiveUtil
-						.<Empty>unaryCall(
-								obs -> this.firestore.deleteDocument(deleteDocumentRequest, obs));
-			}).collect(Collectors.toList());
-			return Flux.mergeSequential(responses);
+			List<Mono<Empty>> responses = listDocumentsResponse.getDocumentsList().stream()
+					.map(this::callDelete).collect(Collectors.toList());
+			return Flux.merge(responses);
 		});
 	}
 
+	private Mono<Empty> callDelete(Document doc) {
+		DeleteDocumentRequest deleteDocumentRequest = DeleteDocumentRequest.newBuilder().setName(doc.getName())
+				.build();
+		return ObservableReactiveUtil.unaryCall(
+						obs -> this.firestore.deleteDocument(deleteDocumentRequest, obs));
+	}
 
 	private <T> String findCollectionName(Class<T> clazz) {
 		Entity entity = AnnotationUtils.findAnnotation(clazz, Entity.class);
@@ -91,8 +117,7 @@ public class FirestoreTemplate implements FirestoreOperations {
 						.setCollectionId(findCollectionName(clazz))
 						.build();
 
-		return ObservableReactiveUtil
-				.<ListDocumentsResponse>unaryCall(
+		return ObservableReactiveUtil.unaryCall(
 						obs -> this.firestore.listDocuments(listDocumentsRequest, obs));
 	}
 }

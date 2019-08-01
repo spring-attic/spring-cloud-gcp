@@ -17,16 +17,12 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 import ch.qos.logback.classic.Level;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.firestore.PublicClassMapper;
-import com.google.firestore.v1.CreateDocumentRequest;
-import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc;
-import com.google.firestore.v1.Value;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -35,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
+import org.springframework.data.annotation.Id;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,7 +40,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * @author Dmitry Solomakha
  */
-public class FirestoreCiTests {
+public class FirestoreIntegrationTests {
 	private static final String DEFAULT_PARENT = "projects/spring-firestore-native-test/databases/(default)/documents";
 
 	private FirestoreGrpc.FirestoreStub firestoreStub;
@@ -79,41 +75,26 @@ public class FirestoreCiTests {
 
 	@Test
 	public void readDeleteTest() {
-		createUser(this.firestoreStub, "Alice", 29);
-		createUser(this.firestoreStub, "Bob", 60);
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
 
-		assertThat(this.firestoreTemplate.findAll(User.class).block())
-				.containsExactlyInAnyOrder(new User("Alice", 29), new User("Bob", 60));
+		this.firestoreTemplate.save(alice).block();
+		this.firestoreTemplate.save(bob).block();
 
-		this.firestoreTemplate.deleteAll(User.class).blockFirst();
+		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).block();
 
+		this.firestoreTemplate.deleteAll(User.class).last().block();
+
+		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).block()).isEmpty();
 	}
 
-	private static void createUser(FirestoreGrpc.FirestoreStub firestore, String name, int age) {
-		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(new User(name, age));
-
-		CreateDocumentRequest createDocumentRequest =
-				CreateDocumentRequest.newBuilder()
-						.setParent(DEFAULT_PARENT)
-						.setCollectionId("users")
-						.setDocumentId(name)
-						.setDocument(Document.newBuilder().putAllFields(valuesMap))
-						.build();
-		try {
-			ObservableReactiveUtil
-					.<Document>unaryCall(obs -> firestore.createDocument(createDocumentRequest, obs))
-					.block();
-		}
-		catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
 }
 
 
 @Entity(name = "users")
 class User {
+	@Id
 	private String name;
 
 	private Integer age;

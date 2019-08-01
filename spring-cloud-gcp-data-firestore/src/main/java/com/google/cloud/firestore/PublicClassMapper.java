@@ -26,7 +26,11 @@ import com.google.firestore.v1.Document;
 import com.google.firestore.v1.Value;
 
 /**
+ *
+ * Temporary class to expose package-private methods, will be removed in the future.
+ *
  * @author Dmitry Solomakha
+ *
  */
 public final class PublicClassMapper {
 
