@@ -54,7 +54,7 @@ public class FirestoreIntegrationTests {
 		assumeThat(
 				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
-				"true", is("true"));
+				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
 				(ch.qos.logback.classic.Logger)

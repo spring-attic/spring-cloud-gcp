@@ -93,11 +93,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private <T> String findCollectionName(Class<T> clazz) {
 		Entity entity = AnnotationUtils.findAnnotation(clazz, Entity.class);
-		String name = (String) AnnotationUtils.getValue(entity, "collectionName");
-		if (name == null) {
+		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
+		if (collectionName == null || collectionName.isEmpty()) {
 			throw new FirestoreDataException("Entities should be annotated with @Entity and have a collection name");
 		}
-		return name;
+		return collectionName;
 	}
 
 	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {

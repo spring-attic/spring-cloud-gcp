@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a class that represents a Firestore Entity
+ * Annotation for a class that represents a Firestore Entity.
  *
  * @author Dmitry Solomakha
  *
