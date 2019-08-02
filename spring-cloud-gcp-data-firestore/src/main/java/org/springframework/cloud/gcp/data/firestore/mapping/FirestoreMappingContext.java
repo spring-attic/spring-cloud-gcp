@@ -36,11 +36,8 @@ public class FirestoreMappingContext extends
 		implements ApplicationContextAware {
 
 	@Override
-	protected <T> FirestorePersistentEntity<?> createPersistentEntity(
-			TypeInformation<T> typeInformation) {
-		FirestorePersistentEntityImpl<T> persistentEntity = new FirestorePersistentEntityImpl<>(typeInformation);
-
-		return persistentEntity;
+	protected <T> FirestorePersistentEntity<?> createPersistentEntity(TypeInformation<T> typeInformation) {
+		return new FirestorePersistentEntityImpl<>(typeInformation);
 	}
 
 	@Override
