@@ -18,10 +18,13 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 
+import org.springframework.dao.DataAccessException;
+
 /**
  * @author Dmitry Solomakha
+ * @since 1.2
  */
-public class FirestoreDataException extends RuntimeException {
+public class FirestoreDataException extends DataAccessException {
 
 	public FirestoreDataException(String msg) {
 		super(msg);

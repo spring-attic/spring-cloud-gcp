@@ -24,11 +24,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a class that indicates it is an entity stored in a Datastore Entity.
+ * Annotation for a class that represents a Firestore Entity
  *
  * @author Dmitry Solomakha
  *
- * @since 1.1
+ * @since 1.2
  */
 @Documented
 @Target(ElementType.TYPE)
@@ -36,9 +36,9 @@ import java.lang.annotation.Target;
 public @interface Entity {
 
 	/**
-	 * The Kind name of the Entity in Firestore, which can differ from the name of the
+	 * The collection name of the Entity in Firestore, which can differ from the name of the
 	 * class which it annotates.
-	 * @return The Kind name of the Entity
+	 * @return The Collection name of the Entity
 	 */
-	String name() default "";
+	String collectionName() default "";
 }

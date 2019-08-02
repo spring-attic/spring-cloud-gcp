@@ -54,7 +54,7 @@ public class FirestoreIntegrationTests {
 		assumeThat(
 				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
-				System.getProperty("it.firestore"), is("true"));
+				"true", is("true"));
 
 		ch.qos.logback.classic.Logger root =
 				(ch.qos.logback.classic.Logger)
@@ -92,7 +92,7 @@ public class FirestoreIntegrationTests {
 }
 
 
-@Entity(name = "users")
+@Entity(collectionName = "users")
 class User {
 	@Id
 	private String name;

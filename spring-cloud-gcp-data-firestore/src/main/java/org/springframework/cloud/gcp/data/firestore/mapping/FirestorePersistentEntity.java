@@ -31,11 +31,11 @@ public interface FirestorePersistentEntity<T> extends
 		MutablePersistentEntity<T, FirestorePersistentProperty> {
 
 	/**
-	 * Gets the name of the Datastore Kind.
+	 * Gets the name of the Firestore Collection.
 	 *
-	 * @return the name of the Datastore Kind that stores these entities.
+	 * @return the name of the Firestore Collection that stores these entities.
 	 */
-	String kindName();
+	String collectionName();
 
 	/**
 	 * Gets the ID property, and will throw {@link Exception} if the entity

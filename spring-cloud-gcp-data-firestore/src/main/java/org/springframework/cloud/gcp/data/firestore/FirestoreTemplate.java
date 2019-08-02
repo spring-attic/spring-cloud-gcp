@@ -39,7 +39,10 @@ import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.core.annotation.AnnotationUtils;
 
 /**
+ * An implementation of FirestoreReactiveOperations.
+ *
  * @author Dmitry Solomakha
+ * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private final FirestoreGrpc.FirestoreStub firestore;
@@ -90,7 +93,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private <T> String findCollectionName(Class<T> clazz) {
 		Entity entity = AnnotationUtils.findAnnotation(clazz, Entity.class);
-		String name = (String) AnnotationUtils.getValue(entity, "name");
+		String name = (String) AnnotationUtils.getValue(entity, "collectionName");
 		if (name == null) {
 			throw new FirestoreDataException("Entities should be annotated with @Entity and have a collection name");
 		}

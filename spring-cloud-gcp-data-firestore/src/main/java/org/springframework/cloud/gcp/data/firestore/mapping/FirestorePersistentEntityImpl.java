@@ -37,7 +37,7 @@ public class FirestorePersistentEntityImpl<T>
 	}
 
 	@Override
-	public String kindName() {
+	public String collectionName() {
 		return null;
 	}
 
