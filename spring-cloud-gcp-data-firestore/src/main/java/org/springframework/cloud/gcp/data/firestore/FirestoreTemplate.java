@@ -23,7 +23,7 @@ import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
-import com.google.firestore.v1.FirestoreGrpc;
+import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
@@ -36,52 +36,61 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingCont
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
-import org.springframework.core.annotation.AnnotationUtils;
 
 /**
- * An implementation of FirestoreReactiveOperations.
+ * An implementation of {@link FirestoreReactiveOperations}.
  *
  * @author Dmitry Solomakha
  * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
-	private final FirestoreGrpc.FirestoreStub firestore;
+	private final FirestoreStub firestore;
 
 	private final String parent;
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
-	public FirestoreTemplate(FirestoreGrpc.FirestoreStub firestore, String parent) {
+	/**
+	 * Constructor for FirestoreTemplate.
+	 * @param firestore Firestore gRPC stub
+	 * @param parent the parent resource. For example:
+	 *     projects/{project_id}/databases/{database_id}/documents or
+	 *     projects/{project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}
+	 */
+	public FirestoreTemplate(FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
 	}
 
 	public <T> Mono<T> save(T entity) {
-		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
-		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
-		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
+		return Mono.defer(() -> {
+			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
+			FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
+			Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
-		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
 
-		CreateDocumentRequest createDocumentRequest =
-				CreateDocumentRequest.newBuilder()
-						.setParent(this.parent)
-						.setCollectionId(findCollectionName(entity.getClass()))
-						.setDocumentId(idVal.toString())
-						.setDocument(Document.newBuilder().putAllFields(valuesMap))
-						.build();
+			CreateDocumentRequest createDocumentRequest = CreateDocumentRequest.newBuilder()
+					.setParent(this.parent)
+					.setCollectionId(persistentEntity.collectionName())
+					.setDocumentId(idVal.toString())
+					.setDocument(Document.newBuilder().putAllFields(valuesMap))
+					.build();
 			return ObservableReactiveUtil.<Document>unaryCall(
 					obs -> this.firestore.createDocument(createDocumentRequest, obs)).then(Mono.just(entity));
+		});
 	}
 
 	public <T> Flux<T> findAll(Class<T> clazz) {
-		return findAllDocuments(clazz)
-				.map(document -> PublicClassMapper.convertToCustomClass(document, clazz));
+		return Flux.defer(() ->
+				findAllDocuments(clazz)
+						.map(document -> PublicClassMapper.convertToCustomClass(document, clazz)));
 	}
 
 
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
-		return findAllDocuments(clazz).flatMap(this::callDelete).count();
+		return Mono.defer(() ->
+			findAllDocuments(clazz).flatMap(this::callDelete).count());
 	}
 
 	private Mono<Empty> callDelete(Document doc) {
@@ -91,20 +100,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 						obs -> this.firestore.deleteDocument(deleteDocumentRequest, obs));
 	}
 
-	private <T> String findCollectionName(Class<T> clazz) {
-		Entity entity = AnnotationUtils.findAnnotation(clazz, Entity.class);
-		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
-		if (collectionName == null || collectionName.isEmpty()) {
-			throw new FirestoreDataException("Entities should be annotated with @Entity and have a collection name");
-		}
-		return collectionName;
-	}
-
 	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {
+		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(clazz);
 		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
 				.addFrom(
 						StructuredQuery.CollectionSelector.newBuilder()
-								.setCollectionId(findCollectionName(clazz)).build())
+								.setCollectionId(persistentEntity.collectionName()).build())
 				.build();
 		RunQueryRequest request = RunQueryRequest.newBuilder()
 				.setParent(this.parent)

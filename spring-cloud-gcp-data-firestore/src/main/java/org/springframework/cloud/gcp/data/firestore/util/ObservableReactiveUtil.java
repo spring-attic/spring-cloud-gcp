@@ -27,7 +27,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
 /**
- * Converter from a gRPC async calls to Reactor primitives ({@link Mono}).
+ * Converter from a gRPC async calls to Reactor primitives ({@link Mono}, {@link Flux}).
+ *
+ * @author Dmitry Solomakha
+ * @since 1.2
  */
 public final class ObservableReactiveUtil {
 

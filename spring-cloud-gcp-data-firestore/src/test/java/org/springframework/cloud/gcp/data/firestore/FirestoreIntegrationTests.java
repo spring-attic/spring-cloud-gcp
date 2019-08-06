@@ -74,7 +74,7 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
-	public void readDeleteTest() {
+	public void writeReadDeleteTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
 

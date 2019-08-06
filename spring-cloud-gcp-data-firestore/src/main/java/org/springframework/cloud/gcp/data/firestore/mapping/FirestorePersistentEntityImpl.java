@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
+import org.springframework.cloud.gcp.data.firestore.Entity;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 
@@ -38,7 +40,12 @@ public class FirestorePersistentEntityImpl<T>
 
 	@Override
 	public String collectionName() {
-		return null;
+		Entity entity = AnnotationUtils.findAnnotation(getType(), Entity.class);
+		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
+		if (collectionName == null || collectionName.isEmpty()) {
+			throw new FirestoreDataException("Entities should be annotated with @Entity and have a collection name");
+		}
+		return collectionName;
 	}
 
 	@Override
