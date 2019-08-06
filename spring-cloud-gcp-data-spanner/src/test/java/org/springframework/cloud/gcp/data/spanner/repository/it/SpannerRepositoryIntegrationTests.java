@@ -253,6 +253,20 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		this.tradeRepository.deleteAll();
 		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
+		assertThat(this.tradeRepository.count()).isEqualTo(1L);
+	}
+
+	@Test
+	public void testTransactionRolledBack() {
+		this.tradeRepository.deleteAll();
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		try {
+			this.tradeRepositoryTransactionalService.testTransactionRolledBack();
+		}
+		catch (RuntimeException re) {
+			// expected exception that causes roll-back;
+		}
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 	}
 
 	private void arrayParameterBindTest() {
@@ -297,6 +311,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			// because the insert happens within the same transaction, this count is still
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		}
+
+		@Transactional
+		public void testTransactionRolledBack() {
+			Trade trade = Trade.aTrade();
+			this.tradeRepository.save(trade);
+			throw new RuntimeException("Intentional error to rollback save.");
 		}
 	}
 }
