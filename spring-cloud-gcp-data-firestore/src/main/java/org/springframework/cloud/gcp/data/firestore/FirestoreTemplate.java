@@ -29,6 +29,7 @@ import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
 import com.google.protobuf.Empty;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -78,6 +79,14 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 					.build();
 			return ObservableReactiveUtil.<Document>unaryCall(
 					obs -> this.firestore.createDocument(createDocumentRequest, obs)).then(Mono.just(entity));
+		});
+	}
+
+	@Override
+	public <T> Flux<T> saveAll(Publisher<T> instances) {
+		return Flux.defer(() -> {
+			Flux<T> input = Flux.from(instances);
+			return input.flatMap(this::save);
 		});
 	}
 
