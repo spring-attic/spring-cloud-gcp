@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,10 +32,10 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.test.StepVerifier;
 
 import org.springframework.data.annotation.Id;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -71,35 +70,30 @@ public class FirestoreTemplateTests {
 			return null;
 		}).when(this.firestoreStub).createDocument(any(), any());
 
-		this.firestoreTemplate.save(testEntity1).block();
-
+		StepVerifier.create(this.firestoreTemplate.save(testEntity1))
+				.expectNextMatches(testEntity -> testEntity == testEntity1).verifyComplete();
 
 		CreateDocumentRequest expectedCreateDocumentRequest = CreateDocumentRequest.newBuilder()
 				.setParent(this.parent)
 				.setCollectionId("testEntities")
 				.setDocumentId("test_entity_1")
-				.setDocument(Document.newBuilder().putAllFields(createvaluesMap("test_entity_1", 123L)))
+				.setDocument(Document.newBuilder().putAllFields(createValuesMap("test_entity_1", 123L)))
 				.build();
-
-
 
 		verify(this.firestoreStub, times(1)).createDocument(eq(expectedCreateDocumentRequest), any());
 		verify(this.firestoreStub, times(1)).createDocument(any(), any());
-
 	}
 
 	@Test
 	public void findAllTest() {
-		doAnswerRunQuery();
+		mockRunQueryMethod();
 
-		List<TestEntity> testEntities = this.firestoreTemplate.findAll(TestEntity.class).collectList().block();
-
-		assertThat(testEntities).containsExactlyInAnyOrder(new TestEntity("e1", 100L), new TestEntity("e2", 200L));
+		StepVerifier.create(this.firestoreTemplate.findAll(TestEntity.class))
+				.expectNext(new TestEntity("e1", 100L), new TestEntity("e2", 200L))
+				.verifyComplete();
 
 		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
-				.addFrom(
-						StructuredQuery.CollectionSelector.newBuilder()
-								.setCollectionId("testEntities").build())
+				.addFrom(StructuredQuery.CollectionSelector.newBuilder().setCollectionId("testEntities").build())
 				.build();
 		RunQueryRequest request = RunQueryRequest.newBuilder()
 				.setParent(this.parent)
@@ -112,7 +106,7 @@ public class FirestoreTemplateTests {
 
 	@Test
 	public void deleteAllTest() {
-		doAnswerRunQuery();
+		mockRunQueryMethod();
 
 		doAnswer(invocation -> {
 			StreamObserver<Empty> streamObserver = invocation.getArgument(1);
@@ -122,7 +116,7 @@ public class FirestoreTemplateTests {
 			return null;
 		}).when(this.firestoreStub).deleteDocument(any(), any());
 
-		assertThat(this.firestoreTemplate.deleteAll(TestEntity.class).block()).isEqualTo(2L);
+		StepVerifier.create(this.firestoreTemplate.deleteAll(TestEntity.class)).expectNext(2L).verifyComplete();
 
 		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
 				.addFrom(
@@ -144,7 +138,7 @@ public class FirestoreTemplateTests {
 		verify(this.firestoreStub, times(2)).deleteDocument(any(), any());
 	}
 
-	private Map<String, Value> createvaluesMap(String test_entity_1, long value) {
+	private Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
 		valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
@@ -152,10 +146,10 @@ public class FirestoreTemplateTests {
 	}
 
 	private Document buildDocument(String e1, long l) {
-		return Document.newBuilder().setName(e1).putAllFields(createvaluesMap(e1, l)).build();
+		return Document.newBuilder().setName(e1).putAllFields(createValuesMap(e1, l)).build();
 	}
 
-	private void doAnswerRunQuery() {
+	private void mockRunQueryMethod() {
 		doAnswer(invocation -> {
 			StreamObserver<RunQueryResponse> streamObserver = invocation.getArgument(1);
 			streamObserver.onNext(RunQueryResponse.newBuilder()
