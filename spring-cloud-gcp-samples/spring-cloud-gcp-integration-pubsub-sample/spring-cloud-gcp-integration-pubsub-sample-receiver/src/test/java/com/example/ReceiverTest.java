@@ -84,7 +84,7 @@ public class ReceiverTest {
 		this.pubSubTemplate.publish("exampleTopic", message);
 
 		Awaitility.await()
-				.atMost(10, TimeUnit.SECONDS)
+				.atMost(60, TimeUnit.SECONDS)
 				.until(() -> baos.toString().contains(expectedString));
 		assertThat(baos.toString()).contains(expectedString);
 	}

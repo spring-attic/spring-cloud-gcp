@@ -41,7 +41,7 @@ import static org.junit.Assume.assumeThat;
  * @author Dmitry Solomakha
  */
 public class FirestoreIntegrationTests {
-	private static final String DEFAULT_PARENT = "projects/spring-firestore-native-test/databases/(default)/documents";
+	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
 
 	private FirestoreGrpc.FirestoreStub firestoreStub;
 

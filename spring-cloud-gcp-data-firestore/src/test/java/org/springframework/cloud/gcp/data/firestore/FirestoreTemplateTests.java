@@ -132,9 +132,9 @@ public class FirestoreTemplateTests {
 		verify(this.firestoreStub, times(1)).runQuery(any(), any());
 
 		verify(this.firestoreStub, times(1))
-				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName("e1").build()), any());
+				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/e1").build()), any());
 		verify(this.firestoreStub, times(1))
-				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName("e2").build()), any());
+				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/e2").build()), any());
 		verify(this.firestoreStub, times(2)).deleteDocument(any(), any());
 	}
 
@@ -145,8 +145,8 @@ public class FirestoreTemplateTests {
 		return valuesMap;
 	}
 
-	private Document buildDocument(String e1, long l) {
-		return Document.newBuilder().setName(e1).putAllFields(createValuesMap(e1, l)).build();
+	private Document buildDocument(String name, long l) {
+		return Document.newBuilder().setName(this.parent + "/" + name).putAllFields(createValuesMap(name, l)).build();
 	}
 
 	private void mockRunQueryMethod() {
