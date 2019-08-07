@@ -181,7 +181,7 @@ public class LocalSampleAppIntegrationTest {
 
 	private void waitForLogMessage(BufferedReader reader, String message) {
 		Awaitility.await(message)
-			.atMost(30, TimeUnit.SECONDS)
+			.atMost(60, TimeUnit.SECONDS)
 			.until(() -> {
 				// drain all lines up to the one requested, or until no more lines in reader.
 				while (reader.ready()) {
