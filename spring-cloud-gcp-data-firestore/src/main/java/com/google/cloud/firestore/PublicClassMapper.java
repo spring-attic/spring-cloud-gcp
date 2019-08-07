@@ -60,7 +60,8 @@ public final class PublicClassMapper {
 			decodedValue = convertToDateIfNecessary(decodedValue);
 			decodedFields.put(entry.getKey(), decodedValue);
 		}
-		return CustomClassMapper.convertToCustomClass(decodedFields, clazz);
+		return CustomClassMapper.convertToCustomClass(decodedFields, clazz,
+				new DocumentReference(null, ResourcePath.create(doc.getName())));
 	}
 
 	private static Object decodeValue(Value v) {
