@@ -18,6 +18,8 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
@@ -28,7 +30,12 @@ import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
+import com.google.firestore.v1.Write;
+import com.google.firestore.v1.WriteRequest;
+import com.google.firestore.v1.WriteResponse;
 import com.google.protobuf.Empty;
+import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -42,12 +49,16 @@ import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
  * An implementation of {@link FirestoreReactiveOperations}.
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
+
 	private final FirestoreStub firestore;
 
 	private final String parent;
+
+	private final String databasePath;
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
@@ -61,6 +72,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public FirestoreTemplate(FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
+		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
 	}
 
 	public <T> Mono<T> save(T entity) {
@@ -86,7 +98,56 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
 		return Flux.defer(() -> {
 			Flux<T> input = Flux.from(instances);
-			return input.flatMap(this::save);
+
+			WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+
+			AtomicReference<StreamObserver<WriteRequest>> writeRequestObserver = new AtomicReference<>();
+
+			CountDownLatch latch = new CountDownLatch(1);
+
+			Mono<WriteResponse> writeResponses = ObservableReactiveUtil
+					.unaryCall(
+							(StreamObserver<WriteResponse> obs) -> {
+								writeRequestObserver.set(this.firestore.write(obs));
+								writeRequestObserver.get().onNext(openStreamRequest);
+							}).cache();
+
+			Flux<T> writeFlux = input.flatMap((T entity) -> writeResponses.flatMap((WriteResponse streamIds) -> {
+				FirestorePersistentEntity<?> persistentEntity = this.mappingContext
+						.getPersistentEntity(entity.getClass());
+				FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
+				Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
+
+				Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+
+				return Mono.fromRunnable(() -> writeRequestObserver.get()
+						.onNext(WriteRequest.newBuilder()
+								.setStreamId(streamIds.getStreamId())
+								.setStreamToken(streamIds.getStreamToken())
+								.addWrites(Write.newBuilder()
+										.setUpdate(Document.newBuilder()
+												.putAllFields(valuesMap)
+												.setName(this.parent + "/"
+														+ persistentEntity.collectionName() + "/"
+														+ idVal.toString())
+												.build())
+										.build())
+								.build()))
+						.then(Mono.just(entity));
+			})).doOnComplete(latch::countDown);
+
+			// This custom flux is created to specify the doFinally
+			return Flux.create(sink -> sink.onRequest(req -> {
+				writeFlux.doOnNext(sink::next).doFinally(signalType -> {
+					try {
+						latch.await();
+					 } catch (InterruptedException e) {
+					 	throw new FirestoreDataException("Streaming saveAll could not complete.", e);
+					 }
+					sink.complete();
+					writeRequestObserver.get().onCompleted();
+				}).subscribe();
+			}));
 		});
 	}
 

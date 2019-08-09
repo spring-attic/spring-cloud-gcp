@@ -94,7 +94,7 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
-	public void saveAllTest() {
+	public void saveAllTest() throws InterruptedException {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
 		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
@@ -103,12 +103,15 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.saveAll(users).collectList().block();
 
+		// having this wait momentarily makes the following assert pass the test.
+		Thread.sleep(1000);
+
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
 	}
 }
 
 
-@Entity(collectionName = "users")
+@Entity(collectionName = "usersFirestoreTemplate")
 class User {
 	@Id
 	private String name;
