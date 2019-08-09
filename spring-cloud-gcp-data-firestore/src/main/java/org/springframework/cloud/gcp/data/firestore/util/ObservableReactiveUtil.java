@@ -82,10 +82,8 @@ public final class ObservableReactiveUtil {
 
 		return inputs.flatMap((A input) ->
 
-		requestFunc.apply(input, responses).map(request -> {
-			requestObserver.get().onNext(request);
-			return 1;
-		})).doOnComplete(() -> requestObserver.get().onCompleted())
+		requestFunc.apply(input, responses).doOnNext(request -> requestObserver.get().onNext(request)))
+				.doOnComplete(() -> requestObserver.get().onCompleted())
 				.thenMany(responses);
 	}
 
