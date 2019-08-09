@@ -103,9 +103,6 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.saveAll(users).collectList().block();
 
-		// having this wait momentarily makes the following assert pass the test.
-		Thread.sleep(1000);
-
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
 	}
 }

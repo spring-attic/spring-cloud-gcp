@@ -62,7 +62,17 @@ public final class ObservableReactiveUtil {
 			Consumer<StreamObserver<ResponseT>> remoteCall) {
 
 		return Flux.create(sink -> {
-			StreamingObserver observer = new StreamingObserver(sink);
+			StreamingObserver observer = new StreamingObserver(sink, null);
+			remoteCall.accept(observer);
+			sink.onRequest(demand -> observer.request(demand));
+		});
+	}
+
+	public static <ResponseT> Flux<ResponseT> streamingCall(
+			Consumer<StreamObserver<ResponseT>> remoteCall, Consumer<ResponseT> onNextAction) {
+
+		return Flux.create(sink -> {
+			StreamingObserver observer = new StreamingObserver(sink, onNextAction);
 			remoteCall.accept(observer);
 			sink.onRequest(demand -> observer.request(demand));
 		});
@@ -74,12 +84,18 @@ public final class ObservableReactiveUtil {
 
 		FluxSink<ResponseT> sink;
 
-		StreamingObserver(FluxSink<ResponseT> sink) {
+		private final Consumer<ResponseT> onNextAction;
+
+		StreamingObserver(FluxSink<ResponseT> sink, Consumer<ResponseT> onNextAction) {
 			this.sink = sink;
+			this.onNextAction = onNextAction;
 		}
 
 		@Override
 		public void onNext(ResponseT value) {
+			if(this.onNextAction != null){
+				this.onNextAction.accept(value);
+			}
 			this.sink.next(value);
 		}
 

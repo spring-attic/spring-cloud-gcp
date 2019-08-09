@@ -18,7 +18,6 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.firestore.PublicClassMapper;
@@ -103,16 +102,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 			AtomicReference<StreamObserver<WriteRequest>> writeRequestObserver = new AtomicReference<>();
 
-			CountDownLatch latch = new CountDownLatch(1);
-
-			Mono<WriteResponse> writeResponses = ObservableReactiveUtil
-					.unaryCall(
+			Flux<WriteResponse> openStreamResponse = ObservableReactiveUtil
+					.streamingCall(
 							(StreamObserver<WriteResponse> obs) -> {
 								writeRequestObserver.set(this.firestore.write(obs));
 								writeRequestObserver.get().onNext(openStreamRequest);
 							}).cache();
 
-			Flux<T> writeFlux = input.flatMap((T entity) -> writeResponses.flatMap((WriteResponse streamIds) -> {
+			Mono<WriteResponse> firstResponse = openStreamResponse.next();
+
+			return input.flatMap((T entity) -> firstResponse.flatMap((WriteResponse streamIds) -> {
 				FirestorePersistentEntity<?> persistentEntity = this.mappingContext
 						.getPersistentEntity(entity.getClass());
 				FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
@@ -120,7 +119,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 				Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
 
-				return Mono.fromRunnable(() -> writeRequestObserver.get()
+				return Mono.fromRunnable(() -> {
+					writeRequestObserver.get()
 						.onNext(WriteRequest.newBuilder()
 								.setStreamId(streamIds.getStreamId())
 								.setStreamToken(streamIds.getStreamToken())
@@ -132,22 +132,10 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 														+ idVal.toString())
 												.build())
 										.build())
-								.build()))
-						.then(Mono.just(entity));
-			})).doOnComplete(latch::countDown);
-
-			// This custom flux is created to specify the doFinally
-			return Flux.create(sink -> sink.onRequest(req -> {
-				writeFlux.doOnNext(sink::next).doFinally(signalType -> {
-					try {
-						latch.await();
-					 } catch (InterruptedException e) {
-					 	throw new FirestoreDataException("Streaming saveAll could not complete.", e);
-					 }
-					sink.complete();
-					writeRequestObserver.get().onCompleted();
-				}).subscribe();
-			}));
+									.build());
+				});
+			})).doOnComplete(() -> writeRequestObserver.get().onCompleted()).thenMany(openStreamResponse)
+					.filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
 		});
 	}
 
