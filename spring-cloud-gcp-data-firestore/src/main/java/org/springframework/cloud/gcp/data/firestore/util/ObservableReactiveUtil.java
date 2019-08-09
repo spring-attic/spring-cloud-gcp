@@ -80,9 +80,9 @@ public final class ObservableReactiveUtil {
 		Flux<ResponseT> responses = (Flux<ResponseT>) streamingCall(
 				obs -> requestObserver.set(remoteCall.apply((StreamObserver<ResponseT>) obs))).cache();
 
-		return inputs.flatMap((A input) ->
-
-		requestFunc.apply(input, responses).doOnNext(request -> requestObserver.get().onNext(request)))
+		return inputs
+				.flatMap((A input) -> requestFunc.apply(input, responses)
+						.doOnNext(request -> requestObserver.get().onNext(request)))
 				.doOnComplete(() -> requestObserver.get().onCompleted())
 				.thenMany(responses);
 	}
