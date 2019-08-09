@@ -95,7 +95,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
 		Flux<T> input = Flux.from(instances);
-		return ObservableReactiveUtil.streamingBidirectionalCall(obs -> openWriteStreamObserver(obs), input,
+		return ObservableReactiveUtil.streamingBidirectionalCall(this::openWriteStreamObserver, input,
 				(T entity, Flux<WriteResponse> responses) -> {
 					Mono<WriteResponse> firstResponse = responses.next();
 					return firstResponse.map((WriteResponse streamIds) -> {
