@@ -18,7 +18,6 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
@@ -95,33 +94,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	@Override
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
-		return Flux.defer(() -> {
-			Flux<T> input = Flux.from(instances);
+		Flux<T> input = Flux.from(instances);
+		return ObservableReactiveUtil.streamingBidirectionalCall(obs -> openWriteStreamObserver(obs), input,
+				(T entity, Flux<WriteResponse> responses) -> {
+					Mono<WriteResponse> firstResponse = responses.next();
+					return firstResponse.map((WriteResponse streamIds) -> {
 
-			WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+						FirestorePersistentEntity<?> persistentEntity = this.mappingContext
+								.getPersistentEntity(entity.getClass());
+						FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
+						Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
-			AtomicReference<StreamObserver<WriteRequest>> writeRequestObserver = new AtomicReference<>();
+						Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
 
-			Flux<WriteResponse> openStreamResponse = ObservableReactiveUtil
-					.streamingCall(
-							(StreamObserver<WriteResponse> obs) -> {
-								writeRequestObserver.set(this.firestore.write(obs));
-								writeRequestObserver.get().onNext(openStreamRequest);
-							}).cache();
-
-			Mono<WriteResponse> firstResponse = openStreamResponse.next();
-
-			return input.flatMap((T entity) -> firstResponse.flatMap((WriteResponse streamIds) -> {
-				FirestorePersistentEntity<?> persistentEntity = this.mappingContext
-						.getPersistentEntity(entity.getClass());
-				FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
-				Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
-
-				Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
-
-				return Mono.fromRunnable(() -> {
-					writeRequestObserver.get()
-						.onNext(WriteRequest.newBuilder()
+						return WriteRequest.newBuilder()
 								.setStreamId(streamIds.getStreamId())
 								.setStreamToken(streamIds.getStreamToken())
 								.addWrites(Write.newBuilder()
@@ -132,11 +118,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 														+ idVal.toString())
 												.build())
 										.build())
-									.build());
-				});
-			})).doOnComplete(() -> writeRequestObserver.get().onCompleted()).thenMany(openStreamResponse)
-					.filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
-		});
+								.build();
+
+					});
+				})
+				.filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
 	}
 
 	public <T> Flux<T> findAll(Class<T> clazz) {
@@ -173,4 +159,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return ObservableReactiveUtil.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
 				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
+
+	private StreamObserver<WriteRequest> openWriteStreamObserver(StreamObserver<WriteResponse> obs) {
+		WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
+		requestStreamObserver.onNext(openStreamRequest);
+		return requestStreamObserver;
+	}
+
 }

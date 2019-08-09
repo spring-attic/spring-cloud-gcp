@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.firestore.util;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.grpc.stub.ClientCallStreamObserver;
 import io.grpc.stub.ClientResponseObserver;
@@ -62,20 +65,27 @@ public final class ObservableReactiveUtil {
 			Consumer<StreamObserver<ResponseT>> remoteCall) {
 
 		return Flux.create(sink -> {
-			StreamingObserver observer = new StreamingObserver(sink, null);
+			StreamingObserver observer = new StreamingObserver(sink);
 			remoteCall.accept(observer);
 			sink.onRequest(demand -> observer.request(demand));
 		});
 	}
 
-	public static <ResponseT> Flux<ResponseT> streamingCall(
-			Consumer<StreamObserver<ResponseT>> remoteCall, Consumer<ResponseT> onNextAction) {
+	public static <ResponseT, RequestT, A> Flux<ResponseT> streamingBidirectionalCall(
+			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> remoteCall,
+			Flux<A> inputs, BiFunction<A, Flux<ResponseT>, Mono<RequestT>> requestFunc) {
 
-		return Flux.create(sink -> {
-			StreamingObserver observer = new StreamingObserver(sink, onNextAction);
-			remoteCall.accept(observer);
-			sink.onRequest(demand -> observer.request(demand));
-		});
+		AtomicReference<StreamObserver<RequestT>> requestObserver = new AtomicReference<>();
+		Flux<ResponseT> responses = (Flux<ResponseT>) streamingCall(
+				obs -> requestObserver.set(remoteCall.apply((StreamObserver<ResponseT>) obs))).cache();
+
+		return inputs.flatMap((A input) ->
+
+		requestFunc.apply(input, responses).map(request -> {
+			requestObserver.get().onNext(request);
+			return 1;
+		})).doOnComplete(() -> requestObserver.get().onCompleted())
+				.thenMany(responses);
 	}
 
 	static class StreamingObserver<RequestT, ResponseT>
@@ -84,18 +94,12 @@ public final class ObservableReactiveUtil {
 
 		FluxSink<ResponseT> sink;
 
-		private final Consumer<ResponseT> onNextAction;
-
-		StreamingObserver(FluxSink<ResponseT> sink, Consumer<ResponseT> onNextAction) {
+		StreamingObserver(FluxSink<ResponseT> sink) {
 			this.sink = sink;
-			this.onNextAction = onNextAction;
 		}
 
 		@Override
 		public void onNext(ResponseT value) {
-			if(this.onNextAction != null){
-				this.onNextAction.accept(value);
-			}
 			this.sink.next(value);
 		}
 
