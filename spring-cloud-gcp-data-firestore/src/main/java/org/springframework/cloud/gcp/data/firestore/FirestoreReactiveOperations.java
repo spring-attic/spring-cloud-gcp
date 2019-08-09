@@ -37,7 +37,7 @@ public interface FirestoreReactiveOperations {
 	<T> Mono<T> save(T instance);
 
 	/**
-	 * Saves multiple objects to Cloud Firestore. Behaves as insert only (not update).
+	 * Saves multiple objects to Cloud Firestore. Behaves as insert or update.
 	 * @param instances the objects to save.
 	 * @param <T> the type of the objects to save.
 	 * @return a flux of the instances that were saved.
