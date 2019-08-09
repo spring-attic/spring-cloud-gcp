@@ -48,6 +48,7 @@ import static org.junit.Assume.assumeThat;
 @TestPropertySource("classpath:application-test.properties")
 @DirtiesContext
 public class FirestoreSampleAppTests {
+	private static final int TIMEOUT = 10;
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -74,11 +75,18 @@ public class FirestoreSampleAppTests {
 	public void testSample() {
 		String expectedString =
 				"read: {name=Ada, phones=[123, 456]}\n" +
-				"read: User{name='Joe', phones=[Phone{number=12345, type=CELL}, Phone{number=54321, type=WORK}]}\n" +
-				"removing: ada\n" +
-				"removing: joe";
+				"read: User{name='Joe', phones=[Phone{number=12345, type=CELL}, Phone{number=54321, type=WORK}]}";
+
 		Awaitility.await()
-				.atMost(10, TimeUnit.SECONDS)
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
 				.until(() -> baos.toString().contains(expectedString));
+
+		//the following two lines appear in a non-deterministic order, so checking them independently
+		Awaitility.await()
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
+				.until(() -> baos.toString().contains("removing: ada"));
+		Awaitility.await()
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
+				.until(() -> baos.toString().contains("removing: joe"));
 	}
 }
