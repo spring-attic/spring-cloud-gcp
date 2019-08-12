@@ -330,8 +330,6 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
-| `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher` instances created by `PublisherFactory` | No | 4
 | `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
@@ -343,9 +341,11 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
+| `spring.cloud.gcp.pubsub.keepAliveIntervalMinutes` | Determines frequency of keepalive gRPC ping | No | `5 minutes`
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
 TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
 The higher the total timeout, the more retries can be attempted. |No | 0
