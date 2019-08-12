@@ -1342,18 +1342,6 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.executor-threads</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by <code>Subscriber</code> instances created by <code>SubscriberFactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.executor-threads</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by <code>Publisher</code> instances created by <code>PublisherFactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.project-id</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
@@ -1383,6 +1371,12 @@ Pub/Sub credentials</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/pubsub" class="bare">https://www.googleapis.com/auth/pubsub</a></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.keepAliveIntervalMinutes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Determines frequency of keepalive gRPC ping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5 minutes</code></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.parallel-pull-count</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The number of pull workers</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
@@ -1399,6 +1393,12 @@ Pub/Sub credentials</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The endpoint for synchronous pulling messages</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">pubsub.googleapis.com:443</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by <code>Subscriber</code> instances created by <code>SubscriberFactory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds</code></p></td>
