@@ -379,7 +379,9 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
-		return InstantiatingGrpcChannelProvider.newBuilder().build();
+		return InstantiatingGrpcChannelProvider.newBuilder()
+			.setKeepAliveTime(Duration.ofMinutes(this.gcpPubSubProperties.getKeepAliveIntervalMinutes()))
+			.build();
 	}
 
 }
