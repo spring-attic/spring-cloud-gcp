@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -27,13 +28,21 @@ import reactor.core.publisher.Mono;
  */
 public interface FirestoreReactiveOperations {
 	/**
-	 * Saves an instance of an object to Cloud Firestore.
-	 * Behaves as update or insert.
+	 * Saves an instance of an object to Cloud Firestore. Behaves as an insert only (not
+	 * update).
 	 * @param <T> the type of the object to save.
 	 * @param instance the instance to save.
 	 * @return the instance that was saved.
 	 */
 	<T> Mono<T> save(T instance);
+
+	/**
+	 * Saves multiple objects to Cloud Firestore. Not atomic. Behaves as insert or update.
+	 * @param instances the objects to save.
+	 * @param <T> the type of the objects to save.
+	 * @return a flux of the instances that were saved.
+	 */
+	<T> Flux<T> saveAll(Publisher<T> instances);
 
 	/**
 	 * Get all the entities of the given domain type.

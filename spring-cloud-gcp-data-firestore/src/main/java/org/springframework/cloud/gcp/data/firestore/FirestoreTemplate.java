@@ -28,7 +28,14 @@ import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
+import com.google.firestore.v1.Write;
+import com.google.firestore.v1.WriteRequest;
+import com.google.firestore.v1.WriteResponse;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang3.StringUtils;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -41,12 +48,16 @@ import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
  * An implementation of {@link FirestoreReactiveOperations}.
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
+
 	private final FirestoreStub firestore;
 
 	private final String parent;
+
+	private final String databasePath;
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
@@ -60,6 +71,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public FirestoreTemplate(FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
+		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
 	}
 
 	public <T> Mono<T> save(T entity) {
@@ -81,12 +93,21 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
+	@Override
+	public <T> Flux<T> saveAll(Publisher<T> instances) {
+		Flux<T> input = Flux.from(instances);
+		return ObservableReactiveUtil.streamingBidirectionalCall(
+			this::openWriteStream,
+			input,
+			this::writeEntityStream
+		).filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
+	}
+
 	public <T> Flux<T> findAll(Class<T> clazz) {
 		return Flux.defer(() ->
 				findAllDocuments(clazz)
 						.map(document -> PublicClassMapper.convertToCustomClass(document, clazz)));
 	}
-
 
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
 		return Mono.defer(() ->
@@ -115,4 +136,43 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return ObservableReactiveUtil.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
 				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
+
+	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
+		WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
+		requestStreamObserver.onNext(openStreamRequest);
+		return requestStreamObserver;
+	}
+
+	private <T> Mono<WriteRequest> writeEntityStream(T entity, Flux<WriteResponse> responses) {
+		Mono<WriteResponse> firstResponse = responses.next();
+		return firstResponse.map(
+			initialResponse -> buildWriteRequest(initialResponse.getStreamId(), initialResponse.getStreamToken(), entity));
+	}
+
+	private <T> WriteRequest buildWriteRequest(String streamId, ByteString streamToken, T entity) {
+		String documentResourceName = buildResourceName(entity);
+		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+
+		return WriteRequest.newBuilder()
+			.setStreamId(streamId)
+			.setStreamToken(streamToken)
+			.addWrites(Write.newBuilder()
+				.setUpdate(Document.newBuilder()
+					.putAllFields(valuesMap)
+					.setName(documentResourceName)
+					.build())
+				.build())
+			.build();
+	}
+
+	private <T> String buildResourceName(T entity) {
+		FirestorePersistentEntity<?> persistentEntity = this.mappingContext
+			.getPersistentEntity(entity.getClass());
+		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
+		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
+
+		return this.parent + "/" + persistentEntity.collectionName() + "/" + idVal.toString();
+	}
+
 }

@@ -30,6 +30,7 @@ import io.grpc.auth.MoreCallCredentials;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 
 import org.springframework.data.annotation.Id;
 
@@ -71,6 +72,9 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreStub = FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials);
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, DEFAULT_PARENT);
+
+		this.firestoreTemplate.deleteAll(User.class).block();
+
 	}
 
 	@Test
@@ -89,10 +93,22 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 	}
 
+	@Test
+	public void saveAllTest() throws InterruptedException {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+
+		this.firestoreTemplate.saveAll(users).collectList().block();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
+	}
 }
 
 
-@Entity(collectionName = "users")
+@Entity(collectionName = "usersFirestoreTemplate")
 class User {
 	@Id
 	private String name;
