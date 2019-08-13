@@ -17,7 +17,6 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import com.google.protobuf.ByteString;
 import java.util.Map;
 
 import com.google.cloud.firestore.PublicClassMapper;
@@ -32,6 +31,7 @@ import com.google.firestore.v1.Value;
 import com.google.firestore.v1.Write;
 import com.google.firestore.v1.WriteRequest;
 import com.google.firestore.v1.WriteResponse;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.StringUtils;
@@ -108,7 +108,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				findAllDocuments(clazz)
 						.map(document -> PublicClassMapper.convertToCustomClass(document, clazz)));
 	}
-
 
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
 		return Mono.defer(() ->
