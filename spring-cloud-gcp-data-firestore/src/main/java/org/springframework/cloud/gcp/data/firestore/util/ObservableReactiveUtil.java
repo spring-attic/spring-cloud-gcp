@@ -72,16 +72,26 @@ public final class ObservableReactiveUtil {
 		});
 	}
 
-	public static <ResponseT, RequestT, A> Flux<ResponseT> streamingBidirectionalCall(
-			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> remoteCall,
-			Flux<A> inputs, BiFunction<A, Flux<ResponseT>, Mono<RequestT>> requestFunc) {
+	/**
+	 * Opens a bi-directional streaming call.
+	 * @param initialCall opens a bidirectional gRPC connection with the provided {@link StreamObserver}.
+	 * @param inputs stream of objects to send to the server
+	 * @param responseHandler processes responses streamed from the server
+	 * @param <ResponseT> type of objects streamed from the server
+	 * @param <RequestT> type of objects  q  streamed to the server
+	 * @param <T> type of input objects that will be wrapped in {@link RequestT}
+	 * @return A {@link Flux} of server responses
+	 */
+	public static <ResponseT, RequestT, T> Flux<ResponseT> streamingBidirectionalCall(
+			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> initialCall,
+			Flux<T> inputs, BiFunction<T, Flux<ResponseT>, Mono<RequestT>> responseHandler) {
 
 		AtomicReference<StreamObserver<RequestT>> requestObserver = new AtomicReference<>();
 		Flux<ResponseT> responses = (Flux<ResponseT>) streamingCall(
-				obs -> requestObserver.set(remoteCall.apply((StreamObserver<ResponseT>) obs))).cache();
+				obs -> requestObserver.set(initialCall.apply((StreamObserver<ResponseT>) obs))).cache();
 
 		return inputs
-				.flatMap((A input) -> requestFunc.apply(input, responses)
+				.flatMap((T input) -> responseHandler.apply(input, responses)
 						.doOnNext(request -> requestObserver.get().onNext(request)))
 				.doOnComplete(() -> requestObserver.get().onCompleted())
 				.thenMany(responses);
