@@ -86,7 +86,7 @@ public class DatastoreSampleApplicationTests {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat("true")
+		assumeThat(System.getProperty("it.datastore"))
 				.as("Datastore sample integration tests are disabled. "
 						+ "Please use '-Dit.datastore=true' to enable them.")
 				.isEqualTo("true");

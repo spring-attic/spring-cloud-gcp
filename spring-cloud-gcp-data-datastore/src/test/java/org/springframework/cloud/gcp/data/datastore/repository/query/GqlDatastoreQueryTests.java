@@ -40,7 +40,6 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterabl
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
-import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -147,16 +146,11 @@ public class GqlDatastoreQueryTests {
 
 		buildParameters(paramVals, paramNames);
 
-		ObjectToKeyFactory objectToKeyFactory = mock(ObjectToKeyFactory.class);
-
-		doReturn(objectToKeyFactory).when(this.datastoreTemplate).getObjectToKeyFactory();
-
-		KeyFactory keyFactory = new KeyFactory("proj");
+				KeyFactory keyFactory = new KeyFactory("proj");
 		keyFactory.setKind("kind");
 		Key key = keyFactory.newKey("tradeid1-key");
 
-		doReturn(key).when(objectToKeyFactory).getKeyFromObject(any(), any());
-
+		doReturn(key).when(this.datastoreTemplate).getKey(any());
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < paramVals.length; i++) {

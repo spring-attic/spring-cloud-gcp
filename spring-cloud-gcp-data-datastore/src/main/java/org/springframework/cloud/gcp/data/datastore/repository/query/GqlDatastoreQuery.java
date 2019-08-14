@@ -132,8 +132,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			throw new DatastoreDataException("Can't append discrimination condition");
 		}
 
-		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
-				this.originalParamTags, parameters, this.datastoreTemplate, this.datastoreMappingContext);
+		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues =
+				new ParsedQueryWithTagsAndValues(this.originalParamTags, parameters);
 
 		GqlQuery query = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
 
@@ -330,9 +330,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		int limitPosition;
 
-		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams, DatastoreTemplate datastoreTemplate, DatastoreMappingContext datastoreMappingContext) {
+		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams) {
 			this.params = Arrays.stream(rawParams).filter(e -> !(e instanceof Pageable || e instanceof Sort))
-					.map(e -> convertEntitiesToKeys(e, datastoreTemplate, datastoreMappingContext))
 					.collect(Collectors.toList());
 			this.rawParams = rawParams;
 			this.tagsOrdered = new ArrayList<>(initialTags);
@@ -375,15 +374,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			}
 		}
 
-		private Object convertEntitiesToKeys(Object o, DatastoreTemplate datastoreTemplate, DatastoreMappingContext datastoreMappingContext) {
-			Entity entity = AnnotationUtils.findAnnotation(o.getClass(), Entity.class);
-			if (entity != null) {
-				return datastoreTemplate.getObjectToKeyFactory()
-						.getKeyFromObject(o, datastoreMappingContext.getPersistentEntity(o.getClass()));
-			}
-			return o;
-		}
-
 		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(Cursor newCursor, int newLimit) {
 			this.params.set(this.cursorPosition, newCursor);
 			this.params.set(this.limitPosition, newLimit);
@@ -418,7 +408,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				}
 				else {
 					boundVal = GqlDatastoreQuery.this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-							.convertOnWriteSingle(val).get();
+							.convertOnWriteSingle(convertEntitiesToKeys(val)).get();
 				}
 				DatastoreNativeTypes.bindValueToGqlBuilder(builder, this.tagsOrdered.get(i), boundVal);
 			}
@@ -434,6 +424,14 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			String orderString = sort.stream().map(order -> order.getProperty() + " " + order.getDirection())
 					.collect(Collectors.joining(", "));
 			return finalGql + ORDER_BY + orderString;
+		}
+
+		private Object convertEntitiesToKeys(Object o) {
+			Entity entity = AnnotationUtils.findAnnotation(o.getClass(), Entity.class);
+			if (entity != null) {
+				return GqlDatastoreQuery.this.datastoreTemplate.getKey(o);
+			}
+			return o;
 		}
 	}
 }
