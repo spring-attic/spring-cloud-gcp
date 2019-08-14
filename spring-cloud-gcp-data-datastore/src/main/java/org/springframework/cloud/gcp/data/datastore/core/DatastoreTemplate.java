@@ -782,6 +782,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 	}
 
+	public ObjectToKeyFactory getObjectToKeyFactory() {
+		return this.objectToKeyFactory;
+	}
+
 	/**
 	 * Class to hold caches for read and conversion.
 	 *

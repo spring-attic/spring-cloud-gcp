@@ -43,7 +43,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
@@ -131,7 +133,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
-				this.originalParamTags, parameters);
+				this.originalParamTags, parameters, this.datastoreTemplate, this.datastoreMappingContext);
 
 		GqlQuery query = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
 
@@ -328,8 +330,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		int limitPosition;
 
-		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams) {
+		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams, DatastoreTemplate datastoreTemplate, DatastoreMappingContext datastoreMappingContext) {
 			this.params = Arrays.stream(rawParams).filter(e -> !(e instanceof Pageable || e instanceof Sort))
+					.map(e -> convertEntitiesToKeys(e, datastoreTemplate, datastoreMappingContext))
 					.collect(Collectors.toList());
 			this.rawParams = rawParams;
 			this.tagsOrdered = new ArrayList<>(initialTags);
@@ -370,6 +373,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					this.params.add(pageable.getOffset());
 				}
 			}
+		}
+
+		private Object convertEntitiesToKeys(Object o, DatastoreTemplate datastoreTemplate, DatastoreMappingContext datastoreMappingContext) {
+			Entity entity = AnnotationUtils.findAnnotation(o.getClass(), Entity.class);
+			if (entity != null) {
+				return datastoreTemplate.getObjectToKeyFactory()
+						.getKeyFromObject(o, datastoreMappingContext.getPersistentEntity(o.getClass()));
+			}
+			return o;
 		}
 
 		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(Cursor newCursor, int newLimit) {

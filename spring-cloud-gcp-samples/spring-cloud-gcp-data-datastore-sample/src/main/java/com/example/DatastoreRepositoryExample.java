@@ -20,7 +20,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -139,6 +141,11 @@ public class DatastoreRepositoryExample {
 			this.singerRepository.save(singerB);
 			return null;
 		});
+
+		System.out.println("Find by reference");
+		List<String> singers = this.singerRepository.findSingersByfirstBand(band3).stream().map(Singer::getFirstName)
+				.collect(Collectors.toList());
+		System.out.println(singers);
 	}
 
 }
