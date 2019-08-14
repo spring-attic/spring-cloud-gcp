@@ -13,6 +13,10 @@
   <artifactId>spring-cloud-gcp-pubsub-bus-config-sample-client</artifactId>
   <name>Spring Cloud GCP Pub/Sub Bus Sample (Client)</name>
 
+  <properties>
+    <spring-cloud-config.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-config.version>
+  </properties>
+
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
   <dependencyManagement>
     <dependencies>
@@ -27,7 +31,7 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-config-dependencies</artifactId>
-        <version>2.2.0.BUILD-SNAPSHOT</version>
+        <version>${spring-cloud-config.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
