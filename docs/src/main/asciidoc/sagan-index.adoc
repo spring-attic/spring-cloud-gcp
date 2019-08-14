@@ -11,7 +11,7 @@ The Spring Cloud GCP project offers the following features:
 * Spring Data Cloud Spanner
 * Spring Data Cloud Datastore
 * Google Cloud Vision API Template
-* Google Cloud Stackdrive Logging & Tracing
+* Google Cloud Stackdriver Logging & Tracing
 * Google Cloud Config (Beta)
 
 ## Spring Initializr
