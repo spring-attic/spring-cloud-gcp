@@ -146,7 +146,7 @@ public class GqlDatastoreQueryTests {
 
 		buildParameters(paramVals, paramNames);
 
-				KeyFactory keyFactory = new KeyFactory("proj");
+		KeyFactory keyFactory = new KeyFactory("proj");
 		keyFactory.setKind("kind");
 		Key key = keyFactory.newKey("tradeid1-key");
 

@@ -117,8 +117,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assumeThat(
 				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
-				//System.getProperty("it.datastore"), is("true"));
-				"true", is("true"));
+				System.getProperty("it.datastore"), is("true"));
 	}
 
 	@After
