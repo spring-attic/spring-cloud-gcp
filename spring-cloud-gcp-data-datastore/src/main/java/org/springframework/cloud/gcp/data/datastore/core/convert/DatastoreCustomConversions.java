@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.cloud.datastore.BaseKey;
+import com.google.cloud.datastore.Key;
+
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
@@ -36,13 +41,43 @@ public class DatastoreCustomConversions extends CustomConversions {
 
 	private static final StoreConversions STORE_CONVERSIONS;
 
-	private static final List<Object> STORE_CONVERTERS;
+	private static final List<Converter<?, ?>> STORE_CONVERTERS;
 
 	static {
-		ArrayList<Object> converters = new ArrayList<>();
+		ArrayList<Converter<?, ?>> converters = new ArrayList<>();
 		converters.addAll(JodaTimeConverters.getConvertersToRegister());
 		converters.addAll(Jsr310Converters.getConvertersToRegister());
 		converters.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+		converters.add(new Converter<BaseKey, Long>() {
+			@Override
+			public Long convert(BaseKey key) {
+				Long id = null;
+				// embedded entities have IncompleteKey, and have no inner value
+				if (key instanceof Key) {
+					id = ((Key) key).getId();
+					if (id == null) {
+						throw new DatastoreDataException("The given key doesn't have a numeric ID but a conversion" +
+								" to Long was attempted: " + key);
+					}
+				}
+				return id;
+			}
+		});
+		converters.add(new Converter<BaseKey, String>() {
+			@Override
+			public String convert(BaseKey key) {
+				String name = null;
+				// embedded entities have IncompleteKey, and have no inner value
+				if (key instanceof Key) {
+					name = ((Key) key).getName();
+					if (name == null) {
+						throw new DatastoreDataException("The given key doesn't have a String name value but " +
+								"a conversion to String was attempted: " + key);
+					}
+				}
+				return name;
+			}
+		});
 		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 
 		STORE_CONVERSIONS =

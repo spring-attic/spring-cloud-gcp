@@ -41,6 +41,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
@@ -261,10 +262,15 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	}
 
 	private Statement buildStatementFromQueryAndTags(QueryTagValue queryTagValue) {
+		Map<String, java.lang.reflect.Parameter> paramMetadataMap = new HashMap<>();
+		for (java.lang.reflect.Parameter param : getQueryMethod().getMethod().getParameters()) {
+			Param annotation = param.getAnnotation(Param.class);
+			paramMetadataMap.put(annotation == null ? param.getName() : annotation.value(), param);
+		}
 		return SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 				queryTagValue.sql, queryTagValue.tags,
-				this.paramStructConvertFunc, null,
-				queryTagValue.params.toArray());
+				this.paramStructConvertFunc, this.spannerTemplate.getSpannerEntityProcessor().getWriteConverter(),
+				queryTagValue.params.toArray(), paramMetadataMap);
 	}
 
 	private Expression[] detectExpressions(String sql) {

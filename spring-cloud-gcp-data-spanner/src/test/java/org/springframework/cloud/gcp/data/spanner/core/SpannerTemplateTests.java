@@ -51,6 +51,7 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.admin.CachingComposingSupplier;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -121,6 +122,7 @@ public class SpannerTemplateTests {
 				true);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
+		when(this.objectMapper.getWriteConverter()).thenReturn(new SpannerWriteConverter());
 		this.spannerTemplate = new SpannerTemplate(() -> this.databaseClient,
 				this.mappingContext, this.objectMapper, this.mutationFactory,
 				this.schemaUtils);
@@ -164,9 +166,29 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void executeDmlTest() {
-		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+		TransactionContext context = mock(TransactionContext.class);
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+			TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(context);
+		});
+
+		when(context.executeUpdate(eq(DML))).thenReturn(333L);
+
 		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
 				() -> this.spannerTemplate.executeDmlStatement(DML),
+				x -> {
+				});
+		verify(context, times(1)).executeUpdate(eq(DML));
+	}
+
+	@Test
+	public void executePartitionedDmlTest() {
+		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
+				() -> this.spannerTemplate.executePartitionedDmlStatement(DML),
 				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML)));
 	}
 
@@ -204,7 +226,7 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
-				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+				eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
 						.thenReturn(readOnlyTransaction);
 
 		String finalResult = this.spannerTemplate
@@ -214,7 +236,7 @@ public class SpannerTemplateTests {
 							Key.of("key"));
 					return "all done";
 				}, new SpannerReadOptions()
-						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+						.setTimestampBound(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L))));
 
 		assertThat(finalResult).isEqualTo("all done");
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
@@ -227,6 +249,7 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
+				// exact staleness is expected.
 				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
 						.thenReturn(readOnlyTransaction);
 
@@ -236,6 +259,48 @@ public class SpannerTemplateTests {
 					return null;
 				}, new SpannerReadOptions()
 						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+	}
+
+	@Test
+	public void readOnlyTransactionPartitionedDmlTest() {
+
+		this.expectedException.expectMessage("A read-only transaction template cannot execute partitioned" +
+				" DML.");
+
+		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
+		when(this.databaseClient.readOnlyTransaction(
+				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+						.thenReturn(readOnlyTransaction);
+
+		this.spannerTemplate
+				.performReadOnlyTransaction((spannerOperations) -> {
+					spannerOperations.executePartitionedDmlStatement(Statement.of("fail"));
+					return null;
+				}, new SpannerReadOptions()
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+	}
+
+	@Test
+	public void readWriteTransactionPartitionedDmlTest() {
+
+		this.expectedException.expectMessage("A read-write transaction template cannot execute partitioned" +
+				" DML.");
+
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		TransactionContext transactionContext = mock(TransactionContext.class);
+
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+			TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(transactionContext);
+		});
+
+		this.spannerTemplate
+				.performReadWriteTransaction((spannerTemplate) -> {
+					spannerTemplate.executePartitionedDmlStatement(Statement.of("DML statement here"));
+					return "all done";
+				});
 	}
 
 	@Test
@@ -338,9 +403,12 @@ public class SpannerTemplateTests {
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
-		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption)
+				.setTimestampBound(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)));
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+				.thenReturn(this.readContext);
 
 		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keySet, options),
 				() -> this.spannerTemplate.read(TestEntity.class, keySet, options), x -> {
@@ -349,7 +417,8 @@ public class SpannerTemplateTests {
 					verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 							any(), same(readOption));
 				});
-		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.databaseClient, times(1))
+				.singleUse(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)));
 	}
 
 	@Test
@@ -612,11 +681,15 @@ public class SpannerTemplateTests {
 		Sort sort = mock(Sort.class);
 		Pageable pageable = mock(Pageable.class);
 
+		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+				.thenReturn(this.readContext);
+
 		long offset = 5L;
 		int limit = 3;
 		SpannerPageableQueryOptions queryOption = new SpannerPageableQueryOptions()
 				.setOffset(offset)
-				.setLimit(limit);
+				.setLimit(limit)
+				.setTimestampBound(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)));
 
 		when(pageable.getOffset()).thenReturn(offset);
 		when(pageable.getPageSize()).thenReturn(limit);

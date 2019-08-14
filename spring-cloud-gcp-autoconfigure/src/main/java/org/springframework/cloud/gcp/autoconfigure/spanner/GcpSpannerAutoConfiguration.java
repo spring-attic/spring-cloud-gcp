@@ -162,6 +162,7 @@ public class GcpSpannerAutoConfiguration {
 		}
 
 		@Bean
+		@ConditionalOnMissingBean
 		public DatabaseIdProvider databaseId() {
 			return () -> DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
 		}

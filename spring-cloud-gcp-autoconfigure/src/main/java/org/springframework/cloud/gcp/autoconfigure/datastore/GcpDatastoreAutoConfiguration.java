@@ -17,13 +17,19 @@
 package org.springframework.cloud.gcp.autoconfigure.datastore;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.DatastoreReaderWriter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -42,9 +48,11 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastor
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
  * Provides Spring Data classes to use with Cloud Datastore.
@@ -60,13 +68,15 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpDatastoreProperties.class)
 public class GcpDatastoreAutoConfiguration {
 
+	private static final Log LOGGER = LogFactory.getLog(GcpDatastoreEmulatorAutoConfiguration.class);
+
 	private final String projectId;
 
 	private final String namespace;
 
 	private final Credentials credentials;
 
-	private final String emulatorHost;
+	private final String host;
 
 	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -77,7 +87,13 @@ public class GcpDatastoreAutoConfiguration {
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();
 
-		if (gcpDatastoreProperties.getEmulatorHost() == null) {
+		String hostToConnect = gcpDatastoreProperties.getHost();
+		if (gcpDatastoreProperties.getEmulator().isEnabled()) {
+			hostToConnect = "localhost:" + gcpDatastoreProperties.getEmulator().getPort();
+			LOGGER.info("Connecting to a local datastore emulator.");
+		}
+
+		if (hostToConnect == null) {
 			this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpDatastoreProperties)
 					: credentialsProvider).getCredentials();
@@ -87,25 +103,29 @@ public class GcpDatastoreAutoConfiguration {
 			this.credentials = NoCredentials.getInstance();
 		}
 
-		this.emulatorHost = gcpDatastoreProperties.getEmulatorHost();
+		this.host = hostToConnect;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean({ Datastore.class, DatastoreNamespaceProvider.class, DatastoreProvider.class })
+	public Datastore datastore() {
+		return getDatastore(this.namespace);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Datastore datastore() {
-		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
-				.setProjectId(this.projectId)
-				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials);
-		if (this.namespace != null) {
-			builder.setNamespace(this.namespace);
+	public DatastoreProvider datastoreProvider(
+			ObjectProvider<DatastoreNamespaceProvider> namespaceProvider,
+			ObjectProvider<Datastore> datastoreProvider) {
+		if (datastoreProvider.getIfAvailable() != null) {
+			namespaceProvider.ifAvailable(unused -> {
+				throw new DatastoreDataException(
+						"A Datastore namespace provider and Datastore client were both configured. " +
+								"Only one can be configured.");
+			});
+			return datastoreProvider::getIfAvailable;
 		}
-
-		if (emulatorHost != null) {
-			builder.setHost(emulatorHost);
-		}
-
-		return builder.build().getService();
+		return getDatastoreProvider(namespaceProvider.getIfAvailable());
 	}
 
 	@Bean
@@ -117,8 +137,8 @@ public class GcpDatastoreAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions,
-			ObjectToKeyFactory objectToKeyFactory) {
-		return new TwoStepsConversions(customConversions, objectToKeyFactory);
+			ObjectToKeyFactory objectToKeyFactory, DatastoreMappingContext datastoreMappingContext) {
+		return new TwoStepsConversions(customConversions, objectToKeyFactory, datastoreMappingContext);
 	}
 
 	@Bean
@@ -129,7 +149,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
+	public ObjectToKeyFactory objectToKeyFactory(DatastoreProvider datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
@@ -142,8 +162,41 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreTemplate datastoreTemplate(Datastore datastore, DatastoreMappingContext datastoreMappingContext,
+	public DatastoreTemplate datastoreTemplate(Supplier<? extends DatastoreReaderWriter> datastore,
+			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter, ObjectToKeyFactory objectToKeyFactory) {
 		return new DatastoreTemplate(datastore, datastoreEntityConverter, datastoreMappingContext, objectToKeyFactory);
+	}
+
+	private DatastoreProvider getDatastoreProvider(DatastoreNamespaceProvider keySupplier) {
+		ConcurrentHashMap<String, Datastore> store = new ConcurrentHashMap<>();
+		return () -> store.computeIfAbsent(keySupplier.get(), this::getDatastore);
+	}
+
+	private Datastore getDatastore(String namespace) {
+		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
+				.setProjectId(this.projectId)
+				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
+				.setCredentials(this.credentials);
+		if (namespace != null) {
+			builder.setNamespace(namespace);
+		}
+
+		if (this.host != null) {
+			builder.setHost(this.host);
+		}
+		return builder.build().getService();
+	}
+
+	/**
+	 * REST settings.
+	 */
+	@ConditionalOnClass(BackendIdConverter.class)
+	static class DatastoreKeyRestSupportAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public BackendIdConverter datastoreKeyIdConverter(DatastoreMappingContext datastoreMappingContext) {
+			return new DatastoreKeyIdConverter(datastoreMappingContext);
+		}
 	}
 }

@@ -93,6 +93,10 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				.put("ProjectId", "project-id")
 				.put("PrivateKeyData", "credentials.encoded-key")
 				.build()),
+		FIRESTORE("google-firestore", "firestore", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
 		TRACE("google-stackdriver-trace", "trace", new MapBuilder<String, String>()
 				.put("ProjectId", "project-id")
 				.put("PrivateKeyData", "credentials.encoded-key")

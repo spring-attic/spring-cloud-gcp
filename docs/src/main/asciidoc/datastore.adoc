@@ -71,7 +71,10 @@ The following configuration options are available:
 | `spring.cloud.gcp.datastore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.datastore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
 | `spring.cloud.gcp.datastore.namespace` | The Cloud Datastore namespace to use | No | the Default namespace of Cloud Datastore in your GCP project
-| `spring.cloud.gcp.datastore.emulator-host` | The `hostname:port` of the https://cloud.google.com/datastore/docs/tools/datastore-emulator[Datastore Emulator] to connect to | No |
+| `spring.cloud.gcp.datastore.host` | The `hostname:port` of the datastore service or emulator to connect to. Can be used to connect to a manually started https://cloud.google.com/datastore/docs/tools/datastore-emulator[Datastore Emulator]. If the autoconfigured emulator is enabled, this property will be ignored and `localhost:<emulator_port>` will be used. | No |
+| `spring.cloud.gcp.datastore.emulator.enabled` | To enable the auto configuration to start a local instance of the Datastore Emulator. | No | `false`
+| `spring.cloud.gcp.datastore.emulator.port` | The local port to use for the Datastore Emulator | No | `8081`
+| `spring.cloud.gcp.datastore.emulator.consistency` | The https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start?#--consistency[consistency] to use for the Datastore Emulator instance | No | `0.9`
 |===
 
 ==== Repository settings
@@ -88,6 +91,16 @@ Our Spring Boot autoconfiguration creates the following beans available in the S
 - an instance of all user defined repositories extending `CrudRepository`, `PagingAndSortingRepository`, and `DatastoreRepository` (an extension of `PagingAndSortingRepository` with additional Cloud Datastore features) when repositories are enabled
 - an instance of `Datastore` from the Google Cloud Java Client for Datastore, for convenience and lower level API access
 
+==== Datastore Emulator Autoconfiguration
+
+This Spring Boot autoconfiguration can also configure and start a local Datastore Emulator server if enabled by property.
+
+It is useful for integration testing, but not for production.
+
+When enabled, the `spring.cloud.gcp.datastore.host` property will be ignored and the Datastore autoconfiguration itself will be forced to connect to the autoconfigured local emulator instance.
+
+It will create an instance of `LocalDatastoreHelper` as a bean that stores the `DatastoreOptions` to get the `Datastore` client connection to the emulator for convenience and lower level API for local access.
+The emulator will be properly stopped after the Spring application context shutdown.
 
 === Object Mapping
 
@@ -727,9 +740,7 @@ These methods, respectively, allow querying for:
 
 ==== Find by ID(s)
 
-Datstore reading a single entity or multiple entities in a kind.
-
-Using `DatastoreTemplate` you can execute reads, for example:
+Using `DatastoreTemplate` you can find entities by id. For example:
 
 [source,java]
 ----
@@ -759,6 +770,9 @@ public class ExampleItem {
 
 	@Unindexed
 	long unindexedField;
+
+	@Unindexed
+	List<String> unindexedListField;
 }
 ----
 
@@ -933,7 +947,7 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 }
 ----
 
-In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
 Cloud Datastore only supports filter components joined by AND, and the following operations:
 
@@ -1009,8 +1023,8 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByName(@Param("trader_name") String traderName);
 
-  @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
-  TestEntity getOneTestEntity(@Param("id_val") long id);
+  @Query("SELECT * FROM  test_entities_ci WHERE name = @trader_name")
+  TestEntity getOneTestEntity(@Param("trader_name") String traderName);
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByNameSort(@Param("trader_name") String traderName, Sort sort);
@@ -1054,24 +1068,33 @@ With the exception of `Cursor`, array forms of each of the types are also suppor
 If you would like to obtain the count of items of a query or if there are any items returned by the query, set the `count = true` or `exists = true` properties of the `@Query` annotation, respectively.
 The return type of the query method in these cases should be an integer type or a boolean type.
 
-Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row.
-Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
+Cloud Datastore provides provides the `SELECT +++__key__+++ FROM ...` special column for all kinds that retrieves the `Key` of each row.
+Selecting this special `+++__key__+++` column is especially useful and efficient for `count` and `exists` queries.
 
 You can also query for non-entity types:
 
 [source, java]
 ----
-	@Query(value = "SELECT __key__ from test_entities_ci")
-	List<Key> getKeys();
+@Query(value = "SELECT __key__ from test_entities_ci")
+List<Key> getKeys();
 
-	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
-	Key getKey();
+@Query(value = "SELECT __key__ from test_entities_ci limit 1")
+Key getKey();
+----
 
-	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val")
-	List<String> getIds(@Param("id_val") long id);
+In order to use `@Id` annotated fields in custom queries, use `+++__key__+++` keyword for the field name. The parameter type should be of `Key`, as in the following example.
 
-	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val limit 1")
-	String getOneId(@Param("id_val") long id);
+Repository method:
+[source, java]
+----
+@Query("select * from  test_entities_ci where size = @size and __key__ = @id")
+LinkedList<TestEntity> findEntities(@Param("size") long size, @Param("id") Key id);
+----
+
+Generate a key from id value using `DatastoreTemplate.createKey` method and use it as a parameter for the repository method:
+[source, java]
+----
+this.testEntityRepository.findEntities(1L, datastoreTemplate.createKey(TestEntity.class, 1L))
 ----
 
 SpEL can be used to provide GQL parameters:
@@ -1275,6 +1298,25 @@ class SpringSecurityAuditorAware implements AuditorAware<User> {
 ----
 
 You can also set a custom provider for properties annotated `@LastModifiedDate` by providing a bean for `DateTimeProvider` and providing the bean name to `@EnableDatastoreAuditing(dateTimeProviderRef = "customDateTimeProviderBean")`.
+
+=== Partitioning Data by Namespace
+
+You can https://cloud.google.com/datastore/docs/concepts/multitenancy[partition your data by using more than one namespace].
+This is the recommended method for multi-tenancy in Cloud Datastore.
+
+[source,java]
+----
+    @Bean
+    public DatastoreNamespaceProvider namespaceProvider() {
+        // return custom Supplier of a namespace string.
+    }
+----
+
+The `DatastoreNamespaceProvider` is a synonym for `Supplier<String>`.
+By providing a custom implementation of this bean (for example, supplying a thread-local namespace name), you can direct your application to use multiple namespaces.
+Every read, write, query, and transaction you perform will utilize the namespace provided by this supplier.
+
+Note that your provided namespace in `application.properties` will be ignored if you define a namespace provider bean.
 
 === Spring Boot Actuator Support
 

@@ -26,9 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -98,7 +98,8 @@ public class DatastoreRepositoryExample {
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
 
 		//Query by example: find all singers with the last name "Doe"
-		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
+		Iterable<Singer> singers = this.singerRepository.findAll(
+				Example.of(new Singer(null, null, "Doe", null), ExampleMatcher.matching().withIgnorePaths("singerId")));
 		System.out.println("Query by example");
 		singers.forEach(System.out::println);
 
@@ -140,11 +141,4 @@ public class DatastoreRepositoryExample {
 		});
 	}
 
-	@Bean
-	public DatastoreCustomConversions datastoreCustomConversions() {
-		return new DatastoreCustomConversions(Arrays.asList(
-				// Converters to read and write custom Singer.Album type
-				ConvertersExample.ALBUM_STRING_CONVERTER,
-				ConvertersExample.STRING_ALBUM_CONVERTER));
-	}
 }

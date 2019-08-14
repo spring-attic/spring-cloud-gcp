@@ -57,7 +57,7 @@ The following properties are available.
 
 CAUTION: Modifying registry, algorithm, and header properties might be useful for testing, but the defaults should not be changed in production.
 
-|===
+|====================================================
 |Name |Description |Required |Default
 
 |`spring.cloud.gcp.security.iap.registry`
@@ -85,7 +85,7 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |false on App Engine; true on GCE/GKE
 |
 
-|===
+|====================================================
 
 === Sample
 

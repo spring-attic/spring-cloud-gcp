@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -25,6 +25,6 @@ import org.springframework.stereotype.Repository;
  * @author Chengyuan Zhao
  */
 @Repository
-public interface TestRepository extends CrudRepository {
+public interface TestRepository extends SpannerRepository {
 
 }

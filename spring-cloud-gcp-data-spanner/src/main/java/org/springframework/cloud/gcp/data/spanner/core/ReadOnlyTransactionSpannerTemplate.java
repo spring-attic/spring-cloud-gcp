@@ -20,12 +20,12 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -68,12 +68,18 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
+	public long executePartitionedDmlStatement(Statement statement) {
+		throw new SpannerDataException(
+				"A read-only transaction template cannot execute partitioned DML.");
+	}
+
+	@Override
 	protected ReadContext getReadContext() {
 		return this.readOnlyTransaction;
 	}
 
 	@Override
-	protected ReadContext getReadContext(Timestamp timestamp) {
+	protected ReadContext getReadContext(TimestampBound timestampBound) {
 		throw new SpannerDataException(
 				"Getting stale snapshot read contexts is not supported"
 						+ " in read-only transaction templates.");

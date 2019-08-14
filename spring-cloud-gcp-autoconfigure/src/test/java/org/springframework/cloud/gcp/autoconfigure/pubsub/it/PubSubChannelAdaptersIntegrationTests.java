@@ -77,6 +77,9 @@ import static org.mockito.Mockito.verify;
  * @author Mike Eltsufin
  */
 public class PubSubChannelAdaptersIntegrationTests {
+
+	private static final int RECEIVE_TIMEOUT_MS = 10000;
+
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -121,7 +124,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 				context.getBean("inputChannel", MessageChannel.class).send(originalMessage);
 
 				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
 				String payload = new String((byte[]) message.getPayload());
@@ -149,7 +152,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
 				String stringPayload = new String((byte[]) message.getPayload());
@@ -173,21 +176,21 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
-				Message<?> message = channel.receive(10000);
+				Message<?> message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				BasicAcknowledgeablePubsubMessage origMessage =
 						(BasicAcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 				assertThat(origMessage).isNotNull();
 				origMessage.nack();
 
-				message = channel.receive(10000);
+				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				origMessage = (BasicAcknowledgeablePubsubMessage)
 						message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 				assertThat(origMessage).isNotNull();
 				origMessage.ack();
 
-				message = channel.receive(10000);
+				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNull();
 			}
 			finally {
@@ -209,14 +212,14 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
-				Message<?> message = channel.receive(10000);
+				Message<?> message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				AckReplyConsumer acker =
 						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 				assertThat(acker).isNotNull();
 				acker.ack();
 
-				message = channel.receive(10000);
+				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNull();
 
 				validateOutput("ACKNOWLEDGEMENT header is deprecated");
@@ -266,7 +269,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				verify(callbackSpy, times(1)).onSuccess(any());
 			}

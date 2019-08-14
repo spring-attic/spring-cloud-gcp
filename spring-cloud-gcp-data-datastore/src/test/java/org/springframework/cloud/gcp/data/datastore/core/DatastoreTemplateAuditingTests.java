@@ -105,9 +105,9 @@ public class DatastoreTemplateAuditingTests {
 
 			when(datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
 
-			ObjectToKeyFactory objectToKeyFactory = new DatastoreServiceObjectToKeyFactory(datastore);
+			ObjectToKeyFactory objectToKeyFactory = new DatastoreServiceObjectToKeyFactory(() -> datastore);
 
-			DatastoreTemplate datastoreTemplate = new DatastoreTemplate(datastore,
+			DatastoreTemplate datastoreTemplate = new DatastoreTemplate(() -> datastore,
 					new DefaultDatastoreEntityConverter(datastoreMappingContext, objectToKeyFactory),
 					datastoreMappingContext,
 					objectToKeyFactory);

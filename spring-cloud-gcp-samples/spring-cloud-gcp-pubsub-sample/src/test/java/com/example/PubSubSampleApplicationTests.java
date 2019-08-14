@@ -65,7 +65,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
 public class PubSubSampleApplicationTests {
 
-	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 10;
+	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 60;
 
 	private static final String SAMPLE_TEST_TOPIC = "pubsub-sample-test-exampleTopic";
 

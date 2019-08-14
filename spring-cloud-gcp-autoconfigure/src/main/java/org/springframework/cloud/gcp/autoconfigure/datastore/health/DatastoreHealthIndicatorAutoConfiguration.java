@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.datastore.health;
 
+import java.util.function.Supplier;
+
 import com.google.cloud.datastore.Datastore;
 
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
@@ -26,6 +28,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreProvider;
 import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,12 +40,13 @@ import org.springframework.context.annotation.Configuration;
  * @author Raghavan N S
  * @author Srinivasa Meenavalli
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  *
  * @since 1.2
  */
 @Configuration
 @ConditionalOnClass({ Datastore.class, HealthIndicator.class })
-@ConditionalOnBean(Datastore.class)
+@ConditionalOnBean(value = Datastore.class, parameterizedContainer = Supplier.class)
 @ConditionalOnEnabledHealthIndicator("datastore")
 @AutoConfigureBefore(HealthIndicatorAutoConfiguration.class)
 @AutoConfigureAfter(GcpDatastoreAutoConfiguration.class)
@@ -50,7 +54,7 @@ public class DatastoreHealthIndicatorAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public HealthIndicator datastoreHealthIndicator(Datastore datastore) {
+	public HealthIndicator datastoreHealthIndicator(DatastoreProvider datastore) {
 		return new DatastoreHealthIndicator(datastore);
 	}
 

@@ -24,9 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
-import com.google.cloud.datastore.ValueBuilder;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -58,7 +58,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory));
+		this(mappingContext,
+				new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory, mappingContext));
 	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext, ReadWriteConversions conversions) {
@@ -118,6 +119,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		try {
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
+
 			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
 				// if a property is a constructor argument, it was already computed on instantiation
 				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
@@ -169,14 +171,16 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
 				(DatastorePersistentProperty persistentProperty) -> {
+					// Datastore doesn't store its Key as a regular field.
+					if (persistentProperty.isIdProperty()) {
+						return;
+					}
 					try {
 						Object val = accessor.getProperty(persistentProperty);
 						Value convertedVal = this.conversions.convertOnWrite(val, persistentProperty);
 
 						if (persistentProperty.isUnindexed()) {
-							ValueBuilder valueBuilder = convertedVal.toBuilder();
-							valueBuilder.setExcludeFromIndexes(true);
-							convertedVal = valueBuilder.build();
+							convertedVal = setExcludeFromIndexes(convertedVal);
 						}
 						sink.set(persistentProperty.getFieldName(), convertedVal);
 					}
@@ -187,5 +191,17 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 								ex);
 					}
 				});
+	}
+
+	private Value setExcludeFromIndexes(Value convertedVal) {
+		// ListValues must have its contents individually excluded instead.
+		// the entire list must NOT be excluded or there will be an exception.
+		if (convertedVal.getClass().equals(ListValue.class)) {
+			return ListValue.of(((ListValue) convertedVal).get().stream()
+					.map(val -> val.toBuilder().setExcludeFromIndexes(true).build()).collect(Collectors.toList()));
+		}
+		else {
+			return convertedVal.toBuilder().setExcludeFromIndexes(true).build();
+		}
 	}
 }

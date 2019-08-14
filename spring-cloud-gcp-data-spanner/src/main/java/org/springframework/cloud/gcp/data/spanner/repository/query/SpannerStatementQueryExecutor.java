@@ -16,9 +16,13 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -30,6 +34,7 @@ import com.google.cloud.spanner.ValueBinder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityWriter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerCustomConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -63,19 +68,32 @@ public final class SpannerStatementQueryExecutor {
 	 * @param type the type of the underlying entity
 	 * @param tree the parsed metadata of the query
 	 * @param params the parameters of this specific query
+	 * @param queryMethodParamsMetadata parameter metadata from Query Method
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
 	 * @param <T> the type of the underlying entity
 	 * @return list of entities.
 	 */
 	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
+			Parameter[] queryMethodParamsMetadata,
 			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
+		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
+				sqlAndTags);
 		return spannerTemplate.query(type, buildStatementFromSqlWithArgs(
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
-				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params), null);
+				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
+	}
+
+	private static Map<String, Parameter> preparePartTreeSqlTagParameterMap(Parameter[] queryMethodParamsMetadata,
+			Pair<String, List<String>> sqlAndTags) {
+		Map<String, Parameter> paramMetadataMap = new HashMap<>();
+		for (int i = 0; i < queryMethodParamsMetadata.length; i++) {
+			paramMetadataMap.put(sqlAndTags.getSecond().get(i), queryMethodParamsMetadata[i]);
+		}
+		return paramMetadataMap;
 	}
 
 	/**
@@ -85,6 +103,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @param type the type of the underlying entity
 	 * @param tree the parsed metadata of the query
 	 * @param params the parameters of this specific query
+	 * @param queryMethodParamsMetadata parameter metadata from Query Method
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
 	 * @param <A> the type to which to convert Struct params
@@ -92,13 +111,15 @@ public final class SpannerStatementQueryExecutor {
 	 * @return list of objects mapped using the given function.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
-			PartTree tree, Object[] params, SpannerTemplate spannerTemplate,
+			PartTree tree, Object[] params, Parameter[] queryMethodParamsMetadata, SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
+		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
+				sqlAndTags);
 		return spannerTemplate.query(rowFunc, buildStatementFromSqlWithArgs(
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
-				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params), null);
+				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
 	}
 
 	/**
@@ -132,16 +153,18 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Gets a query that returns the rows associated with a parent entity. This function
-	 * is intended to be used with parent-child interleaved tables, so that the retrieval
-	 * of all child rows having the parent's key values is efficient.
+	 * Gets a query that returns the rows associated with a parent entity. This function is
+	 * intended to be used with parent-child interleaved tables, so that the retrieval of all
+	 * child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
 	 * @param <T> the type of the child persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query
+	 *     statement.
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
-			SpannerPersistentEntity<T> childPersistentEntity) {
+			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter) {
 		StringBuilder sb = new StringBuilder(
 				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
 						+ childPersistentEntity.tableName() + " WHERE ");
@@ -160,8 +183,8 @@ public final class SpannerStatementQueryExecutor {
 			keyParts.add(parentKeyParts.next());
 			tagNum++;
 		}
-		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, null,
-				keyParts.toArray());
+		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, writeConverter,
+				keyParts.toArray(), null);
 	}
 
 	/**
@@ -175,6 +198,7 @@ public final class SpannerStatementQueryExecutor {
 	 *     Spanner native types. if {@code null} then this conversion is not attempted.
 	 * @param params the parameters to substitute the tags. The ordering must be the same as
 	 *     the tags.
+	 * @param queryMethodParams the parameter metadata from Query Method if available.
 	 * @return an SQL statement ready to use with Spanner.
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 *     params, or if a param of an unsupported type is given.
@@ -182,7 +206,7 @@ public final class SpannerStatementQueryExecutor {
 	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
-			Object[] params) {
+			Object[] params, Map<String, Parameter> queryMethodParams) {
 		if (tags == null && params == null) {
 			return Statement.of(sql);
 		}
@@ -193,45 +217,39 @@ public final class SpannerStatementQueryExecutor {
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
 			bindParameter(builder.bind(tags.get(i)), paramStructConvertFunc, spannerCustomConverter,
-					params[i]);
+					params[i], queryMethodParams == null ? null : queryMethodParams.get(tags.get(i)));
 		}
 		return builder.build();
 	}
 
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
-			Object originalParam) {
-		Object param = originalParam;
-		BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(
-				param);
-		// the param is not a native Cloud Spanner type
-		if (toMethod == null && spannerCustomConverter != null) {
-			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-					.findFirstCompatibleSpannerSingleItemNativeType(
-							(type) -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
-			if (compatible != null) {
-				param = spannerCustomConverter.convert(originalParam, compatible);
-				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
+			Object originalParam, Parameter paramMetadata) {
+		if (ConversionUtils.isIterableNonByteArrayType(originalParam.getClass())) {
+			if (!ConverterAwareMappingSpannerEntityWriter.attemptSetIterableValueOnBinder((Iterable) originalParam,
+					bind, spannerCustomConverter, (Class) ((ParameterizedType) paramMetadata.getParameterizedType())
+							.getActualTypeArguments()[0])) {
+				throw new IllegalArgumentException(
+						"Could not convert to an ARRAY of compatible type: " + paramMetadata);
 			}
+			return;
 		}
-		// could not be converted, attempting to use it as a struct
-		if (toMethod == null) {
+		if (!ConverterAwareMappingSpannerEntityWriter.attemptBindSingleValue(originalParam, originalParam.getClass(),
+				bind, spannerCustomConverter)) {
 			if (paramStructConvertFunc == null) {
-				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass());
+				throw new IllegalArgumentException("Param: " + originalParam.toString()
+						+ " is not a supported type: " + originalParam.getClass());
 			}
 			try {
-				toMethod = (BiFunction<ValueBinder, Object, ?>)
-					ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
-						.get(Struct.class);
-				param = paramStructConvertFunc.apply(param);
+				Object unused = ((BiFunction<ValueBinder, Object, Struct>)
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+						.get(Struct.class)).apply(bind, paramStructConvertFunc.apply(originalParam));
 			}
 			catch (SpannerDataException ex) {
-				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass(), ex);
+				throw new IllegalArgumentException("Param: " + originalParam.toString()
+						+ " is not a supported type: " + originalParam.getClass(), ex);
 			}
 		}
-		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set
 	}
 
 	public static String getColumnsStringForSelect(
@@ -239,7 +257,7 @@ public final class SpannerStatementQueryExecutor {
 		return String.join(" , ", spannerPersistentEntity.columns());
 	}
 
-	private static BiFunction<ValueBinder, ?, ?> getValueBinderBiFunction(Object param) {
+	private static BiFunction<ValueBinder, ?, ?> getSingleValueBinderBiFunction(Object param) {
 		if (Struct.class.isAssignableFrom(param.getClass())) {
 			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(Struct.class);
 		}
@@ -393,6 +411,12 @@ public final class SpannerStatementQueryExecutor {
 						break;
 					case GREATER_THAN_EQUAL:
 						andString += ">=" + insertedTag;
+						break;
+					case IN:
+						andString += " IN UNNEST(" + insertedTag + ")";
+						break;
+					case NOT_IN:
+						andString += " NOT IN UNNEST(" + insertedTag + ")";
 						break;
 					default:
 						throw new UnsupportedOperationException("The statement type: "

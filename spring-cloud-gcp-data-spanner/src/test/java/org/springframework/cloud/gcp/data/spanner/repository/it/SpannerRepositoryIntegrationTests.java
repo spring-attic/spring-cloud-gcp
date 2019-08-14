@@ -18,10 +18,12 @@ package org.springframework.cloud.gcp.data.spanner.repository.it;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
+import org.assertj.core.util.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -85,6 +87,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.isEqualTo("BUY");
 
 		assertThat(this.tradeRepository.count()).isEqualTo(8L);
+
+		arrayParameterBindTest();
 
 		assertThat(this.tradeRepository.deleteByAction("BUY")).isEqualTo(3);
 
@@ -249,6 +253,33 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		this.tradeRepository.deleteAll();
 		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
+		assertThat(this.tradeRepository.count()).isEqualTo(1L);
+	}
+
+	@Test
+	public void testTransactionRolledBack() {
+		this.tradeRepository.deleteAll();
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		try {
+			this.tradeRepositoryTransactionalService.testTransactionRolledBack();
+		}
+		catch (RuntimeException re) {
+			// expected exception that causes roll-back;
+		}
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+	}
+
+	private void arrayParameterBindTest() {
+		assertThat(this.tradeRepository.countByActionIn(Arrays.asList("BUY", "SELL"))).isEqualTo(8L);
+		assertThat(this.tradeRepository.countByActionIn(Collections.singletonList("BUY"))).isEqualTo(3L);
+		assertThat(this.tradeRepository.countByActionIn(Collections.singletonList("SELL"))).isEqualTo(5L);
+		assertThat(this.tradeRepository.countWithInQuery(Arrays.asList("BUY", "SELL"))).isEqualTo(8L);
+		assertThat(this.tradeRepository.countWithInQuery(Collections.singletonList("BUY"))).isEqualTo(3L);
+		assertThat(this.tradeRepository.countWithInQuery(Collections.singletonList("SELL"))).isEqualTo(5L);
+		assertThat(this.tradeRepository.findByActionIn(Sets.newHashSet(Arrays.asList("BUY", "SELL"))).size())
+				.isEqualTo(8L);
+		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("BUY")).size()).isEqualTo(3L);
+		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("SELL")).size()).isEqualTo(5L);
 	}
 
 	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
@@ -280,6 +311,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			// because the insert happens within the same transaction, this count is still
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		}
+
+		@Transactional
+		public void testTransactionRolledBack() {
+			Trade trade = Trade.aTrade();
+			this.tradeRepository.save(trade);
+			throw new RuntimeException("Intentional error to rollback save.");
 		}
 	}
 }

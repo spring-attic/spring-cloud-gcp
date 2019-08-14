@@ -16,13 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.util.Assert;
 
@@ -35,59 +33,53 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerQueryOptions implements Serializable {
-
-	private transient List<QueryOption> queryOptions = new ArrayList<>();
-
-	private Timestamp timestamp;
-
-	private Set<String> includeProperties;
-
-	private boolean allowPartialRead;
+public class SpannerQueryOptions extends AbstractSpannerRequestOptions<QueryOption> {
 
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
 	 */
 	public SpannerQueryOptions() {
+		this.requestOptionType = QueryOption.class;
 	}
 
 	public SpannerQueryOptions addQueryOption(QueryOption queryOption) {
 		Assert.notNull(queryOption, "Valid query option is required!");
-		this.queryOptions.add(queryOption);
+		this.requestOptions.add(queryOption);
 		return this;
 	}
 
-	public Set<String> getIncludeProperties() {
-		return this.includeProperties;
-	}
-
+	@Override
 	public SpannerQueryOptions setIncludeProperties(Set<String> includeProperties) {
-		this.includeProperties = includeProperties;
+		super.setIncludeProperties(includeProperties);
 		return this;
 	}
 
-	public Timestamp getTimestamp() {
-		return this.timestamp;
+	@Override
+	public SpannerQueryOptions setTimestampBound(TimestampBound timestampBound) {
+		super.setTimestampBound(timestampBound);
+		return this;
 	}
 
+	@Override
 	public SpannerQueryOptions setTimestamp(Timestamp timestamp) {
-		Assert.notNull(timestamp, "A valid timestamp is required!");
-		this.timestamp = timestamp;
+		super.setTimestamp(timestamp);
 		return this;
 	}
 
+	@Override
+	public SpannerQueryOptions setAllowPartialRead(boolean allowPartialRead) {
+		super.setAllowPartialRead(allowPartialRead);
+		return this;
+	}
+
+	/**
+	 * @deprecated  as of 1.2. Please use {@code getOptions}.
+	 * @return the array of query request options.
+	 */
+	@Deprecated
 	public QueryOption[] getQueryOptions() {
-		return this.queryOptions.toArray(new QueryOption[this.queryOptions.size()]);
+		return this.getOptions();
 	}
 
-	public boolean isAllowPartialRead() {
-		return this.allowPartialRead;
-	}
-
-	public SpannerQueryOptions setAllowPartialRead(
-			boolean allowPartialRead) {
-		this.allowPartialRead = allowPartialRead;
-		return this;
-	}
 }

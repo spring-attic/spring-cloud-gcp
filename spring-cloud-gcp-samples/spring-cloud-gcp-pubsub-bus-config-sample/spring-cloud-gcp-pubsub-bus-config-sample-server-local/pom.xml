@@ -3,6 +3,7 @@
     xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
+    <!-- Your own application should inherit from spring-boot-starter-parent -->
     <artifactId>spring-cloud-gcp-pubsub-bus-config-sample</artifactId>
     <groupId>com.example</groupId>
     <version>1.2.0.BUILD-SNAPSHOT</version>
@@ -12,8 +13,32 @@
   <artifactId>spring-cloud-gcp-pubsub-bus-config-sample-server-local</artifactId>
   <name>Spring Cloud GCP Pub/Sub Bus Sample (Local Configuration)</name>
 
-  <dependencies>
+  <properties>
+    <spring-cloud-config.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-config.version>
+  </properties>
 
+  <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-gcp-dependencies</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-config-dependencies</artifactId>
+        <version>${spring-cloud-config.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
@@ -28,7 +53,6 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-config-monitor</artifactId>
     </dependency>
-
   </dependencies>
 
 </project>

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
@@ -42,6 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
@@ -98,7 +100,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
 
-	private final TestEntity testEntityB = new TestEntity(2L, "blue", 1L, Shape.CIRCLE, null);
+	private final TestEntity testEntityB = new TestEntity(2L, "blue", 2L, Shape.CIRCLE, null);
 
 	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
 
@@ -129,6 +131,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(SubEntity.class);
 		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.deleteAll(PetOwner.class);
+		this.datastoreTemplate.deleteAll(Event.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -140,43 +143,56 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.testEntityRepository.saveAll(this.allTestEntities);
 
 		this.millisWaited = waitUntilTrue(
-				() -> this.testEntityRepository.countBySize(1L) == 4);
+				() -> this.testEntityRepository.countBySize(1L) == 3);
 
 	}
 
 	@Test
 	public void testFindByExample() {
 		assertThat(this.testEntityRepository
-				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
+				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
+						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
+
+
+		assertThat(this.testEntityRepository
+				.findAll(Example.of(new TestEntity(2L, "blue", null, null, null))))
+				.containsExactly(this.testEntityB);
+
+		assertThat(this.testEntityRepository
+				.findAll(Example.of(new TestEntity(2L, "red", null, null, null))))
+				.isEmpty();
 
 		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
-						PageRequest.of(0, 2, Sort.by("id")));
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
+						PageRequest.of(0, 2, Sort.by("size")));
 		assertThat(result1.getTotalElements()).isEqualTo(4);
 		assertThat(result1.getNumber()).isEqualTo(0);
 		assertThat(result1.getNumberOfElements()).isEqualTo(2);
 		assertThat(result1.getTotalPages()).isEqualTo(2);
 		assertThat(result1.hasNext()).isEqualTo(true);
-		assertThat(result1).containsExactly(this.testEntityA, this.testEntityB);
+		assertThat(result1).containsExactly(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result2 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
 						result1.getPageable().next());
 		assertThat(result2.getTotalElements()).isEqualTo(4);
 		assertThat(result2.getNumber()).isEqualTo(1);
 		assertThat(result2.getNumberOfElements()).isEqualTo(2);
 		assertThat(result2.getTotalPages()).isEqualTo(2);
 		assertThat(result2.hasNext()).isEqualTo(false);
-		assertThat(result2).containsExactly(this.testEntityC, this.testEntityD);
+		assertThat(result2).containsExactly(this.testEntityD, this.testEntityB);
 
 
 		assertThat(this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null)),
-						Sort.by(Sort.Direction.ASC, "id")))
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id")),
+						Sort.by(Sort.Direction.ASC, "size")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository
@@ -191,11 +207,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null),
-						ExampleMatcher.matching().withIncludeNullValues())))
+						ExampleMatcher.matching().withIgnorePaths("id").withIncludeNullValues())))
 				.isEqualTo(false);
 
 		assertThat(this.testEntityRepository
-				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
+				.exists(Example.of(new TestEntity(null, "red", null, null, null),
+						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.isEqualTo(true);
 	}
 
@@ -296,6 +313,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
+		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
+				.containsExactly(this.testEntityC, this.testEntityD);
+
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
@@ -328,12 +348,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
+		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 
 		this.testEntityRepository.saveAll(this.allTestEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
@@ -353,13 +373,17 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.millisWaited = Math.max(this.millisWaited, waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
 
+		assertThat(this.testEntityRepository
+				.findEntitiesWithCustomQueryWithId(1L, this.datastoreTemplate.createKey(TestEntity.class, 1L)))
+				.containsOnly(this.testEntityA);
+
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
 				.findEntitiesWithCustomQuery(1L);
 		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
 				.findEntitiesWithCustomProjectionQuery(1L);
 
-		assertThat(this.testEntityRepository.countBySizeAndColor(1, "blue")).isEqualTo(1);
-		assertThat(this.testEntityRepository.getById(2L).getColor()).isEqualTo("blue");
+		assertThat(this.testEntityRepository.countBySizeAndColor(2, "blue")).isEqualTo(1);
+		assertThat(this.testEntityRepository.getBySize(2L).getColor()).isEqualTo("blue");
 		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
@@ -369,22 +393,22 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
 
-		assertThat(foundByCustomQuery.size()).isEqualTo(1);
-		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);
+		assertThat(foundByCustomQuery.size()).isEqualTo(3);
+		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(3);
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
 		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
-		assertThat(foundByCustomProjectionQuery.length).isEqualTo(1);
+		assertThat(foundByCustomProjectionQuery.length).isEqualTo(3);
 		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
 		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
 
 		this.testEntityA.setBlobField(null);
 
 		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
-		assertThat(this.testEntityRepository.getIds(1L).length).isEqualTo(1);
-		assertThat(this.testEntityRepository.getOneId(1L)).isEqualTo(1);
-		assertThat(this.testEntityRepository.getOneTestEntity(1L)).isNotNull();
+		assertThat(this.testEntityRepository.getSizes(1L).length).isEqualTo(3);
+		assertThat(this.testEntityRepository.getOneSize(2L)).isEqualTo(2);
+		assertThat(this.testEntityRepository.getOneTestEntity(2L)).isNotNull();
 
 		this.testEntityRepository.save(this.testEntityA);
 
@@ -403,7 +427,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
 
 		this.testEntityRepository.deleteAll();
 
@@ -543,6 +567,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		SubEntity subEntity3 = new SubEntity();
 		SubEntity subEntity4 = new SubEntity();
 
+		subEntity1.stringList = Arrays.asList("a", "b");
+
 		ParentEntity parentEntity = new ParentEntity(Arrays.asList(subEntity1, subEntity2),
 				Collections.singletonList(subEntity4), subEntity3);
 		subEntity1.parent = parentEntity;
@@ -580,6 +606,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		SubEntity readSubEntity2 = iterator.next();
 		assertThat(readSubEntity1.sibling).isSameAs(readSubEntity2);
 		assertThat(readSubEntity2.sibling).isSameAs(readSubEntity1);
+	}
+
+	@Test
+	public void nullPropertyTest() {
+		SubEntity subEntity1 = new SubEntity();
+		subEntity1.stringList = Arrays.asList("a", "b", null, "c");
+		subEntity1.stringProperty = null;
+
+		this.datastoreTemplate.save(subEntity1);
+
+		SubEntity readEntity = this.datastoreTemplate.findById(subEntity1.key, SubEntity.class);
+
+		assertThat(readEntity.stringProperty).isNull();
+		assertThat(readEntity.stringList).containsExactlyInAnyOrder("a", "b", null, "c");
 	}
 
 	@Test
@@ -632,6 +672,26 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(pugCount).isEqualTo(1);
 		assertThat(dogCount).isEqualTo(1);
 	}
+
+	@Test
+	public void enumKeys() {
+		Map<CommunicationChannels, String> phone = new HashMap<>();
+		phone.put(CommunicationChannels.SMS, "123456");
+
+		Map<CommunicationChannels, String> email = new HashMap<>();
+		phone.put(CommunicationChannels.EMAIL, "a@b.c");
+
+		Event event1 = new Event("event1", phone);
+		Event event2 = new Event("event2", email);
+
+		this.datastoreTemplate.saveAll(Arrays.asList(event1, event2));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(Event.class) == 2);
+
+		Collection<Event> events = this.datastoreTemplate.findAll(Event.class);
+
+		assertThat(events).containsExactlyInAnyOrder(event1, event2);
+	}
 }
 
 /**
@@ -675,6 +735,11 @@ class SubEntity {
 
 	@Reference
 	SubEntity sibling;
+
+	@Unindexed
+	List<String> stringList;
+
+	String stringProperty;
 }
 
 class PetOwner {
@@ -748,4 +813,39 @@ interface DogRepository extends DatastoreRepository<Dog, Long> {
 
 	@Query("select * from Pet")
 	List<Dog> findByCustomQuery();
+}
+
+@Entity
+class Event {
+	@Id
+	private String eventName;
+
+	private Map<CommunicationChannels, String> preferences;
+
+	Event(String eventName, Map<CommunicationChannels, String> preferences) {
+		this.eventName = eventName;
+		this.preferences = preferences;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Event event = (Event) o;
+		return Objects.equals(this.eventName, event.eventName) &&
+				Objects.equals(this.preferences, event.preferences);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.eventName, this.preferences);
+	}
+}
+
+enum CommunicationChannels {
+	EMAIL, SMS;
 }

@@ -45,7 +45,7 @@ import static org.junit.Assume.assumeThat;
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource("classpath:application.properties")
+@TestPropertySource("classpath:application-test.properties")
 @EnableAutoConfiguration
 public class SpannerRepositoryMultiDatabaseTests {
 	@Autowired

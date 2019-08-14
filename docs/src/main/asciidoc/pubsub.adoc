@@ -39,12 +39,13 @@ It provides the common set of operations needed to interact with Google Cloud Pu
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
 The `publish()` method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.
+The topic name could either be a canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the `projects/<project_name>/topics/<topic_name>` format.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=publish]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=publish]
 ----
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
@@ -60,7 +61,7 @@ asynchronously and passed to a user provided message handler.
 Subscribe to a subscription with a message handler:
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]
 ----
 ===== Subscribe methods
 `PubSubTemplate` provides the following subscribe methods:
@@ -83,7 +84,7 @@ This is different from subscribing to a subscription, in the sense that subscrib
 Pull up to 10 messages:
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=pull]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=pull]
 ----
 
 ===== Pull methods
@@ -121,7 +122,7 @@ For serialization and deserialization of POJOs using Jackson JSON, configure a `
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_bean]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_bean]
 ----
 
 NOTE: Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
@@ -131,20 +132,20 @@ Assuming you have the following class defined:
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_convertible_class]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_convertible_class]
 ----
 
 You can serialize objects to JSON on publish automatically:
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_publish]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_publish]
 ----
 
 And thatt's how you convert messages to objects on pull:
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_pull]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_pull]
 ----
 
 
@@ -191,6 +192,8 @@ flux.doOnNext(AcknowledgeablePubsubMessage::ack);
 
 `PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.
+
+NOTE: Generally when referring to topics, you can either use the short canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the `projects/<project_name>/topics/<topic_name>` format.
 
 `PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a `TopicAdminClient` and a `SubscriptionAdminClient`.
 If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient` with the Google Cloud Java Library for Pub/Sub default settings.
@@ -245,7 +248,7 @@ Here is an example of how to list every Google Cloud Pub/Sub topic name in a pro
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_topics]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_topics]
 ----
 
 ==== Creating a subscription
@@ -316,7 +319,7 @@ Here is an example of how to list every subscription name in a project:
 
 [source,java,indent=0]
 ----
-include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_subscriptions]
+include::../../src/test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_subscriptions]
 ----
 
 [#pubsub-configuration]
@@ -327,8 +330,6 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
-| `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher` instances created by `PublisherFactory` | No | 4
 | `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
@@ -340,9 +341,11 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
+| `spring.cloud.gcp.pubsub.keepAliveIntervalMinutes` | Determines frequency of keepalive gRPC ping | No | `5 minutes`
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
 TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
 The higher the total timeout, the more retries can be attempted. |No | 0

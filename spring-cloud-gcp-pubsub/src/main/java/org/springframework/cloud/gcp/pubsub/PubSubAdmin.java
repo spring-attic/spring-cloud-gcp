@@ -30,16 +30,17 @@ import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.ProjectSubscriptionName;
-import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.pubsub.support.PubSubTopicUtils;
 import org.springframework.util.Assert;
 
 /**
- * Pub/Sub admin utility that creates new topics and subscriptions on Google Cloud Pub/Sub.
+ * Pub/Sub admin utility that creates new topics and subscriptions on Google Cloud
+ * Pub/Sub.
  *
  * @author João André Martins
  * @author Mike Eltsufin
@@ -96,26 +97,28 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Create a new topic on Google Cloud Pub/Sub.
 	 *
-	 * @param topicName the name for the new topic
+	 * @param topicName the name for the new topic within the current project, or the
+	 * fully-qualified topic name in the projects/&lt;project_name&gt;/topics/&lt;topic_name&gt; format
 	 * @return the created topic
 	 */
 	public Topic createTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		return this.topicAdminClient.createTopic(ProjectTopicName.of(this.projectId, topicName));
+		return this.topicAdminClient.createTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 	}
 
 	/**
 	 * Get the configuration of a Google Cloud Pub/Sub topic.
 	 *
-	 * @param topicName canonical topic name, e.g., "topicName"
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
+	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 * @return topic configuration or {@code null} if topic doesn't exist
 	 */
 	public Topic getTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		try {
-			return this.topicAdminClient.getTopic(ProjectTopicName.of(this.projectId, topicName));
+			return this.topicAdminClient.getTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -129,12 +132,13 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Delete a topic from Google Cloud Pub/Sub.
 	 *
-	 * @param topicName the name of the topic to be deleted
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic
+	 * name in the "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 */
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		this.topicAdminClient.deleteTopic(ProjectTopicName.of(this.projectId, topicName));
+		this.topicAdminClient.deleteTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
 	}
 
 	/**
@@ -167,8 +171,8 @@ public class PubSubAdmin implements AutoCloseable {
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
-	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
-	 *                    If not provided, set to default of 10 seconds
+	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10
+	 * and 600 seconds. If not provided, set to default of 10 seconds
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -194,11 +198,12 @@ public class PubSubAdmin implements AutoCloseable {
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName the name of the new subscription
-	 * @param topicName the name of the topic being subscribed to
-	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
-	 *                    If not provided, set to default of 10 seconds
-	 * @param pushEndpoint the URL of the service receiving the push messages. If not provided, uses
-	 *                     message pulling by default
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
+	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
+	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10
+	 * and 600 seconds. If not provided, set to default of 10 seconds
+	 * @param pushEndpoint the URL of the service receiving the push messages. If not
+	 * provided, uses message pulling by default
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -219,7 +224,7 @@ public class PubSubAdmin implements AutoCloseable {
 
 		return this.subscriptionAdminClient.createSubscription(
 				ProjectSubscriptionName.of(this.projectId, subscriptionName),
-				ProjectTopicName.of(this.projectId, topicName),
+				PubSubTopicUtils.toProjectTopicName(topicName, this.projectId),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
 	}

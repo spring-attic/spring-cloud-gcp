@@ -95,19 +95,6 @@ public class CloudVisionAutoConfiguration {
 		return new CloudVisionTemplate(imageAnnotatorClient);
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public DocumentOcrTemplate documentOcrTemplate(
-			ImageAnnotatorClient imageAnnotatorClient,
-			Storage storage,
-			@Qualifier("cloudVisionExecutor") Executor executor) {
-
-		return new DocumentOcrTemplate(
-				imageAnnotatorClient,
-				storage,
-				executor,
-				this.cloudVisionProperties.getJsonOutputBatchSize());
-	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "cloudVisionExecutor")
@@ -116,5 +103,32 @@ public class CloudVisionAutoConfiguration {
 		ackExecutor.setMaxPoolSize(this.cloudVisionProperties.getExecutorThreadsCount());
 		ackExecutor.setThreadNamePrefix("gcp-cloud-vision-ocr-executor");
 		return ackExecutor;
+	}
+
+	/**
+	 * Configures the {@link DocumentOcrTemplate} class.
+	 */
+	@ConditionalOnClass(Storage.class)
+	@ConditionalOnMissingBean(DocumentOcrTemplate.class)
+	static class VisionOcrConfiguration {
+		private final CloudVisionProperties properties;
+
+		VisionOcrConfiguration(CloudVisionProperties properties) {
+			this.properties = properties;
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public DocumentOcrTemplate documentOcrTemplate(
+				ImageAnnotatorClient imageAnnotatorClient,
+				Storage storage,
+				@Qualifier("cloudVisionExecutor") Executor executor) {
+
+			return new DocumentOcrTemplate(
+					imageAnnotatorClient,
+					storage,
+					executor,
+					this.properties.getJsonOutputBatchSize());
+		}
 	}
 }

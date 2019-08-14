@@ -51,6 +51,8 @@ include::spanner.adoc[]
 
 include::datastore.adoc[]
 
+include::firestore.adoc[]
+
 include::memorystore.adoc[]
 
 include::security-iap.adoc[]

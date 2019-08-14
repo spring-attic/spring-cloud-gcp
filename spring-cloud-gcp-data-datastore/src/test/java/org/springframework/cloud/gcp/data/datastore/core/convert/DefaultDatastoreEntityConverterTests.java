@@ -49,7 +49,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.annotation.Id;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,6 +68,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
+	private static final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
 	private static final DatastoreEntityConverter ENTITY_CONVERTER =
 			new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 					new TwoStepsConversions(new DatastoreCustomConversions(
@@ -75,7 +79,7 @@ public class DefaultDatastoreEntityConverterTests {
 								public String convert(HashMap source) {
 									return "Map was converted to String";
 								}
-							})), null));
+							})), null, datastoreMappingContext));
 
 	/**
 	 * Used to check exception messages and types.
@@ -356,7 +360,7 @@ public class DefaultDatastoreEntityConverterTests {
 				Arrays.asList(
 						getIntegerToNewTypeConverter(),
 						getNewTypeToIntegerConverter()
-				)), null));
+						)), null, datastoreMappingContext));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
@@ -435,7 +439,8 @@ public class DefaultDatastoreEntityConverterTests {
 												bcs.iterator().forEachRemaining((s) -> list.add((String) s));
 												return list;
 											}
-										})), null));
+										})),
+								null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -521,7 +526,7 @@ public class DefaultDatastoreEntityConverterTests {
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
-								getNewTypeToIntegerConverter())), null));
+								getNewTypeToIntegerConverter())), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -551,7 +556,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
 								getNewTypeToIntegerConverter()
-						)), null));
+						)), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -569,7 +574,7 @@ public class DefaultDatastoreEntityConverterTests {
 						new TwoStepsConversions(new DatastoreCustomConversions(Arrays.asList(
 								getIntegerToNewTypeConverter(),
 								getNewTypeToIntegerConverter()
-						)), null));
+						)), null, datastoreMappingContext));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -602,6 +607,7 @@ public class DefaultDatastoreEntityConverterTests {
 		UnindexedTestDatastoreItem item = new UnindexedTestDatastoreItem();
 		item.setIndexedField(1L);
 		item.setUnindexedField(2L);
+		item.setUnindexedStringListField(Arrays.asList("a", "b"));
 
 		Entity.Builder builder = getEntityBuilder();
 		ENTITY_CONVERTER.write(item, builder);
@@ -617,6 +623,14 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate excludeFromIndexes on indexed field").isFalse();
 		assertThat(entity.getValue("unindexedField").excludeFromIndexes())
 				.as("validate excludeFromIndexes on unindexed field").isTrue();
+
+		// the ListValue itself must NOT be unindexed or it will cause exception. the contents
+		// individually must be.
+		assertThat(entity.getValue("unindexedStringListField").excludeFromIndexes()).isFalse();
+		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(0).excludeFromIndexes())
+				.isTrue();
+		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(1).excludeFromIndexes())
+				.isTrue();
 	}
 
 	@Test
@@ -648,16 +662,20 @@ public class DefaultDatastoreEntityConverterTests {
 		nestedInnerEmbeddedMap.put(1L, mapSimpleValues);
 		nestedEmbeddedMap.put("outer1", nestedInnerEmbeddedMap);
 
+		Map<TestDatastoreItem.Color, String> enumKeysMap = new HashMap<>();
+		enumKeysMap.put(TestDatastoreItem.Color.BLACK, "black");
+		enumKeysMap.put(TestDatastoreItem.Color.WHITE, "white");
+
 		TestItemWithEmbeddedEntity item = new TestItemWithEmbeddedEntity(123,
 				new EmbeddedEntity("abc"), embeddedEntities, mapSimpleValues,
 				mapListValues, embeddedEntityMapEmbeddedEntity,
-				embeddedEntityMapListOfEmbeddedEntities);
+				embeddedEntityMapListOfEmbeddedEntities, enumKeysMap);
 
 		item.setNestedEmbeddedMaps(nestedEmbeddedMap);
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
 				new DatastoreMappingContext(),
-				new DatastoreServiceObjectToKeyFactory(this.datastore));
+				new DatastoreServiceObjectToKeyFactory(() -> this.datastore));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -715,6 +733,24 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(read).as("read objects equals the original one").isEqualTo(item);
 	}
 
+	@Test
+	public void testMismatchedStringIdLongProperty() {
+		this.thrown.expect(ConversionFailedException.class);
+		this.thrown.expectMessage(
+				"The given key doesn't have a numeric ID but a conversion to Long was attempted");
+		ENTITY_CONVERTER.read(LongIdEntity.class,
+				Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("a")).build());
+	}
+
+	@Test
+	public void testMismatchedLongIdStringProperty() {
+		this.thrown.expect(ConversionFailedException.class);
+		this.thrown.expectMessage(
+				"The given key doesn't have a String name value but a conversion to String was attempted");
+		ENTITY_CONVERTER.read(StringIdEntity.class,
+				Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey(1)).build());
+	}
+
 	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}
@@ -735,6 +771,18 @@ public class DefaultDatastoreEntityConverterTests {
 				return new TestItemUnsupportedFields.NewType(source == 1);
 			}
 		};
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	private static class StringIdEntity {
+		@Id
+		String id;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	private static class LongIdEntity {
+		@Id
+		long id;
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity

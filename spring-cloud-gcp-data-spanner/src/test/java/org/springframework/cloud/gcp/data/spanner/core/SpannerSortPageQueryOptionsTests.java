@@ -65,7 +65,7 @@ public class SpannerSortPageQueryOptionsTests {
 		QueryOption r1 = mock(QueryOption.class);
 		QueryOption r2 = mock(QueryOption.class);
 		spannerQueryOptions.addQueryOption(r1).addQueryOption(r2);
-		assertThat(Arrays.asList(spannerQueryOptions.getQueryOptions()))
+		assertThat(Arrays.asList(spannerQueryOptions.getOptions()))
 				.containsExactlyInAnyOrder(r1, r2);
 	}
 }

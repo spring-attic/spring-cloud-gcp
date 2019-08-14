@@ -16,18 +16,24 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.List;
+
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
 /**
- * A test entity with an unindexed property.
+ * A test entity with an unindexed property and unindexed list property.
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
 public class UnindexedTestDatastoreItem {
 	private long indexedField;
 
 	@Unindexed
 	private long unindexedField;
+
+	@Unindexed
+	private List<String> unindexedStringListField;
 
 	public long getIndexedField() {
 		return this.indexedField;
@@ -43,5 +49,13 @@ public class UnindexedTestDatastoreItem {
 
 	public void setUnindexedField(long unindexedField) {
 		this.unindexedField = unindexedField;
+	}
+
+	public List<String> getUnindexedStringListField() {
+		return this.unindexedStringListField;
+	}
+
+	public void setUnindexedStringListField(List<String> unindexedStringListField) {
+		this.unindexedStringListField = unindexedStringListField;
 	}
 }

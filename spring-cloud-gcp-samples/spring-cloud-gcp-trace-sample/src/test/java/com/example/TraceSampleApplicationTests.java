@@ -131,7 +131,7 @@ public class TraceSampleApplicationTests {
 		String logFilter = String.format(
 				"trace=projects/%s/traces/%s", this.projectIdProvider.getProjectId(), uuidString);
 
-		await().atMost(60, TimeUnit.SECONDS)
+		await().atMost(120, TimeUnit.SECONDS)
 				.pollInterval(Duration.TWO_SECONDS)
 				.ignoreExceptions()
 				.untilAsserted(() -> {
@@ -148,7 +148,11 @@ public class TraceSampleApplicationTests {
 			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()
 					.forEach((le) -> {
 						logEntries.add(le);
+						assertThat(le.getTrace()).matches(
+								"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
+						assertThat(le.getSpanId()).matches("([a-z0-9]){16}");
 					});
+
 
 			List<String> logContents = logEntries.stream()
 					.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())

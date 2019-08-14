@@ -26,7 +26,6 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,7 +53,6 @@ import static org.junit.Assume.assumeThat;
 		"spring.cloud.stream.bindings.input.destination=sub1",
 		"spring.cloud.stream.bindings.output.destination=sub1" })
 @DirtiesContext
-@Ignore("Until Spring Cloud Stream is compatible with Spring Integration 5.2 (GH-1648)")
 public class SampleAppIntegrationTest {
 
 	@Autowired
@@ -93,7 +91,7 @@ public class SampleAppIntegrationTest {
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
 		Callable<Boolean> logCheck = () -> baos.toString().contains("New message received from testUserName via polling: " + message);
-		Awaitility.await().atMost(10, TimeUnit.SECONDS)
+		Awaitility.await().atMost(60, TimeUnit.SECONDS)
 				.until(logCheck);
 
 		assertThat(logCheck.call()).isTrue();
