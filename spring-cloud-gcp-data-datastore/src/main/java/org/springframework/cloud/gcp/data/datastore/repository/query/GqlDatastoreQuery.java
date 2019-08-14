@@ -43,9 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
@@ -427,8 +425,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		private Object convertEntitiesToKeys(Object o) {
-			Entity entity = AnnotationUtils.findAnnotation(o.getClass(), Entity.class);
-			if (entity != null) {
+			if (GqlDatastoreQuery.this.datastoreMappingContext.hasPersistentEntityFor(o.getClass())) {
 				return GqlDatastoreQuery.this.datastoreTemplate.getKey(o);
 			}
 			return o;
