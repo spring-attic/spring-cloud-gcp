@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
+    <groupId>org.springframework.cloud</groupId>
     <name>Spring Cloud GCP Multi-Spring-Data-Module Code Sample</name>
     <artifactId>spring-cloud-gcp-data-multi-sample</artifactId>
 

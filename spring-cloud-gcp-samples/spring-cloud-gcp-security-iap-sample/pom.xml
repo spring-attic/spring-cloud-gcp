@@ -3,7 +3,7 @@
          xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
+    <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-gcp-security-iap-sample</artifactId>
     <name>Spring Cloud GCP Security IAP Sample</name>
     <description>Spring Cloud IAP Security Sample</description>
