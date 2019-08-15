@@ -130,8 +130,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			throw new DatastoreDataException("Can't append discrimination condition");
 		}
 
-		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
-				this.originalParamTags, parameters);
+		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues =
+				new ParsedQueryWithTagsAndValues(this.originalParamTags, parameters);
 
 		GqlQuery query = parsedQueryWithTagsAndValues.bindArgsToGqlQuery();
 
@@ -406,7 +406,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				}
 				else {
 					boundVal = GqlDatastoreQuery.this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-							.convertOnWriteSingle(val).get();
+							.convertOnWriteSingle(convertEntitiesToKeys(val)).get();
 				}
 				DatastoreNativeTypes.bindValueToGqlBuilder(builder, this.tagsOrdered.get(i), boundVal);
 			}
@@ -422,6 +422,13 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			String orderString = sort.stream().map(order -> order.getProperty() + " " + order.getDirection())
 					.collect(Collectors.joining(", "));
 			return finalGql + ORDER_BY + orderString;
+		}
+
+		private Object convertEntitiesToKeys(Object o) {
+			if (GqlDatastoreQuery.this.datastoreMappingContext.hasPersistentEntityFor(o.getClass())) {
+				return GqlDatastoreQuery.this.datastoreTemplate.getKey(o);
+			}
+			return o;
 		}
 	}
 }

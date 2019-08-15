@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.List;
+
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +33,7 @@ public interface SingerRepository extends DatastoreRepository<Singer, String> {
 
 	@Query("select * from  |com.example.Singer| where last_name = @name")
 	Slice<Singer> findSingersByLastName(@Param("name") String name, Pageable pageable);
+
+	@Query("select * from  |com.example.Singer| where firstBand = @band")
+	List<Singer> findSingersByfirstBand(@Param("band") Band band);
 }

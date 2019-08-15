@@ -668,6 +668,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
 	}
 
+	public Key getKey(Object entity) {
+		return getKey(entity, false);
+	}
+
 	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());

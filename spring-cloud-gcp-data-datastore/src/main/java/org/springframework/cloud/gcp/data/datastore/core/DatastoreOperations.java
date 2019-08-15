@@ -236,6 +236,14 @@ public interface DatastoreOperations {
 	Key createKey(Class aClass, Object id);
 
 	/**
+	 * Create a {@link com.google.cloud.datastore.Key} from id property of an entity object.
+	 * @param entity the Cloud Datastore entity object
+	 * @return key for the given entity
+	 */
+	Key getKey(Object entity);
+
+
+	/**
 	 * Run query by example.
 	 * @param <T> the type of probe and resulted entities
 	 * @param example the example
