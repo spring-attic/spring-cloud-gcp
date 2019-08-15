@@ -10,7 +10,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.example</groupId>
+    <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-gcp-data-datastore-basic-sample</artifactId>
     <name>Spring Cloud GCP Datastore Bookshelf Code Sample</name>
 

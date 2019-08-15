@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-integration-pubsub-sample</artifactId>
-	<groupId>com.example</groupId>
+	<groupId>org.springframework.cloud</groupId>
 	<version>1.2.0.BUILD-SNAPSHOT</version>
 
 	<modelVersion>4.0.0</modelVersion>
