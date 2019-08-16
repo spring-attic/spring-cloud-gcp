@@ -35,5 +35,7 @@ public interface SingerRepository extends DatastoreRepository<Singer, String> {
 	Slice<Singer> findSingersByLastName(@Param("name") String name, Pageable pageable);
 
 	@Query("select * from  |com.example.Singer| where firstBand = @band")
-	List<Singer> findSingersByfirstBand(@Param("band") Band band);
+	List<Singer> findSingersByFirstBand(@Param("band") Band band);
+
+	List<Singer> findByFirstBand(Band band);
 }

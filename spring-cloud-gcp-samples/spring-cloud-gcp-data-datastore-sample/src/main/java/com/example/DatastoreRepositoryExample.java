@@ -142,10 +142,15 @@ public class DatastoreRepositoryExample {
 			return null;
 		});
 
-		System.out.println("Find by reference");
-		List<String> singers = this.singerRepository.findSingersByfirstBand(band3).stream().map(Singer::getFirstName)
+		System.out.println("Find by reference with query");
+		List<String> singers = this.singerRepository.findSingersByFirstBand(band3).stream().map(Singer::getFirstName)
 				.collect(Collectors.toList());
 		System.out.println(singers);
+
+		System.out.println("Find by reference");
+		List<String> singers2 = this.singerRepository.findByFirstBand(band3).stream().map(Singer::getFirstName)
+				.collect(Collectors.toList());
+		System.out.println(singers2);
 	}
 
 }

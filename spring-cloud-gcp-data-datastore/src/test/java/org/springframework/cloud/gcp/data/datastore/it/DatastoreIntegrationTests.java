@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
@@ -145,6 +146,15 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.millisWaited = waitUntilTrue(
 				() -> this.testEntityRepository.countBySize(1L) == 3);
 
+	}
+
+	@Test
+	public void writeDeleteTest() {
+		List<EmbeddableTreeNode> nodes = IntStream.rangeClosed(1, 600)
+				.mapToObj(i -> new EmbeddableTreeNode(i, null, null)).collect(Collectors.toList());
+
+		this.datastoreTemplate.saveAll(nodes);
+		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 	}
 
 	@Test
