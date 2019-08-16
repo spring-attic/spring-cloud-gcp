@@ -16,7 +16,12 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.WriteBatch;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +32,7 @@ import io.grpc.CallCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -42,7 +48,9 @@ import static org.junit.Assume.assumeThat;
  * @author Dmitry Solomakha
  */
 public class FirestoreIntegrationTests {
-	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
+	private static final String DEFAULT_PARENT = "projects/cowzow/databases/(default)/documents";
+
+
 
 	private FirestoreGrpc.FirestoreStub firestoreStub;
 
@@ -51,11 +59,6 @@ public class FirestoreIntegrationTests {
 
 	@Before
 	public void setup() throws IOException {
-
-		assumeThat(
-				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
-						+ "to enable them. ",
-				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
 				(ch.qos.logback.classic.Logger)
@@ -104,6 +107,39 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.saveAll(users).collectList().block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
+	}
+
+	@Test
+	public void saveAllBulkTestWithReactor() throws InterruptedException {
+
+		Flux<User> users = Flux.create(sink -> {
+			for (int i = 0; i < 300; i++) {
+				sink.next(new User("testUserX " + i, i));
+			}
+			sink.complete();
+		});
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+
+		this.firestoreTemplate.saveAll(users).blockLast();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(100);
+	}
+
+	@Test
+	public void saveBulkWithClientLibraries() throws ExecutionException, InterruptedException {
+
+		FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance();
+		Firestore db = firestoreOptions.getService();
+
+		WriteBatch batch = db.batch();
+
+		for (int i = 0; i < 300; i++) {
+			DocumentReference ref = db.collection("example_test").document("test user " + i);
+			batch.set(ref, new User("blargatron", i));
+		}
+
+		batch.commit().get();
 	}
 }
 
