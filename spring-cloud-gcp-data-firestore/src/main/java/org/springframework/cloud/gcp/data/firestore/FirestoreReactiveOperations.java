@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import com.google.firestore.v1.WriteResponse;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -42,7 +43,7 @@ public interface FirestoreReactiveOperations {
 	 * @param <T> the type of the objects to save.
 	 * @return a flux of the instances that were saved.
 	 */
-	<T> Flux<T> saveAll(Publisher<T> instances);
+	<T> Flux<WriteResponse> saveAll(Publisher<T> instances);
 
 	/**
 	 * Get all the entities of the given domain type.

@@ -113,7 +113,7 @@ public class FirestoreIntegrationTests {
 	public void saveAllBulkTestWithReactor() throws InterruptedException {
 
 		Flux<User> users = Flux.create(sink -> {
-			for (int i = 0; i < 300; i++) {
+			for (int i = 0; i < 500; i++) {
 				sink.next(new User("testUserX " + i, i));
 			}
 			sink.complete();
@@ -123,7 +123,7 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.saveAll(users).blockLast();
 
-		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(100);
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(500);
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class FirestoreIntegrationTests {
 
 		WriteBatch batch = db.batch();
 
-		for (int i = 0; i < 300; i++) {
+		for (int i = 0; i < 500; i++) {
 			DocumentReference ref = db.collection("example_test").document("test user " + i);
 			batch.set(ref, new User("blargatron", i));
 		}

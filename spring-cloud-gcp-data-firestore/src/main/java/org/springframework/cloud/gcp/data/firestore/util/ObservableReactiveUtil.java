@@ -84,7 +84,8 @@ public final class ObservableReactiveUtil {
 	 */
 	public static <ResponseT, RequestT, T> Flux<ResponseT> streamingBidirectionalCall(
 			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> initialCall,
-			Flux<T> inputs, BiFunction<T, Flux<ResponseT>, Mono<RequestT>> responseHandler) {
+			Flux<T> inputs,
+			BiFunction<T, Flux<ResponseT>, Mono<RequestT>> responseHandler) {
 
 		AtomicReference<StreamObserver<RequestT>> requestObserver = new AtomicReference<>();
 		Flux<ResponseT> responses = (Flux<ResponseT>) streamingCall(
