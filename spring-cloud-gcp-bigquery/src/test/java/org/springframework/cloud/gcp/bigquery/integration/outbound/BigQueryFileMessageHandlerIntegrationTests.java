@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.integration.outbound;
 
 import java.io.File;
 import java.util.HashMap;

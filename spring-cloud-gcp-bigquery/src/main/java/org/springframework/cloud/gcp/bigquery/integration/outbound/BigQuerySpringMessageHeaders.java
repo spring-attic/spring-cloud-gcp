@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.integration.outbound;
 
 /**
  * Spring Integration {@link org.springframework.messaging.Message} headers used with
  * Spring Cloud GCP BigQuery integration.
+ *
+ * @author Daniel Zou
+ * @since 1.2
  */
 public final class BigQuerySpringMessageHeaders {
 
-	private static final String PREFIX = "gcp_bigquery_";
+	/** BigQuery Spring Cloud GCP message header prefix. */
+	public static final String PREFIX = "gcp_bigquery_";
 
 	/** BigQuery dataset name message header. */
 	public static final String DATASET_NAME = PREFIX + "dataset_name";

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.integration.outbound;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -36,30 +36,97 @@ import com.google.cloud.bigquery.WriteChannelConfiguration;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 
 /**
- * Outbound channel adapter which handles sending and loading files to a BigQuery table.
+ * A {@link org.springframework.messaging.MessageHandler} which handles sending and
+ * loading files to a BigQuery table.
+ *
+ * @author Daniel Zou
+ * @since 1.2
  */
 public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHandler {
 
 	private final BigQuery bigQuery;
+
+	private String datasetName;
+
+	private String tableName;
+
+	private FormatOptions formatOptions;
 
 	private boolean autoDetectSchema = true;
 
 	private WriteDisposition writeDisposition = WriteDisposition.WRITE_APPEND;
 
 	public BigQueryFileMessageHandler(BigQuery bigQuery) {
+		Assert.notNull(bigQuery, "BigQuery client must not be null.");
 		this.bigQuery = bigQuery;
+	}
+
+	/**
+	 * Sets the default BigQuery dataset name to use if it is omitted from message headers.
+	 * @param datasetName name of the BigQuery dataset
+	 */
+	public void setDatasetName(String datasetName) {
+		this.datasetName = datasetName;
+	}
+
+	/**
+	 * Sets the default BigQuery table name to use if it is omitted from message headers.
+	 * @param tableName name of the BigQuery dataset
+	 */
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
+	/**
+	 * Sets the default {@link FormatOptions} to use if it is omitted from message headers.
+	 * The {@link FormatOptions} describe the type/format of data files being loaded.
+	 * @param formatOptions the format of the data file being loaded
+	 */
+	public void setFormatOptions(FormatOptions formatOptions) {
+		this.formatOptions = formatOptions;
+	}
+
+	/**
+	 * Sets the {@link WriteDisposition} which specifies how data should be inserted into
+	 * BigQuery tables.
+	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table
+	 */
+	public void setWriteDisposition(WriteDisposition writeDisposition) {
+		this.writeDisposition = writeDisposition;
+	}
+
+	/**
+	 * Sets whether BigQuery should attempt to autodetect the schema of the data when loading
+	 * data into an empty table for the first time.
+	 * @param autoDetectSchema whether data schema should be autodetected from the structure of
+	 * 		the data
+	 */
+	public void setAutoDetectSchema(boolean autoDetectSchema) {
+		this.autoDetectSchema = autoDetectSchema;
 	}
 
 	@Override
 	protected Object handleRequestMessage(Message<?> message) {
 		try {
-			String datasetName = message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME, String.class);
-			String tableName = message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME, String.class);
-			FormatOptions formatOptions = message.getHeaders().get(
-					BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.class);
+			String datasetName =
+					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.DATASET_NAME)
+							? message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME, String.class)
+							: this.datasetName;
+
+			String tableName =
+					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.TABLE_NAME)
+							? message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME, String.class)
+							: this.tableName;
+
+			FormatOptions formatOptions =
+					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.FORMAT_OPTIONS)
+							? message.getHeaders().get(
+									BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.class)
+							: this.formatOptions;
 
 			TableId tableId = TableId.of(datasetName, tableName);
 
@@ -85,30 +152,13 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 			return writer.getJob();
 		}
 		catch (FileNotFoundException e) {
-			throw new MessageHandlingException(message, "Failed to find file to write to BigQuery.", e);
+			throw new MessageHandlingException(
+					message, "Failed to find file to write to BigQuery in message handler: " + this, e);
 		}
 		catch (IOException e) {
-			throw new MessageHandlingException(message, "Failed to write data to BigQuery tables.", e);
+			throw new MessageHandlingException(
+					message, "Failed to write data to BigQuery tables in message handler: " + this, e);
 		}
-	}
-
-	/**
-	 * Sets the {@link WriteDisposition} which specifies how data should be inserted into
-	 * BigQuery tables.
-	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table
-	 */
-	public void setWriteDisposition(WriteDisposition writeDisposition) {
-		this.writeDisposition = writeDisposition;
-	}
-
-	/**
-	 * Sets whether BigQuery should attempt to autodetect the schema of the data when loading
-	 * data into an empty table for the first time.
-	 * @param autoDetectSchema whether data schema should be autodetected from the structure of
-	 * 		the data
-	 */
-	public void setAutoDetectSchema(boolean autoDetectSchema) {
-		this.autoDetectSchema = autoDetectSchema;
 	}
 
 	private static InputStream convertToInputStream(Object payload) throws FileNotFoundException {
