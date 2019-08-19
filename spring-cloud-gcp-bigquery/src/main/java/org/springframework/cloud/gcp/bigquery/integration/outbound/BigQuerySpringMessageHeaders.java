@@ -25,16 +25,24 @@ package org.springframework.cloud.gcp.bigquery.integration.outbound;
  */
 public final class BigQuerySpringMessageHeaders {
 
-	/** BigQuery Spring Cloud GCP message header prefix. */
+	/**
+	 * BigQuery Spring Cloud GCP message header prefix.
+	 */
 	public static final String PREFIX = "gcp_bigquery_";
 
-	/** BigQuery dataset name message header. */
+	/**
+	 * BigQuery dataset name message header.
+	 */
 	public static final String DATASET_NAME = PREFIX + "dataset_name";
 
-	/** BigQuery table name message header. */
+	/**
+	 * BigQuery table name message header.
+	 */
 	public static final String TABLE_NAME = PREFIX + "table_name";
 
-	/** Input data file format message header. */
+	/**
+	 * Input data file format message header.
+	 */
 	public static final String FORMAT_OPTIONS = PREFIX + "format_options";
 
 	private BigQuerySpringMessageHeaders() {
