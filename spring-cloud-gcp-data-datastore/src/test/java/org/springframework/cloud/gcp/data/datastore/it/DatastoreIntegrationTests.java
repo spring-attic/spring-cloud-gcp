@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
@@ -149,15 +148,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void writeDeleteTest() {
-		List<EmbeddableTreeNode> nodes = IntStream.rangeClosed(1, 600)
-				.mapToObj(i -> new EmbeddableTreeNode(i, null, null)).collect(Collectors.toList());
-
-		this.datastoreTemplate.saveAll(nodes);
-		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
-	}
-
-	@Test
 	public void testFindByExample() {
 		assertThat(this.testEntityRepository
 				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
@@ -224,6 +214,33 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.exists(Example.of(new TestEntity(null, "red", null, null, null),
 						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.isEqualTo(true);
+	}
+
+	@Test
+	public void testSlice() {
+		List<TestEntity> results = new ArrayList<>();
+		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				PageRequest.of(0, 1));
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isTrue();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
+				slice.getPageable().next());
+
+		assertThat(slice.hasNext()).isFalse();
+		assertThat(slice).hasSize(1);
+		results.addAll(slice.getContent());
+
+		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
 	}
 
 	@Test
