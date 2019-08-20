@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FormatOptions;
@@ -39,7 +40,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 
-import java.util.concurrent.TimeoutException;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
@@ -246,9 +246,10 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 			if (this.sync) {
 				result.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
 			}
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-		  throw new MessageHandlingException(
-		  		message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
+		}
+		catch (InterruptedException | ExecutionException | TimeoutException e) {
+			throw new MessageHandlingException(
+					message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
 		}
 
 		return result;
