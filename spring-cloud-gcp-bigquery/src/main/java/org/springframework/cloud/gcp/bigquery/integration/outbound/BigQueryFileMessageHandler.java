@@ -203,7 +203,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		try (
 				InputStream inputStream = convertToInputStream(message.getPayload());
 				OutputStream sink = Channels.newOutputStream(writer)) {
-		  // Write data from data input file to BigQuery
+			// Write data from data input file to BigQuery
 			StreamUtils.copy(inputStream, sink);
 		}
 		catch (FileNotFoundException e) {
