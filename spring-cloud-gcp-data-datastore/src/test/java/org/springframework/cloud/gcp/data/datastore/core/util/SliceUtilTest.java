@@ -27,7 +27,7 @@ import static org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil.s
 /**
  * @author Dmitry Solomakha
  */
-public class SliceTest {
+public class SliceUtilTest {
 	@Test
 	public void sliceAndExecuteTest() {
 		Integer[] elements = getIntegers(7);

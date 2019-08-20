@@ -94,7 +94,7 @@ import org.springframework.util.TypeUtils;
  */
 public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
 
-	private static final int MAX_WRITE_SIZE = 500;
+	private int maxWriteSize = 500;
 
 	private final Supplier<? extends DatastoreReaderWriter> datastore;
 
@@ -171,7 +171,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (!instances.isEmpty()) {
 			maybeEmitEvent(new BeforeSaveEvent(instances));
 			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
-			SliceUtil.sliceAndExecute(entities.toArray(new Entity[0]), MAX_WRITE_SIZE, getDatastoreReadWriter()::put);
+			SliceUtil.sliceAndExecute(
+					entities.toArray(new Entity[0]), this.maxWriteSize, getDatastoreReadWriter()::put);
 			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
 	}
@@ -206,7 +207,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
 		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
-		SliceUtil.sliceAndExecute(keys, MAX_WRITE_SIZE, getDatastoreReadWriter()::delete);
+		SliceUtil.sliceAndExecute(keys, this.maxWriteSize, getDatastoreReadWriter()::delete);
 		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
 	}
 
@@ -787,6 +788,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	void setMaxWriteSize(int maxWriteSize) {
+		this.maxWriteSize = maxWriteSize;
 	}
 
 	/**

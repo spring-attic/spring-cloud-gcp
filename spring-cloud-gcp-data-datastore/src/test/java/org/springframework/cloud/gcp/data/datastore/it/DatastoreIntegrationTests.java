@@ -227,33 +227,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void testSlice() {
-		List<TestEntity> results = new ArrayList<>();
-		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
-				PageRequest.of(0, 1));
-
-		assertThat(slice.hasNext()).isTrue();
-		assertThat(slice).hasSize(1);
-		results.addAll(slice.getContent());
-
-		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
-				slice.getPageable().next());
-
-		assertThat(slice.hasNext()).isTrue();
-		assertThat(slice).hasSize(1);
-		results.addAll(slice.getContent());
-
-		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
-				slice.getPageable().next());
-
-		assertThat(slice.hasNext()).isFalse();
-		assertThat(slice).hasSize(1);
-		results.addAll(slice.getContent());
-
-		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
-	}
-
-	@Test
 	public void testPage() {
 		List<TestEntity> results = new ArrayList<>();
 		Page<TestEntity> page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",

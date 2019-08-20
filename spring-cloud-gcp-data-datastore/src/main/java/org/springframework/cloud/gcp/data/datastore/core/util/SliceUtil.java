@@ -30,16 +30,10 @@ public final class SliceUtil {
 	}
 
 	public static <T> void sliceAndExecute(T[] elements, int sliceSize, Consumer<T[]> consumer) {
-		int num_slices = elements.length / sliceSize + 1;
+		int num_slices = (int)(Math.ceil((double)elements.length / sliceSize));
 		for (int i = 0; i < num_slices; i++) {
 			int start = i * sliceSize;
-			int end = start + sliceSize;
-			if (end > elements.length) {
-				end = elements.length;
-			}
-			if (start == end) {
-				break;
-			}
+			int end = Math.min(start + sliceSize, elements.length);
 
 			T[] slice = Arrays.copyOfRange(elements, start, end);
 			consumer.accept(slice);
