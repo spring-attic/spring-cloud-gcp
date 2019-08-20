@@ -25,19 +25,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.FormatOptions;
+import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
+import com.google.cloud.bigquery.JobStatus.State;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 
+import java.util.concurrent.TimeoutException;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
  * A {@link org.springframework.messaging.MessageHandler} which handles sending and
@@ -50,9 +64,13 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 	private final BigQuery bigQuery;
 
-	private String datasetName;
+	private final TaskScheduler taskScheduler;
 
-	private String tableName;
+	private final EvaluationContext evaluationContext;
+
+	private Expression datasetNameExpr;
+
+	private Expression tableNameExpr;
 
 	private FormatOptions formatOptions;
 
@@ -60,9 +78,25 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 	private WriteDisposition writeDisposition = WriteDisposition.WRITE_APPEND;
 
-	public BigQueryFileMessageHandler(BigQuery bigQuery) {
+	private Duration timeout = Duration.ofMinutes(5);
+
+	private boolean sync = false;
+
+	public BigQueryFileMessageHandler(BigQuery bigQuery, TaskScheduler taskScheduler) {
 		Assert.notNull(bigQuery, "BigQuery client must not be null.");
 		this.bigQuery = bigQuery;
+		this.taskScheduler = taskScheduler;
+		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
+	}
+
+	/**
+	 * Sets the SpEL expression to evaluate to determine the default dataset name if the
+	 * dataset name is omitted from message headers.
+	 * @param datasetNameExpression name of the BigQuery dataset
+	 */
+	public void setDatasetNameExpression(Expression datasetNameExpression) {
+		Assert.notNull(datasetNameExpression, "Dataset name expression can't be null.");
+		this.datasetNameExpr = datasetNameExpression;
 	}
 
 	/**
@@ -70,7 +104,16 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param datasetName name of the BigQuery dataset
 	 */
 	public void setDatasetName(String datasetName) {
-		this.datasetName = datasetName;
+		this.datasetNameExpr = new LiteralExpression(datasetName);
+	}
+
+	/**
+	 * Sets the SpEL expression to evaluate to determine the default table name if the
+	 * table name is omitted from message headers.
+	 * @param tableNameExpression name of the BigQuery dataset
+	 */
+	public void setTableNameExpression(Expression tableNameExpression) {
+		this.tableNameExpr = tableNameExpression;
 	}
 
 	/**
@@ -78,7 +121,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param tableName name of the BigQuery dataset
 	 */
 	public void setTableName(String tableName) {
-		this.tableName = tableName;
+		this.tableNameExpr = new LiteralExpression(tableName);
 	}
 
 	/**
@@ -109,47 +152,59 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		this.autoDetectSchema = autoDetectSchema;
 	}
 
+	/**
+	 * Sets the {@link Duration} to wait for a file to be loaded into BigQuery before timing out
+	 * when waiting synchronously.
+	 * @param timeout the {@link Duration} timeout to wait for a file to load
+	 */
+	public void setTimeout(Duration timeout) {
+		this.timeout = timeout;
+	}
+
+	/**
+	 * A {@code boolean} indicating if the {@link BigQueryFileMessageHandler} should synchronously
+	 * wait for each file to be successfully loaded to BigQuery.
+	 * @param sync whether {@link BigQueryFileMessageHandler} should wait synchronously for jobs to
+	 * 		complete
+	 */
+	public void setSync(boolean sync) {
+		this.sync = sync;
+	}
+
 	@Override
-	protected Object handleRequestMessage(Message<?> message) {
-		try {
-			String datasetName =
-					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.DATASET_NAME)
-							? message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME, String.class)
-							: this.datasetName;
+	protected ListenableFuture handleRequestMessage(Message<?> message) {
+		String datasetName =
+				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.DATASET_NAME)
+						? message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME, String.class)
+						: this.datasetNameExpr.getValue(this.evaluationContext, message, String.class);
 
-			String tableName =
-					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.TABLE_NAME)
-							? message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME, String.class)
-							: this.tableName;
+		String tableName =
+				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.TABLE_NAME)
+						? message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME, String.class)
+						: this.tableNameExpr.getValue(this.evaluationContext, message, String.class);
 
-			FormatOptions formatOptions =
-					message.getHeaders().containsKey(BigQuerySpringMessageHeaders.FORMAT_OPTIONS)
-							? message.getHeaders().get(
-									BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.class)
-							: this.formatOptions;
+		FormatOptions formatOptions =
+				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.FORMAT_OPTIONS)
+						? message.getHeaders().get(
+								BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.class)
+						: this.formatOptions;
 
-			TableId tableId = TableId.of(datasetName, tableName);
+		TableId tableId = TableId.of(datasetName, tableName);
 
-			WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
-					.newBuilder(tableId)
-					.setFormatOptions(formatOptions)
-					.setAutodetect(this.autoDetectSchema)
-					.setWriteDisposition(this.writeDisposition)
-					.build();
+		WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
+				.newBuilder(tableId)
+				.setFormatOptions(formatOptions)
+				.setAutodetect(this.autoDetectSchema)
+				.setWriteDisposition(this.writeDisposition)
+				.build();
 
-			TableDataWriteChannel writer = bigQuery.writer(writeChannelConfiguration);
-			InputStream inputStream = convertToInputStream(message.getPayload());
-			OutputStream sink = Channels.newOutputStream(writer);
+		TableDataWriteChannel writer = bigQuery.writer(writeChannelConfiguration);
 
-			try {
-				StreamUtils.copy(inputStream, sink);
-			}
-			finally {
-				inputStream.close();
-				sink.close();
-			}
-
-			return writer.getJob();
+		try (
+				InputStream inputStream = convertToInputStream(message.getPayload());
+				OutputStream sink = Channels.newOutputStream(writer)) {
+		  // Write data from data input file to BigQuery
+			StreamUtils.copy(inputStream, sink);
 		}
 		catch (FileNotFoundException e) {
 			throw new MessageHandlingException(
@@ -159,6 +214,44 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 			throw new MessageHandlingException(
 					message, "Failed to write data to BigQuery tables in message handler: " + this, e);
 		}
+
+		if (writer.getJob() == null) {
+			throw new MessageHandlingException(
+					message, "Failed to initialize the BigQuery write job in message handler: " + this);
+		}
+
+		// Prepare the polling task for the ListenableFuture result returned to end-user
+		SettableListenableFuture result = new SettableListenableFuture();
+		ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
+			Job job = writer.getJob().reload();
+			if (State.DONE.equals(job.getStatus().getState())) {
+				if (job.getStatus().getError() != null) {
+					result.setException(
+							new RuntimeException(job.getStatus().getError().getMessage()));
+				}
+				else {
+					result.set(job);
+				}
+			}
+		}, Duration.ofSeconds(2));
+
+		result.addCallback(
+				response -> scheduledFuture.cancel(true),
+				response -> {
+					writer.getJob().cancel();
+					scheduledFuture.cancel(true);
+				});
+
+		try {
+			if (this.sync) {
+				result.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
+			}
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+		  throw new MessageHandlingException(
+		  		message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
+		}
+
+		return result;
 	}
 
 	private static InputStream convertToInputStream(Object payload) throws FileNotFoundException {
