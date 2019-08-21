@@ -73,8 +73,9 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		this.taskScheduler.setPoolSize(1);
 		this.taskScheduler.initialize();
 
-		this.messageHandler = new BigQueryFileMessageHandler(this.bigquery, this.taskScheduler);
+		this.messageHandler = new BigQueryFileMessageHandler(this.bigquery);
 		this.messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
+		this.messageHandler.setTaskScheduler(this.taskScheduler);
 		this.messageHandler.doInit();
 
 		// Clear the previous dataset before beginning the test.

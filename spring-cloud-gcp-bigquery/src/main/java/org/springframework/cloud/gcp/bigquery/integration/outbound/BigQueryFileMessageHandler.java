@@ -51,7 +51,6 @@ import org.springframework.integration.expression.FunctionExpression;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -68,8 +67,6 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	private static final String HEADER_FORMAT = "headers[%s]";
 
 	private final BigQuery bigQuery;
-
-	private final TaskScheduler taskScheduler;
 
 	private EvaluationContext evaluationContext;
 
@@ -89,10 +86,9 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 	private boolean sync = false;
 
-	public BigQueryFileMessageHandler(BigQuery bigQuery, TaskScheduler taskScheduler) {
+	public BigQueryFileMessageHandler(BigQuery bigQuery) {
 		Assert.notNull(bigQuery, "BigQuery client must not be null.");
 		this.bigQuery = bigQuery;
-		this.taskScheduler = taskScheduler;
 
 		ExpressionParser expressionParser = new SpelExpressionParser();
 		this.datasetNameExpression = expressionParser.parseExpression(
@@ -249,9 +245,13 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 					message, "Failed to initialize the BigQuery write job in message handler: " + this);
 		}
 
+		Assert.notNull(getTaskScheduler(),
+				"You must set a Task Scheduler for BigQueryFileMessageHandler before using "
+						+ "by calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
+
 		// Prepare the polling task for the ListenableFuture result returned to end-user
 		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
-		ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
+		ScheduledFuture<?> scheduledFuture = getTaskScheduler().scheduleAtFixedRate(() -> {
 			Job job = writer.getJob().reload();
 			if (State.DONE.equals(job.getStatus().getState())) {
 				if (job.getStatus().getError() != null) {
