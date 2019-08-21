@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration.outbound;
+package org.springframework.cloud.gcp.bigquery.integration;
 
 /**
  * Spring Integration {@link org.springframework.messaging.Message} headers used with

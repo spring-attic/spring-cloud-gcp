@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
@@ -74,6 +75,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 
 		this.messageHandler = new BigQueryFileMessageHandler(this.bigquery, this.taskScheduler);
 		this.messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
+		this.messageHandler.doInit();
 
 		// Clear the previous dataset before beginning the test.
 		this.bigquery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
@@ -84,7 +86,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		HashMap<String, Object> messageHeaders = new HashMap<>();
 		this.messageHandler.setDatasetName(DATASET_NAME);
 		this.messageHandler.setTableName(TABLE_NAME);
-		messageHeaders.put(BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.csv());
+		this.messageHandler.setFormatOptions(FormatOptions.csv());
 
 		Message<File> message = MessageBuilder.createMessage(
 				new File("src/test/resources/data.csv"),
@@ -119,9 +121,8 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				new File("src/test/resources/data.csv"),
 				new MessageHeaders(messageHeaders));
 
-		ListenableFuture<Job> jobFuture =
-				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
-		assertThat(jobFuture.isDone()).isTrue();
+		Job job = (Job) this.messageHandler.handleRequestMessage(message);
+		assertThat(job).isNotNull();
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
 				.newBuilder("SELECT * FROM test_dataset.test_table").build();

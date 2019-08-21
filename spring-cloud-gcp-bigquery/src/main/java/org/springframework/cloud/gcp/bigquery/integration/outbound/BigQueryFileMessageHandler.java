@@ -40,17 +40,20 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 
+import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.expression.ExpressionUtils;
+import org.springframework.integration.expression.FunctionExpression;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
@@ -62,17 +65,19 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  */
 public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHandler {
 
+	private static final String HEADER_FORMAT = "headers[%s]";
+
 	private final BigQuery bigQuery;
 
 	private final TaskScheduler taskScheduler;
 
-	private final EvaluationContext evaluationContext;
+	private EvaluationContext evaluationContext;
 
-	private Expression datasetNameExpr;
+	private Expression datasetNameExpression;
 
-	private Expression tableNameExpr;
+	private Expression tableNameExpression;
 
-	private FormatOptions formatOptions;
+	private Expression formatOptionsExpression;
 
 	private boolean autoDetectSchema = true;
 
@@ -80,57 +85,77 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 	private Duration timeout = Duration.ofMinutes(5);
 
+	private Duration jobPollInterval = Duration.ofSeconds(2);
+
 	private boolean sync = false;
 
 	public BigQueryFileMessageHandler(BigQuery bigQuery, TaskScheduler taskScheduler) {
 		Assert.notNull(bigQuery, "BigQuery client must not be null.");
 		this.bigQuery = bigQuery;
 		this.taskScheduler = taskScheduler;
+
+		ExpressionParser expressionParser = new SpelExpressionParser();
+		this.datasetNameExpression = expressionParser.parseExpression(
+				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.DATASET_NAME));
+		this.tableNameExpression = expressionParser.parseExpression(
+				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.TABLE_NAME));
+		this.formatOptionsExpression = expressionParser.parseExpression(
+				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.FORMAT_OPTIONS));
+	}
+
+	@Override
+	protected void doInit() {
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}
 
 	/**
-	 * Sets the SpEL expression to evaluate to determine the default dataset name if the
-	 * dataset name is omitted from message headers.
-	 * @param datasetNameExpression name of the BigQuery dataset
+	 * Sets the SpEL {@link Expression} to evaluate to determine the dataset name.
+	 * @param datasetNameExpression the SpEL expression used to evaluate the dataset name
 	 */
 	public void setDatasetNameExpression(Expression datasetNameExpression) {
 		Assert.notNull(datasetNameExpression, "Dataset name expression can't be null.");
-		this.datasetNameExpr = datasetNameExpression;
+		this.datasetNameExpression = datasetNameExpression;
 	}
 
 	/**
-	 * Sets the default BigQuery dataset name to use if it is omitted from message headers.
+	 * Sets the BigQuery dataset name to use.
 	 * @param datasetName name of the BigQuery dataset
 	 */
 	public void setDatasetName(String datasetName) {
-		this.datasetNameExpr = new LiteralExpression(datasetName);
+		this.datasetNameExpression = new LiteralExpression(datasetName);
 	}
 
 	/**
-	 * Sets the SpEL expression to evaluate to determine the default table name if the
-	 * table name is omitted from message headers.
-	 * @param tableNameExpression name of the BigQuery dataset
+	 * Sets the SpEL {@link Expression} to evaluate to determine the table name.
+	 * @param tableNameExpression the SpEL expression used to evaluate the table name
 	 */
 	public void setTableNameExpression(Expression tableNameExpression) {
-		this.tableNameExpr = tableNameExpression;
+		this.tableNameExpression = tableNameExpression;
 	}
 
 	/**
-	 * Sets the default BigQuery table name to use if it is omitted from message headers.
-	 * @param tableName name of the BigQuery dataset
+	 * Sets the BigQuery table name to use.
+	 * @param tableName name of the BigQuery table
 	 */
 	public void setTableName(String tableName) {
-		this.tableNameExpr = new LiteralExpression(tableName);
+		this.tableNameExpression = new LiteralExpression(tableName);
 	}
 
 	/**
-	 * Sets the default {@link FormatOptions} to use if it is omitted from message headers.
+	 * Sets the default {@link FormatOptions} to use for the handler.
 	 * The {@link FormatOptions} describe the type/format of data files being loaded.
 	 * @param formatOptions the format of the data file being loaded
 	 */
 	public void setFormatOptions(FormatOptions formatOptions) {
-		this.formatOptions = formatOptions;
+		this.formatOptionsExpression = new FunctionExpression<Message>(m -> formatOptions);
+	}
+
+	/**
+	 * Sets the SpEL {@link Expression} used to determine the {@link FormatOptions} for the handler.
+	 * @param formatOptionsExpression the SpEL expression used to evaluate the {@link FormatOptions}
+	 */
+	public void setFormatOptionsExpression(Expression formatOptionsExpression) {
+		this.formatOptionsExpression = formatOptionsExpression;
 	}
 
 	/**
@@ -162,6 +187,15 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
+	 * Sets the {@link Duration} amount of time to wait between successive polls on the status of
+	 * a BigQuery job.
+	 * @param pollInterval the {@link Duration} poll interval for BigQuery job status polling
+	 */
+	public void setJobPollInterval(Duration pollInterval) {
+		this.jobPollInterval = pollInterval;
+	}
+
+	/**
 	 * A {@code boolean} indicating if the {@link BigQueryFileMessageHandler} should synchronously
 	 * wait for each file to be successfully loaded to BigQuery.
 	 * @param sync whether {@link BigQueryFileMessageHandler} should wait synchronously for jobs to
@@ -172,22 +206,17 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	@Override
-	protected ListenableFuture handleRequestMessage(Message<?> message) {
+	protected Object handleRequestMessage(Message<?> message) {
 		String datasetName =
-				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.DATASET_NAME)
-						? message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME, String.class)
-						: this.datasetNameExpr.getValue(this.evaluationContext, message, String.class);
-
+				this.datasetNameExpression.getValue(this.evaluationContext, message, String.class);
 		String tableName =
-				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.TABLE_NAME)
-						? message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME, String.class)
-						: this.tableNameExpr.getValue(this.evaluationContext, message, String.class);
-
+				this.tableNameExpression.getValue(this.evaluationContext, message, String.class);
 		FormatOptions formatOptions =
-				message.getHeaders().containsKey(BigQuerySpringMessageHeaders.FORMAT_OPTIONS)
-						? message.getHeaders().get(
-								BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.class)
-						: this.formatOptions;
+				this.formatOptionsExpression.getValue(this.evaluationContext, message, FormatOptions.class);
+
+		Assert.notNull(datasetName, "BigQuery dataset name must not be null.");
+		Assert.notNull(tableName, "BigQuery table name must not be null.");
+		Assert.notNull(formatOptions, "Data file formatOptions must not be null.");
 
 		TableId tableId = TableId.of(datasetName, tableName);
 
@@ -221,7 +250,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		}
 
 		// Prepare the polling task for the ListenableFuture result returned to end-user
-		SettableListenableFuture result = new SettableListenableFuture();
+		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
 		ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
 			Job job = writer.getJob().reload();
 			if (State.DONE.equals(job.getStatus().getState())) {
@@ -233,7 +262,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 					result.set(job);
 				}
 			}
-		}, Duration.ofSeconds(2));
+		}, this.jobPollInterval);
 
 		result.addCallback(
 				response -> scheduledFuture.cancel(true),
@@ -242,17 +271,18 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 					scheduledFuture.cancel(true);
 				});
 
-		try {
-			if (this.sync) {
-				result.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
+		if (this.sync) {
+			try {
+				return result.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
+			}
+			catch (InterruptedException | ExecutionException | TimeoutException e) {
+				throw new MessageHandlingException(
+						message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
 			}
 		}
-		catch (InterruptedException | ExecutionException | TimeoutException e) {
-			throw new MessageHandlingException(
-					message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
+		else {
+			return result;
 		}
-
-		return result;
 	}
 
 	private static InputStream convertToInputStream(Object payload) throws FileNotFoundException {
