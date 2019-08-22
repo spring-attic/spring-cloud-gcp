@@ -45,6 +45,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -55,6 +57,7 @@ import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class BigQueryFileMessageHandlerIntegrationTests {
 
 	private static final String DATASET_NAME = "test_dataset";
@@ -65,10 +68,10 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 	private ThreadPoolTaskScheduler taskScheduler;
 
 	@Autowired
-	private BigQueryFileMessageHandler messageHandler;
+	private BigQuery bigquery;
 
 	@Autowired
-	private BigQuery bigquery;
+	private BigQueryFileMessageHandler messageHandler;
 
 	@BeforeClass
 	public static void prepare() {

@@ -103,11 +103,6 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	@Override
 	protected void doInit() {
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
-
-		Assert.notNull(getTaskScheduler(),
-				"You must set a Task Scheduler for BigQueryFileMessageHandler before using "
-						+ "by enabling Spring Integration using @EnableIntegration "
-						+ "or calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
 	}
 
 	/**
