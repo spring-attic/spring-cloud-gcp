@@ -29,15 +29,22 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
+import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,17 +52,22 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class BigQueryFileMessageHandlerIntegrationTests {
 
 	private static final String DATASET_NAME = "test_dataset";
 
 	private static final String TABLE_NAME = "test_table";
 
-	private BigQuery bigquery;
-
+	@Autowired
 	private ThreadPoolTaskScheduler taskScheduler;
 
+	@Autowired
 	private BigQueryFileMessageHandler messageHandler;
+
+	@Autowired
+	private BigQuery bigquery;
 
 	@BeforeClass
 	public static void prepare() {
@@ -67,17 +79,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 
 	@Before
 	public void setup() {
-		this.bigquery = BigQueryOptions.getDefaultInstance().getService();
-
-		this.taskScheduler = new ThreadPoolTaskScheduler();
-		this.taskScheduler.setPoolSize(1);
-		this.taskScheduler.initialize();
-
-		this.messageHandler = new BigQueryFileMessageHandler(this.bigquery);
-		this.messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
-		this.messageHandler.setTaskScheduler(this.taskScheduler);
-		this.messageHandler.doInit();
-
 		// Clear the previous dataset before beginning the test.
 		this.bigquery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
 	}
@@ -95,6 +96,12 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 
 		ListenableFuture<Job> jobFuture =
 				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
+
+		// Assert that a BigQuery polling task is scheduled successfully.
+		await().atMost(Duration.FIVE_SECONDS)
+				.untilAsserted(
+						() -> assertThat(
+								this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1));
 		jobFuture.get();
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
@@ -145,10 +152,35 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		ListenableFuture<Job> jobFuture =
 				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
 		jobFuture.cancel(true);
+		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1);
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			// This asserts that the BigQuery job polling task is no longer in the scheduler after cancel.
 			assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
 		});
+	}
+
+	@Configuration
+	static class BigQueryTestConfiguration {
+
+		@Bean
+		ThreadPoolTaskScheduler taskScheduler() {
+			ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+			taskScheduler.setPoolSize(1);
+			taskScheduler.initialize();
+			return taskScheduler;
+		}
+
+		@Bean
+		public BigQuery bigQuery() {
+			return BigQueryOptions.getDefaultInstance().getService();
+		}
+
+		@Bean
+		public BigQueryFileMessageHandler messageHandler(BigQuery bigQuery) {
+			BigQueryFileMessageHandler messageHandler = new BigQueryFileMessageHandler(bigQuery);
+			messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
+			return messageHandler;
+		}
 	}
 }

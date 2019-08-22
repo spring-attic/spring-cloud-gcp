@@ -247,7 +247,8 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 		Assert.notNull(getTaskScheduler(),
 				"You must set a Task Scheduler for BigQueryFileMessageHandler before using "
-						+ "by calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
+						+ "by enabling Spring Integration using @EnableIntegration "
+						+ "or calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
 
 		// Prepare the polling task for the ListenableFuture result returned to end-user
 		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
