@@ -40,6 +40,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.config.EnableIntegration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
@@ -160,16 +161,9 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		});
 	}
 
+	@EnableIntegration
 	@Configuration
 	static class BigQueryTestConfiguration {
-
-		@Bean
-		ThreadPoolTaskScheduler taskScheduler() {
-			ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-			taskScheduler.setPoolSize(1);
-			taskScheduler.initialize();
-			return taskScheduler;
-		}
 
 		@Bean
 		public BigQuery bigQuery() {

@@ -43,11 +43,10 @@ import com.google.cloud.bigquery.WriteChannelConfiguration;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.FunctionExpression;
+import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractReplyProducingMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
@@ -63,8 +62,6 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @since 1.2
  */
 public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHandler {
-
-	private static final String HEADER_FORMAT = "headers[%s]";
 
 	private final BigQuery bigQuery;
 
@@ -90,18 +87,27 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		Assert.notNull(bigQuery, "BigQuery client must not be null.");
 		this.bigQuery = bigQuery;
 
-		ExpressionParser expressionParser = new SpelExpressionParser();
-		this.datasetNameExpression = expressionParser.parseExpression(
-				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.DATASET_NAME));
-		this.tableNameExpression = expressionParser.parseExpression(
-				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.TABLE_NAME));
-		this.formatOptionsExpression = expressionParser.parseExpression(
-				String.format(HEADER_FORMAT, BigQuerySpringMessageHeaders.FORMAT_OPTIONS));
+		this.datasetNameExpression =
+				new FunctionExpression<Message>(
+						message -> message.getHeaders().get(BigQuerySpringMessageHeaders.DATASET_NAME));
+
+		this.tableNameExpression =
+				new FunctionExpression<Message>(
+						message -> message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_NAME));
+
+		this.formatOptionsExpression =
+				new FunctionExpression<Message>(
+						message -> message.getHeaders().get(BigQuerySpringMessageHeaders.FORMAT_OPTIONS));
 	}
 
 	@Override
 	protected void doInit() {
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
+
+		Assert.notNull(getTaskScheduler(),
+				"You must set a Task Scheduler for BigQueryFileMessageHandler before using "
+						+ "by enabling Spring Integration using @EnableIntegration "
+						+ "or calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
 	}
 
 	/**
@@ -126,6 +132,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param tableNameExpression the SpEL expression used to evaluate the table name
 	 */
 	public void setTableNameExpression(Expression tableNameExpression) {
+		Assert.notNull(tableNameExpression, "Table name expression must not be null.");
 		this.tableNameExpression = tableNameExpression;
 	}
 
@@ -143,7 +150,8 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param formatOptions the format of the data file being loaded
 	 */
 	public void setFormatOptions(FormatOptions formatOptions) {
-		this.formatOptionsExpression = new FunctionExpression<Message>(m -> formatOptions);
+		Assert.notNull(formatOptions, "Format options must not be null.");
+		this.formatOptionsExpression = new ValueExpression<>(formatOptions);
 	}
 
 	/**
@@ -151,6 +159,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param formatOptionsExpression the SpEL expression used to evaluate the {@link FormatOptions}
 	 */
 	public void setFormatOptionsExpression(Expression formatOptionsExpression) {
+		Assert.notNull(formatOptionsExpression, "Format options expression cannot be null.");
 		this.formatOptionsExpression = formatOptionsExpression;
 	}
 
@@ -160,6 +169,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table
 	 */
 	public void setWriteDisposition(WriteDisposition writeDisposition) {
+		Assert.notNull(writeDisposition, "Write disposition must not be null.");
 		this.writeDisposition = writeDisposition;
 	}
 
@@ -179,6 +189,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param timeout the {@link Duration} timeout to wait for a file to load
 	 */
 	public void setTimeout(Duration timeout) {
+		Assert.notNull(timeout, "Timeout duration must not be null.");
 		this.timeout = timeout;
 	}
 
@@ -188,6 +199,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param pollInterval the {@link Duration} poll interval for BigQuery job status polling
 	 */
 	public void setJobPollInterval(Duration pollInterval) {
+		Assert.notNull(pollInterval, "Poll interval duration must not be null.");
 		this.jobPollInterval = pollInterval;
 	}
 
@@ -244,11 +256,6 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 			throw new MessageHandlingException(
 					message, "Failed to initialize the BigQuery write job in message handler: " + this);
 		}
-
-		Assert.notNull(getTaskScheduler(),
-				"You must set a Task Scheduler for BigQueryFileMessageHandler before using "
-						+ "by enabling Spring Integration using @EnableIntegration "
-						+ "or calling BigQueryFileMessageHandler.setTaskScheduler(taskScheduler).");
 
 		// Prepare the polling task for the ListenableFuture result returned to end-user
 		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
