@@ -199,7 +199,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	private Value setExcludeFromIndexes(Value convertedVal) {
 		// ListValues must have its contents individually excluded instead.
 		// the entire list must NOT be excluded or there will be an exception.
-		// Same for maps which are storedd as EntityValue.
+		// Same for maps which are stored as EntityValue.
 		if (convertedVal.getClass().equals(EntityValue.class)) {
 			FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder();
 			((EntityValue) convertedVal).get().getProperties().entrySet().stream().forEach(
