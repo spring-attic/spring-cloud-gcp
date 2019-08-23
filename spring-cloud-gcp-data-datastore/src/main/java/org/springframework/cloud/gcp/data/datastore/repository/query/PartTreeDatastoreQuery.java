@@ -331,12 +331,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				throw new DatastoreDataException(
 						"Too few parameters are provided for query method: " + getQueryMethod().getName());
 			}
-			Object val = it.next();
-			Value convertedValue = persistentProperty.isIdProperty()
-					? KeyValue.of(
-							this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), val))
-					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-							.convertOnWriteSingle(val);
+
+			Value convertedValue = convertParam(persistentProperty, it.next());
 
 			return filterFactory.apply(persistentProperty.getFieldName(), convertedValue);
 		}).toArray(Filter[]::new);
@@ -345,6 +341,19 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				(filters.length > 1)
 						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
 						: filters[0]);
+	}
+
+	private Value convertParam(DatastorePersistentProperty persistentProperty, Object val) {
+		//persistentProperty.isAssociation() is true if the property is annotated with @Reference,
+		// which means that we store keys there
+		if (persistentProperty.isAssociation()
+				&& this.datastoreMappingContext.hasPersistentEntityFor(val.getClass())) {
+			return KeyValue.of(this.datastoreTemplate.getKey(val));
+		}
+		if (persistentProperty.isIdProperty()) {
+			return KeyValue.of(this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), val));
+		}
+		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(val);
 	}
 
 	private static class ExecutionResult {

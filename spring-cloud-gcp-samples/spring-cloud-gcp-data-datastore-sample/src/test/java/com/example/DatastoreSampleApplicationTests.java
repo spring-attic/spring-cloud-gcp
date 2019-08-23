@@ -193,6 +193,8 @@ public class DatastoreSampleApplicationTests {
 				"Singer{singerId='singer2', firstName='Jane', lastName='Doe', " +
 				"albums=[Album{albumName='a', date=2012-01-20}");
 
+		assertThat(baos.toString()).contains("Find by reference with query\n" + "[Richard]");
+
 		assertThat(baos.toString()).contains("Find by reference\n" + "[Richard]");
 
 		assertThat(baos.toString()).contains("This concludes the sample.");

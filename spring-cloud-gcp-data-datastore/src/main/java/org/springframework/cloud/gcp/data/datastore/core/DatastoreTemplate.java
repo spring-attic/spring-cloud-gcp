@@ -65,6 +65,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
+import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -92,6 +93,8 @@ import org.springframework.util.TypeUtils;
  * @since 1.1
  */
 public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
+
+	private int maxWriteSize = 500;
 
 	private final Supplier<? extends DatastoreReaderWriter> datastore;
 
@@ -168,7 +171,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (!instances.isEmpty()) {
 			maybeEmitEvent(new BeforeSaveEvent(instances));
 			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
-			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
+			SliceUtil.sliceAndExecute(
+					entities.toArray(new Entity[0]), this.maxWriteSize, getDatastoreReadWriter()::put);
 			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
 	}
@@ -203,7 +207,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
 		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
-		getDatastoreReadWriter().delete(keys);
+		SliceUtil.sliceAndExecute(keys, this.maxWriteSize, getDatastoreReadWriter()::delete);
 		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
 	}
 
@@ -784,6 +788,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	void setMaxWriteSize(int maxWriteSize) {
+		this.maxWriteSize = maxWriteSize;
 	}
 
 	/**
