@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
@@ -34,6 +35,12 @@ public class UnindexedTestDatastoreItem {
 
 	@Unindexed
 	private List<String> unindexedStringListField;
+
+	@Unindexed
+	private Map<String, String> unindexedMapField;
+
+	public UnindexedTestDatastoreItem() {
+	}
 
 	public long getIndexedField() {
 		return this.indexedField;
@@ -57,5 +64,13 @@ public class UnindexedTestDatastoreItem {
 
 	public void setUnindexedStringListField(List<String> unindexedStringListField) {
 		this.unindexedStringListField = unindexedStringListField;
+	}
+
+	public Map<String, String> getUnindexedMapField() {
+		return this.unindexedMapField;
+	}
+
+	public void setUnindexedMapField(Map<String, String> unindexedMapField) {
+		this.unindexedMapField = unindexedMapField;
 	}
 }

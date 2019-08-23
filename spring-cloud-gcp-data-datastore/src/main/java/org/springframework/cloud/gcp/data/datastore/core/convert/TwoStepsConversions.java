@@ -285,20 +285,26 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private EntityValue applyEntityValueBuilder(Object val, String kindName,
-			Consumer<Builder> consumer) {
+			Consumer<Builder> consumer, boolean createKey) {
 
-		/* The following does 3 sequential null checks. We only want an ID value if the object isn't null,
-			has an ID property, and the ID property isn't null.
-		* */
-		Optional idProp = Optional.ofNullable(val)
-				.map(v -> this.datastoreMappingContext.getPersistentEntity(v.getClass()))
-				.map(datastorePersistentEntity -> datastorePersistentEntity.getIdProperty())
-				.map(id -> this.datastoreMappingContext.getPersistentEntity(val.getClass())
-						.getPropertyAccessor(val).getProperty(id));
+		FullEntity.Builder<IncompleteKey> builder;
+		if (!createKey) {
+			builder = FullEntity.newBuilder();
+		}
+		else {
+			/* The following does 3 sequential null checks. We only want an ID value if the object isn't null,
+				has an ID property, and the ID property isn't null.
+			* */
+			Optional idProp = Optional.ofNullable(val)
+					.map(v -> this.datastoreMappingContext.getPersistentEntity(v.getClass()))
+					.map(datastorePersistentEntity -> datastorePersistentEntity.getIdProperty())
+					.map(id -> this.datastoreMappingContext.getPersistentEntity(val.getClass())
+							.getPropertyAccessor(val).getProperty(id));
 
-		IncompleteKey key = idProp.isPresent() ? this.objectToKeyFactory.getKeyFromId(idProp.get(), kindName)
-				: this.objectToKeyFactory.getIncompleteKey(kindName);
-		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
+			IncompleteKey key = idProp.isPresent() ? this.objectToKeyFactory.getKeyFromId(idProp.get(), kindName)
+					: this.objectToKeyFactory.getIncompleteKey(kindName);
+			builder = FullEntity.newBuilder(key);
+		}
 		consumer.accept(builder);
 		return EntityValue.of(builder.build());
 	}
@@ -315,12 +321,12 @@ public class TwoStepsConversions implements ReadWriteConversions {
 								EmbeddedType.of(valueTypeInformation),
 								field, valueTypeInformation));
 			}
-		});
+		}, false);
 	}
 
 	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName) {
 		return applyEntityValueBuilder(val, kindName,
-				(builder) -> this.datastoreEntityConverter.write(val, builder));
+				(builder) -> this.datastoreEntityConverter.write(val, builder), true);
 	}
 
 	@Override
