@@ -344,6 +344,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Value convertParam(DatastorePersistentProperty persistentProperty, Object val) {
+		//persistentProperty.isAssociation() is true if the property is annotated with @Reference,
+		// which means that we store keys there
 		if (persistentProperty.isAssociation()
 				&& this.datastoreMappingContext.hasPersistentEntityFor(val.getClass())) {
 			return KeyValue.of(this.datastoreTemplate.getKey(val));

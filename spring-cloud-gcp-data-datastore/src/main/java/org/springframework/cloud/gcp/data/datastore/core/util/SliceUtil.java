@@ -29,6 +29,13 @@ public final class SliceUtil {
 	private SliceUtil() {
 	}
 
+	/**
+	 * Cut array into slices of a given size and call consumer on each of them.
+	 * @param <T> the type of the elements.
+	 * @param elements the array to be sliced.
+	 * @param sliceSize the max size of a slice.
+	 * @param consumer the consumer to be called on every slice.
+	 */
 	public static <T> void sliceAndExecute(T[] elements, int sliceSize, Consumer<T[]> consumer) {
 		int num_slices = (int) (Math.ceil((double) elements.length / sliceSize));
 		for (int i = 0; i < num_slices; i++) {
