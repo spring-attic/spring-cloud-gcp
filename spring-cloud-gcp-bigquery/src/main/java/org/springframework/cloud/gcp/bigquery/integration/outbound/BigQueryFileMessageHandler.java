@@ -115,7 +115,8 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
-	 * Sets the BigQuery dataset name to use.
+	 * Sets the BigQuery dataset name to use. This overwrites any previous settings made
+	 * by {@link #setDatasetNameExpression}.
 	 * @param datasetName name of the BigQuery dataset
 	 */
 	public void setDatasetName(String datasetName) {
@@ -132,21 +133,12 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
-	 * Sets the BigQuery table name to use.
+	 * Sets the BigQuery table name to use. This overwrites any previous settings made
+	 * by {@link #setTableNameExpression}.
 	 * @param tableName name of the BigQuery table
 	 */
 	public void setTableName(String tableName) {
 		this.tableNameExpression = new LiteralExpression(tableName);
-	}
-
-	/**
-	 * Sets the default {@link FormatOptions} to use for the handler.
-	 * The {@link FormatOptions} describe the type/format of data files being loaded.
-	 * @param formatOptions the format of the data file being loaded
-	 */
-	public void setFormatOptions(FormatOptions formatOptions) {
-		Assert.notNull(formatOptions, "Format options must not be null.");
-		this.formatOptionsExpression = new ValueExpression<>(formatOptions);
 	}
 
 	/**
@@ -159,9 +151,20 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
+	 * Sets the handler's {@link FormatOptions} which describe the type/format of data files being
+	 * loaded. This overwrites any previous settings made by {@link #setFormatOptionsExpression}.
+	 * @param formatOptions the format of the data file being loaded
+	 */
+	public void setFormatOptions(FormatOptions formatOptions) {
+		Assert.notNull(formatOptions, "Format options must not be null.");
+		this.formatOptionsExpression = new ValueExpression<>(formatOptions);
+	}
+
+	/**
 	 * Sets the {@link WriteDisposition} which specifies how data should be inserted into
 	 * BigQuery tables.
-	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table
+	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table.
+	 * 		Default is {@code WriteDisposition.WRITE_APPEND} to append data to a table.
 	 */
 	public void setWriteDisposition(WriteDisposition writeDisposition) {
 		Assert.notNull(writeDisposition, "Write disposition must not be null.");
@@ -172,7 +175,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * Sets whether BigQuery should attempt to autodetect the schema of the data when loading
 	 * data into an empty table for the first time.
 	 * @param autoDetectSchema whether data schema should be autodetected from the structure of
-	 * 		the data
+	 * 		the data. Default is true.
 	 */
 	public void setAutoDetectSchema(boolean autoDetectSchema) {
 		this.autoDetectSchema = autoDetectSchema;
@@ -201,8 +204,14 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	/**
 	 * A {@code boolean} indicating if the {@link BigQueryFileMessageHandler} should synchronously
 	 * wait for each file to be successfully loaded to BigQuery.
+	 *
+	 * <p>If set to true, the handler runs synchronously and returns {@link Job} for message
+	 * responses. If set to false, the handler will return
+	 * {@link org.springframework.util.concurrent.ListenableFuture} of the Job as the response
+	 * for each message.
+	 *
 	 * @param sync whether {@link BigQueryFileMessageHandler} should wait synchronously for jobs to
-	 * 		complete
+	 * 		complete. Default is false (async).
 	 */
 	public void setSync(boolean sync) {
 		this.sync = sync;
@@ -252,10 +261,28 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 					message, "Failed to initialize the BigQuery write job in message handler: " + this);
 		}
 
+		SettableListenableFuture<Job> completedJobFuture = createJobFuture(writer.getJob());
+
+		if (this.sync) {
+			try {
+				return completedJobFuture.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
+			}
+			catch (InterruptedException | ExecutionException | TimeoutException e) {
+				throw new MessageHandlingException(
+						message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
+			}
+		}
+		else {
+			return completedJobFuture;
+		}
+	}
+
+	private SettableListenableFuture<Job> createJobFuture(Job pendingJob) {
 		// Prepare the polling task for the ListenableFuture result returned to end-user
 		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
+
 		ScheduledFuture<?> scheduledFuture = getTaskScheduler().scheduleAtFixedRate(() -> {
-			Job job = writer.getJob().reload();
+			Job job = pendingJob.reload();
 			if (State.DONE.equals(job.getStatus().getState())) {
 				if (job.getStatus().getError() != null) {
 					result.setException(
@@ -270,22 +297,11 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		result.addCallback(
 				response -> scheduledFuture.cancel(true),
 				response -> {
-					writer.getJob().cancel();
+					pendingJob.cancel();
 					scheduledFuture.cancel(true);
 				});
 
-		if (this.sync) {
-			try {
-				return result.get(this.timeout.getSeconds(), TimeUnit.SECONDS);
-			}
-			catch (InterruptedException | ExecutionException | TimeoutException e) {
-				throw new MessageHandlingException(
-						message, "Failed to wait for BigQuery job to complete in message handler: " + this, e);
-			}
-		}
-		else {
-			return result;
-		}
+		return result;
 	}
 
 	private static InputStream convertToInputStream(Object payload) throws FileNotFoundException {
