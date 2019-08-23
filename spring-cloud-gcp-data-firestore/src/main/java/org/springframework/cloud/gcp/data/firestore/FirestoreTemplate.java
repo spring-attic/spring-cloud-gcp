@@ -17,6 +17,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -96,13 +97,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	@Override
-	public <T> Flux<WriteResponse> saveAll(Publisher<T> instances) {
-		Flux<List<T>> input = Flux.from(instances).buffer(500);
-		// return ObservableReactiveUtil.streamingBidirectionalCall(
-		// 	this::openWriteStream,
-		// 	input,
-		// 	this::writeEntityStream
-		// ).filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
+	public <T> Mono<Void> saveAll(Publisher<T> instances) {
+		Flux<List<T>> input = Flux.from(instances).bufferTimeout(500, Duration.ofSeconds(1));
 
 		AtomicReference<StreamObserver<WriteRequest>> requestStream = new AtomicReference<>();
 
@@ -124,7 +120,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 					requestStream.get().onNext(request);
 				}))
 				.doOnComplete(() -> requestStream.get().onCompleted())
-				.thenMany(responsesFlux);
+				.thenMany(responsesFlux)
+				.then();
 	}
 
 	public <T> Flux<T> findAll(Class<T> clazz) {

@@ -43,7 +43,7 @@ public interface FirestoreReactiveOperations {
 	 * @param <T> the type of the objects to save.
 	 * @return a flux of the instances that were saved.
 	 */
-	<T> Flux<WriteResponse> saveAll(Publisher<T> instances);
+	<T> Mono<Void> saveAll(Publisher<T> instances);
 
 	/**
 	 * Get all the entities of the given domain type.

@@ -33,6 +33,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.StreamSupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -104,7 +105,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
-		this.firestoreTemplate.saveAll(users).collectList().block();
+		this.firestoreTemplate.saveAll(users).block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
 	}
@@ -113,7 +114,7 @@ public class FirestoreIntegrationTests {
 	public void saveAllBulkTestWithReactor() throws InterruptedException {
 
 		Flux<User> users = Flux.create(sink -> {
-			for (int i = 0; i < 500; i++) {
+			for (int i = 0; i < 3000; i++) {
 				sink.next(new User("testUserX " + i, i));
 			}
 			sink.complete();
@@ -121,9 +122,11 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
-		this.firestoreTemplate.saveAll(users).blockLast();
+		long start = System.currentTimeMillis();
+		this.firestoreTemplate.saveAll(users).block();
+		System.out.println("Millis taken: " + (System.currentTimeMillis() - start));
 
-		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(500);
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(3000);
 	}
 
 	@Test
@@ -132,14 +135,25 @@ public class FirestoreIntegrationTests {
 		FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance();
 		Firestore db = firestoreOptions.getService();
 
-		WriteBatch batch = db.batch();
-
-		for (int i = 0; i < 500; i++) {
-			DocumentReference ref = db.collection("example_test").document("test user " + i);
-			batch.set(ref, new User("blargatron", i));
+		long start = System.currentTimeMillis();
+		for (int j = 0; j < 6; j++) {
+			WriteBatch batch = db.batch();
+			for (int i = 0; i < 500; i++) {
+				DocumentReference ref =
+						db.collection("example_test")
+								.document("test user " + (j * 1000 + i));
+				batch.set(ref, new User("blargatron", i));
+			}
+			batch.commit().get();
 		}
+		System.out.println("Millis taken: " + (System.currentTimeMillis() - start));
 
-		batch.commit().get();
+		long size =
+				StreamSupport.stream(db.collection("example_test").listDocuments().spliterator(), false)
+						.count();
+
+		assertThat(size).isEqualTo(3000);
+
 	}
 }
 
