@@ -54,10 +54,10 @@ public class FirestoreIntegrationTests {
 	@Before
 	public void setup() throws IOException {
 
-		// assumeThat(
-		// 		"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
-		// 				+ "to enable them. ",
-		// 		System.getProperty("it.firestore"), is("true"));
+		assumeThat(
+				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
+						+ "to enable them. ",
+				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
 				(ch.qos.logback.classic.Logger)
