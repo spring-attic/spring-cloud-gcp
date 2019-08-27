@@ -17,6 +17,8 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.firestore.PublicClassMapper;
@@ -35,6 +37,7 @@ import com.google.firestore.v1.WriteResponse;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -54,6 +57,8 @@ import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
 
+	private static final int FIRESTORE_WRITE_MAX_SIZE = 500;
+
 	private final FirestoreStub firestore;
 
 	private final String parent;
@@ -61,6 +66,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private final String databasePath;
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
+
+	private Duration bufferTimeout = Duration.ofMillis(500);
 
 	/**
 	 * Constructor for FirestoreTemplate.
@@ -73,6 +80,15 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.firestore = firestore;
 		this.parent = parent;
 		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
+	}
+
+	/**
+	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
+	 * the buffered entities to Firestore.
+	 * @param bufferTimeout
+	 */
+	public void setBufferTimeoutDuration(Duration bufferTimeout) {
+		this.bufferTimeout = bufferTimeout;
 	}
 
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
@@ -109,13 +125,32 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	@Override
-	public <T> Flux<T> saveAll(Publisher<T> instances) {
-		Flux<T> input = Flux.from(instances);
-		return ObservableReactiveUtil.streamingBidirectionalCall(
-			this::openWriteStream,
-			input,
-			this::writeEntityStream
-		).filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
+	public <T> Mono<Void> saveAll(Publisher<T> instances) {
+		Flux<List<T>> input = Flux.from(instances).bufferTimeout(
+				FIRESTORE_WRITE_MAX_SIZE, bufferTimeout);
+
+		AtomicReference<StreamObserver<WriteRequest>> requestStream = new AtomicReference<>();
+
+		WriteRequest openStreamRequest =
+				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+
+		Flux<WriteResponse> responsesFlux =
+				ObservableReactiveUtil.<WriteResponse>streamingCall(obs -> {
+					StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
+					requestStreamObserver.onNext(openStreamRequest);
+					requestStream.set(requestStreamObserver);
+				})
+				.cache(1);
+
+		return input.flatMap(entityList ->
+				responsesFlux.next().doOnNext(response -> {
+					WriteRequest request = buildWriteRequest(
+							response.getStreamId(), response.getStreamToken(), entityList);
+					requestStream.get().onNext(request);
+				}))
+				.doOnComplete(() -> requestStream.get().onCompleted())
+				.thenMany(responsesFlux)
+				.then();
 	}
 
 	public <T> Flux<T> findAll(Class<T> clazz) {
@@ -152,33 +187,23 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
 
-	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
-		WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
-		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
-		requestStreamObserver.onNext(openStreamRequest);
-		return requestStreamObserver;
-	}
+	private <T> WriteRequest buildWriteRequest(
+			String streamId, ByteString streamToken, List<T> entityList) {
 
-	private <T> Mono<WriteRequest> writeEntityStream(T entity, Flux<WriteResponse> responses) {
-		Mono<WriteResponse> firstResponse = responses.next();
-		return firstResponse.map(
-			initialResponse -> buildWriteRequest(initialResponse.getStreamId(), initialResponse.getStreamToken(), entity));
-	}
+		WriteRequest.Builder writeRequestBuilder =
+				WriteRequest.newBuilder().setStreamId(streamId).setStreamToken(streamToken);
 
-	private <T> WriteRequest buildWriteRequest(String streamId, ByteString streamToken, T entity) {
-		String documentResourceName = buildResourceName(entity);
-		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+		for (T entity : entityList)	{
+			String documentResourceName = buildResourceName(entity);
+			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+			Write write = Write.newBuilder()
+					.setUpdate(
+							Document.newBuilder().putAllFields(valuesMap).setName(documentResourceName))
+					.build();
+			writeRequestBuilder.addWrites(write);
+		}
 
-		return WriteRequest.newBuilder()
-			.setStreamId(streamId)
-			.setStreamToken(streamToken)
-			.addWrites(Write.newBuilder()
-				.setUpdate(Document.newBuilder()
-					.putAllFields(valuesMap)
-					.setName(documentResourceName)
-					.build())
-				.build())
-			.build();
+		return writeRequestBuilder.build();
 	}
 
 	private <T> String buildResourceName(T entity) {
@@ -190,4 +215,18 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return this.parent + "/" + persistentEntity.collectionName() + "/" + idVal.toString();
 	}
 
+	// Code Related to a generalized bidi-call solution:
+	//
+	// private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
+	// 	WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+	// 	StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
+	// 	requestStreamObserver.onNext(openStreamRequest);
+	// 	return requestStreamObserver;
+	// }
+	//
+	// private <T> Mono<WriteRequest> writeEntityStream(T entity, Flux<WriteResponse> responses) {
+	// 	Mono<WriteResponse> firstResponse = responses.next();
+	// 	return firstResponse.map(
+	// 			initialResponse -> buildWriteRequest(initialResponse.getStreamId(), initialResponse.getStreamToken(), entity));
+	// }
 }

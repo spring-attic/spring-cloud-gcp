@@ -40,9 +40,9 @@ public interface FirestoreReactiveOperations {
 	 * Saves multiple objects to Cloud Firestore. Not atomic. Behaves as insert or update.
 	 * @param instances the objects to save.
 	 * @param <T> the type of the objects to save.
-	 * @return a flux of the instances that were saved.
+	 * @return a Mono indicating completion of the operation.
 	 */
-	<T> Flux<T> saveAll(Publisher<T> instances);
+	<T> Mono<Void> saveAll(Publisher<T> instances);
 
 	/**
 	 * Get all the entities of the given domain type.
