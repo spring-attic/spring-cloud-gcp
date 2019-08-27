@@ -33,6 +33,7 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -147,6 +148,39 @@ public class FirestoreTemplateTests {
 				.build();
 
 		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void findAllByIdTest() {
+		GetDocumentRequest request1 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.build();
+
+		GetDocumentRequest request2 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e2")
+				.build();
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request1), any());
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e2", 200L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request2), any());
+
+		StepVerifier.create(this.firestoreTemplate.findAllById(Flux.just("e1", "e2"), TestEntity.class))
+				.expectNext(new TestEntity("e1", 100L), new TestEntity("e2", 200L))
+				.verifyComplete();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request1), any());
 	}
 
 	@Test

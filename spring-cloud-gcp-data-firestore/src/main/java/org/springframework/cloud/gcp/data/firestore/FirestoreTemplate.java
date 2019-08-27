@@ -76,7 +76,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
-		return ((Mono<String>) Mono.from(idPublisher)).flatMap(id -> {
+		return findAllById(idPublisher, aClass).next();
+	}
+
+	public <T> Flux<T> findAllById(Publisher idPublisher, Class<T> aClass) {
+		return ((Flux<String>) Flux.from(idPublisher)).flatMap(id -> {
 			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
 			GetDocumentRequest request = GetDocumentRequest.newBuilder()
 					.setName(this.parent + "/" + persistentEntity.collectionName() + "/" + id).build();
