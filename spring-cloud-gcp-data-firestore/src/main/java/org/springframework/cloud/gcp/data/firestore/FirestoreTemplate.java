@@ -24,6 +24,7 @@ import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
+import com.google.firestore.v1.GetDocumentRequest;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
@@ -72,6 +73,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.firestore = firestore;
 		this.parent = parent;
 		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
+	}
+
+	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
+		return findAllById(idPublisher, aClass).next();
+	}
+
+	public <T> Flux<T> findAllById(Publisher idPublisher, Class<T> aClass) {
+		return ((Flux<String>) Flux.from(idPublisher)).flatMap(id -> {
+			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
+			GetDocumentRequest request = GetDocumentRequest.newBuilder()
+					.setName(this.parent + "/" + persistentEntity.collectionName() + "/" + id).build();
+			return ObservableReactiveUtil.<Document>unaryCall(obs -> this.firestore.getDocument(request, obs));
+		}).onErrorMap(throwable -> new FirestoreDataException("Unable to find an entry by id", throwable))
+				.map(document -> PublicClassMapper.convertToCustomClass(document, aClass));
 	}
 
 	public <T> Mono<T> save(T entity) {

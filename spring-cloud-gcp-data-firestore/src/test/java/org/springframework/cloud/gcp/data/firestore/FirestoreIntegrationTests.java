@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.data.annotation.Id;
 
@@ -85,6 +86,10 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
+		assertThat(this.firestoreTemplate.findById(Mono.just("Bob"), User.class).block()).isEqualTo(bob);
+		assertThat(this.firestoreTemplate.findAllById(Flux.just("Bob", "Alice"), User.class).collectList().block())
+				.containsExactly(bob, alice);
+
 		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
 
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
@@ -104,6 +109,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.saveAll(users).collectList().block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
+		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 	}
 }
 

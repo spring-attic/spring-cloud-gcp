@@ -24,6 +24,7 @@ import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
+import com.google.firestore.v1.GetDocumentRequest;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
@@ -32,6 +33,8 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import org.springframework.data.annotation.Id;
@@ -102,6 +105,82 @@ public class FirestoreTemplateTests {
 
 		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
 		verify(this.firestoreStub, times(1)).runQuery(any(), any());
+	}
+
+	@Test
+	public void findByIdTest() {
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(any(), any());
+
+		StepVerifier.create(this.firestoreTemplate.findById(Mono.just("e1"), TestEntity.class))
+				.expectNext(new TestEntity("e1", 100L))
+				.verifyComplete();
+
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.build();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void findByIdErrorTest() {
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onError(new RuntimeException("Firestore error"));
+			return null;
+		}).when(this.firestoreStub).getDocument(any(), any());
+
+		StepVerifier.create(this.firestoreTemplate.findById(Mono.just("e1"), TestEntity.class))
+				.expectErrorMatches(e ->
+						e instanceof FirestoreDataException
+						&& e.getMessage().contains("Firestore error")
+						&& e.getMessage().contains("Unable to find an entry by id"))
+				.verify();
+
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.build();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void findAllByIdTest() {
+		GetDocumentRequest request1 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.build();
+
+		GetDocumentRequest request2 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e2")
+				.build();
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request1), any());
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e2", 200L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request2), any());
+
+		StepVerifier.create(this.firestoreTemplate.findAllById(Flux.just("e1", "e2"), TestEntity.class))
+				.expectNext(new TestEntity("e1", 100L), new TestEntity("e2", 200L))
+				.verifyComplete();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request1), any());
 	}
 
 	@Test
