@@ -53,4 +53,8 @@ public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 		return file.getUpdateTime();
 	}
 
+	@Override
+	protected String protocol() {
+		return "gs";
+	}
 }
