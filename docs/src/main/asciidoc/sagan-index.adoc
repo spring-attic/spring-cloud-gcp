@@ -11,9 +11,9 @@ Project features include:
 * Spring Data Cloud Datastore
 * Spring Data Cloud SQL
 * Google Cloud Stackdriver Logging & Tracing
-* Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters
+* Google Cloud Storage Spring Resource abstractions and Spring Integration Channel Adapters
 * Google Cloud Vision API Template
-* Google Cloud Config (Beta)
+* Spring Security identity extraction from Google Cloud IAP headers.
 
 == Getting Started
 
@@ -86,7 +86,7 @@ A sample of these artifacts are provided below.
 | `org.springframework.cloud:spring-cloud-gcp-starter-vision`
 
 | Security - IAP
-| Provides a security layer over applications deployed to Google Cloud
+| Extracts IAP identity information from applications deployed to Google Cloud
 | `org.springframework.cloud:spring-cloud-gcp-starter-security-iap`
 
 |===
