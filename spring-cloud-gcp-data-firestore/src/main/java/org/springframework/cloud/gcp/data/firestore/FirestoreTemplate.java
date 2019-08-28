@@ -91,6 +91,10 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.bufferTimeout = bufferTimeout;
 	}
 
+	public Duration getBufferTimeoutDuration() {
+	  return this.bufferTimeout;
+	}
+
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
 		return findAllById(idPublisher, aClass).next();
 	}
@@ -126,21 +130,18 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	@Override
 	public <T> Mono<Void> saveAll(Publisher<T> instances) {
-		Flux<List<T>> input = Flux.from(instances).bufferTimeout(
-				FIRESTORE_WRITE_MAX_SIZE, bufferTimeout);
-
 		AtomicReference<StreamObserver<WriteRequest>> requestStream = new AtomicReference<>();
 
 		WriteRequest openStreamRequest =
 				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
 
 		Flux<WriteResponse> responsesFlux =
-				ObservableReactiveUtil.<WriteResponse>streamingCall(obs -> {
-					StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
-					requestStreamObserver.onNext(openStreamRequest);
-					requestStream.set(requestStreamObserver);
-				})
+				ObservableReactiveUtil.<WriteResponse>streamingCall(
+						obs -> requestStream.set(this.openWriteStream(obs)))
 				.cache(1);
+
+		Flux<List<T>> input = Flux.from(instances).bufferTimeout(
+				FIRESTORE_WRITE_MAX_SIZE, bufferTimeout);
 
 		return input.flatMap(entityList ->
 				responsesFlux.next().doOnNext(response -> {
@@ -215,18 +216,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return this.parent + "/" + persistentEntity.collectionName() + "/" + idVal.toString();
 	}
 
-	// Code Related to a generalized bidi-call solution:
-	//
-	// private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
-	// 	WriteRequest openStreamRequest = WriteRequest.newBuilder().setDatabase(this.databasePath).build();
-	// 	StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
-	// 	requestStreamObserver.onNext(openStreamRequest);
-	// 	return requestStreamObserver;
-	// }
-	//
-	// private <T> Mono<WriteRequest> writeEntityStream(T entity, Flux<WriteResponse> responses) {
-	// 	Mono<WriteResponse> firstResponse = responses.next();
-	// 	return firstResponse.map(
-	// 			initialResponse -> buildWriteRequest(initialResponse.getStreamId(), initialResponse.getStreamToken(), entity));
-	// }
+	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
+		WriteRequest openStreamRequest =
+				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
+		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
+		requestStreamObserver.onNext(openStreamRequest);
+		return requestStreamObserver;
+	}
 }
