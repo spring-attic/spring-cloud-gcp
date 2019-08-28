@@ -148,4 +148,4 @@ We actively monitor the following communication channels:
 
 - https://github.com/spring-cloud/spring-cloud-gcp[Spring Cloud GCP Github Repository]: Post an issue in our Github repository to ask questions, make a bug report, file feature requests, etc.
 
-- https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter Lobby]: Ask questions and talk to the developers in the our Gitter chatroom.
+- https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter Lobby]: Ask questions and talk to the developers in our Gitter chatroom.
