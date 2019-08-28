@@ -20,6 +20,7 @@ package org.springframework.cloud.gcp.data.firestore;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
@@ -37,7 +38,6 @@ import com.google.firestore.v1.WriteResponse;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -85,7 +85,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	/**
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
 	 * the buffered entities to Firestore.
-	 * @param bufferTimeout
+	 * @param bufferTimeout duration to wait for entity buffer to fill before sending to Firestore.
 	 */
 	public void setBufferTimeoutDuration(Duration bufferTimeout) {
 		this.bufferTimeout = bufferTimeout;
