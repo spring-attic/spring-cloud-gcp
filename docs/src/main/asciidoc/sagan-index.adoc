@@ -6,7 +6,7 @@ Spring Cloud GCP offers a wide collection of libraries that make it easier to us
 
 Project features include:
 
-* Spring Cloud GCP Pub/Sub Support
+* Spring Cloud GCP Pub/Sub Support (Spring Integration and Spring Cloud Stream Binder)
 * Spring Data Cloud Spanner
 * Spring Data Cloud Datastore
 * Spring Data Cloud SQL
