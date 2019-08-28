@@ -11,7 +11,7 @@ Project features include:
 * Spring Data Cloud Datastore
 * Spring Data Cloud SQL
 * Google Cloud Stackdriver Logging & Tracing
-* Google Cloud Storage Spring Resource abstractions and Spring Integration Channel Adapters
+* Google Cloud Storage (Spring Resource and Spring Integration)
 * Google Cloud Vision API Template
 * Spring Security identity extraction from Google Cloud IAP headers.
 
