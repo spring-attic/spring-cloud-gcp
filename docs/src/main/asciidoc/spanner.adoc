@@ -1084,7 +1084,7 @@ The SQL query for the method can be mapped to repository methods in one of two w
 
 The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
 
-Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of any sorting or paging in the SQL:
+Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of any paging but will override any sorting in the SQL:
 
 [source, java]
 ----

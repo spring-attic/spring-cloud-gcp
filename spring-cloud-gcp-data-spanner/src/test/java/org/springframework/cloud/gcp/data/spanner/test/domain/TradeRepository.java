@@ -72,7 +72,7 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	List<String> getFirstStringList(@Param("action") String action);
 
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc")
+			+ " WHERE action=@action AND action=#{#action} ORDER BY id desc")
 	List<Trade> annotatedTradesByAction(@Param("action") String action);
 
 	List<TradeProjection> findByActionIgnoreCase(String action);

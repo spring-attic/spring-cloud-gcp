@@ -167,6 +167,10 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
 		assertThat(buyTradesRetrieved).containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
+		assertThat(buyTradesRetrieved.get(0).getId()
+				.compareTo(buyTradesRetrieved.get(1).getId())).isPositive();
+		assertThat(buyTradesRetrieved.get(1).getId()
+				.compareTo(buyTradesRetrieved.get(2).getId())).isPositive();
 
 		List<Trade> customSortedTrades = this.tradeRepository.sortedTrades(PageRequest
 				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
