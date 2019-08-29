@@ -1662,7 +1662,7 @@ The delete operation happens in a single transaction.</p>
 <p>The names of the tags of the SQL correspond to the <code>@Param</code> annotated names of the method parameters.</p>
 </div>
 <div class="paragraph">
-<p>Custom SQL query methods can accept a single <code>Sort</code> or <code>Pageable</code> parameter that is applied on top of any sorting or paging in the SQL:</p>
+<p>Custom SQL query methods can accept a single <code>Sort</code> or <code>Pageable</code> parameter that is applied on top of any paging but will override any sorting in the SQL:</p>
 </div>
 <div class="listingblock">
 <div class="content">
