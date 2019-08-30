@@ -96,16 +96,15 @@ $(addBlockSwitches);
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_features">Features</a></li>
-<li><a href="#_spring_initializr">Spring Initializr</a>
+<li><a href="#_getting_started">Getting Started</a>
 <ul class="sectlevel2">
-<li><a href="#_gcp_support">GCP Support</a></li>
-<li><a href="#_gcp_messaging">GCP Messaging</a></li>
-<li><a href="#_gcp_storage">GCP Storage</a></li>
+<li><a href="#_bill_of_materials">Bill of Materials</a></li>
+<li><a href="#_starter_dependencies">Starter Dependencies</a></li>
 </ul>
 </li>
 <li><a href="#_code_samples">Code Samples</a></li>
-<li><a href="#_code_challenges">Code Challenges</a></li>
-<li><a href="#_getting_started_guides">Getting Started Guides</a></li>
+<li><a href="#_initializr">Initializr</a></li>
+<li><a href="#_contact_us">Contact Us</a></li>
 </ul>
 </div>
 </div>
@@ -121,21 +120,15 @@ $(addBlockSwitches);
 <h2 id="_features"><a class="link" href="#_features">Features</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The Spring Cloud GCP project offers the following features:</p>
+<p>Spring Cloud GCP offers a wide collection of libraries that make it easier to use Google Cloud Platform from Spring Framework applications.</p>
+</div>
+<div class="paragraph">
+<p>Project features include:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters</p>
-</li>
-<li>
-<p>Spring Cloud GCP Pub/Sub Stream Binder</p>
-</li>
-<li>
-<p>Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters</p>
-</li>
-<li>
-<p>Spring Data Cloud SQL</p>
+<p>Spring Cloud GCP Pub/Sub Support (Spring Integration and Spring Cloud Stream Binder)</p>
 </li>
 <li>
 <p>Spring Data Cloud Spanner</p>
@@ -144,29 +137,138 @@ $(addBlockSwitches);
 <p>Spring Data Cloud Datastore</p>
 </li>
 <li>
-<p>Google Cloud Vision API Template</p>
+<p>Spring Data Cloud SQL</p>
 </li>
 <li>
 <p>Google Cloud Stackdriver Logging &amp; Tracing</p>
 </li>
 <li>
-<p>Google Cloud Config (Beta)</p>
+<p>Google Cloud Storage (Spring Resource and Spring Integration)</p>
+</li>
+<li>
+<p>Google Cloud Vision API Template</p>
+</li>
+<li>
+<p>Spring Security identity extraction from Google Cloud IAP headers.</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_spring_initializr"><a class="link" href="#_spring_initializr">Spring Initializr</a></h2>
+<h2 id="_getting_started"><a class="link" href="#_getting_started">Getting Started</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are three entries in <a href="http://start.spring.io/">Spring Initializr</a> for Spring Cloud GCP.</p>
+<p>All Spring Cloud GCP artifacts are made available through Maven Central.</p>
 </div>
 <div class="sect2">
-<h3 id="_gcp_support"><a class="link" href="#_gcp_support">GCP Support</a></h3>
+<h3 id="_bill_of_materials"><a class="link" href="#_bill_of_materials">Bill of Materials</a></h3>
 <div class="paragraph">
-<p>The GCP Support entry contains auto-configuration support for every Spring Cloud GCP integration.
-Most of the auto-configuration code is only enabled if other dependencies are added to the classpath.</p>
+<p>If you&#8217;re using Maven, you should first add the Spring Cloud GCP Bill of Materials (BOM) to your <code>pom.xml</code>.
+This will help you manage the version numbers of <code>spring-cloud-gcp</code> dependencies in your project.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependencyManagement&gt;
+   &lt;dependencies&gt;
+       &lt;dependency&gt;
+           &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+           &lt;artifactId&gt;spring-cloud-gcp-dependencies&lt;/artifactId&gt;
+           &lt;version&gt;1.2.0.BUILD-SNAPSHOT&lt;/version&gt;
+           &lt;type&gt;pom&lt;/type&gt;
+           &lt;scope&gt;import&lt;/scope&gt;
+       &lt;/dependency&gt;
+   &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_starter_dependencies"><a class="link" href="#_starter_dependencies">Starter Dependencies</a></h3>
+<div class="paragraph">
+<p>Spring Cloud GCP offers <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters">starter dependencies</a> through Maven to easily depend on different modules of the library.
+Each starter contains all the dependencies and transitive dependencies needed to begin using their corresponding Spring Cloud GCP module.</p>
+</div>
+<div class="paragraph">
+<p>A sample of these artifacts are provided below.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Spring Cloud GCP Starter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Maven Artifact Coordinates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Spanner</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides integrations with Google Cloud Spanner</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-data-spanner</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Datastore</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides integrations with Google Cloud Datastore</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-data-datastore</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Pub/Sub</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides integrations with Google Cloud Pub/Sub</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-pubsub</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logging</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables Stackdriver Logging</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-logging</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SQL - MySQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud SQL integrations with MySQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SQL - PostgreSQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud SQL integrations with PostgreSQL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-sql-postgresql</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Storage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides integrations with Google Cloud Storage and Spring Resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-storage</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trace</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables instrumentation with Google Stackdriver Tracing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-trace</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vision</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Provides integrations with Google Cloud Vision</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-vision</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security - IAP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Extracts IAP identity information from applications deployed to Google Cloud</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-security-iap</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_code_samples"><a class="link" href="#_code_samples">Code Samples</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The best way to learn how to use Spring Cloud GCP is to consult the <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples">sample applications on Github</a>.</p>
+</div>
+<div class="paragraph">
+<p>The table below highlights several samples of the most commonly used integrations in Spring Cloud GCP.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -175,89 +277,95 @@ Most of the auto-configuration code is only enabled if other dependencies are ad
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Spring Cloud GCP Starter</th>
-<th class="tableblock halign-left valign-top">Required dependencies</th>
+<th class="tableblock halign-left valign-top">GCP Integration</th>
+<th class="tableblock halign-left valign-top">Sample Application</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Config</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-config</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Pub/Sub</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample">spring-cloud-gcp-pubsub-sample</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Spanner</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-data-spanner</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample">spring-cloud-gcp-data-spanner-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Datastore</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-data-datastore</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Datastore</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample">spring-cloud-gcp-data-datastore-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Logging</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-logging</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud SQL (w/ MySQL)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample">spring-cloud-gcp-sql-mysql-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SQL - MySql</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Storage</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample">spring-cloud-gcp-storage-resource-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SQL - PostgreSQL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-sql-postgres</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Stackdriver Logging</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample">spring-cloud-gcp-logging-sample</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Trace</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-trace</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample">spring-cloud-gcp-trace-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Vision</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-vision</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Vision</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample">spring-cloud-gcp-vision-api-sample</a></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Security - IAP</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>org.springframework.cloud:spring-cloud-gcp-starter-security-iap</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Security - IAP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample">spring-cloud-gcp-security-iap-sample</a></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="sect2">
-<h3 id="_gcp_messaging"><a class="link" href="#_gcp_messaging">GCP Messaging</a></h3>
+</div>
+<div class="sect1">
+<h2 id="_initializr"><a class="link" href="#_initializr">Initializr</a></h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integration work out of the box.</p>
+<p><a href="https://start.spring.io/">Spring Initializr</a> is a tool which generates the scaffolding code for a new Spring Boot project.
+It handles the work of generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_gcp_storage"><a class="link" href="#_gcp_storage">GCP Storage</a></h3>
 <div class="paragraph">
-<p>The GCP Storage entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Storage integration work out of the box.</p>
+<p>Spring Initializr offers three modules from Spring Cloud GCP that you can use to generate your project.</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>GCP Support</strong>: The GCP Support module contains auto-configuration support for every Spring Cloud GCP integration.
+Most of the autoconfiguration code is only enabled if the required dependency is added to your project.</p>
+</li>
+<li>
+<p><strong>GCP Messaging</strong>: Google Cloud Pub/Sub integrations work out of the box.</p>
+</li>
+<li>
+<p><strong>GCP Storage</strong>: Google Cloud Storage integrations work out of the box.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_code_samples"><a class="link" href="#_code_samples">Code Samples</a></h2>
+<h2 id="_contact_us"><a class="link" href="#_contact_us">Contact Us</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>There are <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples">code samples</a> available that demonstrate the usage of all our integration.</p>
+<p>Spring Cloud GCP is an actively maintained project and we encourage users to raise issues and ask questions about the project.</p>
 </div>
 <div class="paragraph">
-<p>For example, <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample">the Vision API sample</a> shows how to use <code>spring-cloud-gcp-starter-vision</code> to automatically configure Vision API clients.</p>
+<p>We actively monitor the following communication channels:</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_code_challenges"><a class="link" href="#_code_challenges">Code Challenges</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>In a code challenge, you perform a task step by step, using one integration.
-There are a number of challenges available in the <a href="https://codelabs.developers.google.com/spring">Google Developers Codelabs</a> page.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_getting_started_guides"><a class="link" href="#_getting_started_guides">Getting Started Guides</a></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>A Spring Getting Started guide on messaging with Spring Integration Channel Adapters for Google Cloud Pub/Sub is available from <a href="https://spring.io/guides/gs/messaging-gcp-pubsub/">Spring Guides</a>.</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud/spring-cloud-gcp">Spring Cloud GCP Github Repository</a>: Post an issue in our Github repository to ask questions, make a bug report, file feature requests, etc.</p>
+</li>
+<li>
+<p><a href="https://gitter.im/spring-cloud-gcp/Lobby">Spring Cloud GCP Gitter Lobby</a>: Ask questions and talk to the developers in our Gitter chatroom.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
