@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
@@ -35,12 +33,10 @@ import com.google.firestore.v1.Value;
 import com.google.firestore.v1.Write;
 import com.google.firestore.v1.WriteRequest;
 import com.google.firestore.v1.WriteResponse;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
-import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -48,6 +44,7 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingCont
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
+import org.springframework.util.Assert;
 
 /**
  * An implementation of {@link FirestoreReactiveOperations}.
@@ -96,7 +93,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	public Duration getBufferTimeoutDuration() {
-	  return this.bufferTimeout;
+		return this.bufferTimeout;
 	}
 
 	/**
