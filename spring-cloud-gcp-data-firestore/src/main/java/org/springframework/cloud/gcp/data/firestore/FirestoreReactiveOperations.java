@@ -32,7 +32,7 @@ public interface FirestoreReactiveOperations {
 	 * update).
 	 * @param <T> the type of the object to save.
 	 * @param instance the instance to save.
-	 * @return the instance that was saved.
+	 * @return {@link Mono} emitting the saved entity.
 	 */
 	<T> Mono<T> save(T instance);
 
@@ -40,7 +40,7 @@ public interface FirestoreReactiveOperations {
 	 * Saves multiple objects to Cloud Firestore. Not atomic. Behaves as insert or update.
 	 * @param instances the objects to save.
 	 * @param <T> the type of the objects to save.
-	 * @return a flux of the instances that were saved.
+	 * @return {@link Flux} emitting the saved entities.
 	 */
 	<T> Flux<T> saveAll(Publisher<T> instances);
 
@@ -48,7 +48,7 @@ public interface FirestoreReactiveOperations {
 	 * Get all the entities of the given domain type.
 	 * @param <T> the type param of the domain type.
 	 * @param entityClass the domain type to get.
-	 * @return the entities that were found.
+	 * @return {@link Mono} emitting the number of entities.
 	 */
 	<T> Flux<T> findAll(Class<T> entityClass);
 
@@ -56,7 +56,61 @@ public interface FirestoreReactiveOperations {
 	 * Delete all entities of a given domain type.
 	 * @param <T> the type param of the domain type.
 	 * @param entityClass the domain type to delete from Cloud Datastore.
-	 * @return the number of entities that were deleted.
+	 * @return {@link Mono} emitting the number of deleted entities.
 	 */
 	<T> Mono<Long> deleteAll(Class<T> entityClass);
+
+	/**
+	 * Test if the entity of the given domain type with a given id exists.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of the entity.
+	 * @param idPublisher publisher that provides an id.
+	 * @return {@link Mono} emitting {@literal true} if an entity with the given id exists, {@literal false} otherwise.
+	 */
+	<T> Mono<Boolean> existsById(Publisher<String> idPublisher, Class<T> entityClass);
+
+	/**
+	 * Get an entity of the given domain type by id.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of the entity.
+	 * @param idPublisher publisher that provides an id.
+	 * @return {@link Mono} emitting the found entity.
+	 */
+	<T> Mono<T> findById(Publisher idPublisher, Class<T> entityClass);
+
+	/**
+	 * Get an entity of the given domain type by id.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of the entity.
+	 * @param idPublisher publisher that provides ids.
+	 * @return {@link Flux} emitting the found entities.
+	 */
+	<T> Flux<T> findAllById(Publisher idPublisher, Class<T> entityClass);
+
+	/**
+	 * Count entities of the given domain.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of entities.
+	 * @return {@link Mono} emitting the number of entities.
+	 */
+	<T> Mono<Long> count(Class<T> entityClass);
+
+	/**
+	 * Delete entities provided by publisher.
+	 * @param <T> the type param of the domain type.
+	 * @param entityPublisher publisher that provides entities to be removed.
+	 * @return {@link Mono} signaling when operation has completed.
+	 */
+	<T> Mono<Void> delete(Publisher<T> entityPublisher);
+
+	/**
+	 * Delete all entities of a given domain type.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of entities.
+	 * @param idPublisher publisher that provides ids of entities to be removed.
+	 * @return {@link Mono} signaling when operation has completed.
+	 */
+	<T> Mono<Void> deleteAllById(Publisher<T> idPublisher, Class entityClass);
+
+
 }
