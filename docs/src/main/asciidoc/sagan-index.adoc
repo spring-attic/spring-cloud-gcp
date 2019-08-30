@@ -1,79 +1,151 @@
 The Spring Cloud GCP project makes the Spring Framework a first-class citizen of Google Cloud Platform (GCP).
 
-## Features
+== Features
 
-The Spring Cloud GCP project offers the following features:
+Spring Cloud GCP offers a wide collection of libraries that make it easier to use Google Cloud Platform from Spring Framework applications.
 
-* Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters
-* Spring Cloud GCP Pub/Sub Stream Binder
-* Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters
-* Spring Data Cloud SQL
+Project features include:
+
+* Spring Cloud GCP Pub/Sub Support (Spring Integration and Spring Cloud Stream Binder)
 * Spring Data Cloud Spanner
 * Spring Data Cloud Datastore
-* Google Cloud Vision API Template
+* Spring Data Cloud SQL
 * Google Cloud Stackdriver Logging & Tracing
-* Google Cloud Config (Beta)
+* Google Cloud Storage (Spring Resource and Spring Integration)
+* Google Cloud Vision API Template
+* Spring Security identity extraction from Google Cloud IAP headers.
 
-## Spring Initializr
+== Getting Started
 
-There are three entries in http://start.spring.io/[Spring Initializr] for Spring Cloud GCP.
+All Spring Cloud GCP artifacts are made available through Maven Central.
 
-### GCP Support
+=== Bill of Materials
 
-The GCP Support entry contains auto-configuration support for every Spring Cloud GCP integration.
-Most of the auto-configuration code is only enabled if other dependencies are added to the classpath.
+If you're using Maven, you should first add the Spring Cloud GCP Bill of Materials (BOM) to your `pom.xml`.
+This will help you manage the version numbers of `spring-cloud-gcp` dependencies in your project.
 
-|===
-|Spring Cloud GCP Starter |Required dependencies
+[source,xml,subs="normal"]
+----
+<dependencyManagement>
+   <dependencies>
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-gcp-dependencies</artifactId>
+           <version>{project-version}</version>
+           <type>pom</type>
+           <scope>import</scope>
+       </dependency>
+   </dependencies>
+</dependencyManagement>
+----
 
-|Config
-|`org.springframework.cloud:spring-cloud-gcp-starter-config`
+=== Starter Dependencies
 
-|Cloud Spanner
-|`org.springframework.cloud:spring-cloud-gcp-starter-data-spanner`
+Spring Cloud GCP offers https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters[starter dependencies] through Maven to easily depend on different modules of the library.
+Each starter contains all the dependencies and transitive dependencies needed to begin using their corresponding Spring Cloud GCP module.
 
-|Cloud Datastore
-|`org.springframework.cloud:spring-cloud-gcp-starter-data-datastore`
-
-|Logging
-|`org.springframework.cloud:spring-cloud-gcp-starter-logging`
-
-|SQL - MySql
-|`org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql`
-
-|SQL - PostgreSQL
-|`org.springframework.cloud:spring-cloud-gcp-starter-sql-postgres`
-
-|Trace
-|`org.springframework.cloud:spring-cloud-gcp-starter-trace`
-
-|Vision
-|`org.springframework.cloud:spring-cloud-gcp-starter-vision`
-
-|Security - IAP
-|`org.springframework.cloud:spring-cloud-gcp-starter-security-iap`
+A sample of these artifacts are provided below.
 
 |===
+| Spring Cloud GCP Starter | Description | Maven Artifact Coordinates
 
-### GCP Messaging
+| Cloud Spanner
+| Provides integrations with Google Cloud Spanner
+| `org.springframework.cloud:spring-cloud-gcp-starter-data-spanner`
 
-The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integration work out of the box.
+| Cloud Datastore
+| Provides integrations with Google Cloud Datastore
+| `org.springframework.cloud:spring-cloud-gcp-starter-data-datastore`
 
-### GCP Storage
+| Cloud Pub/Sub
+| Provides integrations with Google Cloud Pub/Sub
+| `org.springframework.cloud:spring-cloud-gcp-starter-pubsub`
 
-The GCP Storage entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Storage integration work out of the box.
+| Logging
+| Enables Stackdriver Logging
+| `org.springframework.cloud:spring-cloud-gcp-starter-logging`
 
-## Code Samples
+| SQL - MySQL
+| Cloud SQL integrations with MySQL
+| `org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql`
 
-There are https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[code samples] available that demonstrate the usage of all our integration.
+| SQL - PostgreSQL
+| Cloud SQL integrations with PostgreSQL
+| `org.springframework.cloud:spring-cloud-gcp-starter-sql-postgresql`
 
-For example, https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[the Vision API sample] shows how to use `spring-cloud-gcp-starter-vision` to automatically configure Vision API clients.
+| Storage
+| Provides integrations with Google Cloud Storage and Spring Resource
+| `org.springframework.cloud:spring-cloud-gcp-starter-storage`
 
-## Code Challenges
+| Trace
+| Enables instrumentation with Google Stackdriver Tracing
+| `org.springframework.cloud:spring-cloud-gcp-starter-trace`
 
-In a code challenge, you perform a task step by step, using one integration.
-There are a number of challenges available in the https://codelabs.developers.google.com/spring[Google Developers Codelabs] page.
+| Vision
+| Provides integrations with Google Cloud Vision
+| `org.springframework.cloud:spring-cloud-gcp-starter-vision`
 
-## Getting Started Guides
+| Security - IAP
+| Extracts IAP identity information from applications deployed to Google Cloud
+| `org.springframework.cloud:spring-cloud-gcp-starter-security-iap`
 
-A Spring Getting Started guide on messaging with Spring Integration Channel Adapters for Google Cloud Pub/Sub is available from https://spring.io/guides/gs/messaging-gcp-pubsub/[Spring Guides].
+|===
+
+== Code Samples
+
+The best way to learn how to use Spring Cloud GCP is to consult the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[sample applications on Github].
+
+The table below highlights several samples of the most commonly used integrations in Spring Cloud GCP.
+
+|===
+| GCP Integration | Sample Application
+
+| Cloud Pub/Sub
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[spring-cloud-gcp-pubsub-sample]
+
+| Cloud Spanner
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[spring-cloud-gcp-data-spanner-sample]
+
+| Datastore
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[spring-cloud-gcp-data-datastore-sample]
+
+| Cloud SQL (w/ MySQL)
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[spring-cloud-gcp-sql-mysql-sample]
+
+| Cloud Storage
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[spring-cloud-gcp-storage-resource-sample]
+
+| Stackdriver Logging
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[spring-cloud-gcp-logging-sample]
+
+| Trace
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[spring-cloud-gcp-trace-sample]
+
+| Cloud Vision
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[spring-cloud-gcp-vision-api-sample]
+
+| Cloud Security - IAP
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[spring-cloud-gcp-security-iap-sample]
+|===
+
+== Initializr
+
+https://start.spring.io/[Spring Initializr] is a tool which generates the scaffolding code for a new Spring Boot project.
+It handles the work of generating the Maven or Gradle build file so you do not have to manually add the dependencies yourself.
+
+Spring Initializr offers three modules from Spring Cloud GCP that you can use to generate your project.
+
+- *GCP Support*: The GCP Support module contains auto-configuration support for every Spring Cloud GCP integration.
+Most of the autoconfiguration code is only enabled if the required dependency is added to your project.
+- *GCP Messaging*: Google Cloud Pub/Sub integrations work out of the box.
+- *GCP Storage*: Google Cloud Storage integrations work out of the box.
+
+== Contact Us
+
+Spring Cloud GCP is an actively maintained project and we encourage users to raise issues and ask questions about the project.
+
+We actively monitor the following communication channels:
+
+- https://github.com/spring-cloud/spring-cloud-gcp[Spring Cloud GCP Github Repository]: Post an issue in our Github repository to ask questions, make a bug report, file feature requests, etc.
+
+- https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter Lobby]: Ask questions and talk to the developers in our Gitter chatroom.
