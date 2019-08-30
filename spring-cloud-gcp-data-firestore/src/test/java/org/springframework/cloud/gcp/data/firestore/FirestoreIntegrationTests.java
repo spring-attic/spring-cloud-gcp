@@ -107,7 +107,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
-		this.firestoreTemplate.saveAll(users).block();
+		this.firestoreTemplate.saveAll(users).blockLast();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size())
 				.isEqualTo(2);
@@ -125,7 +125,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
-		this.firestoreTemplate.saveAll(users).block();
+		this.firestoreTemplate.saveAll(users).blockLast();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(1000);
 	}

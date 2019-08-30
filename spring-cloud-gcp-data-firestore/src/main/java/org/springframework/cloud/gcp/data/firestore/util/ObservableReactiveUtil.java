@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore.util;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -82,19 +83,26 @@ public final class ObservableReactiveUtil {
 	 * @param <T> type of input objects that will be wrapped in {@link RequestT}
 	 * @return A {@link Flux} of server responses
 	 */
-	public static <ResponseT, RequestT, T> Flux<ResponseT> streamingBidirectionalCall(
+	public static <ResponseT, RequestT, T> Flux<T> streamingBidirectionalCall(
 			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> initialCall,
-			Flux<T> inputs, BiFunction<T, Flux<ResponseT>, Mono<RequestT>> responseHandler) {
+			Flux<List<T>> inputs,
+			BiFunction<List<T>, ResponseT, RequestT> responseHandler) {
+		AtomicReference<StreamObserver<RequestT>> requestStream = new AtomicReference<>();
 
-		AtomicReference<StreamObserver<RequestT>> requestObserver = new AtomicReference<>();
-		Flux<ResponseT> responses = (Flux<ResponseT>) streamingCall(
-				obs -> requestObserver.set(initialCall.apply((StreamObserver<ResponseT>) obs))).cache();
+		Flux<ResponseT> responsesFlux =
+				ObservableReactiveUtil
+						.<ResponseT>streamingCall(obs -> requestStream.set(initialCall.apply(obs)))
+						.cache(1);
 
 		return inputs
-				.flatMap((T input) -> responseHandler.apply(input, responses)
-						.doOnNext(request -> requestObserver.get().onNext(request)))
-				.doOnComplete(() -> requestObserver.get().onCompleted())
-				.thenMany(responses);
+				.flatMap(input ->
+						responsesFlux.next()
+								.map(mostRecentResponse -> responseHandler.apply(input, mostRecentResponse))
+								.doOnNext(nextRequest -> requestStream.get().onNext(nextRequest))
+								.thenReturn(input))
+				.doOnComplete(() -> requestStream.get().onCompleted())
+				.delayUntil(input -> responsesFlux)
+				.flatMap(entityList -> Flux.fromIterable(entityList));
 	}
 
 	static class StreamingObserver<RequestT, ResponseT>

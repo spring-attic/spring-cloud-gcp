@@ -40,6 +40,7 @@ import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
+import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -69,6 +70,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private Duration bufferTimeout = Duration.ofMillis(500);
 
+	private int firestoreBufferWriteSize = FIRESTORE_WRITE_MAX_SIZE;
+
 	/**
 	 * Constructor for FirestoreTemplate.
 	 * @param firestore Firestore gRPC stub
@@ -86,6 +89,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
 	 * the buffered entities to Firestore.
 	 * @param bufferTimeout duration to wait for entity buffer to fill before sending to Firestore.
+	 * 		(default = 500ms)
 	 */
 	public void setBufferTimeoutDuration(Duration bufferTimeout) {
 		this.bufferTimeout = bufferTimeout;
@@ -93,6 +97,22 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	public Duration getBufferTimeoutDuration() {
 	  return this.bufferTimeout;
+	}
+
+	/**
+	 * Sets how many entities to include in an insert/update/delete buffered operation.
+	 * <p>The maximum buffer size is 500. In most cases users should leave this at the maximum value.
+	 * @param firestoreBufferWriteSize the entity buffer size for buffered operations (default = 500)
+	 */
+	public void setFirestoreBufferWriteSize(int firestoreBufferWriteSize) {
+		Assert.isTrue(
+				firestoreBufferWriteSize <= FIRESTORE_WRITE_MAX_SIZE,
+				"The FirestoreTemplate buffer write size must be less than " + FIRESTORE_WRITE_MAX_SIZE);
+		this.firestoreBufferWriteSize = firestoreBufferWriteSize;
+	}
+
+	public int getFirestoreBufferWriteSize() {
+		return firestoreBufferWriteSize;
 	}
 
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
@@ -129,29 +149,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	@Override
-	public <T> Mono<Void> saveAll(Publisher<T> instances) {
-		AtomicReference<StreamObserver<WriteRequest>> requestStream = new AtomicReference<>();
-
-		WriteRequest openStreamRequest =
-				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
-
-		Flux<WriteResponse> responsesFlux =
-				ObservableReactiveUtil.<WriteResponse>streamingCall(
-						obs -> requestStream.set(this.openWriteStream(obs)))
-				.cache(1);
-
-		Flux<List<T>> input = Flux.from(instances).bufferTimeout(
+	public <T> Flux<T> saveAll(Publisher<T> instances) {
+		Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(
 				FIRESTORE_WRITE_MAX_SIZE, bufferTimeout);
 
-		return input.flatMap(entityList ->
-				responsesFlux.next().doOnNext(response -> {
-					WriteRequest request = buildWriteRequest(
-							response.getStreamId(), response.getStreamToken(), entityList);
-					requestStream.get().onNext(request);
-				}))
-				.doOnComplete(() -> requestStream.get().onCompleted())
-				.thenMany(responsesFlux)
-				.then();
+		return ObservableReactiveUtil.streamingBidirectionalCall(
+				this::openWriteStream, inputs, this::buildWriteRequest);
 	}
 
 	public <T> Flux<T> findAll(Class<T> clazz) {
@@ -188,25 +191,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
 
-	private <T> WriteRequest buildWriteRequest(
-			String streamId, ByteString streamToken, List<T> entityList) {
-
-		WriteRequest.Builder writeRequestBuilder =
-				WriteRequest.newBuilder().setStreamId(streamId).setStreamToken(streamToken);
-
-		for (T entity : entityList)	{
-			String documentResourceName = buildResourceName(entity);
-			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
-			Write write = Write.newBuilder()
-					.setUpdate(
-							Document.newBuilder().putAllFields(valuesMap).setName(documentResourceName))
-					.build();
-			writeRequestBuilder.addWrites(write);
-		}
-
-		return writeRequestBuilder.build();
-	}
-
 	private <T> String buildResourceName(T entity) {
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext
 			.getPersistentEntity(entity.getClass());
@@ -222,5 +206,24 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
 		requestStreamObserver.onNext(openStreamRequest);
 		return requestStreamObserver;
+	}
+
+	private <T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
+		WriteRequest.Builder writeRequestBuilder =
+				WriteRequest.newBuilder()
+						.setStreamId(writeResponse.getStreamId())
+						.setStreamToken(writeResponse.getStreamToken());
+
+		for (T entity : entityList)	{
+			String documentResourceName = buildResourceName(entity);
+			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+			Write write = Write.newBuilder()
+					.setUpdate(
+							Document.newBuilder().putAllFields(valuesMap).setName(documentResourceName))
+					.build();
+			writeRequestBuilder.addWrites(write);
+		}
+
+		return writeRequestBuilder.build();
 	}
 }
