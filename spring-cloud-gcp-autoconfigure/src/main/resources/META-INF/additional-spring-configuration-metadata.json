@@ -1,6 +1,24 @@
 {
   "properties": [
     {
+      "name": "spring.cloud.gcp.bigquery.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud BigQuery components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Datastore components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.firestore.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Firestore components.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.logging.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",
@@ -10,6 +28,18 @@
       "name": "spring.cloud.gcp.pubsub.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Pub/Sub components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.reactive.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Pub/Sub Reactive components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Spanner components.",
       "defaultValue": true
     },
     {
