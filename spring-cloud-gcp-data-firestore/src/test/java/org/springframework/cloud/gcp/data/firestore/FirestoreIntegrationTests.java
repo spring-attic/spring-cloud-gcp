@@ -89,7 +89,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findById(Mono.just("Bob"), User.class).block()).isEqualTo(bob);
 		assertThat(this.firestoreTemplate.findAllById(Flux.just("Bob", "Alice"), User.class).collectList().block())
-				.containsExactly(bob, alice);
+				.containsExactlyInAnyOrder(bob, alice);
 
 		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
 

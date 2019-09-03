@@ -88,28 +88,28 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * @param bufferTimeout duration to wait for entity buffer to fill before sending to Firestore.
 	 * 		(default = 500ms)
 	 */
-	public void setBufferTimeoutDuration(Duration bufferTimeout) {
+	public void setSaveAllBufferTimeoutDuration(Duration bufferTimeout) {
 		this.bufferTimeout = bufferTimeout;
 	}
 
-	public Duration getBufferTimeoutDuration() {
+	public Duration getSaveAllBufferTimeoutDuration() {
 		return this.bufferTimeout;
 	}
 
 	/**
 	 * Sets how many entities to include in an insert/update/delete buffered operation.
 	 * <p>The maximum buffer size is 500. In most cases users should leave this at the maximum value.
-	 * @param firestoreBufferWriteSize the entity buffer size for buffered operations (default = 500)
+	 * @param bufferWriteSize the entity buffer size for buffered operations (default = 500)
 	 */
-	public void setFirestoreBufferWriteSize(int firestoreBufferWriteSize) {
+	public void setSaveAllBufferWriteSize(int bufferWriteSize) {
 		Assert.isTrue(
-				firestoreBufferWriteSize <= FIRESTORE_WRITE_MAX_SIZE,
+				bufferWriteSize <= FIRESTORE_WRITE_MAX_SIZE,
 				"The FirestoreTemplate buffer write size must be less than " + FIRESTORE_WRITE_MAX_SIZE);
-		this.firestoreBufferWriteSize = firestoreBufferWriteSize;
+		this.firestoreBufferWriteSize = bufferWriteSize;
 	}
 
-	public int getFirestoreBufferWriteSize() {
-		return firestoreBufferWriteSize;
+	public int getSaveAllBufferWriteSize() {
+		return this.firestoreBufferWriteSize;
 	}
 
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
@@ -145,10 +145,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
+	 * {@link #setSaveAllBufferWriteSize} and {@link #setSaveAllBufferTimeoutDuration}.
+	 */
 	@Override
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
 		Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(
-				FIRESTORE_WRITE_MAX_SIZE, bufferTimeout);
+				this.firestoreBufferWriteSize, this.bufferTimeout);
 
 		return ObservableReactiveUtil.streamingBidirectionalCall(
 				this::openWriteStream, inputs, this::buildWriteRequest);
