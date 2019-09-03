@@ -325,7 +325,7 @@ public class FirestoreTemplateTests {
 
 	@Test
 	public void deleteAllByIdTest() {
-		StepVerifier.create(this.firestoreTemplate.deleteAllById(Mono.just("e1"), TestEntity.class)).verifyComplete();
+		StepVerifier.create(this.firestoreTemplate.deleteById(Mono.just("e1"), TestEntity.class)).verifyComplete();
 
 		verify(this.firestoreStub, times(1))
 				.deleteDocument(

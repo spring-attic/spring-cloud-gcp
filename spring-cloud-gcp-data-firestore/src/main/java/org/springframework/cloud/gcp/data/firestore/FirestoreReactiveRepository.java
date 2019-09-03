@@ -27,7 +27,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
  *
  * @since 1.2
  */
-public class FirestoreReactiveRepository implements ReactiveCrudRepository {
+public class FirestoreReactiveRepository<T> implements ReactiveCrudRepository<T, String> {
 
 	private FirestoreTemplate firestoreTemplate;
 
@@ -39,33 +39,33 @@ public class FirestoreReactiveRepository implements ReactiveCrudRepository {
 	}
 
 	@Override
-	public Mono save(Object entity) {
+	public <S extends T> Mono<S> save(S entity) {
 		return this.firestoreTemplate.save(entity);
 	}
 
 	@Override
-	public Flux saveAll(Iterable entities) {
+	public <S extends T> Flux<S> saveAll(Iterable<S> entities) {
 		return this.firestoreTemplate.saveAll(Flux.fromIterable(entities));
 	}
 
 	@Override
-	public Flux saveAll(Publisher entityStream) {
+	public <S extends T> Flux<S> saveAll(Publisher<S> entityStream) {
 		return this.firestoreTemplate.saveAll(entityStream);
 	}
 
 	@Override
-	public Mono findById(Object o) {
-		return findById(Mono.just(o));
+	public Mono<T> findById(String id) {
+		return findById(Mono.just(id));
 	}
 
 	@Override
-	public Mono findById(Publisher idPublisher) {
+	public Mono<T> findById(Publisher<String> idPublisher) {
 		return this.firestoreTemplate.findById(idPublisher, this.type);
 	}
 
 	@Override
-	public Mono<Boolean> existsById(Object o) {
-		return existsById(Mono.just(o));
+	public Mono<Boolean> existsById(String id) {
+		return existsById(Mono.just(id));
 	}
 
 	@Override
@@ -74,17 +74,17 @@ public class FirestoreReactiveRepository implements ReactiveCrudRepository {
 	}
 
 	@Override
-	public Flux findAll() {
+	public Flux<T> findAll() {
 		return this.firestoreTemplate.findAll(this.type);
 	}
 
 	@Override
-	public Flux findAllById(Iterable iterable) {
+	public Flux<T> findAllById(Iterable<String> iterable) {
 		return findAllById(Flux.fromIterable(iterable));
 	}
 
 	@Override
-	public Flux findAllById(Publisher idStream) {
+	public Flux<T> findAllById(Publisher<String> idStream) {
 		return this.firestoreTemplate.findAllById(idStream, this.type);
 	}
 
@@ -94,13 +94,13 @@ public class FirestoreReactiveRepository implements ReactiveCrudRepository {
 	}
 
 	@Override
-	public Mono<Void> deleteById(Object o) {
-		return deleteById(Mono.just(o));
+	public Mono<Void> deleteById(String id) {
+		return deleteById(Mono.just(id));
 	}
 
 	@Override
 	public Mono<Void> deleteById(Publisher idPublisher) {
-		return this.firestoreTemplate.deleteAllById(idPublisher, this.type);
+		return this.firestoreTemplate.deleteById(idPublisher, this.type);
 	}
 
 	@Override

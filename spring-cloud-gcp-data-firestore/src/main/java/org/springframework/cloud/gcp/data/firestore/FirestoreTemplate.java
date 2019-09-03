@@ -55,11 +55,15 @@ import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
 
+	private static final String NAME_FIELD = "__name__";
+
 	private static final StructuredQuery.Projection ID_PROJECTION = StructuredQuery.Projection.newBuilder()
-			.addFields(StructuredQuery.FieldReference.newBuilder().setFieldPath("__name__").build())
+			.addFields(StructuredQuery.FieldReference.newBuilder().setFieldPath(NAME_FIELD).build())
 			.build();
 
-	private static final DocumentMask NAME_ONLY_MASK = DocumentMask.newBuilder().addFieldPaths("__name__").build();
+	private static final DocumentMask NAME_ONLY_MASK = DocumentMask.newBuilder().addFieldPaths(NAME_FIELD).build();
+
+	private static final String NOT_FOUND_DOCUMENT = "NOT_FOUND: Document";
 
 	private final FirestoreStub firestore;
 
@@ -85,21 +89,21 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public <T> Mono<Boolean> existsById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return Flux.from(idPublisher).next()
 				.flatMap(id -> getDocument(id, entityClass, NAME_ONLY_MASK))
-				.map(d -> d == DocumentReadContext.EMPTY ? Boolean.FALSE : Boolean.TRUE)
-				//.onErrorReturn(throwable -> throwable.getMessage().startsWith("NOT_FOUND: Document"), Boolean.FALSE)
+				.map(d -> Boolean.TRUE)
+				.switchIfEmpty(Mono.just(Boolean.FALSE))
 				.onErrorMap(
 						throwable -> new FirestoreDataException("Unable to test for document existence", throwable));
 	}
 
-	public <T> Mono<T> findById(Publisher idPublisher, Class<T> entityClass) {
+	public <T> Mono<T> findById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return findAllById(idPublisher, entityClass).next();
 	}
 
-	public <T> Flux<T> findAllById(Publisher idPublisher, Class<T> entityClass) {
-		return ((Flux<String>) Flux.from(idPublisher)).flatMap(id -> getDocument(id, entityClass, null))
-				.flatMap(t -> t == DocumentReadContext.EMPTY ? Mono.empty() : Mono.just(t))
+	public <T> Flux<T> findAllById(Publisher<String> idPublisher, Class<T> entityClass) {
+		return Flux.from(idPublisher)
+				.flatMap(id -> getDocument(id, entityClass, null))
 				.onErrorMap(throwable -> new FirestoreDataException("Unable to find an entry by id", throwable))
-				.map(readContext -> PublicClassMapper.convertToCustomClass(readContext.getDocument(), entityClass));
+				.map(document -> PublicClassMapper.convertToCustomClass(document, entityClass));
 	}
 
 	public <T> Mono<T> save(T entity) {
@@ -147,13 +151,13 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
 		Flux<String> idFlux = Flux.from(entityPublisher).map(this::buildResourceName);
-		return deleteAllByFullName(idFlux);
+		return Flux.from(idFlux).flatMap(id -> callDelete(id)).then();
 	}
 
-	public <T> Mono<Void> deleteAllById(Publisher<T> idPublisher, Class entityClass) {
+	public <T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass) {
 		return Mono.defer(() -> {
 			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-			return Flux.from(idPublisher).flatMap(id -> callDelete(buildResourceName(persistentEntity, id.toString())))
+			return Flux.from(idPublisher).flatMap(id -> callDelete(buildResourceName(persistentEntity, id)))
 					.then(Mono.empty());
 		});
 	}
@@ -163,10 +167,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.build();
 		return ObservableReactiveUtil.unaryCall(
 						obs -> this.firestore.deleteDocument(deleteDocumentRequest, obs));
-	}
-
-	private <T> Mono<Void> deleteAllByFullName(Publisher<T> idPublisher) {
-		return Flux.from(idPublisher).flatMap(id -> callDelete(id.toString())).then(Mono.empty());
 	}
 
 	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {
@@ -191,7 +191,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
 	}
 
-	private Mono<DocumentReadContext> getDocument(String id, Class aClass, DocumentMask documentMask) {
+	private Mono<Document> getDocument(String id, Class aClass, DocumentMask documentMask) {
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
 		GetDocumentRequest.Builder builder = GetDocumentRequest.newBuilder()
 				.setName(buildResourceName(persistentEntity, id));
@@ -201,9 +201,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		}
 
 		return ObservableReactiveUtil.<Document>unaryCall(obs -> this.firestore.getDocument(builder.build(), obs))
-				.map(DocumentReadContext::new)
-				.onErrorReturn(throwable -> throwable.getMessage().startsWith("NOT_FOUND: Document"),
-						DocumentReadContext.EMPTY);
+				.onErrorResume(throwable -> throwable.getMessage().startsWith(NOT_FOUND_DOCUMENT),
+						throwable -> Mono.empty());
 	}
 
 	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
@@ -248,25 +247,10 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return this.parent + "/" + persistentEntity.collectionName() + "/" + s;
 	}
 
-	public String getIdValue(Object entity, FirestorePersistentEntity persistentEntity) {
+	private String getIdValue(Object entity, FirestorePersistentEntity persistentEntity) {
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
 		return idVal.toString();
 	}
-
-	static private class DocumentReadContext {
-		static final DocumentReadContext EMPTY = new DocumentReadContext(null);
-
-		Document document;
-
-		DocumentReadContext(Document document) {
-			this.document = document;
-		}
-
-		Document getDocument() {
-			return this.document;
-		}
-	}
-
 }

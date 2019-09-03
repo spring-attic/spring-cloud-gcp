@@ -48,7 +48,7 @@ public interface FirestoreReactiveOperations {
 	 * Get all the entities of the given domain type.
 	 * @param <T> the type param of the domain type.
 	 * @param entityClass the domain type to get.
-	 * @return {@link Mono} emitting the number of entities.
+	 * @return {@link Mono} emitting the found entities.
 	 */
 	<T> Flux<T> findAll(Class<T> entityClass);
 
@@ -62,33 +62,37 @@ public interface FirestoreReactiveOperations {
 
 	/**
 	 * Test if the entity of the given domain type with a given id exists.
+	 * Uses the first emitted element to perform the query.
 	 * @param <T> the type param of the domain type.
 	 * @param entityClass the domain type of the entity.
 	 * @param idPublisher publisher that provides an id.
-	 * @return {@link Mono} emitting {@literal true} if an entity with the given id exists, {@literal false} otherwise.
+	 * @return {@link Mono} emitting {@code true} if an entity with the given id exists, {@code false} otherwise.
 	 */
 	<T> Mono<Boolean> existsById(Publisher<String> idPublisher, Class<T> entityClass);
 
 	/**
 	 * Get an entity of the given domain type by id.
+	 * Uses the first emitted element to perform the query.
 	 * @param <T> the type param of the domain type.
-	 * @param entityClass the domain type of the entity.
 	 * @param idPublisher publisher that provides an id.
+	 * @param entityClass the domain type of the entity.
 	 * @return {@link Mono} emitting the found entity.
 	 */
-	<T> Mono<T> findById(Publisher idPublisher, Class<T> entityClass);
+	<T> Mono<T> findById(Publisher<String> idPublisher, Class<T> entityClass);
 
 	/**
 	 * Get an entity of the given domain type by id.
 	 * @param <T> the type param of the domain type.
-	 * @param entityClass the domain type of the entity.
 	 * @param idPublisher publisher that provides ids.
+	 * @param entityClass the domain type of the entity.
 	 * @return {@link Flux} emitting the found entities.
 	 */
-	<T> Flux<T> findAllById(Publisher idPublisher, Class<T> entityClass);
+	<T> Flux<T> findAllById(Publisher<String> idPublisher, Class<T> entityClass);
 
 	/**
 	 * Count entities of the given domain.
+	 * Note that Firestore doesn't support "count" operation natively,
+	 * so id query will be executed and all ids will be retrieved so they could be counted.
 	 * @param <T> the type param of the domain type.
 	 * @param entityClass the domain type of entities.
 	 * @return {@link Mono} emitting the number of entities.
@@ -104,13 +108,13 @@ public interface FirestoreReactiveOperations {
 	<T> Mono<Void> delete(Publisher<T> entityPublisher);
 
 	/**
-	 * Delete all entities of a given domain type.
+	 * Delete entities of a given domain type using ids published by producer.
 	 * @param <T> the type param of the domain type.
-	 * @param entityClass the domain type of entities.
 	 * @param idPublisher publisher that provides ids of entities to be removed.
+	 * @param entityClass the domain type of entities.
 	 * @return {@link Mono} signaling when operation has completed.
 	 */
-	<T> Mono<Void> deleteAllById(Publisher<T> idPublisher, Class entityClass);
+	<T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass);
 
 
 }

@@ -99,7 +99,7 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(1);
 		assertThat(this.firestoreTemplate.existsById(Mono.just("Alice"), User.class).block()).isEqualTo(Boolean.TRUE);
 		assertThat(this.firestoreTemplate.existsById(Mono.just("Bob"), User.class).block()).isEqualTo(Boolean.FALSE);
-		this.firestoreTemplate.deleteAllById(Mono.just("Alice"), User.class).block();
+		this.firestoreTemplate.deleteById(Mono.just("Alice"), User.class).block();
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 
 		this.firestoreTemplate.save(alice).block();
