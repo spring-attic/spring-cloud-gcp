@@ -65,9 +65,9 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
-	private Duration bufferTimeout = Duration.ofMillis(500);
+	private Duration saveAllBufferTimeout = Duration.ofMillis(500);
 
-	private int firestoreBufferWriteSize = FIRESTORE_WRITE_MAX_SIZE;
+	private int saveAllBufferWriteSize = FIRESTORE_WRITE_MAX_SIZE;
 
 	/**
 	 * Constructor for FirestoreTemplate.
@@ -89,11 +89,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * 		(default = 500ms)
 	 */
 	public void setSaveAllBufferTimeoutDuration(Duration bufferTimeout) {
-		this.bufferTimeout = bufferTimeout;
+		this.saveAllBufferTimeout = bufferTimeout;
 	}
 
 	public Duration getSaveAllBufferTimeoutDuration() {
-		return this.bufferTimeout;
+		return this.saveAllBufferTimeout;
 	}
 
 	/**
@@ -105,11 +105,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		Assert.isTrue(
 				bufferWriteSize <= FIRESTORE_WRITE_MAX_SIZE,
 				"The FirestoreTemplate buffer write size must be less than " + FIRESTORE_WRITE_MAX_SIZE);
-		this.firestoreBufferWriteSize = bufferWriteSize;
+		this.saveAllBufferWriteSize = bufferWriteSize;
 	}
 
 	public int getSaveAllBufferWriteSize() {
-		return this.firestoreBufferWriteSize;
+		return this.saveAllBufferWriteSize;
 	}
 
 	public <T> Mono<T> findById(Publisher idPublisher, Class<T> aClass) {
@@ -154,7 +154,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
 		Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(
-				this.firestoreBufferWriteSize, this.bufferTimeout);
+				this.saveAllBufferWriteSize, this.saveAllBufferTimeout);
 
 		return ObservableReactiveUtil.streamingBidirectionalCall(
 				this::openWriteStream, inputs, this::buildWriteRequest);
