@@ -40,7 +40,7 @@ public interface FirestoreReactiveOperations {
 	 * Saves multiple objects to Cloud Firestore. Not atomic. Behaves as insert or update.
 	 * @param instances the objects to save.
 	 * @param <T> the type of the objects to save.
-	 * @return a flux of the instances that were saved.
+	 * @return a {@link Flux} of the instances that were saved
 	 */
 	<T> Flux<T> saveAll(Publisher<T> instances);
 

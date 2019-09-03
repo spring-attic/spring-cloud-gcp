@@ -43,6 +43,7 @@ import static org.junit.Assume.assumeThat;
  * @author Dmitry Solomakha
  */
 public class FirestoreIntegrationTests {
+
 	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
 
 	private FirestoreGrpc.FirestoreStub firestoreStub;
@@ -88,7 +89,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findById(Mono.just("Bob"), User.class).block()).isEqualTo(bob);
 		assertThat(this.firestoreTemplate.findAllById(Flux.just("Bob", "Alice"), User.class).collectList().block())
-				.containsExactly(bob, alice);
+				.containsExactlyInAnyOrder(bob, alice);
 
 		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
 
@@ -102,17 +103,33 @@ public class FirestoreIntegrationTests {
 	public void saveAllTest() throws InterruptedException {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
-		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
+		Flux<User> users = Flux.fromArray(new User[]{u1, u2});
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
-		this.firestoreTemplate.saveAll(users).collectList().block();
+		this.firestoreTemplate.saveAll(users).blockLast();
 
-		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size()).isEqualTo(2);
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size())
+				.isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 	}
-}
 
+	@Test
+	public void saveAllBulkTest() throws InterruptedException {
+		Flux<User> users = Flux.create(sink -> {
+			for (int i = 0; i < 1000; i++) {
+				sink.next(new User("testUser " + i, i));
+			}
+			sink.complete();
+		});
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+
+		this.firestoreTemplate.saveAll(users).blockLast();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(1000);
+	}
+}
 
 @Entity(collectionName = "usersFirestoreTemplate")
 class User {
