@@ -19,6 +19,7 @@
 		<google-cloud-bom.version>0.103.0-alpha</google-cloud-bom.version>
 		<google-auth-library-oauth2-http.version>0.16.2</google-auth-library-oauth2-http.version>
 		<cloud-sql-socket-factory.version>1.0.14</cloud-sql-socket-factory.version>
+		<java-cfenv.version>1.1.1.RELEASE</java-cfenv.version>
 	</properties>
 
 	<dependencyManagement>
@@ -194,6 +195,18 @@
 						<artifactId>guava</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>io.pivotal.cfenv</groupId>
+				<artifactId>java-cfenv</artifactId>
+				<version>${java-cfenv.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.pivotal.cfenv</groupId>
+				<artifactId>java-cfenv-test-support</artifactId>
+				<version>${java-cfenv.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
+import io.pivotal.cfenv.test.AbstractCfEnvTests;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -44,26 +45,25 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Eddú Meléndez
  */
-public class GcpCloudFoundryEnvironmentPostProcessorTests {
+public class GcpCloudFoundryEnvironmentPostProcessorTests extends AbstractCfEnvTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withInitializer((context) ->
 					new GcpCloudFoundryEnvironmentPostProcessor()
 							.postProcessEnvironment(context.getEnvironment(), null))
-			.withSystemProperties(new String[] {
-					"spring.cloud.gcp.sql.instance-connection-name=test-connection",
+			.withSystemProperties("spring.cloud.gcp.sql.instance-connection-name=test-connection",
 					"spring.cloud.gcp.sql.database-name=test-dbname",
-					"spring.cloud.gcp.sql.credentials.encoded-key=test-key"
-			})
+					"spring.cloud.gcp.sql.credentials.encoded-key=test-key")
 			.withUserConfiguration(GcpCfEnvPPTestConfiguration.class);
 
 	@Test
 	public void testConfigurationProperties() throws IOException {
 		String vcapFileContents = new String(Files.readAllBytes(
 				new ClassPathResource("VCAP_SERVICES").getFile().toPath()));
-		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
-				.run((context) -> {
+		mockVcapServices(vcapFileContents);
+		this.contextRunner.run((context) -> {
 					GcpPubSubProperties pubSubProperties =
 							context.getBean(GcpPubSubProperties.class);
 					assertThat(pubSubProperties.getProjectId())
@@ -124,8 +124,8 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 	public void test2Sqls() throws IOException {
 		String vcapFileContents = new String(Files.readAllBytes(
 				new ClassPathResource("VCAP_SERVICES_2_SQL").getFile().toPath()));
-		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
-				.run((context) -> {
+		mockVcapServices(vcapFileContents);
+		this.contextRunner.run((context) -> {
 					GcpCloudSqlProperties sqlProperties =
 							context.getBean(GcpCloudSqlProperties.class);
 
