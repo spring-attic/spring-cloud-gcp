@@ -63,7 +63,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private static final DocumentMask NAME_ONLY_MASK = DocumentMask.newBuilder().addFieldPaths(NAME_FIELD).build();
 
-	private static final String NOT_FOUND_DOCUMENT = "NOT_FOUND: Document";
+	private static final String NOT_FOUND_DOCUMENT_MESSAGE = "NOT_FOUND: Document";
 
 	private final FirestoreStub firestore;
 
@@ -86,26 +86,30 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
 	}
 
+	@Override
 	public <T> Mono<Boolean> existsById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return Flux.from(idPublisher).next()
 				.flatMap(id -> getDocument(id, entityClass, NAME_ONLY_MASK))
-				.map(d -> Boolean.TRUE)
-				.switchIfEmpty(Mono.just(Boolean.FALSE))
+				.map(d -> true)
+				.switchIfEmpty(Mono.just(false))
 				.onErrorMap(
-						throwable -> new FirestoreDataException("Unable to test for document existence", throwable));
+						throwable -> new FirestoreDataException("Unable to determine if document exists", throwable));
 	}
 
+	@Override
 	public <T> Mono<T> findById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return findAllById(idPublisher, entityClass).next();
 	}
 
+	@Override
 	public <T> Flux<T> findAllById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return Flux.from(idPublisher)
 				.flatMap(id -> getDocument(id, entityClass, null))
-				.onErrorMap(throwable -> new FirestoreDataException("Unable to find an entry by id", throwable))
+				.onErrorMap(throwable -> new FirestoreDataException("Error while reading entries by id", throwable))
 				.map(document -> PublicClassMapper.convertToCustomClass(document, entityClass));
 	}
 
+	@Override
 	public <T> Mono<T> save(T entity) {
 		return Mono.defer(() -> {
 			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
@@ -134,31 +138,34 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		).filter(response -> response.getWriteResultsCount() > 0).thenMany(input);
 	}
 
+	@Override
 	public <T> Flux<T> findAll(Class<T> clazz) {
 		return Flux.defer(() ->
 				findAllDocuments(clazz)
 						.map(document -> PublicClassMapper.convertToCustomClass(document, clazz)));
 	}
 
+	@Override
 	public <T> Mono<Long> count(Class<T> entityClass) {
 		return findAllDocuments(entityClass, ID_PROJECTION).count();
 	}
 
+	@Override
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
-		return Mono.defer(() ->
-			findAllDocuments(clazz).map(Document::getName).flatMap(this::callDelete).count());
+		return findAllDocuments(clazz).map(Document::getName).flatMap(this::callDelete).count();
 	}
 
+	@Override
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
-		Flux<String> idFlux = Flux.from(entityPublisher).map(this::buildResourceName);
-		return Flux.from(idFlux).flatMap(id -> callDelete(id)).then();
+		return Flux.from(entityPublisher).map(this::buildResourceName).flatMap(id -> callDelete(id)).then();
 	}
 
+	@Override
 	public <T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass) {
 		return Mono.defer(() -> {
 			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
 			return Flux.from(idPublisher).flatMap(id -> callDelete(buildResourceName(persistentEntity, id)))
-					.then(Mono.empty());
+					.then();
 		});
 	}
 
@@ -201,7 +208,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		}
 
 		return ObservableReactiveUtil.<Document>unaryCall(obs -> this.firestore.getDocument(builder.build(), obs))
-				.onErrorResume(throwable -> throwable.getMessage().startsWith(NOT_FOUND_DOCUMENT),
+				.onErrorResume(throwable -> throwable.getMessage().startsWith(NOT_FOUND_DOCUMENT_MESSAGE),
 						throwable -> Mono.empty());
 	}
 

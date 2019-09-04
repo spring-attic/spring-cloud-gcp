@@ -149,7 +149,7 @@ public class FirestoreTemplateTests {
 				.expectErrorMatches(e ->
 						e instanceof FirestoreDataException
 						&& e.getMessage().contains("Firestore error")
-						&& e.getMessage().contains("Unable to find an entry by id"))
+						&& e.getMessage().contains("Error while reading entries by id"))
 				.verify();
 
 		GetDocumentRequest request = GetDocumentRequest.newBuilder()
