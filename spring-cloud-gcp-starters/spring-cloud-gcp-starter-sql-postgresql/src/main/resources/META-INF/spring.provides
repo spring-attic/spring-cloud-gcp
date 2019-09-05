@@ -1,1 +1,0 @@
-provides: spring-cloud-gcp-starter, HikariCP, postgres-socket-factory, postgresql
