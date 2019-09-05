@@ -16,9 +16,6 @@
 
 package com.google.cloud.firestore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.Timestamp;
@@ -34,84 +31,18 @@ import com.google.firestore.v1.Value;
  */
 public final class PublicClassMapper {
 
+	private static final Internal INTERNAL = new Internal(new FirestoreImpl(FirestoreOptions.newBuilder().build()));
+
 	private PublicClassMapper() {
 	}
 
-	public static Map<String, Value> convertToFirestoreTypes(Object update) {
-		Map<String, Object> values = (Map<String, Object>) CustomClassMapper
-				.convertToPlainJavaTypes(update);
-		Map<String, Value> fields = new HashMap<>();
-
-		for (Map.Entry<String, Object> entry : values.entrySet()) {
-			Value encodedValue = UserDataConverter.encodeValue(FieldPath.of(entry.getKey()), entry.getValue(),
-					UserDataConverter.ALLOW_ALL_DELETES);
-			if (encodedValue != null) {
-				fields.put(entry.getKey(), encodedValue);
-			}
-		}
-		return fields;
+	public static <T> Map<String, Value> convertToFirestoreTypes(T entity) {
+		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject("/not/used/path", entity);
+		return documentSnapshot.getProtoFields();
 	}
 
-	public static <T> T convertToCustomClass(Document doc, Class<T> clazz) {
-		Map<String, Value> fields = doc.getFieldsMap();
-		Map<String, Object> decodedFields = new HashMap<>();
-		for (Map.Entry<String, Value> entry : fields.entrySet()) {
-			Object decodedValue = decodeValue(entry.getValue());
-			decodedValue = convertToDateIfNecessary(decodedValue);
-			decodedFields.put(entry.getKey(), decodedValue);
-		}
-		return CustomClassMapper.convertToCustomClass(decodedFields, clazz,
-				new DocumentReference(null, ResourcePath.create(doc.getName())));
-	}
-
-	private static Object decodeValue(Value v) {
-		Value.ValueTypeCase typeCase = v.getValueTypeCase();
-		switch (typeCase) {
-		case NULL_VALUE:
-			return null;
-		case BOOLEAN_VALUE:
-			return v.getBooleanValue();
-		case INTEGER_VALUE:
-			return v.getIntegerValue();
-		case DOUBLE_VALUE:
-			return v.getDoubleValue();
-		case TIMESTAMP_VALUE:
-			return Timestamp.fromProto(v.getTimestampValue());
-		case STRING_VALUE:
-			return v.getStringValue();
-		case BYTES_VALUE:
-			return Blob.fromByteString(v.getBytesValue());
-		// case REFERENCE_VALUE:
-		// String pathName = v.getReferenceValue();
-		// return new DocumentReference(firestore, ResourcePath.create(pathName));
-		case GEO_POINT_VALUE:
-			return new GeoPoint(
-					v.getGeoPointValue().getLatitude(), v.getGeoPointValue().getLongitude());
-		case ARRAY_VALUE:
-			List<Object> list = new ArrayList<>();
-			List<Value> lv = v.getArrayValue().getValuesList();
-			for (Value iv : lv) {
-				list.add(decodeValue(iv));
-			}
-			return list;
-		case MAP_VALUE:
-			Map<String, Object> outputMap = new HashMap<>();
-			Map<String, Value> inputMap = v.getMapValue().getFieldsMap();
-			for (Map.Entry<String, Value> entry : inputMap.entrySet()) {
-				outputMap.put(entry.getKey(), decodeValue(entry.getValue()));
-			}
-			return outputMap;
-		default:
-			throw FirestoreException.invalidState(String.format("Unknown Value Type: %s", typeCase));
-		}
-	}
-
-	private static Object convertToDateIfNecessary(Object decodedValue) {
-		// if (decodedValue instanceof Timestamp) {
-		// if (!this.firestore.areTimestampsInSnapshotsEnabled()) {
-		// decodedValue = ((Timestamp) decodedValue).toDate();
-		// }
-		// }
-		return decodedValue;
+	public static <T> T convertToCustomClass(Document document, Class<T> clazz) {
+		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
+		return documentSnapshot.toObject(clazz);
 	}
 }
