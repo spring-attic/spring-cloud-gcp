@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,14 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 
 /**
  * {@link Jwt} token validator for a custom audience claim.
  *
  * @author Elena Felder
+ * @author Marcel Amado
  *
  * @since 1.1
  */
@@ -48,6 +50,8 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 
 	private String audience;
 
+	private String[] audiences;
+
 	public AudienceValidator(AudienceProvider audienceProvider) {
 		Assert.notNull(audienceProvider, "Audience Provider cannot be null");
 		this.audienceProvider = audienceProvider;
@@ -55,22 +59,25 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 
 	@Override
 	public OAuth2TokenValidatorResult validate(Jwt t) {
-		if (t.getAudience() != null && t.getAudience().contains(this.audience)) {
-			return OAuth2TokenValidatorResult.success();
-		}
-		else {
-			if (LOGGER.isWarnEnabled()) {
-				LOGGER.warn(String.format(
-						"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+		if (t.getAudience() != null) {
+			for (String audience : audiences) {
+				if (t.getAudience().contains(audience)) {
+					return OAuth2TokenValidatorResult.success();
+				}
 			}
-			return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 		}
+		if (LOGGER.isWarnEnabled()) {
+			LOGGER.warn(String.format(
+					"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+		}
+		return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		this.audience = this.audienceProvider.getAudience();
 		Assert.notNull(this.audience, "Audience cannot be null.");
+		this.audiences = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(this.audience));
 	}
 
 	public String getAudience() {
