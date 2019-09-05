@@ -183,6 +183,10 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				.put("ProjectId", "project-id")
 				.put("PrivateKeyData", "credentials.encoded-key")
 				.build()),
+		BIGQUERY("google-bigquery", "bigquery", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
 		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
 		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
 
