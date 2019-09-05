@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
+import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
 import com.google.firestore.v1.RunQueryRequest;
@@ -60,6 +61,14 @@ public class FirestoreTemplateTests {
 	@Before
 	public void setup() {
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
+
+		doAnswer(invocation -> {
+			StreamObserver<Empty> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(Empty.newBuilder().build());
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).deleteDocument(any(), any());
 	}
 
 	@Test
@@ -140,8 +149,27 @@ public class FirestoreTemplateTests {
 				.expectErrorMatches(e ->
 						e instanceof FirestoreDataException
 						&& e.getMessage().contains("Firestore error")
-						&& e.getMessage().contains("Unable to find an entry by id"))
+						&& e.getMessage().contains("Error while reading entries by id"))
 				.verify();
+
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.build();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void findByIdNotFoundTest() {
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(any(), any());
+
+		StepVerifier.create(this.firestoreTemplate.findById(Mono.just("e1"), TestEntity.class)).verifyComplete();
 
 		GetDocumentRequest request = GetDocumentRequest.newBuilder()
 				.setName(this.parent + "/testEntities/" + "e1")
@@ -153,11 +181,15 @@ public class FirestoreTemplateTests {
 	@Test
 	public void findAllByIdTest() {
 		GetDocumentRequest request1 = GetDocumentRequest.newBuilder()
-				.setName(this.parent + "/testEntities/" + "e1")
+				.setName(this.parent + "/testEntities/e1")
 				.build();
 
 		GetDocumentRequest request2 = GetDocumentRequest.newBuilder()
-				.setName(this.parent + "/testEntities/" + "e2")
+				.setName(this.parent + "/testEntities/e2")
+				.build();
+
+		GetDocumentRequest request3 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/e3")
 				.build();
 
 		doAnswer(invocation -> {
@@ -176,6 +208,14 @@ public class FirestoreTemplateTests {
 			return null;
 		}).when(this.firestoreStub).getDocument(eq(request2), any());
 
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request3), any());
+
 		StepVerifier.create(this.firestoreTemplate.findAllById(Flux.just("e1", "e2"), TestEntity.class))
 				.expectNext(new TestEntity("e1", 100L), new TestEntity("e2", 200L))
 				.verifyComplete();
@@ -186,14 +226,6 @@ public class FirestoreTemplateTests {
 	@Test
 	public void deleteAllTest() {
 		mockRunQueryMethod();
-
-		doAnswer(invocation -> {
-			StreamObserver<Empty> streamObserver = invocation.getArgument(1);
-			streamObserver.onNext(Empty.newBuilder().build());
-
-			streamObserver.onCompleted();
-			return null;
-		}).when(this.firestoreStub).deleteDocument(any(), any());
 
 		StepVerifier.create(this.firestoreTemplate.deleteAll(TestEntity.class)).expectNext(2L).verifyComplete();
 
@@ -211,10 +243,106 @@ public class FirestoreTemplateTests {
 		verify(this.firestoreStub, times(1)).runQuery(any(), any());
 
 		verify(this.firestoreStub, times(1))
-				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/e1").build()), any());
+				.deleteDocument(
+						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
+						any());
 		verify(this.firestoreStub, times(1))
-				.deleteDocument(eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/e2").build()), any());
+				.deleteDocument(
+						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e2").build()),
+						any());
 		verify(this.firestoreStub, times(2)).deleteDocument(any(), any());
+	}
+
+	@Test
+	public void countTest() {
+		mockRunQueryMethod();
+
+		StepVerifier.create(this.firestoreTemplate.count(TestEntity.class)).expectNext(2L).verifyComplete();
+
+		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
+				.addFrom(
+						StructuredQuery.CollectionSelector.newBuilder()
+								.setCollectionId("testEntities").build())
+				.setSelect(
+						StructuredQuery.Projection.newBuilder()
+						.addFields(StructuredQuery.FieldReference.newBuilder().setFieldPath("__name__").build())
+						.build())
+				.build();
+		RunQueryRequest request = RunQueryRequest.newBuilder()
+				.setParent(this.parent)
+				.setStructuredQuery(structuredQuery)
+				.build();
+
+		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
+		verify(this.firestoreStub, times(1)).runQuery(any(), any());
+	}
+
+	@Test
+	public void existsByIdTest() {
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.setMask(DocumentMask.newBuilder().addFieldPaths("__name__").build())
+				.build();
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request), any());
+
+		StepVerifier.create(this.firestoreTemplate.existsById(Mono.just("e1"), TestEntity.class))
+				.expectNext(Boolean.TRUE).verifyComplete();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+		verify(this.firestoreStub, times(1)).getDocument(any(), any());
+	}
+
+	@Test
+	public void existsByIdNotFoundTest() {
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.setMask(DocumentMask.newBuilder().addFieldPaths("__name__").build())
+				.build();
+
+		doAnswer(invocation -> {
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(eq(request), any());
+
+		StepVerifier.create(this.firestoreTemplate.existsById(Mono.just("e1"), TestEntity.class))
+				.expectNext(Boolean.FALSE).verifyComplete();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+		verify(this.firestoreStub, times(1)).getDocument(any(), any());
+
+	}
+
+
+	@Test
+	public void deleteAllByIdTest() {
+		StepVerifier.create(this.firestoreTemplate.deleteById(Mono.just("e1"), TestEntity.class)).verifyComplete();
+
+		verify(this.firestoreStub, times(1))
+				.deleteDocument(
+						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
+						any());
+		verify(this.firestoreStub, times(1)).deleteDocument(any(), any());
+	}
+
+	@Test
+	public void deleteTest() {
+		StepVerifier.create(this.firestoreTemplate.delete(Mono.just(new TestEntity("e1", 100L)))).verifyComplete();
+
+		verify(this.firestoreStub, times(1))
+				.deleteDocument(
+						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
+						any());
+		verify(this.firestoreStub, times(1)).deleteDocument(any(), any());
 	}
 
 	private Map<String, Value> createValuesMap(String test_entity_1, long value) {
@@ -225,7 +353,8 @@ public class FirestoreTemplateTests {
 	}
 
 	private Document buildDocument(String name, long l) {
-		return Document.newBuilder().setName(this.parent + "/" + name).putAllFields(createValuesMap(name, l)).build();
+		return Document.newBuilder().setName(this.parent + "/testEntities/" + name)
+				.putAllFields(createValuesMap(name, l)).build();
 	}
 
 	private void mockRunQueryMethod() {

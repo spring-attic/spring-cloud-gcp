@@ -76,7 +76,6 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, DEFAULT_PARENT);
 
 		this.firestoreTemplate.deleteAll(User.class).block();
-
 	}
 
 	@Test
@@ -87,11 +86,25 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
+		assertThat(this.firestoreTemplate.findById(Mono.just("Saitama"), User.class).block()).isNull();
+
 		assertThat(this.firestoreTemplate.findById(Mono.just("Bob"), User.class).block()).isEqualTo(bob);
-		assertThat(this.firestoreTemplate.findAllById(Flux.just("Bob", "Alice"), User.class).collectList().block())
+		assertThat(this.firestoreTemplate.findAllById(Flux.just("Bob", "Saitama", "Alice"), User.class).collectList()
+				.block())
 				.containsExactlyInAnyOrder(bob, alice);
 
 		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
+
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
+		this.firestoreTemplate.delete(Mono.just(bob)).block();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(1);
+		assertThat(this.firestoreTemplate.existsById(Mono.just("Alice"), User.class).block()).isEqualTo(Boolean.TRUE);
+		assertThat(this.firestoreTemplate.existsById(Mono.just("Bob"), User.class).block()).isEqualTo(Boolean.FALSE);
+		this.firestoreTemplate.deleteById(Mono.just("Alice"), User.class).block();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+
+		this.firestoreTemplate.save(alice).block();
+		this.firestoreTemplate.save(bob).block();
 
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 
@@ -105,12 +118,11 @@ public class FirestoreIntegrationTests {
 		User u2 = new User("Squall", 17);
 		Flux<User> users = Flux.fromArray(new User[]{u1, u2});
 
-		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 
 		this.firestoreTemplate.saveAll(users).blockLast();
 
-		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block().size())
-				.isEqualTo(2);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 	}
 
