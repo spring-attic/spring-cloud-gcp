@@ -1,0 +1,91 @@
+== Google Cloud BigQuery
+
+https://cloud.google.com/bigquery[Google Cloud BigQuery] is a fully managed, petabyte scale, low cost analytics data warehouse.
+
+Spring Cloud GCP provides https://spring.io/projects/spring-integration[Spring Integration] message handlers which can be used to build pipelines that load data into BigQuery tables.
+
+Spring Cloud GCP the following message handlers:
+
+* `BigQueryFileMessageHandler` - Handle messages containing data files and loads these into BigQuery tables.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-bigquery</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-core</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-bigquery'
+    compile group: 'org.springframework.integration', name: 'spring-integration-core'
+}
+----
+
+=== Outbound Message Handler
+
+`BigQueryFileMessageHandler` is a Spring Integration message handler which can process files received on a https://docs.spring.io/spring-integration/docs/latest-ga/reference/html/#channel[Message Channel] and load these into a BigQuery dataset.
+This offers a convenient way to write pipelines where a goal is to load data into BigQuery.
+
+To begin using the `BigQueryFileMessageHandler`, start off by defining a `@ServiceActivator` bean for your application which returns the handler.
+
+[source,java]
+----
+@Bean
+@ServiceActivator(
+    inputChannel = "bigQueryInputChannel", outputChannel = "bigQueryOutputChannel")
+public MessageHandler messageSender(BigQuery bigQuery) {
+  return new BigQueryFileMessageHandler(bigQuery);
+}
+----
+
+There should be both an input and output channel configured for your `ServiceActivator`.
+
+* The input channel is responsible for accepting the https://docs.spring.io/spring-integration/docs/latest-ga/reference/html/#message[Messages] whose payloads contain the files you wish to load to your BigQuery table.
+* The output channel is where `BigQueryFileMessageHandler` will send all of the replies resulting from the load operations; each reply will yield a `Job` object which provides details about its corresponding load `Job`.
+
+==== Input Channel
+
+The `BigQueryFileMessageHandler` accepts messages whose payloads contain the data file being loaded.
+The accepted payload types include `byte[]`, `java.io.File`, or `java.io.InputStream`.
+
+Popular data file formats such as CSV or JSON are supported; see https://cloud.google.com/bigquery/docs/loading-data#supported_data_formats[the documentation] for a complete list.
+
+==== Output Channel
+
+On the provided output channel, the handler will return a https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/Job.html[Job] object or a `ListenableFuture` of the job as a reply for each file that is loaded.
+
+Each `Job` object contains metadata and general statistics about the load job for the file.
+It will also indicate if any failures occurred.
+
+By default, the `BigQueryFileMessageHandler` is running in `async` mode, meaning that it will reply with `ListenableFuture<Job>` on the output channel.
+The returned `ListenableFuture` will complete when the load job is complete.
+
+If you call `bigQueryFileMessageHandler.setSync(true)`, it will run the job synchronously and return `Job` objects on the output channel (not wrapped in a Future object).
+The handler will block for each file to be loaded before moving on.
+
+=== Message Headers
+
+By default, the `BigQueryFileMessageHandler` is configured to read the message headers of each file message being sent through the input channel.
+This default can be modified by changing the dataset, table name, and format option expressions in `BigQueryFileMessageHandler`.
+
+The message headers determine where and how the file should be loaded to BigQuery.
+
+The following headers are available as constants in `BigQuerySpringMessageHeaders`:
+
+|===========================================================================
+| Message Header Name | Description
+| `DATASET_NAME` | Name of the BigQuery dataset that the file should be loaded to.
+| `TABLE_NAME` | Name of the BigQuery table within the dataset that the file should be loaded in.
+| `FORMAT_OPTIONS` | The `https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/FormatOptions.html[FormatOptions]` of the file being provided (CSV, JSON, etc.).
+|===========================================================================

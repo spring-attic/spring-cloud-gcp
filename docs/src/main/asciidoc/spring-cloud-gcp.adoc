@@ -59,6 +59,8 @@ include::security-iap.adoc[]
 
 include::vision.adoc[]
 
+include::bigquery.adoc[]
+
 include::cloudfoundry.adoc[]
 
 include::kotlin.adoc[]
