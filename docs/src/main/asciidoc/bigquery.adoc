@@ -35,7 +35,7 @@ dependencies {
 === Outbound Message Handler
 
 `BigQueryFileMessageHandler` is a Spring Integration message handler which can process files received on a https://docs.spring.io/spring-integration/docs/latest-ga/reference/html/#channel[Message Channel] and load these into a BigQuery dataset.
-This offers a convenient way to write pipelines where a goal is to load data into BigQuery.
+This offers a convenient way to write pipelines where the goal is to load data into BigQuery.
 
 To begin using the `BigQueryFileMessageHandler`, start off by defining a `@ServiceActivator` bean for your application which returns the handler.
 
@@ -63,7 +63,7 @@ Popular data file formats such as CSV or JSON are supported; see https://cloud.g
 
 ==== Output Channel
 
-On the provided output channel, the handler will return a https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/Job.html[Job] object or a `ListenableFuture` of the job as a reply for each file that is loaded.
+On the provided output channel, the handler will return a https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/Job.html[Job] object or a `ListenableFuture<Job>` as a reply for each file that is loaded.
 
 Each `Job` object contains metadata and general statistics about the load job for the file.
 It will also indicate if any failures occurred.
@@ -77,7 +77,7 @@ The handler will block for each file to be loaded before moving on.
 === Message Headers
 
 By default, the `BigQueryFileMessageHandler` is configured to read the message headers of each file message being sent through the input channel.
-This default can be modified by changing the dataset, table name, and format option expressions in `BigQueryFileMessageHandler`.
+This default can be modified by setting the dataset, table name, and format option expressions in `BigQueryFileMessageHandler`.
 
 The message headers determine where and how the file should be loaded to BigQuery.
 
