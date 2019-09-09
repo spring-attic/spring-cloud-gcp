@@ -39,9 +39,7 @@ import org.springframework.boot.autoconfigure.jdbc.XADataSourceAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.environment.ConditionalOnGcpEnvironment;
 import org.springframework.cloud.gcp.core.Credentials;
-import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -73,32 +71,6 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
-
-	/**
-	 * The AppEngine Configuration for the {@link AppEngineCloudSqlJdbcInfoProvider}.
-	 */
-	@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
-	@ConditionalOnGcpEnvironment({GcpEnvironment.APP_ENGINE_FLEXIBLE, GcpEnvironment.APP_ENGINE_STANDARD})
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	static class AppEngineJdbcInfoProviderConfiguration {
-
-		@Bean
-		public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
-				GcpCloudSqlProperties gcpCloudSqlProperties) {
-
-			CloudSqlJdbcInfoProvider appEngineProvider =
-					new AppEngineCloudSqlJdbcInfoProvider(gcpCloudSqlProperties);
-
-			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-						+ appEngineProvider.getJdbcUrl() + " with driver "
-						+ appEngineProvider.getJdbcDriverClass());
-			}
-
-			return appEngineProvider;
-		}
-
-	}
 
 	/**
 	 * The MySql Configuration for the {@link DefaultCloudSqlJdbcInfoProvider}
@@ -159,8 +131,7 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 	 * based on the cloud-specific properties.
 	 */
 	@Configuration
-	@Import({ GcpCloudSqlAutoConfiguration.AppEngineJdbcInfoProviderConfiguration.class,
-			GcpCloudSqlAutoConfiguration.MySqlJdbcInfoProviderConfiguration.class,
+	@Import({GcpCloudSqlAutoConfiguration.MySqlJdbcInfoProviderConfiguration.class,
 			GcpCloudSqlAutoConfiguration.PostgreSqlJdbcInfoProviderConfiguration.class })
 	static class CloudSqlDataSourcePropertiesConfiguration {
 

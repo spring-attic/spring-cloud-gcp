@@ -104,11 +104,14 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					CloudSqlJdbcInfoProvider urlProvider =
 							context.getBean(CloudSqlJdbcInfoProvider.class);
 					assertThat(urlProvider.getJdbcDriverClass())
-							.matches("com.mysql.jdbc.GoogleDriver");
+							.matches("com.mysql.jdbc.Driver");
 					assertThat(dataSource.getDriverClassName())
-							.matches("com.mysql.jdbc.GoogleDriver");
-					assertThat(urlProvider.getJdbcUrl()).matches("jdbc:google:mysql://"
-							+ "tubular-bells:australia:test-instance/test-database");
+							.matches("com.mysql.jdbc.Driver");
+					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
+							"jdbc:mysql://google/test-database?"
+									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+									+ "&cloudSqlInstance=tubular-bells:australia:test-instance"
+									+ "&useSSL=false");
 					assertThat(dataSource.getUsername()).matches("root");
 					assertThat(dataSource.getPassword()).isNull();
 				});
