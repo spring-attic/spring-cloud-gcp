@@ -31,6 +31,7 @@ import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -49,6 +50,7 @@ import static org.mockito.Mockito.verify;
  * @author Dmitry Solomakha
  * @since 1.2
  */
+@Ignore
 public class FirestoreTemplateTests {
 
 	private FirestoreTemplate firestoreTemplate;
