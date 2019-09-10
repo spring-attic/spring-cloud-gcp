@@ -22,7 +22,6 @@ import java.util.Map;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.CreateDocumentRequest;
-import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -34,8 +33,6 @@ import com.google.firestore.v1.Value;
 import com.google.firestore.v1.Write;
 import com.google.firestore.v1.WriteRequest;
 import com.google.firestore.v1.WriteResponse;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
@@ -77,9 +74,9 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 
-	private Duration saveAllBufferTimeout = Duration.ofMillis(500);
+	private Duration writeBufferTimeout = Duration.ofMillis(500);
 
-	private int saveAllBufferWriteSize = FIRESTORE_WRITE_MAX_SIZE;
+	private int writeBufferSize = FIRESTORE_WRITE_MAX_SIZE;
 
 	/**
 	 * Constructor for FirestoreTemplate.
@@ -97,16 +94,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	/**
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
-	 * the buffered entities to Firestore.
+	 * the buffered entities to Firestore for insert/update/delete operations.
 	 * @param bufferTimeout duration to wait for entity buffer to fill before sending to Firestore.
 	 * 		(default = 500ms)
 	 */
-	public void setSaveAllBufferTimeoutDuration(Duration bufferTimeout) {
-		this.saveAllBufferTimeout = bufferTimeout;
+	public void setWriteBufferTimeout(Duration bufferTimeout) {
+		this.writeBufferTimeout = bufferTimeout;
 	}
 
-	public Duration getSaveAllBufferTimeoutDuration() {
-		return this.saveAllBufferTimeout;
+	public Duration getWriteBufferTimeout() {
+		return this.writeBufferTimeout;
 	}
 
 	/**
@@ -114,15 +111,15 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * <p>The maximum buffer size is 500. In most cases users should leave this at the maximum value.
 	 * @param bufferWriteSize the entity buffer size for buffered operations (default = 500)
 	 */
-	public void setSaveAllBufferWriteSize(int bufferWriteSize) {
+	public void setWriteBufferSize(int bufferWriteSize) {
 		Assert.isTrue(
 				bufferWriteSize <= FIRESTORE_WRITE_MAX_SIZE,
 				"The FirestoreTemplate buffer write size must be less than " + FIRESTORE_WRITE_MAX_SIZE);
-		this.saveAllBufferWriteSize = bufferWriteSize;
+		this.writeBufferSize = bufferWriteSize;
 	}
 
-	public int getSaveAllBufferWriteSize() {
-		return this.saveAllBufferWriteSize;
+	public int getWriteBufferSize() {
+		return this.writeBufferSize;
 	}
 
 	@Override
@@ -171,12 +168,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * {@inheritdoc}
 	 *
 	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
-	 * {@link #setSaveAllBufferWriteSize} and {@link #setSaveAllBufferTimeoutDuration}.
+	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
 	 */
 	@Override
 	public <T> Flux<T> saveAll(Publisher<T> instances) {
 		Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(
-				this.saveAllBufferWriteSize, this.saveAllBufferTimeout);
+				this.writeBufferSize, this.writeBufferTimeout);
 
 		return ObservableReactiveUtil.streamingBidirectionalCall(
 				this::openWriteStream, inputs, this::buildWriteRequest);
@@ -194,30 +191,67 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return findAllDocuments(entityClass, ID_PROJECTION).count();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
+	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
+	 */
 	@Override
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
-		return findAllDocuments(clazz).map(Document::getName).flatMap(this::callDelete).count();
+		return deleteDocumentsByName(findAllDocuments(clazz).map(Document::getName)).count();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
+	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
+	 */
 	@Override
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
-		return Flux.from(entityPublisher).map(this::buildResourceName).flatMap(id -> callDelete(id)).then();
+		return deleteDocumentsByName(Flux.from(entityPublisher).map(this::buildResourceName)).then();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
+	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
+	 */
 	@Override
 	public <T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass) {
 		return Mono.defer(() -> {
-			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-			return Flux.from(idPublisher).flatMap(id -> callDelete(buildResourceName(persistentEntity, id)))
-					.then();
+			FirestorePersistentEntity<?> persistentEntity =
+					this.mappingContext.getPersistentEntity(entityClass);
+			return deleteDocumentsByName(
+					Flux.from(idPublisher).map(id -> buildResourceName(persistentEntity, id))).then();
 		});
 	}
 
-	private Mono<Empty> callDelete(String docName) {
-		DeleteDocumentRequest deleteDocumentRequest = DeleteDocumentRequest.newBuilder().setName(docName)
-				.build();
-		return ObservableReactiveUtil.unaryCall(
-						obs -> this.firestore.deleteDocument(deleteDocumentRequest, obs));
+	private Flux<String> deleteDocumentsByName(Flux<String> documentNames) {
+		return ObservableReactiveUtil.streamingBidirectionalCall(
+				this::openWriteStream,
+				documentNames.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout),
+				this::buildDeleteRequest);
+	}
+
+	private WriteRequest buildDeleteRequest(
+			List<String> documentIds, WriteResponse writeResponse) {
+
+		WriteRequest.Builder writeRequestBuilder =
+				WriteRequest.newBuilder()
+						.setStreamId(writeResponse.getStreamId())
+						.setStreamToken(writeResponse.getStreamToken());
+
+		for (String documentId : documentIds) {
+			Write write = Write.newBuilder()
+					.setDelete(documentId)
+					.build();
+
+			writeRequestBuilder.addWrites(write);
+		}
+		return writeRequestBuilder.build();
 	}
 
 	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {
@@ -238,9 +272,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.setStructuredQuery(builder.build())
 				.build();
 
-		return ObservableReactiveUtil.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
-				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument);
+		return ObservableReactiveUtil
+				.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
+				.filter(RunQueryResponse::hasDocument)
+				.map(RunQueryResponse::getDocument);
 	}
+
 
 	private Mono<Document> getDocument(String id, Class aClass, DocumentMask documentMask) {
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
@@ -264,31 +301,29 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return requestStreamObserver;
 	}
 
-	private <T> Mono<WriteRequest> writeEntityStream(T entity, Flux<WriteResponse> responses) {
-		Mono<WriteResponse> firstResponse = responses.next();
-		return firstResponse.map(
-			initialResponse -> buildWriteRequest(initialResponse.getStreamId(), initialResponse.getStreamToken(), entity));
-	}
+	private <T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
+		WriteRequest.Builder writeRequestBuilder =
+				WriteRequest.newBuilder()
+						.setStreamId(writeResponse.getStreamId())
+						.setStreamToken(writeResponse.getStreamToken());
 
-	private <T> WriteRequest buildWriteRequest(String streamId, ByteString streamToken, T entity) {
-		String documentResourceName = buildResourceName(entity);
-		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+		for (T entity : entityList)	{
+			String documentResourceName = buildResourceName(entity);
+			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+			Write write = Write.newBuilder()
+					.setUpdate(Document.newBuilder()
+							.putAllFields(valuesMap)
+							.setName(documentResourceName))
+					.build();
+			writeRequestBuilder.addWrites(write);
+		}
 
-		return WriteRequest.newBuilder()
-			.setStreamId(streamId)
-			.setStreamToken(streamToken)
-			.addWrites(Write.newBuilder()
-				.setUpdate(Document.newBuilder()
-					.putAllFields(valuesMap)
-					.setName(documentResourceName)
-					.build())
-				.build())
-			.build();
+		return writeRequestBuilder.build();
 	}
 
 	private <T> String buildResourceName(T entity) {
-		FirestorePersistentEntity<?> persistentEntity = this.mappingContext
-			.getPersistentEntity(entity.getClass());
+		FirestorePersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
@@ -306,22 +341,4 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return idVal.toString();
 	}
 
-	private <T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
-		WriteRequest.Builder writeRequestBuilder =
-				WriteRequest.newBuilder()
-						.setStreamId(writeResponse.getStreamId())
-						.setStreamToken(writeResponse.getStreamToken());
-
-		for (T entity : entityList)	{
-			String documentResourceName = buildResourceName(entity);
-			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
-			Write write = Write.newBuilder()
-					.setUpdate(
-							Document.newBuilder().putAllFields(valuesMap).setName(documentResourceName))
-					.build();
-			writeRequestBuilder.addWrites(write);
-		}
-
-		return writeRequestBuilder.build();
-	}
 }

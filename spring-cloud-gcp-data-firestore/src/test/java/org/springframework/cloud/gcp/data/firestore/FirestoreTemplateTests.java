@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.google.firestore.v1.CreateDocumentRequest;
-import com.google.firestore.v1.DeleteDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -30,7 +29,6 @@ import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
-import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +50,7 @@ import static org.mockito.Mockito.verify;
  * @since 1.2
  */
 public class FirestoreTemplateTests {
+
 	private FirestoreTemplate firestoreTemplate;
 
 	private final FirestoreStub firestoreStub = mock(FirestoreStub.class);
@@ -61,14 +60,6 @@ public class FirestoreTemplateTests {
 	@Before
 	public void setup() {
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
-
-		doAnswer(invocation -> {
-			StreamObserver<Empty> streamObserver = invocation.getArgument(1);
-			streamObserver.onNext(Empty.newBuilder().build());
-
-			streamObserver.onCompleted();
-			return null;
-		}).when(this.firestoreStub).deleteDocument(any(), any());
 	}
 
 	@Test
@@ -224,36 +215,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	public void deleteAllTest() {
-		mockRunQueryMethod();
-
-		StepVerifier.create(this.firestoreTemplate.deleteAll(TestEntity.class)).expectNext(2L).verifyComplete();
-
-		StructuredQuery structuredQuery = StructuredQuery.newBuilder()
-				.addFrom(
-						StructuredQuery.CollectionSelector.newBuilder()
-								.setCollectionId("testEntities").build())
-				.build();
-		RunQueryRequest request = RunQueryRequest.newBuilder()
-				.setParent(this.parent)
-				.setStructuredQuery(structuredQuery)
-				.build();
-
-		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
-		verify(this.firestoreStub, times(1)).runQuery(any(), any());
-
-		verify(this.firestoreStub, times(1))
-				.deleteDocument(
-						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
-						any());
-		verify(this.firestoreStub, times(1))
-				.deleteDocument(
-						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e2").build()),
-						any());
-		verify(this.firestoreStub, times(2)).deleteDocument(any(), any());
-	}
-
-	@Test
 	public void countTest() {
 		mockRunQueryMethod();
 
@@ -322,29 +283,6 @@ public class FirestoreTemplateTests {
 
 	}
 
-
-	@Test
-	public void deleteAllByIdTest() {
-		StepVerifier.create(this.firestoreTemplate.deleteById(Mono.just("e1"), TestEntity.class)).verifyComplete();
-
-		verify(this.firestoreStub, times(1))
-				.deleteDocument(
-						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
-						any());
-		verify(this.firestoreStub, times(1)).deleteDocument(any(), any());
-	}
-
-	@Test
-	public void deleteTest() {
-		StepVerifier.create(this.firestoreTemplate.delete(Mono.just(new TestEntity("e1", 100L)))).verifyComplete();
-
-		verify(this.firestoreStub, times(1))
-				.deleteDocument(
-						eq(DeleteDocumentRequest.newBuilder().setName(this.parent + "/testEntities/e1").build()),
-						any());
-		verify(this.firestoreStub, times(1)).deleteDocument(any(), any());
-	}
-
 	private Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
 		valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
@@ -371,54 +309,54 @@ public class FirestoreTemplateTests {
 		}).when(this.firestoreStub).runQuery(any(), any());
 	}
 
+	@Entity(collectionName = "testEntities")
+	static class TestEntity {
+		@Id
+		String idField;
+
+		Long longField;
+
+		TestEntity() {
+		}
+
+		TestEntity(String idField, Long longField) {
+			this.idField = idField;
+			this.longField = longField;
+		}
+
+		public String getIdField() {
+			return this.idField;
+		}
+
+		public void setIdField(String idField) {
+			this.idField = idField;
+		}
+
+		public Long getLongField() {
+			return this.longField;
+		}
+
+		public void setLongField(Long longField) {
+			this.longField = longField;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			TestEntity that = (TestEntity) o;
+			return Objects.equals(getIdField(), that.getIdField()) &&
+					Objects.equals(getLongField(), that.getLongField());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getIdField(), getLongField());
+		}
+	}
 }
 
-@Entity(collectionName = "testEntities")
-class TestEntity {
-	@Id
-	String idField;
-
-	Long longField;
-
-	TestEntity() {
-	}
-
-	TestEntity(String idField, Long longField) {
-		this.idField = idField;
-		this.longField = longField;
-	}
-
-	public String getIdField() {
-		return this.idField;
-	}
-
-	public void setIdField(String idField) {
-		this.idField = idField;
-	}
-
-	public Long getLongField() {
-		return this.longField;
-	}
-
-	public void setLongField(Long longField) {
-		this.longField = longField;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		TestEntity that = (TestEntity) o;
-		return Objects.equals(getIdField(), that.getIdField()) &&
-				Objects.equals(getLongField(), that.getLongField());
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getIdField(), getLongField());
-	}
-}
