@@ -182,6 +182,13 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-data-firestore</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+
         <!-- BigQuery -->
         <dependency>
             <groupId>com.google.cloud</groupId>

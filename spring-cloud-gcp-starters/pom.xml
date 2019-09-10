@@ -34,5 +34,6 @@
 		<module>spring-cloud-gcp-starter-sql-postgresql</module>
 		<module>spring-cloud-gcp-starter-security-iap</module>
 		<module>spring-cloud-gcp-starter-vision</module>
+		<module>spring-cloud-gcp-starter-data-firestore</module>
 	</modules>
 </project>
