@@ -42,8 +42,7 @@ public class GcpFirestoreAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpFirestoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class , FirestoreRepositoriesAutoConfiguration.class
-					))
+					GcpContextAutoConfiguration.class, FirestoreRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.firestore.project-id=test-project");
 

@@ -35,21 +35,25 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 public class FirestoreRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> extends
 		RepositoryFactoryBeanSupport<T, S, ID> {
 
-	private final FirestoreTemplate firestoreTemplate;
+	private FirestoreTemplate firestoreTemplate;
 
-	private final FirestoreMappingContext firestoreMappingContext;
+	private FirestoreMappingContext firestoreMappingContext;
 
 	/**
 	 * Constructor.
 	 * @param repositoryInterface the repository interface class.
-	 * @param firestoreTemplate the template to use in repositories.
-	 * @param firestoreMappingContext the mapping context to use in repositories.
 	 */
-	public FirestoreRepositoryFactoryBean(Class<T> repositoryInterface, FirestoreTemplate firestoreTemplate,
-			FirestoreMappingContext firestoreMappingContext) {
+	FirestoreRepositoryFactoryBean(Class<T> repositoryInterface) {
 		super(repositoryInterface);
+	}
+
+	public void setFirestoreTemplate(FirestoreTemplate firestoreTemplate) {
 		this.firestoreTemplate = firestoreTemplate;
-		this.firestoreMappingContext = firestoreMappingContext;
+	}
+
+	public void setFirestoreMappingContext(FirestoreMappingContext mappingContext) {
+		super.setMappingContext(mappingContext);
+		this.firestoreMappingContext = mappingContext;
 	}
 
 	@Override

@@ -18,8 +18,8 @@ package org.springframework.cloud.gcp.data.firestore.repository.support;
 
 import java.util.Optional;
 
-import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.SimpleFirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntityInformation;
@@ -69,7 +69,7 @@ public class ReactiveFirestoreRepositoryFactory extends ReactiveRepositoryFactor
 
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata repositoryMetadata) {
-		return FirestoreReactiveRepository.class;
+		return SimpleFirestoreReactiveRepository.class;
 	}
 
 	@Override

@@ -88,7 +88,7 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreMappingContext firestoreMappingContext(){
+	public FirestoreMappingContext firestoreMappingContext() {
 		return new FirestoreMappingContext();
 	}
 

@@ -36,9 +36,9 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @ConditionalOnClass(FirestoreReactiveRepository.class)
 @ConditionalOnMissingBean({ FirestoreRepositoryFactoryBean.class,
-        FirestoreRepositoryConfigurationExtension.class })
+		FirestoreRepositoryConfigurationExtension.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.firestore.enabled", matchIfMissing = true)
-@Import({FirestoreRepositoriesAutoConfigureRegistrar.class})
+@Import({ FirestoreRepositoriesAutoConfigureRegistrar.class })
 @AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
 public class FirestoreRepositoriesAutoConfiguration {
 }
