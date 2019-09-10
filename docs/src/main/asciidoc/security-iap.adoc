@@ -20,7 +20,7 @@ This functionality relies on Cloud Resource Manager API to retrieve project deta
 * Enable Cloud Resource Manager API in https://console.developers.google.com/apis/api/cloudresourcemanager.googleapis.com[GCP Console].
 * Make sure your application has `resourcemanager.projects.get` permission.
 
-App Engine automatic _audience_ determination can be overridden by using `spring.cloud.gcp.security.iap.audience` property.
+App Engine automatic _audience_ determination can be overridden by using `spring.cloud.gcp.security.iap.audience` property. It supports multiple allowable audiences by providing a comma-delimited list.
 
 For Compute Engine or Kubernetes Engine `spring.cloud.gcp.security.iap.audience` property *must* be provided, as the _audience_ string depends on the specific Backend Services setup and cannot be inferred automatically.
 To determine the _audience_ value, follow directions in IAP https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide.
