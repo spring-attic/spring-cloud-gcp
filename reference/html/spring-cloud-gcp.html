@@ -7473,7 +7473,7 @@ This functionality relies on Cloud Resource Manager API to retrieve project deta
 </ul>
 </div>
 <div class="paragraph">
-<p>App Engine automatic <em>audience</em> determination can be overridden by using <code>spring.cloud.gcp.security.iap.audience</code> property.</p>
+<p>App Engine automatic <em>audience</em> determination can be overridden by using <code>spring.cloud.gcp.security.iap.audience</code> property. It supports multiple allowable audiences by providing a comma-delimited list.</p>
 </div>
 <div class="paragraph">
 <p>For Compute Engine or Kubernetes Engine <code>spring.cloud.gcp.security.iap.audience</code> property <strong>must</strong> be provided, as the <em>audience</em> string depends on the specific Backend Services setup and cannot be inferred automatically.
