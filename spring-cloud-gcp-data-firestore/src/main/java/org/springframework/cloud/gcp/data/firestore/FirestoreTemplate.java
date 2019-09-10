@@ -199,14 +199,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 */
 	@Override
 	public <T> Mono<Long> deleteAll(Class<T> clazz) {
-		Flux<List<String>> documentBuffers =
-				findAllDocuments(clazz)
-						.map(Document::getName)
-						.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-
-		return ObservableReactiveUtil
-				.streamingBidirectionalCall(this::openWriteStream, documentBuffers, this::buildDeleteRequest)
-				.count();
+		return deleteDocumentsByName(findAllDocuments(clazz).map(Document::getName)).count();
 	}
 
 	/**
@@ -217,14 +210,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 */
 	@Override
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
-		Flux<List<String>> documentBuffers =
-				Flux.from(entityPublisher)
-						.map(this::buildResourceName)
-						.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-
-		return ObservableReactiveUtil
-				.streamingBidirectionalCall(this::openWriteStream, documentBuffers, this::buildDeleteRequest)
-				.then();
+		return deleteDocumentsByName(Flux.from(entityPublisher).map(this::buildResourceName)).then();
 	}
 
 	/**
@@ -238,16 +224,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return Mono.defer(() -> {
 			FirestorePersistentEntity<?> persistentEntity =
 					this.mappingContext.getPersistentEntity(entityClass);
-
-			Flux<List<String>> documentBuffers =
-					Flux.from(idPublisher)
-							.map(id -> buildResourceName(persistentEntity, id))
-							.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-
-			return ObservableReactiveUtil
-					.streamingBidirectionalCall(this::openWriteStream, documentBuffers, this::buildDeleteRequest)
-					.then();
+			return deleteDocumentsByName(
+					Flux.from(idPublisher).map(id -> buildResourceName(persistentEntity, id))).then();
 		});
+	}
+
+	private Flux<String> deleteDocumentsByName(Flux<String> documentNames) {
+		return ObservableReactiveUtil.streamingBidirectionalCall(
+				this::openWriteStream,
+				documentNames.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout),
+				this::buildDeleteRequest);
 	}
 
 	private WriteRequest buildDeleteRequest(
