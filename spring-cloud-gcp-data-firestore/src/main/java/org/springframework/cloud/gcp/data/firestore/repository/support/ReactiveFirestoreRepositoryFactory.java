@@ -16,8 +16,9 @@
 
 package org.springframework.cloud.gcp.data.firestore.repository.support;
 
+import java.util.Optional;
+
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
-import org.springframework.cloud.gcp.data.firestore.SimpleFirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
@@ -30,8 +31,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.lang.Nullable;
 
-import java.util.Optional;
-
 /**
  * A factory for reactive Firestore repositories.
  *
@@ -41,38 +40,41 @@ import java.util.Optional;
  */
 public class ReactiveFirestoreRepositoryFactory extends ReactiveRepositoryFactorySupport {
 
-    private final FirestoreTemplate firestoreTemplate;
+	private final FirestoreTemplate firestoreTemplate;
 
-    private final FirestoreMappingContext firestoreMappingContext;
+	private final FirestoreMappingContext firestoreMappingContext;
 
-    /**
-     * Constructor.
-     * @param firestoreTemplate the template that will be used by created repositories.
-     * @param firestoreMappingContext the mapping context used to look up type metadata.
-     */
-    public ReactiveFirestoreRepositoryFactory(FirestoreTemplate firestoreTemplate, FirestoreMappingContext firestoreMappingContext) {
-        this.firestoreTemplate = firestoreTemplate;
-        this.firestoreMappingContext = firestoreMappingContext;
-    }
+	/**
+	 * Constructor.
+	 * @param firestoreTemplate the template that will be used by created repositories.
+	 * @param firestoreMappingContext the mapping context used to look up type metadata.
+	 */
+	public ReactiveFirestoreRepositoryFactory(FirestoreTemplate firestoreTemplate,
+			FirestoreMappingContext firestoreMappingContext) {
+		this.firestoreTemplate = firestoreTemplate;
+		this.firestoreMappingContext = firestoreMappingContext;
+	}
 
-    @Override
-    public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> aClass) {
-        return (EntityInformation<T, ID>) new FirestorePersistentEntityInformation<T>((FirestorePersistentEntity<T>) this.firestoreMappingContext.getPersistentEntity(aClass));
-    }
+	@Override
+	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> aClass) {
+		return (EntityInformation<T, ID>) new FirestorePersistentEntityInformation<T>(
+				(FirestorePersistentEntity<T>) this.firestoreMappingContext.getPersistentEntity(aClass));
+	}
 
-    @Override
-    protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
-        return getTargetRepositoryViaReflection(repositoryInformation, this.firestoreTemplate, repositoryInformation.getDomainType());
-    }
+	@Override
+	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
+		return getTargetRepositoryViaReflection(repositoryInformation, this.firestoreTemplate,
+				repositoryInformation.getDomainType());
+	}
 
-    @Override
-    protected Class<?> getRepositoryBaseClass(RepositoryMetadata repositoryMetadata) {
-        return FirestoreReactiveRepository.class;
-    }
+	@Override
+	protected Class<?> getRepositoryBaseClass(RepositoryMetadata repositoryMetadata) {
+		return FirestoreReactiveRepository.class;
+	}
 
-    @Override
-    protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
-                                                                   QueryMethodEvaluationContextProvider evaluationContextProvider) {
-        return Optional.of(new FirestoreQueryLookupStrategy(this.firestoreTemplate));
-    }
+	@Override
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable QueryLookupStrategy.Key key,
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		return Optional.of(new FirestoreQueryLookupStrategy(this.firestoreTemplate));
+	}
 }

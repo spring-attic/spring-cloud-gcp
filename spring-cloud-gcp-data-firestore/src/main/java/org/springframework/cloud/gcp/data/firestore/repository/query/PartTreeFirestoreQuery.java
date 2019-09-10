@@ -29,28 +29,28 @@ import org.springframework.data.repository.query.RepositoryQuery;
  */
 public class PartTreeFirestoreQuery implements RepositoryQuery {
 
-    private final FirestoreTemplate firestoreTemplate;
+	private final FirestoreTemplate firestoreTemplate;
 
-    private final QueryMethod queryMethod;
+	private final QueryMethod queryMethod;
 
-    /**
-     * Constructor.
-     * @param firestoreTemplate the template to use to execute the query.
-     * @param queryMethod the query method metadata.
-     */
-    public PartTreeFirestoreQuery(FirestoreTemplate firestoreTemplate, QueryMethod queryMethod) {
-        this.firestoreTemplate = firestoreTemplate;
-        this.queryMethod = queryMethod;
-    }
+	/**
+	 * Constructor.
+	 * @param firestoreTemplate the template to use to execute the query.
+	 * @param queryMethod the query method metadata.
+	 */
+	public PartTreeFirestoreQuery(FirestoreTemplate firestoreTemplate, QueryMethod queryMethod) {
+		this.firestoreTemplate = firestoreTemplate;
+		this.queryMethod = queryMethod;
+	}
 
-    @Override
-    public Object execute(Object[] objects) {
-        // Placeholder method.
-        return null;
-    }
+	@Override
+	public Object execute(Object[] objects) {
+		// Placeholder method.
+		return null;
+	}
 
-    @Override
-    public QueryMethod getQueryMethod() {
-        return this.queryMethod;
-    }
+	@Override
+	public QueryMethod getQueryMethod() {
+		return this.queryMethod;
+	}
 }

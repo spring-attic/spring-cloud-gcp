@@ -25,6 +25,6 @@ import org.springframework.stereotype.Repository;
  * @author Chengyuan Zhao
  */
 @Repository
-public interface TestRepository extends FirestoreReactiveRepository {
+public interface FirestoreTestRepository extends FirestoreReactiveRepository {
 
 }

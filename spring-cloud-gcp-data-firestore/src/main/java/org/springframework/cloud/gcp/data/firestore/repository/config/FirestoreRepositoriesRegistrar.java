@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.data.firestore.repository.config;
 
+import java.lang.annotation.Annotation;
+
 import org.springframework.data.repository.config.RepositoryBeanDefinitionRegistrarSupport;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
-
-import java.lang.annotation.Annotation;
 
 /**
  * Registers the class of the Firestore repositories enabling annotation.
@@ -29,13 +29,13 @@ import java.lang.annotation.Annotation;
  * @since 1.2
  */
 public class FirestoreRepositoriesRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
-    @Override
-    protected Class<? extends Annotation> getAnnotation() {
-        return EnableReactiveFirestoreRepositories.class;
-    }
+	@Override
+	protected Class<? extends Annotation> getAnnotation() {
+		return EnableReactiveFirestoreRepositories.class;
+	}
 
-    @Override
-    protected RepositoryConfigurationExtension getExtension() {
-        return new FirestoreRepositoryConfigurationExtension();
-    }
+	@Override
+	protected RepositoryConfigurationExtension getExtension() {
+		return new FirestoreRepositoryConfigurationExtension();
+	}
 }

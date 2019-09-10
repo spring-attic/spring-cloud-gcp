@@ -20,9 +20,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration;
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
-import org.springframework.cloud.gcp.data.firestore.SimpleFirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.repository.config.FirestoreRepositoryConfigurationExtension;
 import org.springframework.cloud.gcp.data.firestore.repository.support.FirestoreRepositoryFactoryBean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +39,6 @@ import org.springframework.context.annotation.Import;
         FirestoreRepositoryConfigurationExtension.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.firestore.enabled", matchIfMissing = true)
 @Import({FirestoreRepositoriesAutoConfigureRegistrar.class})
-//@AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
+@AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
 public class FirestoreRepositoriesAutoConfiguration {
 }

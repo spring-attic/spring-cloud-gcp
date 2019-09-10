@@ -1,3 +1,19 @@
+/*
+ * Copyright 2017-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.cloud.gcp.data.firestore.repository.support;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
@@ -17,26 +33,27 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
  * @since 1.2
  */
 public class FirestoreRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> extends
-        RepositoryFactoryBeanSupport<T, S, ID> {
+		RepositoryFactoryBeanSupport<T, S, ID> {
 
-    private final FirestoreTemplate firestoreTemplate;
+	private final FirestoreTemplate firestoreTemplate;
 
-    private final FirestoreMappingContext firestoreMappingContext;
+	private final FirestoreMappingContext firestoreMappingContext;
 
-    /**
-     * Constructor.
-     * @param repositoryInterface the repository interface class.
-     * @param firestoreTemplate the template to use in repositories.
-     * @param firestoreMappingContext the mapping context to use in repositories.
-     */
-    public FirestoreRepositoryFactoryBean(Class<T> repositoryInterface, FirestoreTemplate firestoreTemplate, FirestoreMappingContext firestoreMappingContext) {
-        super(repositoryInterface);
-        this.firestoreTemplate = firestoreTemplate;
-        this.firestoreMappingContext = firestoreMappingContext;
-    }
+	/**
+	 * Constructor.
+	 * @param repositoryInterface the repository interface class.
+	 * @param firestoreTemplate the template to use in repositories.
+	 * @param firestoreMappingContext the mapping context to use in repositories.
+	 */
+	public FirestoreRepositoryFactoryBean(Class<T> repositoryInterface, FirestoreTemplate firestoreTemplate,
+			FirestoreMappingContext firestoreMappingContext) {
+		super(repositoryInterface);
+		this.firestoreTemplate = firestoreTemplate;
+		this.firestoreMappingContext = firestoreMappingContext;
+	}
 
-    @Override
-    protected RepositoryFactorySupport createRepositoryFactory() {
-        return new ReactiveFirestoreRepositoryFactory(this.firestoreTemplate, this.firestoreMappingContext);
-    }
+	@Override
+	protected RepositoryFactorySupport createRepositoryFactory() {
+		return new ReactiveFirestoreRepositoryFactory(this.firestoreTemplate, this.firestoreMappingContext);
+	}
 }

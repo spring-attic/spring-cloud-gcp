@@ -29,25 +29,25 @@ import org.springframework.data.repository.core.support.AbstractEntityInformatio
  */
 public class FirestorePersistentEntityInformation<T> extends AbstractEntityInformation<T, String> {
 
-    private final FirestorePersistentEntity<T> persistentEntity;
+	private final FirestorePersistentEntity<T> persistentEntity;
 
-    /**
-     * Constructor.
-     * @param persistentEntity the persistent entity of the type.
-     */
-    public FirestorePersistentEntityInformation(FirestorePersistentEntity<T> persistentEntity) {
-        super(persistentEntity.getType());
-        this.persistentEntity = persistentEntity;
-    }
+	/**
+	 * Constructor.
+	 * @param persistentEntity the persistent entity of the type.
+	 */
+	public FirestorePersistentEntityInformation(FirestorePersistentEntity<T> persistentEntity) {
+		super(persistentEntity.getType());
+		this.persistentEntity = persistentEntity;
+	}
 
-    @Override
-    public String getId(T entity) {
-        return (String) this.persistentEntity.getPropertyAccessor(entity)
-                .getProperty(this.persistentEntity.getIdProperty());
-    }
+	@Override
+	public String getId(T entity) {
+		return (String) this.persistentEntity.getPropertyAccessor(entity)
+				.getProperty(this.persistentEntity.getIdProperty());
+	}
 
-    @Override
-    public Class<String> getIdType() {
-        return String.class;
-    }
+	@Override
+	public Class<String> getIdType() {
+		return String.class;
+	}
 }

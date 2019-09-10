@@ -20,8 +20,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-
 /**
  * @author Dmitry Solomakha
  *

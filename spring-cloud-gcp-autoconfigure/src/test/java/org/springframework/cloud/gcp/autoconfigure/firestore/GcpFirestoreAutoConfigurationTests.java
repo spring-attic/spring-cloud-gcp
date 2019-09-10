@@ -57,7 +57,7 @@ public class GcpFirestoreAutoConfigurationTests {
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+		this.contextRunner.run((context) -> assertThat(context.getBean(FirestoreTestRepository.class)).isNotNull());
 	}
 
 	/**
