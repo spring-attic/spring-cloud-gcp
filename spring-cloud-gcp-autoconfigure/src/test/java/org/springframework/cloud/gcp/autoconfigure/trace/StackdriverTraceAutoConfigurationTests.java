@@ -129,7 +129,6 @@ public class StackdriverTraceAutoConfigurationTests {
 
 						Span traceSpan = gcpTraceService.getSpan(spanId);
 						assertThat(traceSpan.getDisplayName().getValue()).isEqualTo("foo");
-						// projects/proj/traces/5d77f6be01dfdd74a59170a2cd6920c6/spans/a59170a2cd6920c6
 						assertThat(traceSpan.getAttributes().getAttributeMapMap()).containsKey("foo");
 						assertThat(traceSpan.getAttributes().getAttributeMapMap().get("foo").getStringValue().getValue())
 								.isEqualTo("bar");
