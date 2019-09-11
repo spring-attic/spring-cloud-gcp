@@ -19,8 +19,8 @@ package org.springframework.cloud.gcp.autoconfigure.firestore;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.TransportOptions;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firestore.v1.FirestoreGrpc;
@@ -28,7 +28,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,14 +58,16 @@ public class GcpFirestoreAutoConfiguration {
 
 	private static final String ROOT_PATH_FORMAT = "projects/%s/databases/(default)/documents";
 
+	private static final UserAgentHeaderProvider USER_AGENT_HEADER_PROVIDER =
+			new UserAgentHeaderProvider(GcpFirestoreAutoConfiguration.class);
+
 	private final String projectId;
 
 	private final CredentialsProvider credentialsProvider;
 
-	private final String firestoreRootPath;
+	private final String hostPort;
 
-	private final UserAgentHeaderProvider headerProvider =
-			new UserAgentHeaderProvider(GcpFirestoreAutoConfiguration.class);
+	private final String firestoreRootPath;
 
 	GcpFirestoreAutoConfiguration(GcpFirestoreProperties gcpFirestoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -80,19 +81,21 @@ public class GcpFirestoreAutoConfiguration {
 				? new DefaultCredentialsProvider(gcpFirestoreProperties)
 				: credentialsProvider);
 
+		this.hostPort = gcpFirestoreProperties.getHostPort();
 		this.firestoreRootPath = String.format(ROOT_PATH_FORMAT, this.projectId);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreOptions firestoreOptions(ObjectProvider<TransportOptions> transportOptionsObjectProvider,
-			ObjectProvider<TransportChannelProvider> transportChannelProviderObjectProvider) {
-		FirestoreOptions.Builder builder = FirestoreOptions.getDefaultInstance().toBuilder()
+	public FirestoreOptions firestoreOptions(ManagedChannel firestoreManagedChannel) {
+		return FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.setProjectId(this.projectId)
-				.setHeaderProvider(this.headerProvider);
-
-		return builder.build();
+				.setHeaderProvider(USER_AGENT_HEADER_PROVIDER)
+				.setChannelProvider(
+						FixedTransportChannelProvider.create(
+								GrpcTransportChannel.create(firestoreManagedChannel)))
+				.build();
 	}
 
 	@Bean
@@ -103,23 +106,31 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
+			ManagedChannel firestoreManagedChannel) throws IOException {
+		return FirestoreGrpc.newStub(firestoreManagedChannel)
+				.withCallCredentials(MoreCallCredentials.from(this.credentialsProvider.getCredentials()));
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public FirestoreMappingContext firestoreMappingContext() {
 		return new FirestoreMappingContext();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreTemplate firestoreTemplate() throws IOException {
-		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("firestore.googleapis.com", 443)
-				.userAgent(this.headerProvider.getUserAgent())
-				.build();
-
-		FirestoreGrpc.FirestoreStub firestoreStub =
-				FirestoreGrpc.newStub(channel)
-						.withCallCredentials(
-								MoreCallCredentials.from(this.credentialsProvider.getCredentials()));
-
+	public FirestoreTemplate firestoreTemplate(
+			FirestoreGrpc.FirestoreStub firestoreStub) throws IOException {
 		return new FirestoreTemplate(firestoreStub, this.firestoreRootPath);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	ManagedChannel firestoreManagedChannel() {
+		return ManagedChannelBuilder
+				.forTarget(this.hostPort)
+				.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
+				.build();
 	}
 }
