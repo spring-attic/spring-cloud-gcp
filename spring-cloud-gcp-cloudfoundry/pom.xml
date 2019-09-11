@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-core</artifactId>
-        </dependency>ency>
+        </dependency>
         <dependency>
             <groupId>io.pivotal.cfenv</groupId>
             <artifactId>java-cfenv</artifactId>
