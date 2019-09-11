@@ -126,7 +126,7 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	ManagedChannel firestoreManagedChannel() {
+	public ManagedChannel firestoreManagedChannel() {
 		return ManagedChannelBuilder
 				.forTarget(this.hostPort)
 				.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
