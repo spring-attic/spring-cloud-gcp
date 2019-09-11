@@ -21,5 +21,5 @@ package org.springframework.cloud.gcp.data.firestore;
  *
  * @author Chengyuan Zhao
  */
-public interface UserRepository extends FirestoreReactiveRepository<User> {
+public interface UserRepository extends FirestoreReactiveRepository<FirestoreIntegrationTests.User> {
 }
