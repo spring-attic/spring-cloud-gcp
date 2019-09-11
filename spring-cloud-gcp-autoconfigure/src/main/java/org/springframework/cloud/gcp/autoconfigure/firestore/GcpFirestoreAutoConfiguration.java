@@ -33,6 +33,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -84,4 +86,16 @@ public class GcpFirestoreAutoConfiguration {
 		return firestoreOptions.getService();
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreMappingContext firestoreMappingContext() {
+		return new FirestoreMappingContext();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreTemplate firestoreTemplate() {
+		// Placeholder for until auto-config is complete.
+		return new FirestoreTemplate(null, "a/b/c/d/e");
+	}
 }

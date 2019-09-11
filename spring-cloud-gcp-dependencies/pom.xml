@@ -36,7 +36,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-cloudfoundry</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-pubsub</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -103,6 +113,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-cloudfoundry</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -119,6 +134,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

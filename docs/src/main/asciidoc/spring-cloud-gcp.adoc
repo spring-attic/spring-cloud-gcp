@@ -2,11 +2,7 @@
 = Spring Cloud GCP
 João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; Andreas Berger; Balint Pato; Chengyuan Zhao; Dmitry Solomakha; Elena Felder; Daniel Zou
 
-:doctype: book
-:toc:
-:toclevels: 4
-:source-highlighter: prettify
-:numbered:
+include::_attributes.adoc[]
 
 == Introduction
 
@@ -62,3 +58,7 @@ include::vision.adoc[]
 include::cloudfoundry.adoc[]
 
 include::kotlin.adoc[]
+
+== Configuration properties
+
+To see the list of all GCP related configuration properties please check link:appendix.html[the Appendix page].

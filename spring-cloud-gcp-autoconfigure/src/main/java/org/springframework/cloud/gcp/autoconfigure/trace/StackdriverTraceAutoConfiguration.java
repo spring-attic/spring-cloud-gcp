@@ -139,7 +139,7 @@ public class StackdriverTraceAutoConfiguration {
 				// historical constraint. Note: AsyncReporter supports memory bounds
 				.queuedMaxSpans(1000)
 				.messageTimeout(trace.getMessageTimeout(), TimeUnit.SECONDS)
-				.metrics(reporterMetrics).build(StackdriverEncoder.V1);
+				.metrics(reporterMetrics).build(StackdriverEncoder.V2);
 	}
 
 	@Bean(SENDER_BEAN_NAME)

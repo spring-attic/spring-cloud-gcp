@@ -117,18 +117,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Java-CFEnv -->
-        <dependency>
-            <groupId>io.pivotal.cfenv</groupId>
-            <artifactId>java-cfenv</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.pivotal.cfenv</groupId>
-            <artifactId>java-cfenv-test-support</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Storage -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -181,6 +169,13 @@
             <artifactId>google-cloud-firestore</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-data-firestore</artifactId>
+            <optional>true</optional>
+        </dependency>
+
 
         <!-- BigQuery -->
         <dependency>

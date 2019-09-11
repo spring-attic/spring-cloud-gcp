@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.security;
 
 import java.time.Instant;
+import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,6 +61,7 @@ import static org.mockito.Mockito.when;
  * Tests for IAP auth config.
  *
  * @author Elena Felder
+ * @author Marcel Amado
  *
  * @since 1.1
  */
@@ -136,6 +138,20 @@ public class IapAuthenticationAutoConfigurationTests {
 								OAuth2ResourceServerAutoConfiguration.class,
 								TestConfiguration.class))
 				.run(this::verifyJwtBeans);
+	}
+
+	@Test
+	public void testIapBeansReturnedWhenBothIapWithMultipleAudiencesAndSpringSecurityConfigPresent() {
+		when(mockJwt.getAudience()).thenReturn(Collections.singletonList("aud1"));
+
+		this.contextRunner
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=aud1, aud2")
+				.run((context) -> {
+					AudienceValidator validator
+							= context.getBean(AudienceValidator.class);
+					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
+					assertThat(result.hasErrors()).isFalse();
+				});
 	}
 
 	@Test

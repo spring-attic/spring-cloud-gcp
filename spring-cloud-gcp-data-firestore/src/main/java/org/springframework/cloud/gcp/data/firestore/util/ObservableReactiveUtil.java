@@ -95,6 +95,7 @@ public final class ObservableReactiveUtil {
 						.cache(1);
 
 		return inputs
+				.switchIfEmpty(responsesFlux.next().thenMany(inputs))
 				.flatMap(input ->
 						responsesFlux.next()
 								.map(mostRecentResponse -> responseHandler.apply(input, mostRecentResponse))
