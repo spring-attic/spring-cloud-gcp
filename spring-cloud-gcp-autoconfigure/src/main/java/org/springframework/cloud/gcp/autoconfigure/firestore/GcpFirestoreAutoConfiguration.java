@@ -120,8 +120,7 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreTemplate firestoreTemplate(
-			FirestoreGrpc.FirestoreStub firestoreStub) throws IOException {
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
 		return new FirestoreTemplate(firestoreStub, this.firestoreRootPath);
 	}
 

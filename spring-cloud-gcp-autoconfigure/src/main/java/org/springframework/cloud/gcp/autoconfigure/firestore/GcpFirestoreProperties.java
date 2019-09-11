@@ -40,7 +40,7 @@ public class GcpFirestoreProperties implements CredentialsSupplier {
 	private String projectId;
 
 	/**
-	 * The host and port of the Firestore emulator service; can be overridden to specify an emulator
+	 * The host and port of the Firestore emulator service; can be overridden to specify an emulator.
 	 */
 	private String hostPort = "firestore.googleapis.com:443";
 
