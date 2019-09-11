@@ -14,10 +14,6 @@
         <version>1.2.0.BUILD-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <grpc-google-cloud-trace.version>0.69.0</grpc-google-cloud-trace.version>
-    </properties>
-
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
     <dependencyManagement>
         <dependencies>
@@ -75,7 +71,6 @@
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>grpc-google-cloud-trace-v1</artifactId>
-            <version>${grpc-google-cloud-trace.version}</version>
             <scope>test</scope>
         </dependency>
 
