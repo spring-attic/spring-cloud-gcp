@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2019-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-
 /**
- * The Firestore repository type.
- * @param <T> the domain type.
+ * A test custom repository.
  *
  * @author Chengyuan Zhao
- *
- * @since 1.2
  */
-public interface FirestoreReactiveRepository<T> extends ReactiveCrudRepository<T, String> {
+public interface UserRepository extends FirestoreReactiveRepository<FirestoreIntegrationTests.User> {
 }

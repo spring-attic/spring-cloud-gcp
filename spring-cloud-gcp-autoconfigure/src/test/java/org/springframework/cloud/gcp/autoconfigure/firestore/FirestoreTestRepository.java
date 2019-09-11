@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore;
+package org.springframework.cloud.gcp.autoconfigure.firestore;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
+import org.springframework.stereotype.Repository;
 
 /**
- * The Firestore repository type.
- * @param <T> the domain type.
+ * A repository for testing instantiation.
  *
  * @author Chengyuan Zhao
- *
- * @since 1.2
  */
-public interface FirestoreReactiveRepository<T> extends ReactiveCrudRepository<T, String> {
+@Repository
+public interface FirestoreTestRepository extends FirestoreReactiveRepository {
+
 }

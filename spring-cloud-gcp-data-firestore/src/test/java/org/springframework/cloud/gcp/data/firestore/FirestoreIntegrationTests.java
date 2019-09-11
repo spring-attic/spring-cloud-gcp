@@ -29,11 +29,19 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,15 +49,19 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
+@RunWith(SpringRunner.class)
+@ContextConfiguration
 public class FirestoreIntegrationTests {
 
 	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
 
-	private FirestoreGrpc.FirestoreStub firestoreStub;
+	@Autowired
+	FirestoreTemplate firestoreTemplate;
 
-	private FirestoreTemplate firestoreTemplate;
-
+	@Autowired
+	UserRepository userRepository;
 
 	@Before
 	public void setup() throws IOException {
@@ -63,17 +75,6 @@ public class FirestoreIntegrationTests {
 				(ch.qos.logback.classic.Logger)
 						LoggerFactory.getLogger("io.grpc.netty");
 		root.setLevel(Level.INFO);
-
-		GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-		CallCredentials callCredentials = MoreCallCredentials.from(credentials);
-
-		// Create a channel
-		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("firestore.googleapis.com", 443)
-				.build();
-
-		this.firestoreStub = FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials);
-		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, DEFAULT_PARENT);
 
 		this.firestoreTemplate.deleteAll(User.class).block();
 	}
@@ -106,6 +107,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
@@ -124,6 +126,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
+		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();
 	}
 
 	@Test
@@ -161,6 +164,34 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.deleteAll(User.class).block();
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+	}
+
+	/**
+	 * Spring config for the tests.
+	 */
+	@Configuration
+	@EnableReactiveFirestoreRepositories
+	static class Config {
+
+		@Bean
+		public FirestoreTemplate firestoreTemplate() throws IOException {
+
+			GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
+			CallCredentials callCredentials = MoreCallCredentials.from(credentials);
+
+			// Create a channel
+			ManagedChannel channel = ManagedChannelBuilder
+					.forAddress("firestore.googleapis.com", 443)
+					.build();
+
+			return new FirestoreTemplate(FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials),
+					DEFAULT_PARENT);
+		}
+
+		@Bean
+		public FirestoreMappingContext firestoreMappingContext() {
+			return new FirestoreMappingContext();
+		}
 	}
 
 	@Entity(collectionName = "usersFirestoreTemplate")
@@ -221,4 +252,3 @@ public class FirestoreIntegrationTests {
 		}
 	}
 }
-
