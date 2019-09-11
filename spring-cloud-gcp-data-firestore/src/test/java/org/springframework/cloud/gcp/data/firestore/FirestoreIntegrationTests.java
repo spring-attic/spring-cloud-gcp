@@ -174,60 +174,83 @@ public class FirestoreIntegrationTests {
 	}
 }
 
-@Entity(collectionName = "usersFirestoreTemplate")
-class User {
-	@Id
-	private String name;
+	@Test
+	public void deleteTest() throws InterruptedException {
+		this.firestoreTemplate.save(new User("alpha", 45)).block();
+		this.firestoreTemplate.save(new User("beta", 23)).block();
+		this.firestoreTemplate.save(new User("gamma", 44)).block();
+		this.firestoreTemplate.save(new User("Joe Hogan", 22)).block();
 
-	private Integer age;
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(4);
 
-	User(String name, Integer age) {
-		this.name = name;
-		this.age = age;
+		this.firestoreTemplate.delete(Mono.just(new User("alpha", 45))).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("beta", "gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteById(Mono.just("beta"), User.class).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteAll(User.class).block();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 	}
 
-	User() {
-	}
+	@Entity(collectionName = "usersFirestoreTemplate")
+	static class User {
+		@Id
+		private String name;
 
-	public String getName() {
-		return this.name;
-	}
+		private Integer age;
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Integer getAge() {
-		return this.age;
-	}
-
-	public void setAge(Integer age) {
-		this.age = age;
-	}
-
-	@Override
-	public String toString() {
-		return "User{" +
-				"name='" + this.name + '\'' +
-				", age=" + this.age +
-				'}';
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
+		User(String name, Integer age) {
+			this.name = name;
+			this.age = age;
 		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		User user = (User) o;
-		return Objects.equals(getName(), user.getName()) &&
-				Objects.equals(getAge(), user.getAge());
-	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(getName(), getAge());
+		User() {
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Integer getAge() {
+			return this.age;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+
+		@Override
+		public String toString() {
+			return "User{" +
+					"name='" + this.name + '\'' +
+					", age=" + this.age +
+					'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			User user = (User) o;
+			return Objects.equals(getName(), user.getName()) &&
+					Objects.equals(getAge(), user.getAge());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getName(), getAge());
+		}
 	}
 }
+

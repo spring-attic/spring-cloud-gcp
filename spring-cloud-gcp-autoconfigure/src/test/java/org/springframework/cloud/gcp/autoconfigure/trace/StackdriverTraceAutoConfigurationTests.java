@@ -23,17 +23,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import brave.Span;
 import brave.Tracing;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.RequestMetadataCallback;
-import com.google.devtools.cloudtrace.v1.PatchTracesRequest;
-import com.google.devtools.cloudtrace.v1.Trace;
-import com.google.devtools.cloudtrace.v1.TraceServiceGrpc;
-import com.google.devtools.cloudtrace.v1.TraceSpan;
+import com.google.devtools.cloudtrace.v2.BatchWriteSpansRequest;
+import com.google.devtools.cloudtrace.v2.Span;
+import com.google.devtools.cloudtrace.v2.TraceServiceGrpc;
 import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
@@ -117,26 +115,23 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(context.getBeansOfType(Reporter.class)).containsKeys("stackdriverReporter",
 					"otherReporter");
 
-			Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
+			brave.Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
 					.tag("foo", "bar").start();
 			span.finish();
-			String traceId = span.context().traceIdString();
+			String spanId = span.context().spanIdString();
 
 			MultipleReportersConfig.GcpTraceService gcpTraceService
 					= context.getBean(MultipleReportersConfig.GcpTraceService.class);
 			await().atMost(10, TimeUnit.SECONDS)
 					.pollInterval(Duration.ONE_SECOND)
 					.untilAsserted(() -> {
-						assertThat(gcpTraceService.hasTraceFor(traceId)).isTrue();
+						assertThat(gcpTraceService.hasSpan(spanId)).isTrue();
 
-						Trace trace = gcpTraceService.getTraceFor(traceId);
-						assertThat(trace.getProjectId()).isEqualTo("proj");
-						assertThat(trace.getSpansCount()).isEqualTo(1);
-
-						TraceSpan traceSpan = trace.getSpans(0);
-						assertThat(traceSpan.getName()).isEqualTo("foo");
-						assertThat(traceSpan.getLabelsMap()).containsKey("foo");
-						assertThat(traceSpan.getLabelsMap()).containsValue("bar");
+						Span traceSpan = gcpTraceService.getSpan(spanId);
+						assertThat(traceSpan.getDisplayName().getValue()).isEqualTo("foo");
+						assertThat(traceSpan.getAttributes().getAttributeMapMap()).containsKey("foo");
+						assertThat(traceSpan.getAttributes().getAttributeMapMap().get("foo").getStringValue().getValue())
+								.isEqualTo("bar");
 					});
 
 			MultipleReportersConfig.OtherSender sender
@@ -244,22 +239,24 @@ public class StackdriverTraceAutoConfigurationTests {
 		 */
 		static class GcpTraceService extends TraceServiceGrpc.TraceServiceImplBase {
 
-			private Map<String, Trace> traces = new HashMap<>();
+			private Map<String, Span> traces = new HashMap<>();
 
-			boolean hasTraceFor(String traceId) {
-				return this.traces.containsKey(traceId);
+			boolean hasSpan(String spanId) {
+				return this.traces.containsKey(spanId);
 			}
 
-			Trace getTraceFor(String traceId) {
-				return this.traces.get(traceId);
+			Span getSpan(String spanId) {
+				return this.traces.get(spanId);
 			}
 
 			@Override
-			public void patchTraces(PatchTracesRequest request, StreamObserver<Empty> responseObserver) {
-				request.getTraces().getTracesList().forEach((trace) -> this.traces.put(trace.getTraceId(), trace));
+			public void batchWriteSpans(BatchWriteSpansRequest request,
+					StreamObserver<Empty> responseObserver) {
+				request.getSpansList().forEach((span) -> this.traces.put(span.getSpanId(), span));
 				responseObserver.onNext(Empty.getDefaultInstance());
 				responseObserver.onCompleted();
 			}
+
 		}
 
 	}
