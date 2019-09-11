@@ -24,6 +24,8 @@ import java.util.List;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
 import org.assertj.core.util.Sets;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,9 +68,14 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	@Autowired
 	TradeRepositoryTransactionalService tradeRepositoryTransactionalService;
 
+	@Before
+	@After
+	public void cleanUpData() {
+		this.tradeRepository.deleteAll();
+	}
+
 	@Test
 	public void queryMethodsTest() {
-		this.tradeRepository.deleteAll();
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
 		List<Trade> trader1SellTrades = insertTrades("trader1", "SELL", 2);
 		List<Trade> trader2Trades = insertTrades("trader2", "SELL", 3);
@@ -260,7 +267,6 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void testTransactionRolledBack() {
-		this.tradeRepository.deleteAll();
 		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 		try {
 			this.tradeRepositoryTransactionalService.testTransactionRolledBack();

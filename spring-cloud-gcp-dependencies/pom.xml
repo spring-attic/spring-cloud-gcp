@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xmlns="https://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.103.0-alpha</google-cloud-bom.version>
+		<google-cloud-bom.version>0.107.0-alpha</google-cloud-bom.version>
 		<google-auth-library-oauth2-http.version>0.16.2</google-auth-library-oauth2-http.version>
 		<cloud-sql-socket-factory.version>1.0.14</cloud-sql-socket-factory.version>
 		<java-cfenv.version>1.1.1.RELEASE</java-cfenv.version>
@@ -36,7 +36,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-cloudfoundry</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-pubsub</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -84,9 +94,11 @@
 				<artifactId>spring-cloud-gcp-vision</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-logging</artifactId>
+				<artifactId>spring-cloud-gcp-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -98,12 +110,12 @@
 			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter</artifactId>
+				<artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
+				<artifactId>spring-cloud-gcp-starter-cloudfoundry</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -124,6 +136,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

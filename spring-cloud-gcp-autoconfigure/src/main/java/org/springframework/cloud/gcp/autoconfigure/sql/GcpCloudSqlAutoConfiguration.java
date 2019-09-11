@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.jdbc.JndiDataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.XADataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -57,6 +55,7 @@ import org.springframework.util.StringUtils;
  * @author Artem Bilan
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Eddú Meléndez
  */
 @Configuration
 @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
@@ -72,32 +71,6 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
-
-	/**
-	 * The AppEngine Configuration for the {@link AppEngineCloudSqlJdbcInfoProvider}.
-	 */
-	@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
-	@Conditional(AppEngineCondition.class)
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	static class AppEngineJdbcInfoProviderConfiguration {
-
-		@Bean
-		public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
-				GcpCloudSqlProperties gcpCloudSqlProperties) {
-
-			CloudSqlJdbcInfoProvider appEngineProvider =
-					new AppEngineCloudSqlJdbcInfoProvider(gcpCloudSqlProperties);
-
-			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-						+ appEngineProvider.getJdbcUrl() + " with driver "
-						+ appEngineProvider.getJdbcDriverClass());
-			}
-
-			return appEngineProvider;
-		}
-
-	}
 
 	/**
 	 * The MySql Configuration for the {@link DefaultCloudSqlJdbcInfoProvider}
@@ -158,8 +131,7 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 	 * based on the cloud-specific properties.
 	 */
 	@Configuration
-	@Import({ GcpCloudSqlAutoConfiguration.AppEngineJdbcInfoProviderConfiguration.class,
-			GcpCloudSqlAutoConfiguration.MySqlJdbcInfoProviderConfiguration.class,
+	@Import({GcpCloudSqlAutoConfiguration.MySqlJdbcInfoProviderConfiguration.class,
 			GcpCloudSqlAutoConfiguration.PostgreSqlJdbcInfoProviderConfiguration.class })
 	static class CloudSqlDataSourcePropertiesConfiguration {
 

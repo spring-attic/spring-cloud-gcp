@@ -29,11 +29,19 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,15 +49,19 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
+@RunWith(SpringRunner.class)
+@ContextConfiguration
 public class FirestoreIntegrationTests {
 
 	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
 
-	private FirestoreGrpc.FirestoreStub firestoreStub;
+	@Autowired
+	FirestoreTemplate firestoreTemplate;
 
-	private FirestoreTemplate firestoreTemplate;
-
+	@Autowired
+	UserRepository userRepository;
 
 	@Before
 	public void setup() throws IOException {
@@ -63,17 +75,6 @@ public class FirestoreIntegrationTests {
 				(ch.qos.logback.classic.Logger)
 						LoggerFactory.getLogger("io.grpc.netty");
 		root.setLevel(Level.INFO);
-
-		GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-		CallCredentials callCredentials = MoreCallCredentials.from(credentials);
-
-		// Create a channel
-		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("firestore.googleapis.com", 443)
-				.build();
-
-		this.firestoreStub = FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials);
-		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, DEFAULT_PARENT);
 
 		this.firestoreTemplate.deleteAll(User.class).block();
 	}
@@ -106,6 +107,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
@@ -124,6 +126,7 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
+		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();
 	}
 
 	@Test
@@ -141,62 +144,111 @@ public class FirestoreIntegrationTests {
 
 		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(1000);
 	}
-}
 
-@Entity(collectionName = "usersFirestoreTemplate")
-class User {
-	@Id
-	private String name;
+	@Test
+	public void deleteTest() throws InterruptedException {
+		this.firestoreTemplate.save(new User("alpha", 45)).block();
+		this.firestoreTemplate.save(new User("beta", 23)).block();
+		this.firestoreTemplate.save(new User("gamma", 44)).block();
+		this.firestoreTemplate.save(new User("Joe Hogan", 22)).block();
 
-	private Integer age;
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(4);
 
-	User(String name, Integer age) {
-		this.name = name;
-		this.age = age;
+		this.firestoreTemplate.delete(Mono.just(new User("alpha", 45))).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("beta", "gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteById(Mono.just("beta"), User.class).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteAll(User.class).block();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 	}
 
-	User() {
-	}
+	/**
+	 * Spring config for the tests.
+	 */
+	@Configuration
+	@EnableReactiveFirestoreRepositories
+	static class Config {
 
-	public String getName() {
-		return this.name;
-	}
+		@Bean
+		public FirestoreTemplate firestoreTemplate() throws IOException {
 
-	public void setName(String name) {
-		this.name = name;
-	}
+			GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
+			CallCredentials callCredentials = MoreCallCredentials.from(credentials);
 
-	public Integer getAge() {
-		return this.age;
-	}
+			// Create a channel
+			ManagedChannel channel = ManagedChannelBuilder
+					.forAddress("firestore.googleapis.com", 443)
+					.build();
 
-	public void setAge(Integer age) {
-		this.age = age;
-	}
-
-	@Override
-	public String toString() {
-		return "User{" +
-				"name='" + this.name + '\'' +
-				", age=" + this.age +
-				'}';
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
+			return new FirestoreTemplate(FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials),
+					DEFAULT_PARENT);
 		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
+
+		@Bean
+		public FirestoreMappingContext firestoreMappingContext() {
+			return new FirestoreMappingContext();
 		}
-		User user = (User) o;
-		return Objects.equals(getName(), user.getName()) &&
-				Objects.equals(getAge(), user.getAge());
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(getName(), getAge());
+	@Entity(collectionName = "usersFirestoreTemplate")
+	static class User {
+		@Id
+		private String name;
+
+		private Integer age;
+
+		User(String name, Integer age) {
+			this.name = name;
+			this.age = age;
+		}
+
+		User() {
+		}
+
+		public String getName() {
+			return this.name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public Integer getAge() {
+			return this.age;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+
+		@Override
+		public String toString() {
+			return "User{" +
+					"name='" + this.name + '\'' +
+					", age=" + this.age +
+					'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			User user = (User) o;
+			return Objects.equals(getName(), user.getName()) &&
+					Objects.equals(getAge(), user.getAge());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getName(), getAge());
+		}
 	}
 }
