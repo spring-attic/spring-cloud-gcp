@@ -145,6 +145,27 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(1000);
 	}
 
+	@Test
+	public void deleteTest() throws InterruptedException {
+		this.firestoreTemplate.save(new User("alpha", 45)).block();
+		this.firestoreTemplate.save(new User("beta", 23)).block();
+		this.firestoreTemplate.save(new User("gamma", 44)).block();
+		this.firestoreTemplate.save(new User("Joe Hogan", 22)).block();
+
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(4);
+
+		this.firestoreTemplate.delete(Mono.just(new User("alpha", 45))).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("beta", "gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteById(Mono.just("beta"), User.class).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("gamma", "Joe Hogan");
+
+		this.firestoreTemplate.deleteAll(User.class).block();
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+	}
+
 	/**
 	 * Spring config for the tests.
 	 */
@@ -171,28 +192,6 @@ public class FirestoreIntegrationTests {
 		public FirestoreMappingContext firestoreMappingContext() {
 			return new FirestoreMappingContext();
 		}
-	}
-}
-
-	@Test
-	public void deleteTest() throws InterruptedException {
-		this.firestoreTemplate.save(new User("alpha", 45)).block();
-		this.firestoreTemplate.save(new User("beta", 23)).block();
-		this.firestoreTemplate.save(new User("gamma", 44)).block();
-		this.firestoreTemplate.save(new User("Joe Hogan", 22)).block();
-
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(4);
-
-		this.firestoreTemplate.delete(Mono.just(new User("alpha", 45))).block();
-		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
-				.containsExactlyInAnyOrder("beta", "gamma", "Joe Hogan");
-
-		this.firestoreTemplate.deleteById(Mono.just("beta"), User.class).block();
-		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getName).collectList().block())
-				.containsExactlyInAnyOrder("gamma", "Joe Hogan");
-
-		this.firestoreTemplate.deleteAll(User.class).block();
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 	}
 
 	@Entity(collectionName = "usersFirestoreTemplate")
@@ -253,4 +252,3 @@ public class FirestoreIntegrationTests {
 		}
 	}
 }
-
