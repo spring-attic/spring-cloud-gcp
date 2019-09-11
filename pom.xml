@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xmlns="https://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -28,6 +28,7 @@
 		<module>spring-cloud-gcp-dependencies</module>
 		<module>spring-cloud-gcp-pubsub</module>
 		<module>spring-cloud-gcp-core</module>
+		<module>spring-cloud-gcp-cloudfoundry</module>
 		<module>spring-cloud-gcp-storage</module>
 		<module>spring-cloud-gcp-starters</module>
 		<module>spring-cloud-gcp-samples</module>
