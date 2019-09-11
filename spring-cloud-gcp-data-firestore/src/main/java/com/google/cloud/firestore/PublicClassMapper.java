@@ -36,6 +36,10 @@ public final class PublicClassMapper {
 	private PublicClassMapper() {
 	}
 
+	public static <T> Value convertToFirestoreValue(T entity) {
+		return convertToFirestoreTypes(new ValueHolder(entity)).get("value");
+	}
+
 	public static <T> Map<String, Value> convertToFirestoreTypes(T entity) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject("/not/used/path", entity);
 		return documentSnapshot.getProtoFields();
@@ -44,5 +48,17 @@ public final class PublicClassMapper {
 	public static <T> T convertToCustomClass(Document document, Class<T> clazz) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
 		return documentSnapshot.toObject(clazz);
+	}
+
+	private static class ValueHolder {
+		Object value;
+
+		ValueHolder(Object value) {
+			this.value = value;
+		}
+
+		public Object getValue() {
+			return this.value;
+		}
 	}
 }

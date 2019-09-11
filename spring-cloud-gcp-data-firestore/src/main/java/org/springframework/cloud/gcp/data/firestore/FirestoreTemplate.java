@@ -229,6 +229,19 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
+	@Override
+	public <T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityType) {
+
+		RunQueryRequest request = RunQueryRequest.newBuilder()
+				.setParent(this.parent)
+				.setStructuredQuery(builder.build())
+				.build();
+
+		return ObservableReactiveUtil.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(request, obs))
+				.filter(RunQueryResponse::hasDocument).map(RunQueryResponse::getDocument)
+				.map(document -> PublicClassMapper.convertToCustomClass(document, entityType));
+	}
+
 	private Flux<String> deleteDocumentsByName(Flux<String> documentNames) {
 		return ObservableReactiveUtil.streamingBidirectionalCall(
 				this::openWriteStream,

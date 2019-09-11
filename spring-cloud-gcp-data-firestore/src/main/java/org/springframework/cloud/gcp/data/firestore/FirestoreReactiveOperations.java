@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import com.google.firestore.v1.StructuredQuery;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -117,4 +118,5 @@ public interface FirestoreReactiveOperations {
 	<T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass);
 
 
+	<T> Flux execute(StructuredQuery.Builder build, Class<T> entityClass);
 }
