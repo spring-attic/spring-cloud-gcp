@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(prefix = "spring.cloud.gcp.pubsub", name = "emulator-host")
 @AutoConfigureBefore(GcpPubSubAutoConfiguration.class)
 @EnableConfigurationProperties(GcpPubSubProperties.class)
-public class GcpPubSubEmulatorConfiguration {
+public class GcpPubSubEmulatorAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean

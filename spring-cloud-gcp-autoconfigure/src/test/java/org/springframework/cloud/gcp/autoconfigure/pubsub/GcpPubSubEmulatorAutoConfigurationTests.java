@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author João André Martins
  * @author Chengyuan Zhao
  */
-public class GcpPubSubEmulatorConfigurationTests {
+public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	private static final Offset<Double> DELTA = Offset.offset(0.0001);
 
@@ -80,7 +80,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 					"spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold=22",
 					"spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds=23",
 					"spring.cloud.gcp.pubsub.publisher.batching.enabled=true")
-			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
+			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 
