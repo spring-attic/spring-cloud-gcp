@@ -67,6 +67,13 @@
             <version>2.5</version>
             <scope>test</scope>
         </dependency>
+        <!-- Stackdriver Trace read operations are only available in its v1 API. Use it to validate data was written during integration tests. -->
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>grpc-google-cloud-trace-v1</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
