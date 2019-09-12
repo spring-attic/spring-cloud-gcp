@@ -1,0 +1,66 @@
+== Google Cloud BigQuery
+
+https://cloud.google.com/bigquery[Google Cloud BigQuery] is a fully managed, petabyte scale, low cost analytics data warehouse.
+
+Spring Cloud GCP provides:
+
+* A convenience starter which automatically configures the https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html[`BigQuery`] client object with credentials needed to interface with BigQuery.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-bigquery-starter</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-bigquery-starter'
+}
+----
+
+=== BigQuery Autoconfiguration
+
+The `GcpBigQueryAutoConfiguration` class configures an instance of https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html[`BigQuery`] for you by inferring your credentials and Project ID from the machine's environment.
+
+Example usage:
+
+[source,java]
+----
+// BigQuery client object provided by our autoconfiguration.
+@Autowired
+BigQuery bigquery;
+
+public void runQuery() throws InterruptedException {
+  String query = "SELECT column FROM table;";
+  QueryJobConfiguration queryConfig =
+      QueryJobConfiguration.newBuilder(query).build();
+
+  // Run the query using the BigQuery object
+  for (FieldValueList row : bigquery.query(queryConfig).iterateAll()) {
+    for (FieldValue val : row) {
+      System.out.println(val);
+    }
+  }
+}
+----
+
+This object is used to interface with all BigQuery services.
+For more information, see the https://cloud.google.com/bigquery/docs/reference/libraries#using_the_client_library[BigQuery Client Library usage examples].
+
+=== Configuration
+
+The following application properties may be configured with Spring Cloud GCP BigQuery libraries.
+
+|===========================================================================
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.bigquery.enabled` | Enables or disables Spring Cloud GCP BigQuery autoconfiguration | No | `true`
+| `spring.cloud.gcp.bigquery.project-id` | GCP project ID of the project using BigQuery APIs, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>. | No | Project ID is typically inferred from https://cloud.google.com/sdk/gcloud/reference/config/set[`gcloud`] configuration.
+| `spring.cloud.gcp.bigquery.credentials.location` | Credentials file location for authenticating with the Google Cloud BigQuery APIs, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No | Inferred from https://cloud.google.com/docs/authentication/production[Application Default Credentials], typically set by https://cloud.google.com/sdk/gcloud/reference/auth/application-default[`gcloud`].
+|===========================================================================

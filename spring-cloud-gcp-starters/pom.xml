@@ -36,5 +36,6 @@
 		<module>spring-cloud-gcp-starter-security-iap</module>
 		<module>spring-cloud-gcp-starter-vision</module>
 		<module>spring-cloud-gcp-starter-data-firestore</module>
+		<module>spring-cloud-gcp-starter-bigquery</module>
 	</modules>
 </project>
