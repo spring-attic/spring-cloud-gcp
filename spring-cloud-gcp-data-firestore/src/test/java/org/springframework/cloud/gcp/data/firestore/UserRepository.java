@@ -25,4 +25,8 @@ import reactor.core.publisher.Flux;
  */
 public interface UserRepository extends FirestoreReactiveRepository<FirestoreIntegrationTests.User> {
 	Flux<FirestoreIntegrationTests.User> findByAge(Integer age);
+
+	Flux<FirestoreIntegrationTests.User> findByAgeAndName(Integer age, String name);
+
+	Flux<FirestoreIntegrationTests.User> findByAgeGreaterThan(Integer age);
 }

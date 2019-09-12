@@ -127,6 +127,8 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1, u2);
 
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();

@@ -79,11 +79,9 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List parts = this.tree.get().collect(Collectors.toList());
-		if (parts.size() > 0) {
-			if (parts.get(0) instanceof PartTree.OrPart && parts.size() > 1) {
+		if (parts.size() > 1 && parts.get(0) instanceof PartTree.OrPart) {
 				throw new FirestoreDataException(
 						"Cloud Firestore only supports multiple filters combined with AND.");
-			}
 		}
 
 		StructuredQuery.Builder builder = createBuilderWithFilter(parameters);
