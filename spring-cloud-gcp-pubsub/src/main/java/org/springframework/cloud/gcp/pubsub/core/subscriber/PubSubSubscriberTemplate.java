@@ -46,6 +46,7 @@ import com.google.pubsub.v1.PullResponse;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.PubSubSubscriptionUtils;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
@@ -135,7 +136,8 @@ public class PubSubSubscriberTemplate
 				this.subscriberFactory.createSubscriber(subscription,
 						(message, ackReplyConsumer) -> messageConsumer.accept(
 								new PushedAcknowledgeablePubsubMessage(
-										ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(), subscription),
+										PubSubSubscriptionUtils.toProjectSubscriptionName(subscription,
+												this.subscriberFactory.getProjectId()),
 										message,
 										ackReplyConsumer)));
 		subscriber.startAsync();
@@ -151,7 +153,8 @@ public class PubSubSubscriberTemplate
 				this.subscriberFactory.createSubscriber(subscription,
 						(message, ackReplyConsumer) -> messageConsumer.accept(
 								new ConvertedPushedAcknowledgeablePubsubMessage<>(
-										ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(), subscription),
+										PubSubSubscriptionUtils.toProjectSubscriptionName(subscription,
+												this.subscriberFactory.getProjectId()),
 										message,
 										this.getMessageConverter().fromPubSubMessage(message, payloadType),
 										ackReplyConsumer)));
@@ -172,8 +175,8 @@ public class PubSubSubscriberTemplate
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
 						.map((message) -> new PulledAcknowledgeablePubsubMessage(
-								ProjectSubscriptionName.of(
-										this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
+								PubSubSubscriptionUtils.toProjectSubscriptionName(pullRequest.getSubscription(),
+										this.subscriberFactory.getProjectId()),
 								message.getMessage(),
 								message.getAckId()))
 						.collect(Collectors.toList());

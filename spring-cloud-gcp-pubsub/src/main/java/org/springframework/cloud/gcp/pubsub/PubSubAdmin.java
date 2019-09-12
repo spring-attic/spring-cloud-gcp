@@ -29,12 +29,12 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.pubsub.v1.ProjectName;
-import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.pubsub.support.PubSubSubscriptionUtils;
 import org.springframework.cloud.gcp.pubsub.support.PubSubTopicUtils;
 import org.springframework.util.Assert;
 
@@ -158,8 +158,10 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName the name of the new subscription
-	 * @param topicName the name of the topic being subscribed to
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
+	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName) {
@@ -169,8 +171,10 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName the name of the new subscription
-	 * @param topicName the name of the topic being subscribed to
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
+	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10
 	 * and 600 seconds. If not provided, set to default of 10 seconds
 	 * @return the created subscription
@@ -183,8 +187,10 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName the name of the new subscription
-	 * @param topicName the name of the topic being subscribed to
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
+	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
+	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 * @param pushEndpoint the URL of the service receiving the push messages. If not provided, uses
 	 *                     message pulling by default
 	 * @return the created subscription
@@ -197,7 +203,8 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName the name of the new subscription
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
 	 * @param topicName canonical topic name, e.g., "topicName", or the fully-qualified topic name in the
 	 * "projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;" format
 	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10
@@ -223,7 +230,7 @@ public class PubSubAdmin implements AutoCloseable {
 		}
 
 		return this.subscriptionAdminClient.createSubscription(
-				ProjectSubscriptionName.of(this.projectId, subscriptionName),
+				PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId),
 				PubSubTopicUtils.toProjectTopicName(topicName, this.projectId),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
@@ -232,7 +239,8 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Get the configuration of a Google Cloud Pub/Sub subscription.
 	 *
-	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName"
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
 	 * @return subscription configuration or {@code null} if subscription doesn't exist
 	 */
 	public Subscription getSubscription(String subscriptionName) {
@@ -240,7 +248,7 @@ public class PubSubAdmin implements AutoCloseable {
 
 		try {
 			return this.subscriptionAdminClient.getSubscription(
-					ProjectSubscriptionName.of(this.projectId, subscriptionName));
+					PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -254,13 +262,14 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * Delete a subscription from Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName"
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the "projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;" format
 	 */
 	public void deleteSubscription(String subscriptionName) {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
 
 		this.subscriptionAdminClient.deleteSubscription(
-				ProjectSubscriptionName.of(this.projectId, subscriptionName));
+				PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId));
 	}
 
 	/**
