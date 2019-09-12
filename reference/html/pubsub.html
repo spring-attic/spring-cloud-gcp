@@ -179,8 +179,8 @@ pubSubTemplate.publish(topicName, "message", headers).get();</code></pre>
 <div class="paragraph">
 <p>Google Cloud Pub/Sub allows many subscriptions to be associated to the same topic.
 <code>PubSubTemplate</code> allows you to listen to subscriptions via the <code>subscribe()</code> method.
-When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub
-asynchronously and passed to a user provided message handler.</p>
+When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub asynchronously and passed to a user provided message handler.
+The subscription name could either be a canonical subscription name within the current project, or the fully-qualified name referring to a subscription in a different project using the <code>projects/&lt;project_name&gt;/subscriptions/&lt;subscription_name&gt;</code> format.</p>
 </div>
 <div class="sect4">
 <h5 id="_example"><a class="link" href="#_example">Example</a></h5>
@@ -458,7 +458,7 @@ It allows for the creation, deletion and listing of topics and subscriptions.</p
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Generally when referring to topics, you can either use the short canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the <code>projects/&lt;project_name&gt;/topics/&lt;topic_name&gt;</code> format.
+Generally when referring to topics and subscriptions, you can either use the short canonical name within the current project, or the fully-qualified name referring to a topic or subscription in a different project using the <code>projects/&lt;project_name&gt;/(topics|subscriptions)/&lt;name&gt;</code> format.
 </td>
 </tr>
 </table>
