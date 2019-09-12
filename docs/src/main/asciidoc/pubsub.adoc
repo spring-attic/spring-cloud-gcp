@@ -54,8 +54,8 @@ By default, the `SimplePubSubMessageConverter` is used to convert payloads of ty
 
 Google Cloud Pub/Sub allows many subscriptions to be associated to the same topic.
 `PubSubTemplate` allows you to listen to subscriptions via the `subscribe()` method.
-When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub
-asynchronously and passed to a user provided message handler.
+When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub asynchronously and passed to a user provided message handler.
+The subscription name could either be a canonical subscription name within the current project, or the fully-qualified name referring to a subscription in a different project using the `projects/<project_name>/subscriptions/<subscription_name>` format.
 
 ===== Example
 Subscribe to a subscription with a message handler:
@@ -193,7 +193,7 @@ flux.doOnNext(AcknowledgeablePubsubMessage::ack);
 `PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.
 
-NOTE: Generally when referring to topics, you can either use the short canonical topic name within the current project, or the fully-qualified name referring to a topic in a different project using the `projects/<project_name>/topics/<topic_name>` format.
+NOTE: Generally when referring to topics and subscriptions, you can either use the short canonical name within the current project, or the fully-qualified name referring to a topic or subscription in a different project using the `projects/<project_name>/(topics|subscriptions)/<name>` format.
 
 `PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a `TopicAdminClient` and a `SubscriptionAdminClient`.
 If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient` with the Google Cloud Java Library for Pub/Sub default settings.

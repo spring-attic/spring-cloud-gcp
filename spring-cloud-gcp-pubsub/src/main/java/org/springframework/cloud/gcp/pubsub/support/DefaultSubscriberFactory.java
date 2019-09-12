@@ -30,7 +30,6 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings;
-import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PullRequest;
 import org.threeten.bp.Duration;
 
@@ -73,7 +72,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Default {@link DefaultSubscriberFactory} constructor.
-	 * @param projectIdProvider provides the GCP project ID
+	 * @param projectIdProvider provides the default GCP project ID for selecting the subscriptions
 	 */
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
@@ -181,7 +180,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	@Override
 	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
-				ProjectSubscriptionName.of(this.projectId, subscriptionName), receiver);
+				PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId), receiver);
 
 		if (this.channelProvider != null) {
 			subscriberBuilder.setChannelProvider(this.channelProvider);
@@ -225,7 +224,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 		PullRequest.Builder pullRequestBuilder =
 				PullRequest.newBuilder().setSubscription(
-						ProjectSubscriptionName.of(this.projectId, subscriptionName).toString());
+						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString());
 
 		if (maxMessages != null) {
 			pullRequestBuilder.setMaxMessages(maxMessages);
