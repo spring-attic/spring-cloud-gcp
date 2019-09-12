@@ -35,7 +35,7 @@ public final class PubSubSubscriptionUtils {
 	/**
 	 * Create a {@link ProjectSubscriptionName} based on a subscription name within a project or the
 	 * fully-qualified subscription name. If the specified subscription is in the
-	 * {@code "projects/<project_name>/subscriptions/<subscription_name>"} format, then the {@code projectId} is
+	 * {@code projects/<project_name>/subscriptions/<subscription_name>} format, then the {@code projectId} is
 	 * ignored}
 	 * @param subscription the subscription name in the project or the fully-qualified project name
 	 * @param projectId the project ID to use if the subscription is not a fully-qualified name

@@ -35,7 +35,7 @@ public final class PubSubTopicUtils {
 	/**
 	 * Create a {@link ProjectTopicName} based on a topic name within a project or the
 	 * fully-qualified topic name. If the specified topic is in the
-	 * {@code "projects/<project_name>/topics/<topic_name>"} format, then the {@code projectId} is
+	 * {@code projects/<project_name>/topics/<topic_name>} format, then the {@code projectId} is
 	 * ignored}
 	 * @param topic the topic name in the project or the fully-qualified project name
 	 * @param projectId the project ID to use if the topic is not a fully-qualified name

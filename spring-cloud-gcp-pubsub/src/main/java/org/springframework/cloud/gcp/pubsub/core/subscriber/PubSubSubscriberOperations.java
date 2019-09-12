@@ -49,7 +49,7 @@ public interface PubSubSubscriberOperations {
 	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 * @param messageReceiver the message receiver with which to subscribe
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @return the subscriber
 	 */
 	@Deprecated
@@ -59,7 +59,7 @@ public interface PubSubSubscriberOperations {
 	 * Add a callback method to an existing subscription.
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
 	 * @since 1.1
@@ -71,7 +71,7 @@ public interface PubSubSubscriberOperations {
 	 * payload type.
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
 	 * @param <T> the type of the payload
@@ -84,7 +84,7 @@ public interface PubSubSubscriberOperations {
 	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
@@ -95,7 +95,7 @@ public interface PubSubSubscriberOperations {
 	/**
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
@@ -107,7 +107,7 @@ public interface PubSubSubscriberOperations {
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription and convert them to Spring messages with
 	 * the desired payload type.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
@@ -123,7 +123,7 @@ public interface PubSubSubscriberOperations {
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code "projects/<project_name>/subscriptions/<subscription_name>"} format
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
 	PubsubMessage pullNext(String subscription);
