@@ -19,12 +19,15 @@ package org.springframework.cloud.gcp.autoconfigure.firestore;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.TransportOptions;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import com.google.firestore.v1.FirestoreGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.auth.MoreCallCredentials;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,6 +36,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.context.annotation.Bean;
@@ -52,9 +56,18 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreAutoConfiguration {
 
+	private static final String ROOT_PATH_FORMAT = "projects/%s/databases/(default)/documents";
+
+	private static final UserAgentHeaderProvider USER_AGENT_HEADER_PROVIDER =
+			new UserAgentHeaderProvider(GcpFirestoreAutoConfiguration.class);
+
 	private final String projectId;
 
 	private final CredentialsProvider credentialsProvider;
+
+	private final String hostPort;
+
+	private final String firestoreRootPath;
 
 	GcpFirestoreAutoConfiguration(GcpFirestoreProperties gcpFirestoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -67,17 +80,22 @@ public class GcpFirestoreAutoConfiguration {
 		this.credentialsProvider = (gcpFirestoreProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpFirestoreProperties)
 				: credentialsProvider);
+
+		this.hostPort = gcpFirestoreProperties.getHostPort();
+		this.firestoreRootPath = String.format(ROOT_PATH_FORMAT, this.projectId);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreOptions firestoreOptions(ObjectProvider<TransportOptions> transportOptionsObjectProvider,
-			ObjectProvider<TransportChannelProvider> transportChannelProviderObjectProvider) {
-		FirestoreOptions.Builder builder = FirestoreOptions.getDefaultInstance().toBuilder()
+	public FirestoreOptions firestoreOptions(ManagedChannel firestoreManagedChannel) {
+		return FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
-				.setProjectId(this.projectId);
-
-		return builder.build();
+				.setProjectId(this.projectId)
+				.setHeaderProvider(USER_AGENT_HEADER_PROVIDER)
+				.setChannelProvider(
+						FixedTransportChannelProvider.create(
+								GrpcTransportChannel.create(firestoreManagedChannel)))
+				.build();
 	}
 
 	@Bean
@@ -88,14 +106,30 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
+			ManagedChannel firestoreManagedChannel) throws IOException {
+		return FirestoreGrpc.newStub(firestoreManagedChannel)
+				.withCallCredentials(MoreCallCredentials.from(this.credentialsProvider.getCredentials()));
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public FirestoreMappingContext firestoreMappingContext() {
 		return new FirestoreMappingContext();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreTemplate firestoreTemplate() {
-		// Placeholder for until auto-config is complete.
-		return new FirestoreTemplate(null, "a/b/c/d/e");
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
+		return new FirestoreTemplate(firestoreStub, this.firestoreRootPath);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ManagedChannel firestoreManagedChannel() {
+		return ManagedChannelBuilder
+				.forTarget(this.hostPort)
+				.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
+				.build();
 	}
 }
