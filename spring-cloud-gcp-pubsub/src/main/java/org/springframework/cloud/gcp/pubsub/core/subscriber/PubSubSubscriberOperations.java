@@ -46,11 +46,11 @@ public interface PubSubSubscriberOperations {
 	/**
 	 * Subscribe to a subscription with a given message receiver.
 	 *
-	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 * @param messageReceiver the message receiver with which to subscribe
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @return the subscriber
+	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 */
 	@Deprecated
 	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
