@@ -28,6 +28,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
@@ -63,9 +64,8 @@ public class FirestoreIntegrationTests {
 	@Autowired
 	UserRepository userRepository;
 
-	@Before
-	public void setup() throws IOException {
-
+	@BeforeClass
+	public static void checkToRun() throws IOException {
 		assumeThat(
 				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
@@ -75,7 +75,10 @@ public class FirestoreIntegrationTests {
 				(ch.qos.logback.classic.Logger)
 						LoggerFactory.getLogger("io.grpc.netty");
 		root.setLevel(Level.INFO);
+	}
 
+	@Before
+	public void cleanTestEnvironment() {
 		this.firestoreTemplate.deleteAll(User.class).block();
 	}
 
