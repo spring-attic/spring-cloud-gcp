@@ -16,12 +16,10 @@
 
 package org.springframework.cloud.gcp.autoconfigure.firestore;
 
-import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firestore.v1.FirestoreGrpc;
