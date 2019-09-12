@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.firestore;
 
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -87,14 +88,15 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreOptions firestoreOptions(ManagedChannel firestoreManagedChannel) {
+	public FirestoreOptions firestoreOptions() {
 		return FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.setProjectId(this.projectId)
 				.setHeaderProvider(USER_AGENT_HEADER_PROVIDER)
 				.setChannelProvider(
-						FixedTransportChannelProvider.create(
-								GrpcTransportChannel.create(firestoreManagedChannel)))
+						InstantiatingGrpcChannelProvider.newBuilder()
+								.setEndpoint(this.hostPort)
+								.build())
 				.build();
 	}
 
