@@ -125,6 +125,9 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.saveAll(users).blockLast();
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
+
+		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();
 	}
@@ -194,8 +197,8 @@ public class FirestoreIntegrationTests {
 		}
 	}
 
-	@Entity(collectionName = "usersFirestoreTemplate")
-	static class User {
+	@Entity(collectionName = "usersCollection")
+	public static class User {
 		@Id
 		private String name;
 

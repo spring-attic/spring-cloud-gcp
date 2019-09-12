@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import reactor.core.publisher.Flux;
+
 /**
  * A test custom repository.
  *
  * @author Chengyuan Zhao
  */
 public interface UserRepository extends FirestoreReactiveRepository<FirestoreIntegrationTests.User> {
+	Flux<FirestoreIntegrationTests.User> findByAge(Integer age);
 }
