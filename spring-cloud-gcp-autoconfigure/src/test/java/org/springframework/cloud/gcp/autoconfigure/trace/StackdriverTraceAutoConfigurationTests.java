@@ -153,10 +153,12 @@ public class StackdriverTraceAutoConfigurationTests {
 		when(senderMock.encoding()).thenReturn(SpanBytesEncoder.PROTO3.encoding());
 
 		this.contextRunner
-				.withBean(StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME, Sender.class, () -> senderMock)
+				.withBean(
+						StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME,
+						Sender.class,
+						() -> senderMock)
 				.run(context -> {
 					Reporter<Span> asyncReporter = context.getBean(Reporter.class);
-
 					assertThat(asyncReporter).isNotNull();
 					verify(senderMock, times(1)).check();
 				});
