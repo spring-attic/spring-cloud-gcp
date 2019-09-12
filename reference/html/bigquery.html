@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.7.1">
+<title>Google Cloud BigQuery</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_google_cloud_bigquery">Google Cloud BigQuery</a>
+<ul class="sectlevel2">
+<li><a href="#_bigquery_autoconfiguration">BigQuery Autoconfiguration</a></li>
+<li><a href="#_configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_google_cloud_bigquery"><a class="link" href="#_google_cloud_bigquery">Google Cloud BigQuery</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://cloud.google.com/bigquery">Google Cloud BigQuery</a> is a fully managed, petabyte scale, low cost analytics data warehouse.</p>
+</div>
+<div class="paragraph">
+<p>Spring Cloud GCP provides:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A convenience starter which automatically configures the <a href="https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html"><code>BigQuery</code></a> client object with credentials needed to interface with BigQuery.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-bigquery-starter&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-bigquery-starter'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bigquery_autoconfiguration"><a class="link" href="#_bigquery_autoconfiguration">BigQuery Autoconfiguration</a></h3>
+<div class="paragraph">
+<p>The <code>GcpBigQueryAutoConfiguration</code> class configures an instance of <a href="https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html"><code>BigQuery</code></a> for you by inferring your credentials and Project ID from the machine&#8217;s environment.</p>
+</div>
+<div class="paragraph">
+<p>Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// BigQuery client object provided by our autoconfiguration.
+@Autowired
+BigQuery bigquery;
+
+public void runQuery() throws InterruptedException {
+  String query = "SELECT column FROM table;";
+  QueryJobConfiguration queryConfig =
+      QueryJobConfiguration.newBuilder(query).build();
+
+  // Run the query using the BigQuery object
+  for (FieldValueList row : bigquery.query(queryConfig).iterateAll()) {
+    for (FieldValue val : row) {
+      System.out.println(val);
+    }
+  }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This object is used to interface with all BigQuery services.
+For more information, see the <a href="https://cloud.google.com/bigquery/docs/reference/libraries#using_the_client_library">BigQuery Client Library usage examples</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
+<div class="paragraph">
+<p>The following application properties may be configured with Spring Cloud GCP BigQuery libraries.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.bigquery.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Spring Cloud GCP BigQuery autoconfiguration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.bigquery.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID of the project using BigQuery APIs, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Project ID is typically inferred from <a href="https://cloud.google.com/sdk/gcloud/reference/config/set"><code>gcloud</code></a> configuration.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.bigquery.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credentials file location for authenticating with the Google Cloud BigQuery APIs, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inferred from <a href="https://cloud.google.com/docs/authentication/production">Application Default Credentials</a>, typically set by <a href="https://cloud.google.com/sdk/gcloud/reference/auth/application-default"><code>gcloud</code></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
