@@ -42,7 +42,9 @@ import org.awaitility.Duration;
 import org.junit.Test;
 import org.mockito.stubbing.Answer;
 import zipkin2.Call;
+import zipkin2.CheckResult;
 import zipkin2.codec.Encoding;
+import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
@@ -61,6 +63,9 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for auto-config.
@@ -139,6 +144,24 @@ public class StackdriverTraceAutoConfigurationTests {
 			await().atMost(10, TimeUnit.SECONDS)
 					.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
 		});
+	}
+
+	@Test
+	public void testAsyncReporterHealthCheck() {
+		Sender senderMock = mock(Sender.class);
+		when(senderMock.check()).thenReturn(CheckResult.failed(new RuntimeException()));
+		when(senderMock.encoding()).thenReturn(SpanBytesEncoder.PROTO3.encoding());
+
+		this.contextRunner
+				.withBean(
+						StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME,
+						Sender.class,
+						() -> senderMock)
+				.run(context -> {
+					Reporter<Span> asyncReporter = context.getBean(Reporter.class);
+					assertThat(asyncReporter).isNotNull();
+					verify(senderMock, times(1)).check();
+				});
 	}
 
 	/**
