@@ -25,7 +25,7 @@ import brave.http.HttpClientParser;
 /**
  * An {@link HttpClientParser} that fills information for Stackdriver Trace.
  *
- * <p>Based on {@link org.springframework.cloud.sleuth.instrument.web.SleuthHttpClientParser}.
+ * <p>Based on {@code org.springframework.cloud.sleuth.instrument.web.SleuthHttpClientParser}.
  *
  * @author Ray Tsang
  */
