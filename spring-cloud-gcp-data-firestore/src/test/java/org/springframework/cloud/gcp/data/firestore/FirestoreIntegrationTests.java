@@ -51,6 +51,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -115,6 +116,18 @@ public class FirestoreIntegrationTests {
 
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+	}
+
+
+	@Test
+	public void saveTest() throws InterruptedException {
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+
+		User u1 = new User("Cloud", 22);
+		this.firestoreTemplate.save(u1).block();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
+				.containsExactly(u1);
 	}
 
 	@Test

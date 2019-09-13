@@ -147,21 +147,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	@Override
 	public <T> Mono<T> save(T entity) {
-		return Mono.defer(() -> {
-			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entity.getClass());
-			String idVal = getIdValue(entity, persistentEntity);
-
-			Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
-
-			CreateDocumentRequest createDocumentRequest = CreateDocumentRequest.newBuilder()
-					.setParent(this.parent)
-					.setCollectionId(persistentEntity.collectionName())
-					.setDocumentId(idVal)
-					.setDocument(Document.newBuilder().putAllFields(valuesMap))
-					.build();
-			return ObservableReactiveUtil.<Document>unaryCall(
-					obs -> this.firestore.createDocument(createDocumentRequest, obs)).then(Mono.just(entity));
-		});
+		return saveAll(Mono.just(entity)).next();
 	}
 
 	/**

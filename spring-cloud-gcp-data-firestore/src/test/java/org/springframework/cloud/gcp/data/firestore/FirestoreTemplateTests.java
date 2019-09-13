@@ -63,31 +63,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	public void saveTest() {
-		TestEntity testEntity1 = new TestEntity("test_entity_1", 123L);
-
-		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
-			streamObserver.onNext(Document.newBuilder().build());
-			streamObserver.onCompleted();
-			return null;
-		}).when(this.firestoreStub).createDocument(any(), any());
-
-		StepVerifier.create(this.firestoreTemplate.save(testEntity1))
-				.expectNextMatches(testEntity -> testEntity == testEntity1).verifyComplete();
-
-		CreateDocumentRequest expectedCreateDocumentRequest = CreateDocumentRequest.newBuilder()
-				.setParent(this.parent)
-				.setCollectionId("testEntities")
-				.setDocumentId("test_entity_1")
-				.setDocument(Document.newBuilder().putAllFields(createValuesMap("test_entity_1", 123L)))
-				.build();
-
-		verify(this.firestoreStub, times(1)).createDocument(eq(expectedCreateDocumentRequest), any());
-		verify(this.firestoreStub, times(1)).createDocument(any(), any());
-	}
-
-	@Test
 	public void findAllTest() {
 		mockRunQueryMethod();
 
