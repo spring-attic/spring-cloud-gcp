@@ -95,6 +95,8 @@ public class GcpSpannerAutoConfiguration {
 
 		private final boolean createInterleavedTableDdlOnDeleteCascade;
 
+		private final boolean failIfPoolExhausted;
+
 		CoreSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) throws IOException {
@@ -116,6 +118,7 @@ public class GcpSpannerAutoConfiguration {
 					.getKeepAliveIntervalMinutes();
 			this.createInterleavedTableDdlOnDeleteCascade = gcpSpannerProperties
 					.isCreateInterleavedTableDdlOnDeleteCascade();
+			this.failIfPoolExhausted = gcpSpannerProperties.isFailIfPoolExhausted();
 		}
 
 		@Bean
@@ -158,6 +161,11 @@ public class GcpSpannerAutoConfiguration {
 			if (this.keepAliveIntervalMinutes >= 0) {
 				builder.setKeepAliveIntervalMinutes(this.keepAliveIntervalMinutes);
 			}
+
+			if (this.failIfPoolExhausted) {
+				builder.setFailIfPoolExhausted();
+			}
+
 			return builder.build();
 		}
 

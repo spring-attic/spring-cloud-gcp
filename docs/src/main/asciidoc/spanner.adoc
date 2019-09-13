@@ -87,6 +87,7 @@ The schema for the tables will be "ON DELETE NO ACTION" if `false`. | No | `true
 | `spring.cloud.gcp.spanner.maxIdleSessions` | Maximum number of idle sessions session pool will maintain | No | 0 - Determined by Cloud Spanner client library
 | `spring.cloud.gcp.spanner.writeSessionsFraction` | Fraction of sessions to be kept prepared for write transactions | No | 0.2 - Determined by Cloud Spanner client library
 | `spring.cloud.gcp.spanner.keepAliveIntervalMinutes` | How long to keep idle sessions alive | No | 30 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.failIfPoolExhausted` |  If all sessions are in use, fail the request by throwing an exception. Otherwise, by default, block until a session becomes available. | No | `false`
 |===
 
 ==== Repository settings
