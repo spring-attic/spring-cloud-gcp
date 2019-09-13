@@ -226,25 +226,6 @@
 		</plugins>
 	</build>
 
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<links>
-						<link>https://docs.oracle.com/javase/7/docs/api/</link>
-						<link>https://docs.oracle.com/javaee/7/api/</link>
-						<link>https://fasterxml.github.com/jackson-core/javadoc/2.0.0/</link>
-						<link>https://docs.spring.io/spring/docs/4.1.x/javadoc-api/</link>
-					</links>
-					<author>true</author>
-					<header>${project.name}</header>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
-
 	<profiles>
 		<profile>
 			<id>spring</id>

@@ -150,7 +150,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {@inheritDoc}
 	 *
 	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
 	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
@@ -177,7 +177,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {@inheritDoc}
 	 *
 	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
 	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
@@ -188,7 +188,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {@inheritDoc}
 	 *
 	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
 	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
@@ -199,7 +199,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * {@inheritDoc}
 	 *
 	 * <p>The buffer size and buffer timeout settings for {@link #saveAll} can be modified by calling
 	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.

@@ -22,6 +22,7 @@
 |spring.cloud.gcp.datastore.project-id |  | 
 |spring.cloud.gcp.firestore.credentials.default-scopes |  | 
 |spring.cloud.gcp.firestore.enabled | true | Auto-configure Google Cloud Firestore components.
+|spring.cloud.gcp.firestore.host-port | firestore.googleapis.com:443 | The host and port of the Firestore emulator service; can be overridden to specify an emulator.
 |spring.cloud.gcp.firestore.project-id |  | 
 |spring.cloud.gcp.logging.enabled | true | Auto-configure Google Cloud Stackdriver logging for Spring MVC.
 |spring.cloud.gcp.project-id |  | GCP project ID where services are running.
@@ -75,6 +76,7 @@
 |spring.cloud.gcp.spanner.credentials.default-scopes |  | 
 |spring.cloud.gcp.spanner.database |  | 
 |spring.cloud.gcp.spanner.enabled | true | Auto-configure Google Cloud Spanner components.
+|spring.cloud.gcp.spanner.fail-if-pool-exhausted | false | 
 |spring.cloud.gcp.spanner.instance-id |  | 
 |spring.cloud.gcp.spanner.keep-alive-interval-minutes | -1 | 
 |spring.cloud.gcp.spanner.max-idle-sessions | -1 | 
