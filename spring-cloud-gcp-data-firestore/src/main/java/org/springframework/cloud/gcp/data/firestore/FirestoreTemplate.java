@@ -188,7 +188,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	@Override
 	public <T> Mono<Long> count(Class<T> entityClass) {
-		return findAllDocuments(entityClass, ID_PROJECTION).count();
+		return findAllDocuments(entityClass, ID_PROJECTION, null).count();
 	}
 
 	/**
@@ -229,6 +229,17 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
+	@Override
+	public <T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityType) {
+		return Flux.defer(() ->
+				findAllDocuments(entityType, null, builder)
+				.map(document -> PublicClassMapper.convertToCustomClass(document, entityType)));
+	}
+
+	public FirestoreMappingContext getMappingContext() {
+		return this.mappingContext;
+	}
+
 	private Flux<String> deleteDocumentsByName(Flux<String> documentNames) {
 		return ObservableReactiveUtil.streamingBidirectionalCall(
 				this::openWriteStream,
@@ -255,14 +266,14 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	private <T> Flux<Document> findAllDocuments(Class<T> clazz) {
-		return findAllDocuments(clazz, null);
+		return findAllDocuments(clazz, null, null);
 	}
 
-	private <T> Flux<Document> findAllDocuments(Class<T> clazz, StructuredQuery.Projection projection) {
+	private <T> Flux<Document> findAllDocuments(Class<T> clazz, StructuredQuery.Projection projection, StructuredQuery.Builder queryBuilder) {
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(clazz);
-		StructuredQuery.Builder builder = StructuredQuery.newBuilder()
-				.addFrom(
-						StructuredQuery.CollectionSelector.newBuilder()
+
+		StructuredQuery.Builder builder = queryBuilder != null ? queryBuilder : StructuredQuery.newBuilder();
+		builder.addFrom(StructuredQuery.CollectionSelector.newBuilder()
 								.setCollectionId(persistentEntity.collectionName()).build());
 		if (projection != null) {
 			builder.setSelect(projection);
