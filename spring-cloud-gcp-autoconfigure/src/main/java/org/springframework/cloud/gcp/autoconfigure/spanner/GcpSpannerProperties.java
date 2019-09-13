@@ -66,6 +66,10 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int keepAliveIntervalMinutes = -1;
 
+	// When {@code true}, if all sessions are in use, fail the request by throwing an exception.
+	// Otherwise, by default, block until a session becomes available.
+	private boolean failIfPoolExhausted = false;
+
 	public Credentials getCredentials() {
 		return this.credentials;
 	}
@@ -158,5 +162,13 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 			boolean createInterleavedTableDdlOnDeleteCascade) {
 		this.createInterleavedTableDdlOnDeleteCascade =
 				createInterleavedTableDdlOnDeleteCascade;
+	}
+
+	public boolean isFailIfPoolExhausted() {
+		return failIfPoolExhausted;
+	}
+
+	public void setFailIfPoolExhausted(boolean failIfPoolExhausted) {
+		this.failIfPoolExhausted = failIfPoolExhausted;
 	}
 }
