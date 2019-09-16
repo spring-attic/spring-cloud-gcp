@@ -44,6 +44,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -88,7 +89,7 @@ public class SpannerTransactionManagerTests {
 
 		Assert.assertEquals(manager.doGetTransaction(), tx);
 
-		Mockito.verify(this.databaseClient, never()).transactionManager();
+		verify(this.databaseClient, never()).transactionManager();
 	}
 
 	@Test
@@ -114,7 +115,7 @@ public class SpannerTransactionManagerTests {
 		Assert.assertNotEquals(
 				"expected a new transaction but got the same one", tx, manager.doGetTransaction());
 
-		Mockito.verify(this.databaseClient, times(1)).transactionManager();
+		verify(this.databaseClient, times(1)).transactionManager();
 	}
 
 	@Test
@@ -134,7 +135,7 @@ public class SpannerTransactionManagerTests {
 		Assert.assertEquals(
 				ReflectionTestUtils.getField(actual, "transactionManager"), transactionManagerNew);
 
-		Mockito.verify(this.databaseClient, times(1)).transactionManager();
+		verify(this.databaseClient, times(1)).transactionManager();
 	}
 
 	@Test
@@ -160,8 +161,8 @@ public class SpannerTransactionManagerTests {
 		// need to use ReflectionTestUtils because tx is mocked and accessor won't work
 		Assert.assertEquals(ReflectionTestUtils.getField(tx, "transactionContext"), transactionContext);
 
-		Mockito.verify(transactionManager, times(1)).begin();
-		Mockito.verify(transactionManager, times(1)).getState();
+		verify(transactionManager, times(1)).begin();
+		verify(transactionManager, times(1)).getState();
 	}
 
 	@Test
@@ -186,7 +187,7 @@ public class SpannerTransactionManagerTests {
 
 		manager.doCommit(status);
 
-		Mockito.verify(transactionManager, times(1)).commit();
+		verify(transactionManager, times(1)).commit();
 	}
 
 	@Test
@@ -195,6 +196,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager.Tx tx = mock(SpannerTransactionManager.Tx.class);
 		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
+		when(tx.getTransactionContext()).thenReturn(this.transactionContext);
 
 		DefaultTransactionStatus status = mock(DefaultTransactionStatus.class);
 		when(status.getTransaction()).thenReturn(tx);
@@ -206,7 +208,8 @@ public class SpannerTransactionManagerTests {
 		};
 		manager.doCommit(status);
 
-		Mockito.verify(transactionManager, never()).commit();
+		verify(transactionManager, never()).commit();
+		verify(this.transactionContext, never()).close();
 	}
 
 	@Test
@@ -285,7 +288,7 @@ public class SpannerTransactionManagerTests {
 
 		manager.doRollback(status);
 
-		Mockito.verify(transactionManager, times(1)).rollback();
+		verify(transactionManager, times(1)).rollback();
 	}
 
 	@Test
@@ -306,6 +309,6 @@ public class SpannerTransactionManagerTests {
 
 		manager.doRollback(status);
 
-		Mockito.verify(transactionManager, never()).rollback();
+		verify(transactionManager, never()).rollback();
 	}
 }
