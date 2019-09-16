@@ -149,6 +149,7 @@ public class PubSubTemplateIntegrationTests {
 				}
 				catch (InterruptedException | ExecutionException | TimeoutException ex) {
 					LOGGER.error(ex);
+					Thread.currentThread().interrupt();
 				}
 			});
 
@@ -175,6 +176,7 @@ public class PubSubTemplateIntegrationTests {
 				}
 				catch (InterruptedException | ExecutionException ex) {
 					LOGGER.error(ex);
+					Thread.currentThread().interrupt();
 				}
 			});
 
