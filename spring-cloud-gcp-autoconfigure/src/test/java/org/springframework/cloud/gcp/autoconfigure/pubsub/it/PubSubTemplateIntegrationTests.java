@@ -34,6 +34,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,8 +64,11 @@ import static org.awaitility.Awaitility.await;
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  * @author Daniel Zou
+ * @author Mike Eltsufin
  */
 public class PubSubTemplateIntegrationTests {
+
+	private static final Log LOGGER = LogFactory.getLog(PubSubTemplateIntegrationTests.class);
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
@@ -143,7 +148,7 @@ public class PubSubTemplateIntegrationTests {
 					f.get(5, TimeUnit.SECONDS);
 				}
 				catch (InterruptedException | ExecutionException | TimeoutException ex) {
-					ex.printStackTrace();
+					LOGGER.error(ex);
 				}
 			});
 
@@ -168,8 +173,8 @@ public class PubSubTemplateIntegrationTests {
 						message.nack().get(); // sync call
 					}
 				}
-				catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
+				catch (InterruptedException | ExecutionException ex) {
+					LOGGER.error(ex);
 				}
 			});
 
