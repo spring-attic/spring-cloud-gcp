@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
@@ -34,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +56,8 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for Spanner Template when using transactional annotation.
@@ -96,9 +100,12 @@ public class SpannerTemplateTransactionManagerTests {
 
 	TransactionManager transactionManager;
 
+	@Mock
+	ReadOnlyTransaction readOnlyTransaction;
+
 	@Before
 	public void setUp() {
-		Mockito.when(this.databaseClient.singleUse()).thenReturn(this.readContext);
+		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.transactionManager = Mockito.spy(TransactionManager.class);
 		Mockito.doAnswer(
 				(invocation) -> {
@@ -128,8 +135,20 @@ public class SpannerTemplateTransactionManagerTests {
 				.when(this.transactionManager)
 				.getState();
 
-		Mockito.when(this.databaseClient.transactionManager()).thenReturn(this.transactionManager);
-		Mockito.when(this.transactionManager.begin()).thenReturn(this.transactionContext);
+		when(this.databaseClient.transactionManager()).thenReturn(this.transactionManager);
+		when(this.databaseClient.readOnlyTransaction()).thenReturn(this.readOnlyTransaction);
+		when(this.transactionManager.begin()).thenReturn(this.transactionContext);
+	}
+
+	@Test
+	public void readOnlyTest() {
+		this.transactionalService.readOnlyOperation();
+		// begin() is for read-write transactions
+		verify(this.transactionManager, times(0)).begin();
+		verify(this.databaseClient, times(1)).readOnlyTransaction();
+		verify(this.transactionManager, times(1)).commit();
+		verify(this.readOnlyTransaction, times(1)).close();
+		verify(this.transactionManager, times(0)).rollback();
 	}
 
 	@Test
@@ -137,22 +156,22 @@ public class SpannerTemplateTransactionManagerTests {
 		TestEntity entity1 = new TestEntity();
 		TestEntity entity2 = new TestEntity();
 		this.transactionalService.doInTransaction(entity1, entity2);
-		Mockito.verify(this.transactionManager, times(1)).begin();
-		Mockito.verify(this.transactionManager, times(1)).commit();
-		Mockito.verify(this.transactionManager, times(0)).rollback();
+		verify(this.transactionManager, times(1)).begin();
+		verify(this.transactionManager, times(1)).commit();
+		verify(this.transactionManager, times(0)).rollback();
 
-		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
+		verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
 
-		Mockito.verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
-		Mockito.verify(this.transactionContext, times(1))
+		verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
+		verify(this.transactionContext, times(1))
 				.read(
 						eq("custom_test_table"),
 						eq(KeySet.singleKey(Key.of("abc"))),
 						Mockito.any(Iterable.class),
 						Mockito.any());
-		Mockito.verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
-		Mockito.verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
-		Mockito.verify(this.transactionContext, times(1)).executeUpdate(eq(DML_STATEMENT));
+		verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
+		verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
+		verify(this.transactionContext, times(1)).executeUpdate(eq(DML_STATEMENT));
 	}
 
 	@Test
@@ -168,20 +187,20 @@ public class SpannerTemplateTransactionManagerTests {
 		}
 		assertThat(exception).isNotNull();
 
-		Mockito.verify(this.transactionManager, times(1)).begin();
-		Mockito.verify(this.transactionManager, times(0)).commit();
-		Mockito.verify(this.transactionManager, times(1)).rollback();
-		Mockito.verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
+		verify(this.transactionManager, times(1)).begin();
+		verify(this.transactionManager, times(0)).commit();
+		verify(this.transactionManager, times(1)).rollback();
+		verify(this.databaseClient, times(1)).transactionManager(); // only 1 transaction
 
-		Mockito.verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
-		Mockito.verify(this.transactionContext, times(1))
+		verify(this.transactionContext, times(2)).buffer(INSERT_MUTATION);
+		verify(this.transactionContext, times(1))
 				.read(
 						eq("custom_test_table"),
 						eq(KeySet.singleKey(Key.of("abc"))),
 						Mockito.any(Iterable.class),
 						Mockito.any());
-		Mockito.verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
-		Mockito.verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
+		verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
+		verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
 	}
 
 	@Test
@@ -190,13 +209,13 @@ public class SpannerTemplateTransactionManagerTests {
 		TestEntity entity2 = new TestEntity();
 		this.transactionalService.doWithoutTransaction(entity1, entity2);
 
-		Mockito.verify(this.transactionManager, Mockito.never()).begin();
-		Mockito.verify(this.transactionManager, Mockito.never()).commit();
-		Mockito.verify(this.transactionManager, Mockito.never()).rollback();
-		Mockito.verify(this.databaseClient, Mockito.never()).transactionManager(); // only 1 transaction
+		verify(this.transactionManager, Mockito.never()).begin();
+		verify(this.transactionManager, Mockito.never()).commit();
+		verify(this.transactionManager, Mockito.never()).rollback();
+		verify(this.databaseClient, Mockito.never()).transactionManager(); // only 1 transaction
 
-		Mockito.verify(this.transactionContext, Mockito.never()).buffer(Mockito.any(List.class));
-		Mockito.verify(this.transactionContext, Mockito.never())
+		verify(this.transactionContext, Mockito.never()).buffer(Mockito.any(List.class));
+		verify(this.transactionContext, Mockito.never())
 				.read(Mockito.anyString(), Mockito.any(KeySet.class), Mockito.any(Iterable.class), Mockito.any());
 	}
 
@@ -238,10 +257,10 @@ public class SpannerTemplateTransactionManagerTests {
 			SpannerMappingContext mappingContext = new SpannerMappingContext();
 			SpannerEntityProcessor objectMapper = Mockito.mock(SpannerEntityProcessor.class);
 			SpannerMutationFactory mutationFactory = Mockito.mock(SpannerMutationFactory.class);
-			Mockito.when(mutationFactory.insert(Mockito.any(TestEntity.class))).thenReturn(INSERT_MUTATION);
-			Mockito.when(mutationFactory.upsert(Mockito.any(TestEntity.class), Mockito.any()))
+			when(mutationFactory.insert(Mockito.any(TestEntity.class))).thenReturn(INSERT_MUTATION);
+			when(mutationFactory.upsert(Mockito.any(TestEntity.class), Mockito.any()))
 					.thenReturn(UPSERT_MUTATION);
-			Mockito.when(mutationFactory.delete(Mockito.any(TestEntity.class))).thenReturn(DELETE_MUTATION);
+			when(mutationFactory.delete(Mockito.any(TestEntity.class))).thenReturn(DELETE_MUTATION);
 			SpannerSchemaUtils schemaUtils = new SpannerSchemaUtils(mappingContext, objectMapper, true);
 
 			return new SpannerTemplate(
@@ -292,6 +311,11 @@ public class SpannerTemplateTransactionManagerTests {
 			this.spannerTemplate.insert(entity2);
 			this.spannerTemplate.delete(entity1);
 			this.spannerTemplate.upsert(entity2);
+		}
+
+		@Transactional(readOnly = true)
+		public void readOnlyOperation() {
+			this.spannerTemplate.read(TestEntity.class, Key.of("abc"));
 		}
 
 		@Transactional(readOnly = true)

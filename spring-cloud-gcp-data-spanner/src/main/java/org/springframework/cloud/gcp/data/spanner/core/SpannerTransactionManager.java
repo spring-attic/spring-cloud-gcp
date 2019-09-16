@@ -191,6 +191,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
 
 				tx.transactionManager.commit();
+
+				// Explicitly closing read-only contexts is required because committing does not do so.
+				tx.getTransactionContext().close();
 				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
 			}
 		}
@@ -217,6 +220,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		logger.debug(tx + " beforeRollback; state = " + tx.transactionManager.getState());
 		if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
 			tx.transactionManager.rollback();
+			tx.getTransactionContext().close();
 		}
 		logger.debug(tx + " afterRollback; state = " + tx.transactionManager.getState());
 	}
