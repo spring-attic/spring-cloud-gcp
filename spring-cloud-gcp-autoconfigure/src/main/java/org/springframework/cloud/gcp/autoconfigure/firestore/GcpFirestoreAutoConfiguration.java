@@ -109,7 +109,6 @@ public class GcpFirestoreAutoConfiguration {
 	 * The Firestore reactive template and data repositories support auto-configuration.
 	 */
 	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class })
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	class FirestoreReactiveAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
