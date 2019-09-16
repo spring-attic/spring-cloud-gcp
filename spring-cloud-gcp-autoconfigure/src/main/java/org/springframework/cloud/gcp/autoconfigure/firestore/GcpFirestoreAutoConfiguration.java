@@ -104,32 +104,39 @@ public class GcpFirestoreAutoConfiguration {
 		return firestoreOptions.getService();
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
-			ManagedChannel firestoreManagedChannel) throws IOException {
-		return FirestoreGrpc.newStub(firestoreManagedChannel)
-				.withCallCredentials(MoreCallCredentials.from(this.credentialsProvider.getCredentials()));
-	}
+	/**
+	 * The Firestore reactive template and data repositories support auto-configuration.
+	 */
+	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class })
+	class FirestoreReactiveAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
+				ManagedChannel firestoreManagedChannel) throws IOException {
+			return FirestoreGrpc.newStub(firestoreManagedChannel)
+					.withCallCredentials(MoreCallCredentials.from(
+							GcpFirestoreAutoConfiguration.this.credentialsProvider.getCredentials()));
+		}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public FirestoreMappingContext firestoreMappingContext() {
-		return new FirestoreMappingContext();
-	}
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreMappingContext firestoreMappingContext() {
+			return new FirestoreMappingContext();
+		}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-		return new FirestoreTemplate(firestoreStub, this.firestoreRootPath);
-	}
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
+			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath);
+		}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public ManagedChannel firestoreManagedChannel() {
-		return ManagedChannelBuilder
-				.forTarget(this.hostPort)
-				.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
-				.build();
+		@Bean
+		@ConditionalOnMissingBean
+		public ManagedChannel firestoreManagedChannel() {
+			return ManagedChannelBuilder
+					.forTarget(GcpFirestoreAutoConfiguration.this.hostPort)
+					.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
+					.build();
+		}
 	}
 }
