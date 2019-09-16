@@ -36,10 +36,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.annotation.Id;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -56,8 +58,6 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 public class FirestoreIntegrationTests {
-
-	private static final String DEFAULT_PARENT = "projects/spring-cloud-gcp-ci-firestore/databases/(default)/documents";
 
 	@Autowired
 	FirestoreTemplate firestoreTemplate;
@@ -191,8 +191,12 @@ public class FirestoreIntegrationTests {
 	 * Spring config for the tests.
 	 */
 	@Configuration
+	@PropertySource("application-test.properties")
 	@EnableReactiveFirestoreRepositories
 	static class Config {
+
+		@Value("projects/${test.integration.firestore.project-id}/databases/(default)/documents")
+		String defaultParent;
 
 		@Bean
 		public FirestoreTemplate firestoreTemplate() throws IOException {
@@ -206,7 +210,7 @@ public class FirestoreIntegrationTests {
 					.build();
 
 			return new FirestoreTemplate(FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials),
-					DEFAULT_PARENT);
+					defaultParent);
 		}
 
 		@Bean

@@ -176,6 +176,11 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>grpc-google-cloud-firestore-v1</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- BigQuery -->
         <dependency>
