@@ -160,11 +160,16 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(messagesSet.size()).as("check that we received all the messages").isEqualTo(3);
 
 			ackableMessages.forEach((message) -> {
-				if (message.getPubsubMessage().getData().toStringUtf8().equals("message1")) {
-					message.ack(); //sync call
+				try {
+					if (message.getPubsubMessage().getData().toStringUtf8().equals("message1")) {
+						message.ack().get(); // sync call
+					}
+					else {
+						message.nack().get(); // sync call
+					}
 				}
-				else {
-					message.nack(); //sync call
+				catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
 				}
 			});
 

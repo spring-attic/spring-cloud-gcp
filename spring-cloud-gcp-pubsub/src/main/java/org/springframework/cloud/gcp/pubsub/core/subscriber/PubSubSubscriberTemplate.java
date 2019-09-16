@@ -339,7 +339,7 @@ public class PubSubSubscriberTemplate
 
 		groupedMessages.forEach((ProjectSubscriptionName psName, List<String> ackIds) -> {
 
-			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.getSubscription(), ackIds);
+			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.toString(), ackIds);
 
 			ApiFutures.addCallback(ackApiFuture, new ApiFutureCallback<Empty>() {
 				@Override
