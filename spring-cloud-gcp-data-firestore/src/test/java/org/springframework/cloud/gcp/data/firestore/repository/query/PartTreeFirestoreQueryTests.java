@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 public class PartTreeFirestoreQueryTests {
 
 	private static final User DUMMY_USER = new User("Hello", 23);
-	private static final Consumer<InvocationOnMock> NOOP = invocation -> {};
+	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };
 
 	private final FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
 	private final QueryMethod queryMethod = mock(QueryMethod.class);

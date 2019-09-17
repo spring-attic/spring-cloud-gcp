@@ -54,7 +54,7 @@ public class FirestoreRepositoryIntegrationTests {
 				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
-        (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("io.grpc.netty");
+				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger("io.grpc.netty");
 		root.setLevel(Level.INFO);
 	}
 
