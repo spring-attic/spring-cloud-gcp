@@ -166,8 +166,7 @@ The topic name could either be a canonical topic name within the current project
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Map&lt;String, String&gt; headers = Collections.singletonMap("key1", "val1");
-pubSubTemplate.publish(topicName, "message", headers).get();</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=publish]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -189,11 +188,7 @@ The subscription name could either be a canonical subscription name within the c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName, (message) -&gt; {
-	logger.info("Message received from " + subscriptionName + " subscription: "
-			+ message.getPubsubMessage().getData().toStringUtf8());
-	message.ack();
-});</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]</code></pre>
 </div>
 </div>
 </div>
@@ -235,15 +230,7 @@ This is different from subscribing to a subscription, in the sense that subscrib
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">int maxMessages = 10;
-boolean returnImmediately = false;
-List&lt;AcknowledgeablePubsubMessage&gt; messages = pubSubTemplate.pull(subscriptionName, maxMessages,
-		returnImmediately);
-
-//acknowledge the messages
-pubSubTemplate.ack(messages);
-
-messages.forEach(message -&gt; logger.info(message.getPubsubMessage().getData().toStringUtf8()));</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=pull]</code></pre>
 </div>
 </div>
 </div>
@@ -318,13 +305,7 @@ All <code>ack()</code>, <code>nack()</code>, and <code>modifyAckDeadline()</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
-// You will have to configure your own instance if you are unable to depend
-// on the ObjectMapper provided by Spring Boot starters.
-@Bean
-public PubSubMessageConverter pubSubMessageConverter() {
-	return new JacksonPubSubMessageConverter(new ObjectMapper());
-}</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_bean]</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -345,28 +326,7 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">static class TestUser {
-
-	String username;
-
-	String password;
-
-	public String getUsername() {
-		return this.username;
-	}
-
-	void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getPassword() {
-		return this.password;
-	}
-
-	void setPassword(String password) {
-		this.password = password;
-	}
-}</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_convertible_class]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -374,28 +334,15 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">TestUser user = new TestUser();
-user.setUsername("John");
-user.setPassword("password");
-pubSubTemplate.publish(topicName, user);</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_publish]</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>And thatt&#8217;s how you convert messages to objects on pull:</p>
+<p>And that&#8217;s how you convert messages to objects on pull:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">int maxMessages = 1;
-boolean returnImmediately = false;
-List&lt;ConvertedAcknowledgeablePubsubMessage&lt;TestUser&gt;&gt; messages = pubSubTemplate.pullAndConvert(
-		subscriptionName, maxMessages, returnImmediately, TestUser.class);
-
-ConvertedAcknowledgeablePubsubMessage&lt;TestUser&gt; message = messages.get(0);
-
-//acknowledge the message
-message.ack();
-
-TestUser receivedTestUser = message.getPayload();</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_pull]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -525,11 +472,7 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">List&lt;String&gt; topics = pubSubAdmin
-		.listTopics()
-		.stream()
-		.map(Topic::getName)
-		.collect(Collectors.toList());</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_topics]</code></pre>
 </div>
 </div>
 </div>
@@ -610,11 +553,7 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">List&lt;String&gt; subscriptions = pubSubAdmin
-		.listSubscriptions()
-		.stream()
-		.map(Subscription::getName)
-		.collect(Collectors.toList());</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_subscriptions]</code></pre>
 </div>
 </div>
 </div>

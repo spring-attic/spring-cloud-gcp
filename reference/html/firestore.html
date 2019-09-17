@@ -146,32 +146,12 @@ $(addBlockSwitches);
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
-Firestore firestore;
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"> @Autowired
+ Firestore firestore;
 
-void writeDocumentFromObject() throws ExecutionException, InterruptedException {
-	// Add document data with id "joe" using a custom User class
-	User data = new User("Joe",
-			Arrays.asList(
-					new Phone(12345, PhoneType.CELL),
-					new Phone(54321, PhoneType.WORK)));
+Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
 
-	// .get() blocks on response
-	WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
-
-	LOGGER.info("Update time: " + writeResult.getUpdateTime());
-}
-
-User readDocumentToObject() throws ExecutionException, InterruptedException {
-		ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
-				this.firestore.document("users/joe").get();
-
-		User user = documentFuture.get().toObject(User.class);
-
-		LOGGER.info("read: " + user);
-
-		return user;
-}</code></pre>
+Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]</code></pre>
 </div>
 </div>
 </div>
