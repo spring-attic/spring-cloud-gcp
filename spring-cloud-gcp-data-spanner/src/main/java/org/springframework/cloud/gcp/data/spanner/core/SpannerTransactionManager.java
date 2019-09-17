@@ -100,6 +100,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		if (transactionDefinition.isReadOnly()) {
 			final ReadContext targetTransactionContext = this.databaseClientProvider.get()
 					.readOnlyTransaction();
+			tx.isReadOnly = true;
 
 			tx.transactionContext = new TransactionContext() {
 				@Override
@@ -192,9 +193,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 				tx.transactionManager.commit();
 
-				// Explicitly closing read-only contexts is required because committing does not do so.
-				tx.getTransactionContext().close();
 				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
+			}
+			if (tx.isReadOnly()) {
+				tx.getTransactionContext().close();
 			}
 		}
 		catch (AbortedException ex) {
@@ -238,8 +240,14 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 		private TransactionContext transactionContext;
 
+		private boolean isReadOnly;
+
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
 		}
+
+		public boolean isReadOnly() {
+			return this.isReadOnly;
+		};
 	}
 }

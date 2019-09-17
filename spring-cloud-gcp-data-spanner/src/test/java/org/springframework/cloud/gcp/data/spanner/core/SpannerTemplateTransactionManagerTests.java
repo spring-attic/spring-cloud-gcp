@@ -142,11 +142,13 @@ public class SpannerTemplateTransactionManagerTests {
 
 	@Test
 	public void readOnlyTest() {
+		// The transactionManager will NOT be started in readonly
+		when(this.transactionManager.getState()).thenReturn(TransactionManager.TransactionState.COMMITTED);
+
 		this.transactionalService.readOnlyOperation();
 		// begin() is for read-write transactions
 		verify(this.transactionManager, times(0)).begin();
 		verify(this.databaseClient, times(1)).readOnlyTransaction();
-		verify(this.transactionManager, times(1)).commit();
 		verify(this.readOnlyTransaction, times(1)).close();
 		verify(this.transactionManager, times(0)).rollback();
 	}
