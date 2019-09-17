@@ -14,12 +14,6 @@
     <name>Spring Cloud GCP Firestore Module</name>
     <description>Spring Cloud GCP Firestore Module</description>
 
-    <properties>
-        <forkCount>0</forkCount>
-        <surefire.useFile>false</surefire.useFile>
-        <trimStackTrace>false</trimStackTrace>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.projectreactor</groupId>
