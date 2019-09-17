@@ -82,7 +82,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -102,7 +102,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -125,7 +125,7 @@ public class SpannerTransactionManagerTests {
 		when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return null;
 			}
 		};
@@ -151,7 +151,7 @@ public class SpannerTransactionManagerTests {
 		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -180,7 +180,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -202,7 +202,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -230,7 +230,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -258,7 +258,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -281,7 +281,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
@@ -302,7 +302,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Object doGetTransaction() {
 				return tx;
 			}
 		};
