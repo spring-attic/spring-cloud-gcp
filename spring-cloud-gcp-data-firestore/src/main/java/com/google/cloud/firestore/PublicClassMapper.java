@@ -33,7 +33,8 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
  */
 public final class PublicClassMapper {
 
-	private static final Internal INTERNAL = new Internal(new FirestoreImpl(FirestoreOptions.newBuilder().build()));
+	private static final Internal INTERNAL = new Internal(
+			new FirestoreImpl(FirestoreOptions.newBuilder().setProjectId("dummy-project-id").build(), null));
 
 	private static final String VALUE_FIELD_NAME = "value";
 
