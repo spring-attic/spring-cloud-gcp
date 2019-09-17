@@ -16,6 +16,8 @@
 
     <properties>
         <forkCount>0</forkCount>
+        <surefire.useFile>false</surefire.useFile>
+        <trimStackTrace>false</trimStackTrace>
     </properties>
 
     <dependencies>

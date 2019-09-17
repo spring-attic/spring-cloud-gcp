@@ -74,8 +74,9 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void findAllTest() {
+		LOGGER.info("Start findAllTest()");
+
 		mockRunQueryMethod();
 
 		StepVerifier.create(this.firestoreTemplate.findAll(TestEntity.class))
@@ -92,6 +93,8 @@ public class FirestoreTemplateTests {
 
 		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
 		verify(this.firestoreStub, times(1)).runQuery(any(), any());
+
+		LOGGER.info("End findAllTest()");
 	}
 
 	@Test
