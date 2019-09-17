@@ -29,10 +29,7 @@ import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
 import io.grpc.stub.StreamObserver;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -53,8 +50,6 @@ import static org.mockito.Mockito.verify;
  */
 public class FirestoreTemplateTests {
 
-	private static final Log LOGGER = LogFactory.getLog(FirestoreTemplateTests.class);
-
 	private FirestoreTemplate firestoreTemplate;
 
 	private final FirestoreStub firestoreStub = mock(FirestoreStub.class);
@@ -63,20 +58,11 @@ public class FirestoreTemplateTests {
 
 	@Before
 	public void setup() {
-		LOGGER.info("Setup started.");
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
-		LOGGER.info("Setup ended.");
-	}
-
-	@Test
-	public void dummyTest() {
-		LOGGER.info("Dummy test.");
 	}
 
 	@Test
 	public void findAllTest() {
-		LOGGER.info("Start findAllTest()");
-
 		mockRunQueryMethod();
 
 		StepVerifier.create(this.firestoreTemplate.findAll(TestEntity.class))
@@ -93,12 +79,9 @@ public class FirestoreTemplateTests {
 
 		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
 		verify(this.firestoreStub, times(1)).runQuery(any(), any());
-
-		LOGGER.info("End findAllTest()");
 	}
 
 	@Test
-	@Ignore
 	public void findByIdTest() {
 		doAnswer(invocation -> {
 			StreamObserver<Document> streamObserver = invocation.getArgument(1);
@@ -120,7 +103,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void findByIdErrorTest() {
 		doAnswer(invocation -> {
 			StreamObserver<Document> streamObserver = invocation.getArgument(1);
@@ -143,7 +125,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void findByIdNotFoundTest() {
 		doAnswer(invocation -> {
 			StreamObserver<Document> streamObserver = invocation.getArgument(1);
@@ -163,7 +144,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void findAllByIdTest() {
 		GetDocumentRequest request1 = GetDocumentRequest.newBuilder()
 				.setName(this.parent + "/testEntities/e1")
@@ -209,7 +189,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void countTest() {
 		mockRunQueryMethod();
 
@@ -234,7 +213,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void existsByIdTest() {
 		GetDocumentRequest request = GetDocumentRequest.newBuilder()
 				.setName(this.parent + "/testEntities/" + "e1")
@@ -257,7 +235,6 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
-	@Ignore
 	public void existsByIdNotFoundTest() {
 		GetDocumentRequest request = GetDocumentRequest.newBuilder()
 				.setName(this.parent + "/testEntities/" + "e1")

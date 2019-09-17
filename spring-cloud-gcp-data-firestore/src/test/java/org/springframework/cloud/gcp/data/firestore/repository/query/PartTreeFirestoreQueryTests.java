@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import reactor.core.publisher.Flux;
@@ -39,7 +38,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore("See: https://github.com/spring-cloud/spring-cloud-gcp/issues/1894")
 public class PartTreeFirestoreQueryTests {
 	private final FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
 	private final QueryMethod queryMethod = mock(QueryMethod.class);
