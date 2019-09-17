@@ -180,7 +180,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Object doGetTransaction() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
