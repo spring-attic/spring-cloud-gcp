@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2019 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore;
+package org.springframework.cloud.gcp.data.firestore.it;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
+import org.springframework.cloud.gcp.data.firestore.User;
 
 /**
  * A test custom repository.
  *
  * @author Chengyuan Zhao
  */
-public interface UserRepository extends FirestoreReactiveRepository<FirestoreIntegrationTests.User> {
-	Flux<FirestoreIntegrationTests.User> findByAge(Integer age);
+public interface UserRepository extends FirestoreReactiveRepository<User> {
+	Flux<User> findByAge(Integer age);
 
-	Flux<FirestoreIntegrationTests.User> findByAgeAndName(Integer age, String name);
+	Flux<User> findByAgeAndName(Integer age, String name);
 
-	Flux<FirestoreIntegrationTests.User> findByAgeGreaterThan(Integer age);
+	Flux<User> findByAgeGreaterThan(Integer age);
+
+	Mono<Long> countByAgeIsGreaterThan(Integer age);
 }
