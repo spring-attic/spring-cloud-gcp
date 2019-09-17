@@ -58,12 +58,21 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		this.databaseClientProvider = databaseClientProvider;
 	}
 
+	protected Tx getCurrentTx() {
+		return (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+				.currentTransactionStatus())
+						.getTransaction();
+	}
+
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
 		try {
-			return ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus())
-							.getTransaction();
+			Tx tx = getCurrentTx();
+			if (tx.getTransactionManager() != null
+					&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+				return tx;
+			}
+			return new Tx();
 		}
 		catch (NoTransactionException ex) {
 			return new Tx();
@@ -164,7 +173,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		else {
 			tx.transactionManager = this.databaseClientProvider.get().transactionManager();
-			tx.transactionContext = tx.transactionManager.begin();
+			tx.transactionContext = tx.getTransactionManager().begin();
 			tx.isReadOnly = false;
 		}
 	}
@@ -174,7 +183,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		try {
-			if ( tx.transactionManager != null &&
+			if (tx.transactionManager != null &&
 					tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
 
 				tx.transactionManager.commit();
@@ -224,6 +233,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
+		}
+
+		public TransactionManager getTransactionManager() {
+			return this.transactionManager;
 		}
 
 		public boolean isReadOnly() {
