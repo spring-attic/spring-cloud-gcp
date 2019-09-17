@@ -178,6 +178,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		}
 		else {
 			tx.transactionContext = tx.transactionManager.begin();
+			tx.isReadOnly = false;
 		}
 
 		logger.debug(tx + " begin; state = " + tx.transactionManager.getState());
