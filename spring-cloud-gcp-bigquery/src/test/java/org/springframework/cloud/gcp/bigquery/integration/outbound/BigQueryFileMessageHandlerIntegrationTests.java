@@ -156,7 +156,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		ListenableFuture<Job> jobFuture =
 				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
 		jobFuture.cancel(true);
-		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1);
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			// This asserts that the BigQuery job polling task is no longer in the scheduler after cancel.
