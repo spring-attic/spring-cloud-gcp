@@ -58,30 +58,25 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		this.databaseClientProvider = databaseClientProvider;
 	}
 
-	protected Tx getCurrentTX() {
-		try {
-			return (SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus())
-							.getTransaction();
-		}
-		catch (NoTransactionException ex) {
-			return null;
-		}
+	protected Tx getCurrentTx() {
+		return (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+				.currentTransactionStatus())
+						.getTransaction();
 	}
 
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
-		Tx tx = getCurrentTX();
-		if (tx != null
-				&& tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
-			logger.debug(tx + " reuse; state = " + tx.transactionManager.getState());
-			return tx;
+		try {
+			Tx tx = getCurrentTx();
+			if (tx.getTransactionManager() != null
+					&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+				return tx;
+			}
+			return new Tx();
 		}
-		// create a new one if current is not there
-		tx = new Tx();
-		tx.transactionManager = this.databaseClientProvider.get().transactionManager();
-		logger.debug(tx + " create; state = " + tx.transactionManager.getState());
-		return tx;
+		catch (NoTransactionException ex) {
+			return new Tx();
+		}
 	}
 
 	@Override
@@ -177,11 +172,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			};
 		}
 		else {
-			tx.transactionContext = tx.transactionManager.begin();
+			tx.transactionManager = this.databaseClientProvider.get().transactionManager();
+			tx.transactionContext = tx.getTransactionManager().begin();
 			tx.isReadOnly = false;
 		}
-
-		logger.debug(tx + " begin; state = " + tx.transactionManager.getState());
 	}
 
 	@Override
@@ -189,12 +183,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		try {
-			logger.debug(tx + " beforeCommit; state = " + tx.transactionManager.getState());
-			if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+			if (tx.transactionManager != null &&
+					tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
 
 				tx.transactionManager.commit();
-
-				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
 			}
 			if (tx.isReadOnly()) {
 				tx.getTransactionContext().close();
@@ -220,17 +212,13 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	protected void doRollback(DefaultTransactionStatus defaultTransactionStatus)
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
-		logger.debug(tx + " beforeRollback; state = " + tx.transactionManager.getState());
-		if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+		if (tx.transactionManager != null
+				&& tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
 			tx.transactionManager.rollback();
+		}
+		if (tx.isReadOnly()) {
 			tx.getTransactionContext().close();
 		}
-		logger.debug(tx + " afterRollback; state = " + tx.transactionManager.getState());
-	}
-
-	protected boolean isExistingTransaction(Object transaction) {
-		logger.debug("existing transaction " + transaction + "=" + getCurrentTX());
-		return transaction == getCurrentTX();
 	}
 
 	/**
@@ -245,6 +233,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
+		}
+
+		public TransactionManager getTransactionManager() {
+			return this.transactionManager;
 		}
 
 		public boolean isReadOnly() {

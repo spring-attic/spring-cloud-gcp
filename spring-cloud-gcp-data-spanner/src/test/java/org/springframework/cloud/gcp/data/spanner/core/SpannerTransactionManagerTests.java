@@ -78,11 +78,11 @@ public class SpannerTransactionManagerTests {
 		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
 
 		SpannerTransactionManager.Tx tx = mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
+		when(tx.getTransactionManager()).thenReturn(transactionManager);
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -102,7 +102,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -114,28 +114,6 @@ public class SpannerTransactionManagerTests {
 
 		Assert.assertNotEquals(
 				"expected a new transaction but got the same one", tx, manager.doGetTransaction());
-
-		verify(this.databaseClient, times(1)).transactionManager();
-	}
-
-	@Test
-	public void testDoGetTransactionNew() {
-		TransactionManager transactionManagerNew = mock(TransactionManager.class);
-		when(transactionManagerNew.getState()).thenReturn(TransactionState.STARTED);
-		when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return null;
-			}
-		};
-
-		SpannerTransactionManager.Tx actual = (SpannerTransactionManager.Tx) manager.doGetTransaction();
-		Assert.assertNotNull(actual);
-		Assert.assertEquals(
-				ReflectionTestUtils.getField(actual, "transactionManager"), transactionManagerNew);
-
-		verify(this.databaseClient, times(1)).transactionManager();
 	}
 
 	@Test
@@ -148,15 +126,15 @@ public class SpannerTransactionManagerTests {
 
 		TransactionDefinition definition = new DefaultTransactionDefinition();
 		SpannerTransactionManager.Tx tx = mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
+		when(tx.getTransactionManager()).thenReturn(transactionManager);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
 
-		manager.doBegin(tx, definition);
+		manager.doBegin(manager.doGetTransaction(), definition);
 
 		// need to use ReflectionTestUtils because tx is mocked and accessor won't work
 		Assert.assertEquals(ReflectionTestUtils.getField(tx, "transactionContext"), transactionContext);
@@ -180,7 +158,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -202,7 +180,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -230,7 +208,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -258,7 +236,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -281,7 +259,7 @@ public class SpannerTransactionManagerTests {
 
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
@@ -302,7 +280,7 @@ public class SpannerTransactionManagerTests {
 		when(status.getTransaction()).thenReturn(tx);
 		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
 			@Override
-			protected Tx getCurrentTX() {
+			protected Tx getCurrentTx() {
 				return tx;
 			}
 		};
