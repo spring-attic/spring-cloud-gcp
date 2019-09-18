@@ -165,7 +165,7 @@ PubSubReactiveFactory reactiveFactory;
 // ...
 
 Flux<AcknowledgeablePubsubMessage> flux
-				= reactiveFactory.createPolledFlux("exampleSubscription", 1000);
+				= reactiveFactory.poll("exampleSubscription", 1000);
 ----
 
 The `Flux` then represents an infinite stream of GCP Pub/Sub messages coming in through the specified subscription.
@@ -181,7 +181,7 @@ For example, if you only want to fetch 5 messages, you can use `limitRequest` op
 Flux<AcknowledgeablePubsubMessage> fiveMessageFlux = flux.limitRequest(5);
 ----
 
-Acknowledging messages flowing through the `Flux` should be manually acknowledged.
+Messages flowing through the `Flux` should be manually acknowledged.
 
 [source,java]
 ----
