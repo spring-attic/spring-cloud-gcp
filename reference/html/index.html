@@ -1069,7 +1069,7 @@ PubSubReactiveFactory reactiveFactory;
 // ...
 
 Flux&lt;AcknowledgeablePubsubMessage&gt; flux
-                = reactiveFactory.createPolledFlux("exampleSubscription", 1000);</code></pre>
+                = reactiveFactory.poll("exampleSubscription", 1000);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1088,7 +1088,7 @@ For example, if you only want to fetch 5 messages, you can use <code>limitReques
 </div>
 </div>
 <div class="paragraph">
-<p>Acknowledging messages flowing through the <code>Flux</code> should be manually acknowledged.</p>
+<p>Messages flowing through the <code>Flux</code> should be manually acknowledged.</p>
 </div>
 <div class="listingblock">
 <div class="content">
