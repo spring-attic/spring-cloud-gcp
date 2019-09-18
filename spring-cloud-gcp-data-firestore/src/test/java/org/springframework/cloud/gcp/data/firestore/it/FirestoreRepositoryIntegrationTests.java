@@ -17,13 +17,12 @@
 package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
+import java.util.stream.IntStream;
 
-import ch.qos.logback.classic.Level;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +51,6 @@ public class FirestoreRepositoryIntegrationTests {
 				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
-
-		ch.qos.logback.classic.Logger root =
-				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger("io.grpc.netty");
-		root.setLevel(Level.INFO);
 	}
 
 	@Before
@@ -65,12 +60,8 @@ public class FirestoreRepositoryIntegrationTests {
 
 	@Test
 	public void countTest() {
-		Flux<User> users = Flux.create(sink -> {
-			for (int i = 1; i < 10; i++) {
-				sink.next(new User("blah-person" + i, i));
-			}
-			sink.complete();
-		});
+		Flux<User> users = Flux.fromStream(IntStream.range(1, 10).boxed())
+				.map(n -> new User("blah-person" + n, n));
 
 		this.firestoreTemplate.saveAll(users).blockLast();
 
