@@ -75,8 +75,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				"BigQuery integration tests are disabled. "
 						+ "Please use '-Dit.bigquery=true' to enable them.",
 				System.getProperty("it.bigquery"), is("true"));
-
-
 	}
 
 	@Before
