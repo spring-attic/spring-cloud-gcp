@@ -31,11 +31,6 @@ public final class BigQuerySpringMessageHeaders {
 	public static final String PREFIX = "gcp_bigquery_";
 
 	/**
-	 * BigQuery dataset name message header.
-	 */
-	public static final String DATASET_NAME = PREFIX + "dataset_name";
-
-	/**
 	 * BigQuery table name message header.
 	 */
 	public static final String TABLE_NAME = PREFIX + "table_name";

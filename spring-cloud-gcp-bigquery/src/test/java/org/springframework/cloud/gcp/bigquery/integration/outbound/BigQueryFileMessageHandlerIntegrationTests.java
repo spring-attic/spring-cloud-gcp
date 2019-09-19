@@ -22,10 +22,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
@@ -38,9 +36,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.config.EnableIntegration;
+import org.springframework.cloud.gcp.bigquery.integration.BigQueryTestConfiguration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
@@ -54,13 +50,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.springframework.cloud.gcp.bigquery.integration.BigQueryTestConfiguration.DATASET_NAME;
+
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = BigQueryTestConfiguration.class)
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class BigQueryFileMessageHandlerIntegrationTests {
-
-	private static final String DATASET_NAME = "test_dataset";
 
 	private static final String TABLE_NAME = "test_table";
 
@@ -79,6 +75,8 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				"BigQuery integration tests are disabled. "
 						+ "Please use '-Dit.bigquery=true' to enable them.",
 				System.getProperty("it.bigquery"), is("true"));
+
+
 	}
 
 	@Before
@@ -90,7 +88,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 	@Test
 	public void testLoadFile() throws InterruptedException, ExecutionException {
 		HashMap<String, Object> messageHeaders = new HashMap<>();
-		this.messageHandler.setDatasetName(DATASET_NAME);
 		this.messageHandler.setTableName(TABLE_NAME);
 		this.messageHandler.setFormatOptions(FormatOptions.csv());
 
@@ -125,7 +122,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		this.messageHandler.setSync(true);
 
 		HashMap<String, Object> messageHeaders = new HashMap<>();
-		messageHeaders.put(BigQuerySpringMessageHeaders.DATASET_NAME, DATASET_NAME);
 		messageHeaders.put(BigQuerySpringMessageHeaders.TABLE_NAME, TABLE_NAME);
 		messageHeaders.put(BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.csv());
 
@@ -145,7 +141,6 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 	@Test
 	public void testLoadFile_cancel() {
 		HashMap<String, Object> messageHeaders = new HashMap<>();
-		messageHeaders.put(BigQuerySpringMessageHeaders.DATASET_NAME, DATASET_NAME);
 		messageHeaders.put(BigQuerySpringMessageHeaders.TABLE_NAME, TABLE_NAME);
 		messageHeaders.put(BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.csv());
 
@@ -161,22 +156,5 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 			// This asserts that the BigQuery job polling task is no longer in the scheduler after cancel.
 			assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
 		});
-	}
-
-	@EnableIntegration
-	@Configuration
-	static class BigQueryTestConfiguration {
-
-		@Bean
-		public BigQuery bigQuery() {
-			return BigQueryOptions.getDefaultInstance().getService();
-		}
-
-		@Bean
-		public BigQueryFileMessageHandler messageHandler(BigQuery bigQuery) {
-			BigQueryFileMessageHandler messageHandler = new BigQueryFileMessageHandler(bigQuery);
-			messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
-			return messageHandler;
-		}
 	}
 }
