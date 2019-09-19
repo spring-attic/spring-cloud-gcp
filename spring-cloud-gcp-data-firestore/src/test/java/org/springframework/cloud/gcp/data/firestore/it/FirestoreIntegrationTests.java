@@ -50,14 +50,10 @@ public class FirestoreIntegrationTests {
 	@Autowired
 	FirestoreTemplate firestoreTemplate;
 
-	@Autowired
-	UserRepository userRepository;
-
 	@BeforeClass
 	public static void checkToRun() throws IOException {
-		assumeThat(
-				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
-						+ "to enable them. ",
+		assumeThat("Firestore-sample tests are disabled. "
+						+ "Please use '-Dit.firestore=true' to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
@@ -99,9 +95,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
-		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
-
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 	}
@@ -129,13 +123,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.saveAll(users).blockLast();
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
-
-		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
-		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
-		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1, u2);
-
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
-		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();
 	}
 
 	@Test

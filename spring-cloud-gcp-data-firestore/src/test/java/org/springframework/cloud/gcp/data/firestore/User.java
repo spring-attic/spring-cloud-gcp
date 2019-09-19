@@ -20,6 +20,11 @@ import java.util.Objects;
 
 import org.springframework.data.annotation.Id;
 
+/**
+ * Sample entity for integration tests.
+ *
+ * @author Daniel Zou
+ */
 @Entity(collectionName = "usersCollection")
 public class User {
 	@Id
@@ -32,7 +37,7 @@ public class User {
 		this.age = age;
 	}
 
-	User() {
+	public User() {
 	}
 
 	public String getName() {

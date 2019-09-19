@@ -26,7 +26,6 @@ import org.junit.runner.RunWith;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -40,22 +39,18 @@ import static org.junit.Assume.assumeThat;
 public class FirestoreRepositoryIntegrationTests {
 
 	@Autowired
-	FirestoreTemplate firestoreTemplate;
-
-	@Autowired
 	UserRepository userRepository;
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
-		assumeThat(
-				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
-						+ "to enable them. ",
+		assumeThat("Firestore-sample tests are disabled. "
+				+ "Please use '-Dit.firestore=true' to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
 	}
 
 	@Before
 	public void cleanTestEnvironment() {
-		this.firestoreTemplate.deleteAll(User.class).block();
+		this.userRepository.deleteAll().block();
 	}
 
 	@Test
@@ -63,9 +58,37 @@ public class FirestoreRepositoryIntegrationTests {
 		Flux<User> users = Flux.fromStream(IntStream.range(1, 10).boxed())
 				.map(n -> new User("blah-person" + n, n));
 
-		this.firestoreTemplate.saveAll(users).blockLast();
+		this.userRepository.saveAll(users).blockLast();
 
 		long count = this.userRepository.countByAgeIsGreaterThan(5).block();
 		assertThat(count).isEqualTo(4);
+	}
+
+	@Test
+	public void writeReadDeleteTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).block();
+		this.userRepository.save(bob).block();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("Alice", "Bob");
+	}
+
+	@Test
+	public void partTreeRepositoryMethodTest() {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
+
+		this.userRepository.saveAll(users).blockLast();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
+				u2);
 	}
 }
