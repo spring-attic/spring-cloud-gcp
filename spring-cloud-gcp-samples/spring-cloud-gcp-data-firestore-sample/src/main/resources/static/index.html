@@ -35,6 +35,17 @@
   <p>This section allows you to read and modify User entities in Firestore.</p>
 
   <div class="panel">
+    <b>Create and save a new User</b>
+    <form action="/users/saveUser" method="post">
+      Name: <input type="text" name="name">
+      <br>
+      Age: <input type="text" name="age">
+      <br>
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
     <a href="/users">Show all users</a>
   </div>
 
@@ -47,18 +58,7 @@
   </div>
 
   <div class="panel">
-    <b>Create and save a new User</b>
-    <form action="/users/saveUser" method="post">
-      Name: <input type="text" name="name">
-      <br>
-      Age: <input type="text" name="age">
-      <br>
-      <input type="submit" value="submit">
-    </form>
-  </div>
-
-  <div class="panel">
-    <a href="https://console.cloud.google.com/firestore/data">View your data on Firestore</a>
+    <a href="https://console.cloud.google.com/firestore/data">View your Firestore data in the Cloud Console</a>
   </div>
 </div>
 
