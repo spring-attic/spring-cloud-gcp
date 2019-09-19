@@ -23,10 +23,11 @@ import com.google.firestore.v1.StructuredQuery;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
-import org.springframework.cloud.gcp.data.firestore.FirestoreIntegrationTests;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.ResultProcessor;
@@ -39,9 +40,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PartTreeFirestoreQueryTests {
+
+	private static final User DUMMY_USER = new User("Hello", 23);
+	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };
+
 	private final FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
 	private final QueryMethod queryMethod = mock(QueryMethod.class);
-	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };
 
 	@Test
 	public void testPartTreeQuery() {
@@ -72,11 +76,18 @@ public class PartTreeFirestoreQueryTests {
 			builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
 			assertThat(actualBuilder.build()).isEqualTo(builder.build());
 
-			assertThat(clazz).isEqualTo(FirestoreIntegrationTests.User.class);
+			assertThat(clazz).isEqualTo(User.class);
 		});
 
 		partTreeFirestoreQuery.execute(new Object[]{22});
+	}
 
+	@Test
+	public void testPartTreeQueryCount() {
+		PartTreeFirestoreQuery partTreeFirestoreQuery = createPartTreeQuery("countByAgeGreaterThan", NOOP);
+
+		Mono<Long> count = (Mono<Long>) partTreeFirestoreQuery.execute(new Object[] { 22 });
+		assertThat(count.block()).isEqualTo(1);
 	}
 
 	@Test
@@ -113,12 +124,12 @@ public class PartTreeFirestoreQueryTests {
 	private PartTreeFirestoreQuery createPartTreeQuery(String methodName, Consumer<InvocationOnMock> validator) {
 		when(this.firestoreTemplate.execute(any(), any())).thenAnswer(invocation -> {
 			validator.accept(invocation);
-			return Flux.empty();
+			return Flux.just(DUMMY_USER);
 		});
 
 		when(this.queryMethod.getName()).thenReturn(methodName);
 		ReturnedType returnedType = mock(ReturnedType.class);
-		when(returnedType.getDomainType()).thenAnswer(invocation -> FirestoreIntegrationTests.User.class);
+		when(returnedType.getDomainType()).thenAnswer(invocation -> User.class);
 		ResultProcessor resultProcessor = mock(ResultProcessor.class);
 		when(resultProcessor.getReturnedType()).thenReturn(returnedType);
 		when(this.queryMethod.getResultProcessor()).thenReturn(resultProcessor);

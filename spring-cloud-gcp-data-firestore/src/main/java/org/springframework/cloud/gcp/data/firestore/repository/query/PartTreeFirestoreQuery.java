@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
+import reactor.core.publisher.Flux;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
@@ -85,7 +86,14 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		}
 
 		StructuredQuery.Builder builder = createBuilderWithFilter(parameters);
-		return this.reactiveOperations.execute(builder, this.persistentEntity.getType());
+		Flux<?> result = this.reactiveOperations.execute(builder, this.persistentEntity.getType());
+
+		if (this.tree.isCountProjection()) {
+			return result.count();
+		}
+		else {
+			return result;
+		}
 	}
 
 	private StructuredQuery.Builder createBuilderWithFilter(Object[] parameters) {

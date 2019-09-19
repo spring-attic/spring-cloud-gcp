@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2019 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore;
+package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 import ch.qos.logback.classic.Level;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firestore.v1.FirestoreGrpc;
-import io.grpc.CallCredentials;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.auth.MoreCallCredentials;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,13 +29,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
-import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -56,20 +44,16 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
 public class FirestoreIntegrationTests {
 
 	@Autowired
 	FirestoreTemplate firestoreTemplate;
 
-	@Autowired
-	UserRepository userRepository;
-
 	@BeforeClass
 	public static void checkToRun() throws IOException {
-		assumeThat(
-				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
-						+ "to enable them. ",
+		assumeThat("Firestore-sample tests are disabled. "
+						+ "Please use '-Dit.firestore=true' to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
 
 		ch.qos.logback.classic.Logger root =
@@ -111,9 +95,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.save(alice).block();
 		this.firestoreTemplate.save(bob).block();
 
-		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
-
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 	}
@@ -141,13 +123,7 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.saveAll(users).blockLast();
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
-
-		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
-		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
-		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1, u2);
-
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
-		assertThat(this.userRepository.existsById("Cloud").block()).isFalse();
 	}
 
 	@Test
@@ -185,95 +161,5 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.deleteAll(User.class).block();
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
-	}
-
-	/**
-	 * Spring config for the tests.
-	 */
-	@Configuration
-	@PropertySource("application-test.properties")
-	@EnableReactiveFirestoreRepositories
-	static class Config {
-
-		@Value("projects/${test.integration.firestore.project-id}/databases/(default)/documents")
-		String defaultParent;
-
-		@Bean
-		public FirestoreTemplate firestoreTemplate() throws IOException {
-
-			GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
-			CallCredentials callCredentials = MoreCallCredentials.from(credentials);
-
-			// Create a channel
-			ManagedChannel channel = ManagedChannelBuilder
-					.forAddress("firestore.googleapis.com", 443)
-					.build();
-
-			return new FirestoreTemplate(FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials),
-					defaultParent);
-		}
-
-		@Bean
-		public FirestoreMappingContext firestoreMappingContext() {
-			return new FirestoreMappingContext();
-		}
-	}
-
-	@Entity(collectionName = "usersCollection")
-	public static class User {
-		@Id
-		private String name;
-
-		private Integer age;
-
-		User(String name, Integer age) {
-			this.name = name;
-			this.age = age;
-		}
-
-		User() {
-		}
-
-		public String getName() {
-			return this.name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public Integer getAge() {
-			return this.age;
-		}
-
-		public void setAge(Integer age) {
-			this.age = age;
-		}
-
-		@Override
-		public String toString() {
-			return "User{" +
-					"name='" + this.name + '\'' +
-					", age=" + this.age +
-					'}';
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
-			User user = (User) o;
-			return Objects.equals(getName(), user.getName()) &&
-					Objects.equals(getAge(), user.getAge());
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(getName(), getAge());
-		}
 	}
 }
