@@ -60,7 +60,7 @@ public class FirestorePersistentEntityImpl<T>
 		Entity entity = AnnotationUtils.findAnnotation(typeInformation.getType(), Entity.class);
 		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
 
-		if (collectionName == null || collectionName.isEmpty()) {
+		if (StringUtils.isEmpty(collectionName)) {
 			// Infer the collection name as the lowercase entity name.
 			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
 		}
