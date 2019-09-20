@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
 import org.junit.Test;
+
 import org.springframework.cloud.gcp.data.firestore.Entity;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -31,15 +32,15 @@ public class FirestorePersistentEntityImplTests {
 
 	@Test
 	public void testSetCollectionName() {
-		FirestorePersistentEntity<Student> firestorePersistentEntity =
-				new FirestorePersistentEntityImpl<>(ClassTypeInformation.from(Student.class));
+		FirestorePersistentEntity<Student> firestorePersistentEntity = new FirestorePersistentEntityImpl<>(
+				ClassTypeInformation.from(Student.class));
 		assertThat(firestorePersistentEntity.collectionName()).isEqualTo("student");
 	}
 
 	@Test
 	public void testInferCollectionName() {
-		FirestorePersistentEntity<Employee> firestorePersistentEntity =
-				new FirestorePersistentEntityImpl<>(ClassTypeInformation.from(Employee.class));
+		FirestorePersistentEntity<Employee> firestorePersistentEntity = new FirestorePersistentEntityImpl<>(
+				ClassTypeInformation.from(Employee.class));
 		assertThat(firestorePersistentEntity.collectionName()).isEqualTo("employee_table");
 	}
 

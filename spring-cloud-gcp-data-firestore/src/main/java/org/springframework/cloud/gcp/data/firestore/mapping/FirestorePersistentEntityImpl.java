@@ -43,7 +43,7 @@ public class FirestorePersistentEntityImpl<T>
 
 	@Override
 	public String collectionName() {
-	  return this.collectionName;
+		return this.collectionName;
 	}
 
 	@Override
@@ -63,7 +63,8 @@ public class FirestorePersistentEntityImpl<T>
 		if (collectionName == null || collectionName.isEmpty()) {
 			// Infer the collection name as the lowercase entity name.
 			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
-		} else {
+		}
+		else {
 			return collectionName;
 		}
 	}
