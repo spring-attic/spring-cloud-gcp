@@ -16,8 +16,12 @@
 
 package org.springframework.cloud.gcp.bigquery.integration;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -33,6 +37,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -59,9 +64,11 @@ public class BigQueryTemplateIntegrationTests {
 
 	@Test
 	public void testLoadFile() throws IOException, ExecutionException, InterruptedException {
+		File file = new File("src/test/resources/data.csv");
+		InputStream fileInputStream = new BufferedInputStream(new FileInputStream(file));
+
 		ListenableFuture<Job> bigQueryJobFuture =
-				bigQueryTemplate.writeDataToTable(
-						TABLE_NAME, new File("src/test/resources/data.csv"), FormatOptions.csv());
+				bigQueryTemplate.writeDataToTable(TABLE_NAME, fileInputStream, FormatOptions.csv());
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
@@ -79,9 +86,10 @@ public class BigQueryTemplateIntegrationTests {
 	public void testLoadBytes() throws IOException, ExecutionException, InterruptedException {
 		byte[] byteArray =
 				"CountyId,State,County\n1001,Alabama,Autauga County\n".getBytes();
+		ByteArrayInputStream byteStream = new ByteArrayInputStream(byteArray);
 
 		ListenableFuture<Job> bigQueryJobFuture =
-				bigQueryTemplate.writeDataToTable(TABLE_NAME, byteArray, FormatOptions.csv());
+				bigQueryTemplate.writeDataToTable(TABLE_NAME, byteStream, FormatOptions.csv());
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);

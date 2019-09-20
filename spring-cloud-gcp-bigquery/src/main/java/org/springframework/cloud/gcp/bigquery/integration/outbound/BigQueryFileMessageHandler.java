@@ -30,10 +30,9 @@ import java.util.concurrent.TimeoutException;
 
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
-import org.springframework.cloud.gcp.bigquery.integration.BigQueryTemplate;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
@@ -123,27 +122,6 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
-	 * Sets the {@link WriteDisposition} which specifies how data should be inserted into
-	 * BigQuery tables.
-	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table.
-	 * 		Default is {@code WriteDisposition.WRITE_APPEND} to append data to a table.
-	 */
-	public void setWriteDisposition(WriteDisposition writeDisposition) {
-		Assert.notNull(writeDisposition, "Write disposition must not be null.");
-		this.bigQueryTemplate.setWriteDisposition(writeDisposition);
-	}
-
-	/**
-	 * Sets whether BigQuery should attempt to autodetect the schema of the data when loading
-	 * data into an empty table for the first time.
-	 * @param autoDetectSchema whether data schema should be autodetected from the structure of
-	 * 		the data. Default is true.
-	 */
-	public void setAutoDetectSchema(boolean autoDetectSchema) {
-		this.bigQueryTemplate.setAutoDetectSchema(autoDetectSchema);
-	}
-
-	/**
 	 * Sets the {@link Duration} to wait for a file to be loaded into BigQuery before timing out
 	 * when waiting synchronously.
 	 * @param timeout the {@link Duration} timeout to wait for a file to load
@@ -151,16 +129,6 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	public void setTimeout(Duration timeout) {
 		Assert.notNull(timeout, "Timeout duration must not be null.");
 		this.timeout = timeout;
-	}
-
-	/**
-	 * Sets the {@link Duration} amount of time to wait between successive polls on the status of
-	 * a BigQuery job.
-	 * @param pollInterval the {@link Duration} poll interval for BigQuery job status polling
-	 */
-	public void setJobPollInterval(Duration pollInterval) {
-		Assert.notNull(pollInterval, "Poll interval duration must not be null.");
-		this.bigQueryTemplate.setJobPollInterval(pollInterval);
 	}
 
 	/**

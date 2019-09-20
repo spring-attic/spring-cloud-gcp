@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.core;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,8 +41,9 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * Helper class which simplifies common operations done in BigQuery.
  *
  * @author Daniel Zou
+ * @since 1.2
  */
-public class BigQueryTemplate {
+public class BigQueryTemplate implements BigQueryOperations {
 
 	private final BigQuery bigQuery;
 
@@ -60,6 +57,14 @@ public class BigQueryTemplate {
 
 	private Duration jobPollInterval = Duration.ofSeconds(2);
 
+	/**
+	 * Creates the {@link BigQuery} template..
+	 *
+	 * @param bigQuery the underlying client object used to interface with BigQuery
+	 * @param datasetName the name of the dataset in which all operations will take place
+	 * @param taskScheduler the {@link TaskScheduler} used to poll for the status of
+	 *     long-running BigQuery operations
+	 */
 	public BigQueryTemplate(BigQuery bigQuery, String datasetName, TaskScheduler taskScheduler) {
 		this.bigQuery = bigQuery;
 		this.datasetName = datasetName;
@@ -68,9 +73,10 @@ public class BigQueryTemplate {
 
 	/**
 	 * Sets whether BigQuery should attempt to autodetect the schema of the data when loading
-	 * data into an empty table for the first time.
-	 * @param autoDetectSchema whether data schema should be autodetected from the structure of
-	 * 		the data. Default is true.
+	 * data into an empty table for the first time. If set to false, the schema must be
+	 * defined explicitly for the table before load.
+	 * @param autoDetectSchema whether data schema should be autodetected from the structure
+	 *     of the data. Default is true.
 	 */
 	public void setAutoDetectSchema(boolean autoDetectSchema) {
 		this.autoDetectSchema = autoDetectSchema;
@@ -79,67 +85,25 @@ public class BigQueryTemplate {
 	/**
 	 * Sets the {@link WriteDisposition} which specifies how data should be inserted into
 	 * BigQuery tables.
-	 * @param writeDisposition whether data should be appended or truncated to the BigQuery table.
-	 * 		Default is {@code WriteDisposition.WRITE_APPEND} to append data to a table.
+	 * @param writeDisposition whether to append to or truncate (overwrite) data in the
+	 *     BigQuery table. Default is {@code WriteDisposition.WRITE_APPEND} to append data to
+	 *     a table.
 	 */
 	public void setWriteDisposition(WriteDisposition writeDisposition) {
 		this.writeDisposition = writeDisposition;
 	}
 
 	/**
-	 * Sets the {@link Duration} amount of time to wait between successive polls on the status of
-	 * a BigQuery job.
-	 * @param jobPollInterval the {@link Duration} poll interval for BigQuery job status polling
+	 * Sets the {@link Duration} amount of time to wait between successive polls on the status
+	 * of a BigQuery job.
+	 * @param jobPollInterval the {@link Duration} poll interval for BigQuery job status
+	 *     polling
 	 */
 	public void setJobPollInterval(Duration jobPollInterval) {
 		this.jobPollInterval = jobPollInterval;
 	}
 
-	/**
-	 * Writes data to a specified BigQuery table.
-	 *
-	 * @param tableName name of the table to write to
-	 * @param dataFile data file to write to BigQuery
-	 * @param dataFormatOptions the format of the data in the data file
-	 * @return {@link ListenableFuture} containing the BigQuery Job indicating completion of operation
-	 * @throws IOException if the data fails to be loaded
-	 */
-	public ListenableFuture<Job> writeDataToTable(
-			String tableName, File dataFile, FormatOptions dataFormatOptions)
-			throws IOException {
-
-		try (InputStream fileStream = new BufferedInputStream(new FileInputStream(dataFile))) {
-			return writeDataToTable(tableName, fileStream, dataFormatOptions);
-		}
-	}
-
-	/**
-	 * Writes data to a specified BigQuery table.
-	 *
-	 * @param tableName name of the table to write to
-	 * @param bytes a byte array of the data to write
-	 * @param dataFormatOptions the format of the data to write
-	 * @return {@link ListenableFuture} containing the BigQuery Job indicating completion of operation
-	 * @throws IOException if the data fails to be loaded
-	 */
-	public ListenableFuture<Job> writeDataToTable(
-			String tableName, byte[] bytes, FormatOptions dataFormatOptions)
-			throws IOException {
-
-		try (InputStream byteStream = new ByteArrayInputStream(bytes)) {
-			return writeDataToTable(tableName, byteStream, dataFormatOptions);
-		}
-	}
-
-	/**
-	 * Writes data to a specified BigQuery table.
-	 *
-	 * @param tableName name of the table to write to
-	 * @param inputStream input stream of the table data to write
-	 * @param dataFormatOptions the format of the data to write
-	 * @return {@link ListenableFuture} containing the BigQuery Job indicating completion of operation
-	 * @throws IOException if the data fails to be loaded
-	 */
+	@Override
 	public ListenableFuture<Job> writeDataToTable(
 			String tableName, InputStream inputStream, FormatOptions dataFormatOptions)
 			throws IOException {

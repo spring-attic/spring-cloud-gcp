@@ -20,6 +20,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.bigquery.integration.outbound.BigQueryFileMessageHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,13 +48,14 @@ public class BigQueryTestConfiguration {
 
 	@Bean
 	public BigQueryTemplate bigQueryTemplate(BigQuery bigQuery, TaskScheduler taskScheduler) {
-		return new BigQueryTemplate(bigQuery, DATASET_NAME, taskScheduler);
+		BigQueryTemplate bigQueryTemplate = new BigQueryTemplate(bigQuery, DATASET_NAME, taskScheduler);
+		bigQueryTemplate.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
+		return bigQueryTemplate;
 	}
 
 	@Bean
 	public BigQueryFileMessageHandler messageHandler(BigQueryTemplate bigQueryTemplate) {
 		BigQueryFileMessageHandler messageHandler = new BigQueryFileMessageHandler(bigQueryTemplate);
-		messageHandler.setWriteDisposition(WriteDisposition.WRITE_TRUNCATE);
 		return messageHandler;
 	}
 }
