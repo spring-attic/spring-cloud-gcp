@@ -45,8 +45,7 @@ before_install:
           -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample
           -Dgcs-read-bucket=gcp-storage-bucket-sample-input
           -Dgcs-write-bucket=gcp-storage-bucket-sample-output
-          -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample
-          -Dspring.cloud.stream.function.definition=none";
+          -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
       export GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json;
       export GOOGLE_CLOUD_PROJECT=spring-cloud-gcp-ci;
     fi;
