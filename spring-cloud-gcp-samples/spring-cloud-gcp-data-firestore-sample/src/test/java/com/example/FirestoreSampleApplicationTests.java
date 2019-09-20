@@ -33,6 +33,7 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -43,6 +44,7 @@ import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = FirestoreSampleApplication.class)
+@TestPropertySource("classpath:application-test.properties")
 public class FirestoreSampleApplicationTests {
 
 	@Autowired
