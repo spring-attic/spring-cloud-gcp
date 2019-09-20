@@ -1,0 +1,69 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spring Data Firestore Sample</title>
+</head>
+
+<style>
+  html * {
+    font-family: Roboto, Verdana, sans-serif;
+  }
+
+  .container {
+    max-width: 50em;
+  }
+
+  .panel {
+    margin: 1em;
+    padding: 1em;
+    border: 1px solid black;
+    border-radius: 5px;
+  }
+</style>
+
+<h1>Spring Data Firestore Sample</h1>
+
+<p>
+  This is a basic demo using Spring WebFlux and Reactive Repositories with
+  Google Cloud Firestore.
+</p>
+
+<div class="container">
+
+  <h2>Firestore Control Panel</h2>
+
+  <p>
+    This section allows you to read and modify User entities in Firestore.
+    Some values are prefilled as an example of what you can type in.
+  </p>
+
+  <div class="panel">
+    <b>Create and save a new User</b>
+    <form action="/users/saveUser" method="post">
+      Name: <input type="text" name="name" value="Joe Smith">
+      <br>
+      Age: <input type="text" name="age" value="44">
+      <br>
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
+    <a href="/users">Show all users</a>
+  </div>
+
+  <div class="panel">
+    <b>Show all users with age</b>
+    <form action="/users/age" method="get">
+      Age: <input type="text" name="age" value="44">
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
+    <a href="https://console.cloud.google.com/firestore/data">View your Firestore data in the Cloud Console</a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+= Spring Cloud GCP Spring Data Firestore Example
+
+This code sample demonstrates how to use Spring Data with Google Cloud Firestore.
+The demo showcases usage of Firestore with Spring Data Reactive Repositories and Spring WebFlux.
+
+== Running the example
+
+. https://firebase.google.com/docs/firestore/quickstart[Create a new Cloud Firestore database in your GCP project] if you have not done so already.
++
+NOTE: If your GCP Project is already configured to use Datastore, you must create a new GCP Project to use Firestore.
+Unfortunately it is not possible to use both Datastore and Firestore in the same GCP project.
+
+. https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If you are authenticated in the Cloud SDK], your credentials will be automatically found by the Spring
+Boot Starter for Google Cloud Firestore.
++
+Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create a service account from the Google Cloud Console] and download its private key.
+Then, uncomment the `spring.cloud.gcp.firestore.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
+
+. Run the `FirestoreSampleApplication` with
+```
+mvn spring-boot:run
+```
+
+Now, you may visit http://localhost:8080.
+Using the application, you will be able to create and read `User` entities in your Firestore instance.
