@@ -21,6 +21,7 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.StringUtils;
 
 /**
  * Metadata class for entities stored in Datastore.
@@ -33,19 +34,16 @@ public class FirestorePersistentEntityImpl<T>
 		extends BasicPersistentEntity<T, FirestorePersistentProperty>
 		implements FirestorePersistentEntity<T> {
 
+	private final String collectionName;
 
 	public FirestorePersistentEntityImpl(TypeInformation<T> information) {
 		super(information);
+		this.collectionName = getEntityCollectionName(information);
 	}
 
 	@Override
 	public String collectionName() {
-		Entity entity = AnnotationUtils.findAnnotation(getType(), Entity.class);
-		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
-		if (collectionName == null || collectionName.isEmpty()) {
-			throw new FirestoreDataException("Entities should be annotated with @Entity and have a collection name");
-		}
-		return collectionName;
+		return this.collectionName;
 	}
 
 	@Override
@@ -56,5 +54,18 @@ public class FirestorePersistentEntityImpl<T>
 							+ getType());
 		}
 		return getIdProperty();
+	}
+
+	private static <T> String getEntityCollectionName(TypeInformation<T> typeInformation) {
+		Entity entity = AnnotationUtils.findAnnotation(typeInformation.getType(), Entity.class);
+		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
+
+		if (StringUtils.isEmpty(collectionName)) {
+			// Infer the collection name as the uncapitalized entity name.
+			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
+		}
+		else {
+			return collectionName;
+		}
 	}
 }
