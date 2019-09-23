@@ -33,6 +33,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
@@ -43,9 +45,9 @@ public class FirestoreRepositoryIntegrationTests {
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
-		// assumeThat("Firestore-sample tests are disabled. "
-		// + "Please use '-Dit.firestore=true' to enable them. ",
-		// System.getProperty("it.firestore"), is("true"));
+		 assumeThat("Firestore-sample tests are disabled. "
+		 + "Please use '-Dit.firestore=true' to enable them. ",
+		 System.getProperty("it.firestore"), is("true"));
 	}
 
 	@Before
