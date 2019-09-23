@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.data.domain.Pageable;
 
 /**
  * A test custom repository.
@@ -33,6 +34,8 @@ public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAgeAndName(Integer age, String name);
 
 	Flux<User> findByAgeGreaterThan(Integer age);
+
+	Flux<User> findByAgeGreaterThan(Integer age, Pageable pageable);
 
 	Mono<Long> countByAgeIsGreaterThan(Integer age);
 }

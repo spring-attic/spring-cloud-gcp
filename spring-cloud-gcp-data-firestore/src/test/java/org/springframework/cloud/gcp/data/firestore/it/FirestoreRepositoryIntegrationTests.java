@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -27,12 +28,11 @@ import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
@@ -43,9 +43,9 @@ public class FirestoreRepositoryIntegrationTests {
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
-		assumeThat("Firestore-sample tests are disabled. "
-				+ "Please use '-Dit.firestore=true' to enable them. ",
-				System.getProperty("it.firestore"), is("true"));
+		// assumeThat("Firestore-sample tests are disabled. "
+		// + "Please use '-Dit.firestore=true' to enable them. ",
+		// System.getProperty("it.firestore"), is("true"));
 	}
 
 	@Before
@@ -90,5 +90,20 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
 				u2);
+	}
+
+	@Test
+	public void pageableQueryTest() {
+		Flux<User> users = Flux.fromStream(IntStream.range(1, 11).boxed())
+				.map(n -> new User("blah-person" + n, n));
+		this.userRepository.saveAll(users).blockLast();
+
+		PageRequest pageRequest = PageRequest.of(2, 2);
+		List<String> pagedUsers = this.userRepository.findByAgeGreaterThan(0, pageRequest)
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("blah-person5", "blah-person6");
 	}
 }
