@@ -105,8 +105,7 @@ public class BigQueryTemplate implements BigQueryOperations {
 
 	@Override
 	public ListenableFuture<Job> writeDataToTable(
-			String tableName, InputStream inputStream, FormatOptions dataFormatOptions)
-			throws IOException {
+			String tableName, InputStream inputStream, FormatOptions dataFormatOptions) {
 		TableId tableId = TableId.of(datasetName, tableName);
 
 		WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
@@ -121,10 +120,12 @@ public class BigQueryTemplate implements BigQueryOperations {
 		try (OutputStream sink = Channels.newOutputStream(writer)) {
 			// Write data from data input file to BigQuery
 			StreamUtils.copy(inputStream, sink);
+		} catch (IOException e) {
+			throw new BigQueryException("Failed to write data to BigQuery tables.", e);
 		}
 
 		if (writer.getJob() == null) {
-			throw new RuntimeException(
+			throw new BigQueryException(
 					"Failed to initialize the BigQuery write job in message handler: " + this);
 		}
 
@@ -140,7 +141,7 @@ public class BigQueryTemplate implements BigQueryOperations {
 			if (State.DONE.equals(job.getStatus().getState())) {
 				if (job.getStatus().getError() != null) {
 					result.setException(
-							new RuntimeException(job.getStatus().getError().getMessage()));
+							new BigQueryException(job.getStatus().getError().getMessage()));
 				}
 				else {
 					result.set(job);
