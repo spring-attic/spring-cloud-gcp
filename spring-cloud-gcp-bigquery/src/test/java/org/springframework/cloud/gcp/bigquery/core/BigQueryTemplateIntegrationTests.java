@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.core;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -31,19 +27,30 @@ import com.google.cloud.bigquery.JobStatus;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
+import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.cloud.gcp.bigquery.integration.BigQueryTestConfiguration.DATASET_NAME;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
+import static org.springframework.cloud.gcp.bigquery.core.BigQueryTestConfiguration.DATASET_NAME;
 
+/**
+ * Integration tests for BigQuery.
+ *
+ * @author Daniel Zou
+ * @since 1.2
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = BigQueryTestConfiguration.class)
 public class BigQueryTemplateIntegrationTests {
@@ -56,25 +63,34 @@ public class BigQueryTemplateIntegrationTests {
 	@Autowired
 	BigQueryTemplate bigQueryTemplate;
 
+	@Value("data.csv")
+	Resource dataFile;
+
+	@BeforeClass
+	public static void prepare() {
+		assumeThat(
+				"BigQuery integration tests are disabled. "
+						+ "Please use '-Dit.bigquery=true' to enable them.",
+				System.getProperty("it.bigquery"), is("true"));
+	}
+
 	@Before
-	public void setup() {
+	@After
+	public void cleanupTestEnvironment() {
 		// Clear the previous dataset before beginning the test.
 		this.bigQuery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
 	}
 
 	@Test
 	public void testLoadFile() throws IOException, ExecutionException, InterruptedException {
-		File file = new File("src/test/resources/data.csv");
-		InputStream fileInputStream = new BufferedInputStream(new FileInputStream(file));
-
 		ListenableFuture<Job> bigQueryJobFuture =
-				bigQueryTemplate.writeDataToTable(TABLE_NAME, fileInputStream, FormatOptions.csv());
+				bigQueryTemplate.writeDataToTable(TABLE_NAME, dataFile.getInputStream(), FormatOptions.csv());
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
-				.newBuilder("SELECT * FROM test_dataset.test_table").build();
+				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
 		TableResult result = this.bigQuery.query(queryJobConfiguration);
 
 		assertThat(result.getTotalRows()).isEqualTo(1);
@@ -83,7 +99,7 @@ public class BigQueryTemplateIntegrationTests {
 	}
 
 	@Test
-	public void testLoadBytes() throws IOException, ExecutionException, InterruptedException {
+	public void testLoadBytes() throws ExecutionException, InterruptedException {
 		byte[] byteArray =
 				"CountyId,State,County\n1001,Alabama,Autauga County\n".getBytes();
 		ByteArrayInputStream byteStream = new ByteArrayInputStream(byteArray);
@@ -95,7 +111,7 @@ public class BigQueryTemplateIntegrationTests {
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
-				.newBuilder("SELECT * FROM test_dataset.test_table").build();
+				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
 		TableResult result = this.bigQuery.query(queryJobConfiguration);
 
 		assertThat(result.getTotalRows()).isEqualTo(1);

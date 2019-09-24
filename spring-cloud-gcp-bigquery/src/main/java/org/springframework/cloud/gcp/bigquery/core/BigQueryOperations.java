@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.bigquery.core;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import com.google.cloud.bigquery.FormatOptions;
@@ -40,8 +39,9 @@ public interface BigQueryOperations {
 	 * @param dataFormatOptions the format of the data to write
 	 * @return {@link ListenableFuture} containing the BigQuery Job indicating completion of
 	 * operation
-	 * @throws IOException if the data fails to be loaded
+	 *
+	 * @throws BigQueryException if errors occur when loading data to the BigQuery table
 	 */
 	ListenableFuture<Job> writeDataToTable(
-			String tableName, InputStream inputStream, FormatOptions dataFormatOptions) throws IOException;
+			String tableName, InputStream inputStream, FormatOptions dataFormatOptions);
 }

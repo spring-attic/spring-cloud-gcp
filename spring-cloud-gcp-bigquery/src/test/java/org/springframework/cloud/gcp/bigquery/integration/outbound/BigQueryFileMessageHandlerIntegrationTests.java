@@ -28,6 +28,7 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import org.awaitility.Duration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,8 +36,8 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTestConfiguration;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
-import org.springframework.cloud.gcp.bigquery.integration.BigQueryTestConfiguration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
@@ -50,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
-import static org.springframework.cloud.gcp.bigquery.integration.BigQueryTestConfiguration.DATASET_NAME;
+import static org.springframework.cloud.gcp.bigquery.core.BigQueryTestConfiguration.DATASET_NAME;
 
 
 @RunWith(SpringRunner.class)
@@ -78,6 +79,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 	}
 
 	@Before
+	@After
 	public void setup() {
 		// Clear the previous dataset before beginning the test.
 		this.bigquery.delete(TableId.of(DATASET_NAME, TABLE_NAME));

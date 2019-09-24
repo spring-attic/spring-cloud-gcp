@@ -33,6 +33,8 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.DefaultManagedTaskScheduler;
+import org.springframework.util.Assert;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -58,7 +60,17 @@ public class BigQueryTemplate implements BigQueryOperations {
 	private Duration jobPollInterval = Duration.ofSeconds(2);
 
 	/**
-	 * Creates the {@link BigQuery} template..
+	 * Creates the {@link BigQuery} template.
+	 *
+	 * @param bigQuery the underlying client object used to interface with BigQuery
+	 * @param datasetName the name of the dataset in which all operations will take place
+	 */
+	public BigQueryTemplate(BigQuery bigQuery, String datasetName) {
+		this(bigQuery, datasetName, new DefaultManagedTaskScheduler());
+	}
+
+	/**
+	 * Creates the {@link BigQuery} template.
 	 *
 	 * @param bigQuery the underlying client object used to interface with BigQuery
 	 * @param datasetName the name of the dataset in which all operations will take place
@@ -66,6 +78,10 @@ public class BigQueryTemplate implements BigQueryOperations {
 	 *     long-running BigQuery operations
 	 */
 	public BigQueryTemplate(BigQuery bigQuery, String datasetName, TaskScheduler taskScheduler) {
+		Assert.notNull(bigQuery, "BigQuery client object must not be null.");
+		Assert.notNull(datasetName, "Dataset name must not be null");
+		Assert.notNull(taskScheduler, "TaskScheduler must not be null");
+
 		this.bigQuery = bigQuery;
 		this.datasetName = datasetName;
 		this.taskScheduler = taskScheduler;
@@ -90,6 +106,7 @@ public class BigQueryTemplate implements BigQueryOperations {
 	 *     a table.
 	 */
 	public void setWriteDisposition(WriteDisposition writeDisposition) {
+		Assert.notNull(writeDisposition, "BigQuery write disposition must not be null.");
 		this.writeDisposition = writeDisposition;
 	}
 
@@ -100,6 +117,7 @@ public class BigQueryTemplate implements BigQueryOperations {
 	 *     polling
 	 */
 	public void setJobPollInterval(Duration jobPollInterval) {
+		Assert.notNull(jobPollInterval, "BigQuery job polling interval must not be null");
 		this.jobPollInterval = jobPollInterval;
 	}
 
@@ -120,7 +138,8 @@ public class BigQueryTemplate implements BigQueryOperations {
 		try (OutputStream sink = Channels.newOutputStream(writer)) {
 			// Write data from data input file to BigQuery
 			StreamUtils.copy(inputStream, sink);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new BigQueryException("Failed to write data to BigQuery tables.", e);
 		}
 

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.core;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 
-import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.bigquery.integration.outbound.BigQueryFileMessageHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
