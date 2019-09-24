@@ -145,7 +145,7 @@ public class BigQueryTemplate implements BigQueryOperations {
 
 		if (writer.getJob() == null) {
 			throw new BigQueryException(
-					"Failed to initialize the BigQuery write job in message handler: " + this);
+					"Failed to initialize the BigQuery write job.");
 		}
 
 		return createJobFuture(writer.getJob());
