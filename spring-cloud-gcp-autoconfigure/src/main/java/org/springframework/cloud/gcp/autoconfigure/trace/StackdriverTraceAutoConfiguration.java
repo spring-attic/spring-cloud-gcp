@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import brave.http.HttpClientParser;
@@ -62,6 +61,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * Config for Stackdriver Trace.
@@ -122,10 +122,18 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "traceSenderThreadPool")
+	public ThreadPoolTaskScheduler traceSenderThreadPool(GcpTraceProperties traceProperties) {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
+		scheduler.setThreadNamePrefix("gcp-trace-sender");
+		return scheduler;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(name = "traceExecutorProvider")
-	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties) {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
+	public ExecutorProvider traceExecutorProvider(@Qualifier("traceSenderThreadPool") ThreadPoolTaskScheduler scheduler) {
+		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
 	@Bean(destroyMethod = "shutdownNow")
