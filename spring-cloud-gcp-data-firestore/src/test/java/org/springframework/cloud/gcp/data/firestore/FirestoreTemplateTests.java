@@ -213,6 +213,46 @@ public class FirestoreTemplateTests {
 	}
 
 	@Test
+	public void countWithQueryTest() {
+		mockRunQueryMethod();
+
+		StructuredQuery.Builder builder = StructuredQuery.newBuilder();
+		addWhere(builder);
+
+		StepVerifier.create(this.firestoreTemplate.count(TestEntity.class, builder)).expectNext(2L).verifyComplete();
+
+		StructuredQuery.Builder expectedBuilder = StructuredQuery.newBuilder()
+				.addFrom(
+						StructuredQuery.CollectionSelector.newBuilder()
+								.setCollectionId("testEntities").build())
+				.setSelect(
+						StructuredQuery.Projection.newBuilder()
+								.addFields(StructuredQuery.FieldReference.newBuilder().setFieldPath("__name__").build())
+								.build());
+		addWhere(expectedBuilder);
+
+		RunQueryRequest request = RunQueryRequest.newBuilder()
+				.setParent(this.parent)
+				.setStructuredQuery(expectedBuilder)
+				.build();
+
+		verify(this.firestoreStub, times(1)).runQuery(eq(request), any());
+		verify(this.firestoreStub, times(1)).runQuery(any(), any());
+	}
+
+	private void addWhere(StructuredQuery.Builder builder) {
+		StructuredQuery.CompositeFilter.Builder compositeFilter = StructuredQuery.CompositeFilter.newBuilder();
+		compositeFilter.setOp(StructuredQuery.CompositeFilter.Operator.AND);
+		StructuredQuery.Filter.Builder filter = StructuredQuery.Filter.newBuilder();
+		StructuredQuery.FieldReference fieldReference = StructuredQuery.FieldReference.newBuilder()
+				.setFieldPath("field_path").build();
+		filter.getUnaryFilterBuilder().setField(fieldReference)
+				.setOp(StructuredQuery.UnaryFilter.Operator.IS_NULL);
+		compositeFilter.addFilters(filter.build());
+		builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
+	}
+
+	@Test
 	public void existsByIdTest() {
 		GetDocumentRequest request = GetDocumentRequest.newBuilder()
 				.setName(this.parent + "/testEntities/" + "e1")

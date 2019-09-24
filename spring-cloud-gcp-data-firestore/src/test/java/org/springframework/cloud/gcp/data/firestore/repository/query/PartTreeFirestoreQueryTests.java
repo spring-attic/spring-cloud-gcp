@@ -84,10 +84,34 @@ public class PartTreeFirestoreQueryTests {
 
 	@Test
 	public void testPartTreeQueryCount() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery = createPartTreeQuery("countByAgeGreaterThan", NOOP);
+		PartTreeFirestoreQuery partTreeFirestoreQuery = setUpPartTreeFirestoreQuery("countByAgeGreaterThan");
+
+		when(this.firestoreTemplate.count(any(), any())).thenAnswer(invocation -> {
+			StructuredQuery.Builder actualBuilder = invocation.getArgument(1);
+			Class clazz = invocation.getArgument(0);
+
+			StructuredQuery.Builder builder = StructuredQuery.newBuilder();
+
+			StructuredQuery.CompositeFilter.Builder compositeFilter = StructuredQuery.CompositeFilter.newBuilder();
+			compositeFilter.setOp(StructuredQuery.CompositeFilter.Operator.AND);
+
+			StructuredQuery.Filter.Builder filterAge = StructuredQuery.Filter.newBuilder();
+			filterAge.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
+					.setFieldPath("age").build())
+					.setOp(StructuredQuery.FieldFilter.Operator.GREATER_THAN)
+					.setValue(PublicClassMapper.convertToFirestoreValue(22));
+
+			compositeFilter.addFilters(filterAge.build());
+			builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
+
+			assertThat(actualBuilder.build()).isEqualTo(builder.build());
+			assertThat(clazz).isEqualTo(User.class);
+
+			return Mono.just(3L);
+		});
 
 		Mono<Long> count = (Mono<Long>) partTreeFirestoreQuery.execute(new Object[] { 22 });
-		assertThat(count.block()).isEqualTo(1);
+		assertThat(count.block()).isEqualTo(3L);
 	}
 
 	@Test
@@ -127,6 +151,10 @@ public class PartTreeFirestoreQueryTests {
 			return Flux.just(DUMMY_USER);
 		});
 
+		return setUpPartTreeFirestoreQuery(methodName);
+	}
+
+	private PartTreeFirestoreQuery setUpPartTreeFirestoreQuery(String methodName) {
 		when(this.queryMethod.getName()).thenReturn(methodName);
 		ReturnedType returnedType = mock(ReturnedType.class);
 		when(returnedType.getDomainType()).thenAnswer(invocation -> User.class);

@@ -173,7 +173,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	@Override
 	public <T> Mono<Long> count(Class<T> entityClass) {
-		return findAllDocuments(entityClass, ID_PROJECTION, null).count();
+		return count(entityClass, null);
+	}
+
+	@Override
+	public <T> Mono<Long> count(Class<T> entityClass, StructuredQuery.Builder queryBuilder) {
+		return findAllDocuments(entityClass, ID_PROJECTION, queryBuilder).count();
 	}
 
 	/**
