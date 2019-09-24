@@ -91,6 +91,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 		StructuredQuery.Builder builder = createBuilderWithFilter(parameters);
 
+
 		// Handle Pageable parameters.
 		if (!getQueryMethod().getParameters().isEmpty()) {
 			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
@@ -104,12 +105,11 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 		Flux<?> result = this.reactiveOperations.execute(builder, this.persistentEntity.getType());
 		if (this.tree.isCountProjection()) {
-			return result.count();
+			return this.reactiveOperations.count(this.persistentEntity.getType(), builder);
 		}
 		else {
-			return result;
+			return this.reactiveOperations.execute(builder, this.persistentEntity.getType());
 		}
-
 	}
 
 	private StructuredQuery.Builder createBuilderWithFilter(Object[] parameters) {
