@@ -101,6 +101,18 @@ public interface FirestoreReactiveOperations {
 	<T> Mono<Long> count(Class<T> entityClass);
 
 	/**
+	 * Count entities of the given domain corresponding to the predicates given in the query builder.
+	 * Note that Firestore doesn't support "count" operation natively,
+	 * so id query will be executed and all ids will be retrieved so they could be counted.
+	 * @param <T> the type param of the domain type.
+	 * @param entityClass the domain type of entities.
+	 * @param queryBuilder the query builder that contains predicates;
+	 *                     note that id projection and the collection name will be set during execution
+	 * @return {@link Mono} emitting the number of entities.
+	 */
+	<T> Mono<Long> count(Class<T> entityClass, StructuredQuery.Builder queryBuilder);
+
+	/**
 	 * Delete entities provided by publisher.
 	 * @param <T> the type param of the domain type.
 	 * @param entityPublisher publisher that provides entities to be removed.
