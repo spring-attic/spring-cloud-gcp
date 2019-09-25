@@ -103,7 +103,6 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 			}
 		}
 
-		Flux<?> result = this.reactiveOperations.execute(builder, this.persistentEntity.getType());
 		if (this.tree.isCountProjection()) {
 			return this.reactiveOperations.count(this.persistentEntity.getType(), builder);
 		}
