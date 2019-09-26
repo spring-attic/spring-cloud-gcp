@@ -70,4 +70,9 @@ public class TransactionalTemplateService {
 	public void deleteInReadOnly() {
 		this.datastoreTemplate.delete(new TestEntity(1L, "red", 1L, TestEntity.Shape.CIRCLE, null));
 	}
+
+	@Transactional(readOnly = true)
+	public TestEntity findByIdInReadOnly(long id) {
+		return this.datastoreTemplate.findById(id, TestEntity.class);
+	}
 }

@@ -59,6 +59,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.TransactionSystemException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -700,16 +701,21 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void readOnlySaveTest() {
-		this.expectedException.expect(UnsupportedOperationException.class);
-		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
 		this.transactionalTemplateService.writingInReadOnly();
 	}
 
 	@Test
 	public void readOnlyDeleteTest() {
-		this.expectedException.expect(UnsupportedOperationException.class);
-		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
 		this.transactionalTemplateService.deleteInReadOnly();
+	}
+
+	@Test
+	public void readOnlyCountTest() {
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
 	}
 
 }
