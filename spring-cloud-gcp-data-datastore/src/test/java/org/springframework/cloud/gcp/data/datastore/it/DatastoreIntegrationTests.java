@@ -364,7 +364,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
-				.containsExactlyInAnyOrder(1L, 3L, 4L);
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		this.testEntityRepository.saveAll(this.allTestEntities);
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
@@ -394,7 +394,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
-				.containsExactlyInAnyOrder(1L, 3L, 4L);
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
