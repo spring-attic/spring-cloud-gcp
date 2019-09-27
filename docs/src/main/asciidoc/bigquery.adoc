@@ -90,7 +90,7 @@ public void loadData(InputStream dataInputStream, String tableName) {
 Spring Cloud GCP BigQuery also provides a Spring Integration message handler `BigQueryFileMessageHandler`.
 This is useful for incorporating BigQuery data loading operations in a Spring Integration pipeline.
 
-Below is an example configurating a `ServiceActivator` bean using the `BigQueryFileMessageHandler`.
+Below is an example configuring a `ServiceActivator` bean using the `BigQueryFileMessageHandler`.
 
 [source,java]
 ----
@@ -128,7 +128,7 @@ The headers are specified by the class `BigQuerySpringMessageHeaders` and summar
 | `BigQuerySpringMessageHeaders.FORMAT_OPTIONS` | Describes the data format of your data to load (i.e. CSV, JSON, etc.).
 |=========================================
 
-Alternatively, you may omit these headers and explicitly set the table name or format options explicitly by calling `setTableName(...)` and `setFormatOptions(...)`.
+Alternatively, you may omit these headers and explicitly set the table name or format options by calling `setTableName(...)` and `setFormatOptions(...)`.
 
 ==== BigQuery Message Reply
 
@@ -140,7 +140,7 @@ The future is tied to the status of the data loading job and will complete when 
 
 If the handler is run in synchronous mode with `setSync(true)`, then the handler will block on the completion of the loading job and block until it is complete.
 
-NOTE: If you decide to use Spring Integration Gateways and you wish to receive `ListenableFuture<Job>` as a reply object in the Gateway, you will have to call `.setAsyncExecutor(null)` on your `GatewayProxyFactoryBean` for the gateway.
+NOTE: If you decide to use Spring Integration Gateways and you wish to receive `ListenableFuture<Job>` as a reply object in the Gateway, you will have to call `.setAsyncExecutor(null)` on your `GatewayProxyFactoryBean`.
 This is needed to indicate that you wish to reply on the built-in async support rather than rely on async handling of the gateway.
 
 === Configuration
