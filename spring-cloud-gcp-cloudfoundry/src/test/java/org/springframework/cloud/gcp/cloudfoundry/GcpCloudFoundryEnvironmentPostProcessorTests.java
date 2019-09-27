@@ -87,6 +87,12 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests extends AbstractCfEnvT
 		assertThat(getProperty("spring.cloud.gcp.firestore.credentials.encoded-key"))
 				.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-firestore"));
 
+		assertThat(getProperty("spring.cloud.gcp.bigquery.project-id"))
+				.isEqualTo("pcf-dev-01-17031");
+		assertThat(getProperty("spring.cloud.gcp.bigquery.credentials.encoded-key"))
+				.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-bigquery"));
+		assertThat(getProperty("spring.cloud.gcp.bigquery.dataset-name")).isEqualTo("test_dataset");
+
 		assertThat(getProperty("spring.cloud.gcp.trace.project-id"))
 				.isEqualTo("graphite-test-spring-cloud-gcp");
 		assertThat(getProperty("spring.cloud.gcp.trace.credentials.encoded-key"))
