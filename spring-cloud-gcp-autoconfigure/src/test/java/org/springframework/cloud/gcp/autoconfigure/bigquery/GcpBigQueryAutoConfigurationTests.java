@@ -39,7 +39,8 @@ public class GcpBigQueryAutoConfigurationTests {
 			.withConfiguration(AutoConfigurations.of(
 					GcpBigQueryAutoConfiguration.class, GcpContextAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
-			.withPropertyValues("spring.cloud.gcp.bigquery.project-id=test-project");
+			.withPropertyValues("spring.cloud.gcp.bigquery.project-id=test-project")
+			.withPropertyValues("spring.cloud.gcp.bigquery.datasetName=test-dataset");
 
 	@Test
 	public void testSettingBigQueryOptions() {
