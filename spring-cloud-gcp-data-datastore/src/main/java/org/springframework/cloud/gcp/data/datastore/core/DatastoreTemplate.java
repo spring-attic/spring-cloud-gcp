@@ -79,8 +79,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.TypeUtils;
@@ -703,10 +701,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private DatastoreReaderWriter getDatastoreReadWriter() {
-		return TransactionSynchronizationManager.isActualTransactionActive()
-				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-						.currentTransactionStatus()).getTransaction()).getTransaction()
-				: this.datastore.get();
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+			DatastoreTransactionManager.Tx tx = (DatastoreTransactionManager.Tx) TransactionSynchronizationManager
+					.getResource(this.datastore.get());
+			if (tx != null && tx.getTransaction() != null) {
+				return tx.getTransaction();
+			}
+		}
+		return this.datastore.get();
 	}
 
 	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
