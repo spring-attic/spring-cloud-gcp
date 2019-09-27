@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import reactor.core.publisher.Flux;
@@ -29,7 +30,7 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
-import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
 
@@ -44,8 +45,15 @@ public class PartTreeFirestoreQueryTests {
 	private static final User DUMMY_USER = new User("Hello", 23);
 	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };
 
-	private final FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
-	private final QueryMethod queryMethod = mock(QueryMethod.class);
+	private FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
+
+	private FirestoreQueryMethod queryMethod = mock(FirestoreQueryMethod.class);
+
+	@Before
+	public void setupTest() {
+		this.firestoreTemplate = mock(FirestoreTemplate.class);
+		this.queryMethod = mock(FirestoreQueryMethod.class);
+	}
 
 	@Test
 	public void testPartTreeQuery() {
@@ -155,6 +163,10 @@ public class PartTreeFirestoreQueryTests {
 	}
 
 	private PartTreeFirestoreQuery setUpPartTreeFirestoreQuery(String methodName) {
+		Parameters parametersMock = mock(Parameters.class);
+		when(parametersMock.isEmpty()).thenReturn(true);
+		when(this.queryMethod.getParameters()).thenReturn(parametersMock);
+
 		when(this.queryMethod.getName()).thenReturn(methodName);
 		ReturnedType returnedType = mock(ReturnedType.class);
 		when(returnedType.getDomainType()).thenAnswer(invocation -> User.class);

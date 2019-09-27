@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
+import com.google.protobuf.Int32Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
@@ -31,6 +32,9 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.ReturnedType;
@@ -52,13 +56,13 @@ import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_
 public class PartTreeFirestoreQuery implements RepositoryQuery {
 	private final PartTree tree;
 
-	private final QueryMethod queryMethod;
+	private final FirestoreQueryMethod queryMethod;
 
 	private final FirestoreReactiveOperations reactiveOperations;
 
 	private final FirestorePersistentEntity<?> persistentEntity;
 
-	private  static final Map<Part.Type, StructuredQuery.FieldFilter.Operator> PART_TO_FILTER_OP =
+	private static final Map<Part.Type, StructuredQuery.FieldFilter.Operator> PART_TO_FILTER_OP =
 			new MapBuilder<Part.Type, StructuredQuery.FieldFilter.Operator>()
 					.put(SIMPLE_PROPERTY, StructuredQuery.FieldFilter.Operator.EQUAL)
 					.put(GREATER_THAN_EQUAL, StructuredQuery.FieldFilter.Operator.GREATER_THAN_OR_EQUAL)
@@ -67,7 +71,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 					.put(LESS_THAN, StructuredQuery.FieldFilter.Operator.LESS_THAN)
 					.build();
 
-	public PartTreeFirestoreQuery(QueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
+	public PartTreeFirestoreQuery(FirestoreQueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
 			FirestoreMappingContext mappingContext) {
 		this.queryMethod = queryMethod;
 		this.reactiveOperations = reactiveOperations;
@@ -85,6 +89,18 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		}
 
 		StructuredQuery.Builder builder = createBuilderWithFilter(parameters);
+
+
+		// Handle Pageable parameters.
+		if (!getQueryMethod().getParameters().isEmpty()) {
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
+			Pageable pageable = paramAccessor.getPageable();
+			if (pageable != null && pageable.isPaged()) {
+				builder.setOffset((int) Math.min(Integer.MAX_VALUE, pageable.getOffset()));
+				builder.setLimit(Int32Value.newBuilder().setValue(pageable.getPageSize()));
+			}
+		}
 
 		if (this.tree.isCountProjection()) {
 			return this.reactiveOperations.count(this.persistentEntity.getType(), builder);
