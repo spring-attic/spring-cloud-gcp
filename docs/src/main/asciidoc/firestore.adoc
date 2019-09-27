@@ -63,7 +63,7 @@ A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-
 
 https://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode.
-To begin using this library, add the `spring-cloud-gcp-starter-data-firestore` artifact to your project.
+To begin using this library, add the `spring-cloud-gcp-data-firestore` artifact to your project.
 
 Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -115,12 +115,12 @@ It is not required to add it to any other class, unless there is a need to overr
 Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
 - an instance of `FirestoreTemplate`
-- an instance of all user defined repositories extending `FirestoreReactiveRepository` (an extension of `ReactiveCrudRepository` with additional Cloud Firestore features) when repositories are enabled
-- an instance of `Firestore` from the Google Cloud Java Client for Firestore, for convenience and lower level API access
+- instances of all user defined repositories extending `FirestoreReactiveRepository` (an extension of `ReactiveCrudRepository` with additional Cloud Firestore features) when repositories are enabled
+- an instance of https://developers.google.com/resources/api-libraries/documentation/firestore/v1/java/latest/[`Firestore`] from the Google Cloud Java Client for Firestore, for convenience and lower level API access
 
 ==== Object Mapping
 
-Spring Data Cloud Firestore allows you to map domain POJOs to Cloud Firestore collections and entities via annotations:
+Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.google.com/docs/firestore/data-model#collections[Cloud Firestore collections] and documents via annotations:
 
 [source,java,indent=0]
 ----
@@ -132,7 +132,7 @@ include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springfra
 
 === Reactive Repositories
 
-https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/reactive/ReactiveCrudRepository.html[Spring Data Repositories] are an abstraction that can reduce boilerplate code.
+https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/reactive/ReactiveCrudRepository.html[Spring Data Repositories] is an abstraction that can reduce boilerplate code.
 
 For example:
 
