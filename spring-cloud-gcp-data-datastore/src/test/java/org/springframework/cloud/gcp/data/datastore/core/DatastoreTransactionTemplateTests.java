@@ -166,19 +166,6 @@ public class DatastoreTransactionTemplateTests {
 		this.transactionalService.doNothingUnsupportedPropagation();
 	}
 
-	@Test
-	public void readOnlySaveTest() {
-		this.expectedException.expect(UnsupportedOperationException.class);
-		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
-		this.transactionalService.writingInReadOnly();
-	}
-
-	@Test
-	public void readOnlyDeleteTest() {
-		this.expectedException.expect(UnsupportedOperationException.class);
-		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
-		this.transactionalService.deleteInReadOnly();
-	}
 
 	/**
 	 * Spring config for the tests.
@@ -259,16 +246,6 @@ public class DatastoreTransactionTemplateTests {
 		public void doNothingUnsupportedPropagation() {
 			// This method does nothing, but should fail anyway because of the unsupported
 			// propagation.
-		}
-
-		@Transactional(readOnly = true)
-		public void writingInReadOnly() {
-			this.datastoreTemplate.save(new TestEntity());
-		}
-
-		@Transactional(readOnly = true)
-		public void deleteInReadOnly() {
-			this.datastoreTemplate.delete(new TestEntity());
 		}
 	}
 

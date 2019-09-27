@@ -33,7 +33,9 @@ import com.google.cloud.datastore.Key;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.TransactionSystemException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -112,6 +115,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.allTestEntities = Arrays.asList(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 	}
 
+	/**
+	 * Used to check exception types and messages.
+	 */
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
@@ -154,7 +163,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 						ExampleMatcher.matching().withIgnorePaths("id"))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
-
 		assertThat(this.testEntityRepository
 				.findAll(Example.of(new TestEntity(2L, "blue", null, null, null))))
 				.containsExactly(this.testEntityB);
@@ -186,7 +194,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(result2.getTotalPages()).isEqualTo(2);
 		assertThat(result2.hasNext()).isEqualTo(false);
 		assertThat(result2).containsExactly(this.testEntityD, this.testEntityB);
-
 
 		assertThat(this.testEntityRepository
 				.findAll(
@@ -454,7 +461,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		EmbeddableTreeNode treeNode9 = new EmbeddableTreeNode(9, treeNode8, treeNode10);
 		EmbeddableTreeNode treeNode7 = new EmbeddableTreeNode(7, null, treeNode9);
 
-
 		this.datastoreTemplate.save(treeNode7);
 
 		EmbeddableTreeNode loaded = this.datastoreTemplate.findById(7L, EmbeddableTreeNode.class);
@@ -599,8 +605,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(readSubEntity4.sibling).isSameAs(readSubEntity3);
 		assertThat(readSubEntity3.sibling).isSameAs(readSubEntity4);
 
-		Collection<SubEntity> allById = this.datastoreTemplate.findAllById(Arrays.asList(subEntity1.key, subEntity2.key),
-				SubEntity.class);
+		Collection<SubEntity> allById = this.datastoreTemplate
+				.findAllById(Arrays.asList(subEntity1.key, subEntity2.key),
+						SubEntity.class);
 		Iterator<SubEntity> iterator = allById.iterator();
 		readSubEntity1 = iterator.next();
 		SubEntity readSubEntity2 = iterator.next();
@@ -668,7 +675,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		Long dogCount = dogs.stream().filter(pet -> "woof".equals(pet.speak())).count();
 		Long pugCount = dogs.stream().filter(pet -> "woof woof".equals(pet.speak())).count();
 
-
 		assertThat(pugCount).isEqualTo(1);
 		assertThat(dogCount).isEqualTo(1);
 	}
@@ -692,6 +698,26 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(events).containsExactlyInAnyOrder(event1, event2);
 	}
+
+	@Test
+	public void readOnlySaveTest() {
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
+		this.transactionalTemplateService.writingInReadOnly();
+	}
+
+	@Test
+	public void readOnlyDeleteTest() {
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
+		this.transactionalTemplateService.deleteInReadOnly();
+	}
+
+	@Test
+	public void readOnlyCountTest() {
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
+	}
+
 }
 
 /**

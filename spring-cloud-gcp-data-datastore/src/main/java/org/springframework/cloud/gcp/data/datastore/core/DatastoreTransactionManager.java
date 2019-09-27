@@ -16,24 +16,16 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreException;
-import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.FullEntity;
-import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.Query;
-import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.Transaction;
-import com.google.protobuf.ByteString;
+import com.google.datastore.v1.TransactionOptions;
 
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -46,26 +38,23 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 1.1
  */
 public class DatastoreTransactionManager extends AbstractPlatformTransactionManager {
+	private final static TransactionOptions READ_ONLY_OPTIONS = TransactionOptions.newBuilder()
+			.setReadOnly(TransactionOptions.ReadOnly.newBuilder().build())
+			.build();
+
 	private final Supplier<Datastore> datastore;
 
 	public DatastoreTransactionManager(final Supplier<Datastore> datastore) {
 		this.datastore = datastore;
 	}
 
-	Tx getCurrentTX() {
-		return TransactionSynchronizationManager.isActualTransactionActive()
-				? (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-						.currentTransactionStatus()).getTransaction()
-				: null;
-	}
-
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
-		Tx tx = getCurrentTX();
+		Tx tx = (Tx) TransactionSynchronizationManager.getResource(datastore.get());
 		if (tx != null && tx.transaction != null && tx.transaction.isActive()) {
 			return tx;
 		}
-		tx = new Tx();
+		tx = new Tx(datastore.get());
 		return tx;
 	}
 
@@ -87,13 +76,14 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 							+ "TransactionDefinition.PROPAGATION_REQUIRED");
 		}
 		Tx tx = (Tx) transactionObject;
-		Transaction transaction = this.datastore.get().newTransaction();
 		if (transactionDefinition.isReadOnly()) {
-			tx.transaction = new ReadOnlyTransaction(transaction);
+			tx.transaction = tx.datastore.newTransaction(READ_ONLY_OPTIONS);
 		}
 		else {
-			tx.transaction = transaction;
+			tx.transaction = tx.datastore.newTransaction();
 		}
+
+		TransactionSynchronizationManager.bindResource(tx.datastore, tx);
 	}
 
 	@Override
@@ -136,7 +126,13 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 
 	@Override
 	protected boolean isExistingTransaction(Object transaction) {
-		return transaction == getCurrentTX();
+		return ((Tx) transaction).transaction != null;
+	}
+
+	@Override
+	protected void doCleanupAfterCompletion(Object transaction) {
+		Tx tx = (Tx) transaction;
+		TransactionSynchronizationManager.unbindResource(tx.datastore);
 	}
 
 	/**
@@ -144,115 +140,25 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 	 */
 	public static class Tx {
 		private Transaction transaction;
+		private Datastore datastore;
+
+		public Tx(Datastore datastore) {
+			this.datastore = datastore;
+		}
 
 		public Transaction getTransaction() {
 			return this.transaction;
 		}
 
-		void setTransaction(Transaction transaction) {
-			this.transaction = transaction;
-		}
-	}
-
-	private static final class ReadOnlyTransaction implements Transaction {
-
-		private final Transaction transaction;
-
-		private ReadOnlyTransaction(Transaction transaction) {
+		public void setTransaction(Transaction transaction) {
 			this.transaction = transaction;
 		}
 
-		@Override
-		public Entity get(Key key) {
-			return this.transaction.get(key);
-		}
-
-		@Override
-		public Iterator<Entity> get(Key... key) {
-			return this.transaction.get(key);
-		}
-
-		@Override
-		public List<Entity> fetch(Key... keys) {
-			return this.transaction.fetch(keys);
-		}
-
-		@Override
-		public <T> QueryResults<T> run(Query<T> query) {
-			return this.transaction.run(query);
-		}
-
-		@Override
-		public void addWithDeferredIdAllocation(FullEntity<?>... entities) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public Entity add(FullEntity<?> entity) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public List<Entity> add(FullEntity<?>... entities) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public void update(Entity... entities) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public void delete(Key... keys) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public void putWithDeferredIdAllocation(FullEntity<?>... entities) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public Entity put(FullEntity<?> entity) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public List<Entity> put(FullEntity<?>... entities) {
-			throw new UnsupportedOperationException(
-					"The Cloud Datastore transaction is in read-only mode.");
-		}
-
-		@Override
-		public Response commit() {
-			return this.transaction.commit();
-		}
-
-		@Override
-		public void rollback() {
-			this.transaction.rollback();
-		}
-
-		@Override
-		public boolean isActive() {
-			return this.transaction.isActive();
-		}
-
-		@Override
 		public Datastore getDatastore() {
-			return this.transaction.getDatastore();
+			return datastore;
 		}
 
-		@Override
-		public ByteString getTransactionId() {
-			return this.transaction.getTransactionId();
-		}
 	}
+
 }
+

@@ -19,12 +19,12 @@ package org.springframework.cloud.gcp.data.firestore.repository.support;
 import java.lang.reflect.Method;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.repository.query.FirestoreQueryMethod;
 import org.springframework.cloud.gcp.data.firestore.repository.query.PartTreeFirestoreQuery;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryLookupStrategy;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
@@ -53,8 +53,9 @@ public class FirestoreQueryLookupStrategy implements QueryLookupStrategy {
 		// In this method we usually decide if the query method is a PartTree or an annotated
 		// @Query method.
 		// There is no choice in Firestore. We only have PartTree.
-
-		return new PartTreeFirestoreQuery(new QueryMethod(method, repositoryMetadata, projectionFactory),
-				this.firestoreTemplate, this.firestoreTemplate.getMappingContext());
+		return new PartTreeFirestoreQuery(
+				new FirestoreQueryMethod(method, repositoryMetadata, projectionFactory),
+				this.firestoreTemplate,
+				this.firestoreTemplate.getMappingContext());
 	}
 }

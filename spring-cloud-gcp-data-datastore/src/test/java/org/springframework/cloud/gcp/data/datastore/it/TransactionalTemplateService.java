@@ -60,4 +60,19 @@ public class TransactionalTemplateService {
 		this.datastoreTemplate.saveAll(testEntities);
 		throw new RuntimeException("Intentional failure to cause rollback.");
 	}
+
+	@Transactional(readOnly = true)
+	public void writingInReadOnly() {
+		this.datastoreTemplate.save(new TestEntity(1L, "red", 1L, TestEntity.Shape.CIRCLE, null));
+	}
+
+	@Transactional(readOnly = true)
+	public void deleteInReadOnly() {
+		this.datastoreTemplate.delete(new TestEntity(1L, "red", 1L, TestEntity.Shape.CIRCLE, null));
+	}
+
+	@Transactional(readOnly = true)
+	public TestEntity findByIdInReadOnly(long id) {
+		return this.datastoreTemplate.findById(id, TestEntity.class);
+	}
 }

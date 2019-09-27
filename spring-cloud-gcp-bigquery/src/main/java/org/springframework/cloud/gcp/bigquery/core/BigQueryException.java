@@ -14,32 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.bigquery.integration;
+package org.springframework.cloud.gcp.bigquery.core;
+
+import org.springframework.dao.DataAccessException;
 
 /**
- * Spring Integration {@link org.springframework.messaging.Message} headers used with
- * Spring Cloud GCP BigQuery integration.
+ * Exception wrapping errors that occur with BigQuery.
  *
  * @author Daniel Zou
  * @since 1.2
  */
-public final class BigQuerySpringMessageHeaders {
+public class BigQueryException extends DataAccessException {
+	public BigQueryException(String msg) {
+		super(msg);
+	}
 
-	/**
-	 * BigQuery Spring Cloud GCP message header prefix.
-	 */
-	public static final String PREFIX = "gcp_bigquery_";
-
-	/**
-	 * BigQuery table name message header.
-	 */
-	public static final String TABLE_NAME = PREFIX + "table_name";
-
-	/**
-	 * Input data file format message header.
-	 */
-	public static final String FORMAT_OPTIONS = PREFIX + "format_options";
-
-	private BigQuerySpringMessageHeaders() {
+	public BigQueryException(String msg, Throwable cause) {
+		super(msg, cause);
 	}
 }
