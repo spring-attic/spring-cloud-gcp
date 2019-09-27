@@ -25,12 +25,14 @@ import org.springframework.data.annotation.Id;
  *
  * @author Daniel Zou
  */
+//tag::class_definition[]
 @Entity(collectionName = "usersCollection")
 public class User {
 	@Id
 	private String name;
 
 	private Integer age;
+	//end::class_definition[]
 
 	public User(String name, Integer age) {
 		this.name = name;
@@ -81,4 +83,6 @@ public class User {
 	public int hashCode() {
 		return Objects.hash(getName(), getAge());
 	}
+	//tag::class_definition[]
 }
+//end::class_definition[]
