@@ -33,6 +33,7 @@ import com.google.cloud.bigquery.Job;
 
 import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
+import org.springframework.core.io.Resource;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
@@ -182,7 +183,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		}
 	}
 
-	private static InputStream convertToInputStream(Object payload) throws FileNotFoundException {
+	private static InputStream convertToInputStream(Object payload) throws IOException {
 		InputStream result;
 
 		if (payload instanceof File) {
@@ -194,11 +195,15 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		else if (payload instanceof InputStream) {
 			result = (InputStream) payload;
 		}
+		else if (payload instanceof Resource) {
+			result = ((Resource) payload).getInputStream();
+		}
 		else {
 			throw new IllegalArgumentException(
 					String.format(
 							"Unsupported message payload type: %s. The supported payload types "
-									+ "are: java.io.File, byte[], and java.io.InputStream.",
+									+ "are: java.io.File, byte[], org.springframework.core.io.Resource, "
+									+ "and java.io.InputStream.",
 							payload.getClass().getName()));
 		}
 		return result;

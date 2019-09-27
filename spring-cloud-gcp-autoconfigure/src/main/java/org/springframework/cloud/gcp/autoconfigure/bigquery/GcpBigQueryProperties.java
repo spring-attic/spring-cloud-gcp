@@ -36,6 +36,8 @@ public class GcpBigQueryProperties implements CredentialsSupplier {
 
 	private String projectId;
 
+	private String datasetName;
+
 	public Credentials getCredentials() {
 		return this.credentials;
 	}
@@ -46,5 +48,13 @@ public class GcpBigQueryProperties implements CredentialsSupplier {
 
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
+	}
+
+	public String getDatasetName() {
+		return this.datasetName;
+	}
+
+	public void setDatasetName(String datasetName) {
+		this.datasetName = datasetName;
 	}
 }
