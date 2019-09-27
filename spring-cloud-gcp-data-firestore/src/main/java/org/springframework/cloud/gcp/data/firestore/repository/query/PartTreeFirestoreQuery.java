@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.protobuf.Int32Value;
-import reactor.core.publisher.Flux;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
