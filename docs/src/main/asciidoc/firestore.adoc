@@ -174,7 +174,7 @@ include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springfra
 }
 ----
 
-In the example above the query methods in `UserRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+In the example above the query method implementations in `UserRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
 Cloud Firestore only supports filter components joined by AND, and the following operations:
 
