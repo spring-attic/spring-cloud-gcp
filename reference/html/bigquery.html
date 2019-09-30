@@ -98,6 +98,7 @@ $(addBlockSwitches);
 <li><a href="#_google_cloud_bigquery">Google Cloud BigQuery</a>
 <ul class="sectlevel2">
 <li><a href="#_bigquery_autoconfiguration">BigQuery Autoconfiguration</a></li>
+<li><a href="#_spring_integration">Spring Integration</a></li>
 <li><a href="#_configuration">Configuration</a></li>
 </ul>
 </li>
@@ -117,7 +118,10 @@ $(addBlockSwitches);
 <div class="ulist">
 <ul>
 <li>
-<p>A convenience starter which automatically configures the <a href="https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html"><code>BigQuery</code></a> client object with credentials needed to interface with BigQuery.</p>
+<p>A convenience starter which provides autoconfiguration for the <a href="https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html"><code>BigQuery</code></a> client objects with credentials needed to interface with BigQuery.</p>
+</li>
+<li>
+<p>A Spring Integration message handler for loading data into BigQuery tables in your Spring integration pipelines.</p>
 </li>
 </ul>
 </div>
@@ -144,6 +148,11 @@ $(addBlockSwitches);
 </div>
 <div class="sect2">
 <h3 id="_bigquery_autoconfiguration"><a class="link" href="#_bigquery_autoconfiguration">BigQuery Autoconfiguration</a></h3>
+<div class="paragraph">
+<p>Adding the <code>spring-cloud-gcp-bigquery-starter</code> dependency to the POM will enable autoconfiguration of the client objects needed to interface with BigQuery.</p>
+</div>
+<div class="sect3">
+<h4 id="_bigquery_client_object"><a class="link" href="#_bigquery_client_object">BigQuery Client Object</a></h4>
 <div class="paragraph">
 <p>The <code>GcpBigQueryAutoConfiguration</code> class configures an instance of <a href="https://googleapis.dev/java/google-cloud-clients/latest/com/google/cloud/bigquery/BigQuery.html"><code>BigQuery</code></a> for you by inferring your credentials and Project ID from the machine&#8217;s environment.</p>
 </div>
@@ -175,6 +184,129 @@ public void runQuery() throws InterruptedException {
 For more information, see the <a href="https://cloud.google.com/bigquery/docs/reference/libraries#using_the_client_library">BigQuery Client Library usage examples</a>.</p>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_bigquerytemplate"><a class="link" href="#_bigquerytemplate">BigQueryTemplate</a></h4>
+<div class="paragraph">
+<p>The <code>BigQueryTemplate</code> class is a wrapper over the <code>BigQuery</code> client object and makes it easier to load data into BigQuery tables.
+A <code>BigQueryTemplate</code> is scoped to a single dataset.
+The autoconfigured <code>BigQueryTemplate</code> instance will use the dataset provided through the property <code>spring.cloud.gcp.bigquery.datasetName</code>.</p>
+</div>
+<div class="paragraph">
+<p>Below is a code snippet of how to load a CSV data <code>InputStream</code> to a BigQuery table.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// BigQuery client object provided by our autoconfiguration.
+@Autowired
+BigQueryTemplate bigQueryTemplate;
+
+public void loadData(InputStream dataInputStream, String tableName) {
+  ListenableFuture&lt;Job&gt; bigQueryJobFuture =
+      bigQueryTemplate.writeDataToTable(
+          tableName,
+          dataFile.getInputStream(),
+          FormatOptions.csv());
+
+  // After the future is complete, the data is successfully loaded.
+  Job job = bigQueryJobFuture.get();
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_integration"><a class="link" href="#_spring_integration">Spring Integration</a></h3>
+<div class="paragraph">
+<p>Spring Cloud GCP BigQuery also provides a Spring Integration message handler <code>BigQueryFileMessageHandler</code>.
+This is useful for incorporating BigQuery data loading operations in a Spring Integration pipeline.</p>
+</div>
+<div class="paragraph">
+<p>Below is an example configuring a <code>ServiceActivator</code> bean using the <code>BigQueryFileMessageHandler</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public DirectChannel bigQueryWriteDataChannel() {
+  return new DirectChannel();
+}
+
+@Bean
+public DirectChannel bigQueryJobReplyChannel() {
+  return new DirectChannel();
+}
+
+@Bean
+@ServiceActivator(inputChannel = "bigQueryWriteDataChannel")
+public MessageHandler messageSender(BigQueryTemplate bigQueryTemplate) {
+  BigQueryFileMessageHandler messageHandler = new BigQueryFileMessageHandler(bigQueryTemplate);
+  messageHandler.setFormatOptions(FormatOptions.csv());
+  messageHandler.setOutputChannel(bigQueryJobReplyChannel());
+  return messageHandler;
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bigquery_message_handling"><a class="link" href="#_bigquery_message_handling">BigQuery Message Handling</a></h4>
+<div class="paragraph">
+<p>The <code>BigQueryFileMessageHandler</code> accepts the following message payload types for loading into BigQuery: <code>java.io.File</code>, <code>byte[]</code>, <code>org.springframework.core.io.Resource</code>, and <code>java.io.InputStream</code>.
+The message payload will be streamed and written to the BigQuery table you specify.</p>
+</div>
+<div class="paragraph">
+<p>By default, the <code>BigQueryFileMessageHandler</code> is configured to read the headers of the messages it receives to determine how to load the data.
+The headers are specified by the class <code>BigQuerySpringMessageHeaders</code> and summarized below.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Header</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>BigQuerySpringMessageHeaders.TABLE_NAME</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Specifies the BigQuery table within your dataset to write to.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>BigQuerySpringMessageHeaders.FORMAT_OPTIONS</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Describes the data format of your data to load (i.e. CSV, JSON, etc.).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Alternatively, you may omit these headers and explicitly set the table name or format options by calling <code>setTableName(&#8230;&#8203;)</code> and <code>setFormatOptions(&#8230;&#8203;)</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bigquery_message_reply"><a class="link" href="#_bigquery_message_reply">BigQuery Message Reply</a></h4>
+<div class="paragraph">
+<p>After the <code>BigQueryFileMessageHandler</code> processes a message to load data to your BigQuery table, it will respond with a <code>Job</code> on the reply channel.
+The <a href="https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html">Job object</a> provides metadata and information about the load file operation.</p>
+</div>
+<div class="paragraph">
+<p>By default, the <code>BigQueryFileMessageHandler</code> is run in asynchronous mode, with <code>setSync(false)</code>, and it will reply with a <code>ListenableFuture&lt;Job&gt;</code> on the reply channel.
+The future is tied to the status of the data loading job and will complete when the job completes.</p>
+</div>
+<div class="paragraph">
+<p>If the handler is run in synchronous mode with <code>setSync(true)</code>, then the handler will block on the completion of the loading job and block until it is complete.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you decide to use Spring Integration Gateways and you wish to receive <code>ListenableFuture&lt;Job&gt;</code> as a reply object in the Gateway, you will have to call <code>.setAsyncExecutor(null)</code> on your <code>GatewayProxyFactoryBean</code>.
+This is needed to indicate that you wish to reply on the built-in async support rather than rely on async handling of the gateway.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
 <div class="paragraph">
@@ -195,8 +327,14 @@ For more information, see the <a href="https://cloud.google.com/bigquery/docs/re
 <td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.bigquery.datasetName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The BigQuery dataset that the <code>BigQueryTemplate</code> and <code>BigQueryFileMessageHandler</code> is scoped to.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.bigquery.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Spring Cloud GCP BigQuery autoconfiguration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Spring Cloud GCP BigQuery autoconfiguration.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
 </tr>
