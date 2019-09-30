@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,9 @@ public class GcpBigQueryAutoConfigurationTests {
 			BigQueryOptions bigQueryOptions = context.getBean(BigQuery.class).getOptions();
 			assertThat(bigQueryOptions.getProjectId()).isEqualTo("test-project");
 			assertThat(bigQueryOptions.getCredentials()).isEqualTo(MOCK_CREDENTIALS);
+
+			BigQueryTemplate bigQueryTemplate = context.getBean(BigQueryTemplate.class);
+			assertThat(bigQueryTemplate.getDatasetName()).isEqualTo("test-dataset");
 		});
 	}
 

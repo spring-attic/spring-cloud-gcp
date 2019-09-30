@@ -40,6 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 
@@ -94,7 +95,9 @@ public class BigQuerySampleApplicationTests {
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
 		HttpEntity<LinkedMultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
-		this.restTemplate.postForEntity("/uploadFile", request, String.class);
+		ResponseEntity<String> response =
+				this.restTemplate.postForEntity("/uploadFile", request, String.class);
+		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
 				.newBuilder("SELECT * FROM " + DATASET_NAME + "." + TABLE_NAME)
@@ -117,7 +120,9 @@ public class BigQuerySampleApplicationTests {
 
 		HttpHeaders headers = new HttpHeaders();
 		HttpEntity<LinkedMultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
-		this.restTemplate.postForEntity("/uploadCsvText", request, String.class);
+		ResponseEntity<String> response =
+				this.restTemplate.postForEntity("/uploadCsvText", request, String.class);
+		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
 		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
 				.newBuilder("SELECT * FROM " + DATASET_NAME + "." + TABLE_NAME)

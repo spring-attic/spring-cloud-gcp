@@ -6,7 +6,7 @@ This code sample shows how the Spring Cloud GCP integrations can simplify the us
 
 == Overview
 
-This application allows you to load CSV data into BigQuery tables through file upload and inputting CSV data in a text field.
+This application allows you to load CSV data into BigQuery tables through either file upload or inputting CSV data into a text field.
 
 == Running the sample
 
