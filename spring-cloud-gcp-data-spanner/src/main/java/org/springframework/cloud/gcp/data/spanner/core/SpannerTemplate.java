@@ -69,8 +69,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
@@ -574,10 +572,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	private TransactionContext getTransactionContext() {
-		return TransactionSynchronizationManager.isActualTransactionActive()
-				? ((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-						.currentTransactionStatus()).getTransaction()).getTransactionContext()
-				: null;
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+			SpannerTransactionManager.Tx tx = (SpannerTransactionManager.Tx) TransactionSynchronizationManager
+					.getResource(this.databaseClientProvider.get());
+			if (tx != null && tx.getTransactionContext() != null) {
+				return tx.getTransactionContext();
+			}
+		}
+		return null;
 	}
 
 	private <A> A doWithOrWithoutTransactionContext(Function<TransactionContext, A> funcWithTransactionContext,

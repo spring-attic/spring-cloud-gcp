@@ -35,19 +35,19 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.UnexpectedRollbackException;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -58,25 +58,16 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		this.databaseClientProvider = databaseClientProvider;
 	}
 
-	protected Tx getCurrentTx() {
-		return (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-				.currentTransactionStatus())
-						.getTransaction();
-	}
-
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
-		try {
-			Tx tx = getCurrentTx();
-			if (tx.getTransactionManager() != null
-					&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
-				return tx;
-			}
-			return new Tx();
+		Tx tx = (Tx) TransactionSynchronizationManager.getResource(databaseClientProvider.get());
+		if (tx != null && tx.getTransactionContext() != null
+				&& (tx.getTransactionManager() != null
+						&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED ||
+						tx.isReadOnly())) {
+			return tx;
 		}
-		catch (NoTransactionException ex) {
-			return new Tx();
-		}
+		return new Tx(databaseClientProvider.get());
 	}
 
 	@Override
@@ -96,7 +87,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			final ReadContext targetTransactionContext = this.databaseClientProvider.get()
 					.readOnlyTransaction();
 			tx.isReadOnly = true;
-
+			tx.transactionManager = null;
 			tx.transactionContext = new TransactionContext() {
 				@Override
 				public void buffer(Mutation mutation) {
@@ -172,10 +163,12 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			};
 		}
 		else {
-			tx.transactionManager = this.databaseClientProvider.get().transactionManager();
+			tx.transactionManager = tx.databaseClient.transactionManager();
 			tx.transactionContext = tx.getTransactionManager().begin();
 			tx.isReadOnly = false;
 		}
+
+		TransactionSynchronizationManager.bindResource(tx.getDatabaseClient(), tx);
 	}
 
 	@Override
@@ -183,10 +176,10 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		try {
-			if (tx.transactionManager != null &&
-					tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+			if (tx.getTransactionManager() != null &&
+					tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
 
-				tx.transactionManager.commit();
+				tx.getTransactionManager().commit();
 			}
 			if (tx.isReadOnly()) {
 				tx.getTransactionContext().close();
@@ -212,24 +205,44 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	protected void doRollback(DefaultTransactionStatus defaultTransactionStatus)
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
-		if (tx.transactionManager != null
-				&& tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
-			tx.transactionManager.rollback();
+		if (tx.getTransactionManager() != null
+				&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+			tx.getTransactionManager().rollback();
 		}
 		if (tx.isReadOnly()) {
 			tx.getTransactionContext().close();
 		}
 	}
 
+	@Override
+	protected boolean isExistingTransaction(Object transaction) {
+		return ((Tx) transaction).getTransactionContext() != null;
+	}
+
+	@Override
+	protected void doCleanupAfterCompletion(Object transaction) {
+		Tx tx = (Tx) transaction;
+		TransactionSynchronizationManager.unbindResource(tx.getDatabaseClient());
+		tx.transactionManager = null;
+		tx.transactionContext = null;
+		tx.isReadOnly = false;
+	}
+
 	/**
 	 * A transaction object that holds the transaction context.
 	 */
 	public static class Tx {
-		private TransactionManager transactionManager;
+		TransactionManager transactionManager;
 
-		private TransactionContext transactionContext;
+		TransactionContext transactionContext;
 
-		private boolean isReadOnly;
+		boolean isReadOnly;
+
+		DatabaseClient databaseClient;
+
+		public Tx(DatabaseClient databaseClient) {
+			this.databaseClient = databaseClient;
+		}
 
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
@@ -242,5 +255,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		public boolean isReadOnly() {
 			return this.isReadOnly;
 		};
+
+		public DatabaseClient getDatabaseClient() {
+			return databaseClient;
+		}
 	}
 }
