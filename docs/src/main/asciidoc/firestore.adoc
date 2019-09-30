@@ -59,10 +59,11 @@ The Spring Boot starter for Google Cloud Firestore provides the following config
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
 
-=== Spring Data Cloud Firestore
+=== Spring Data Recative Repositories for Cloud Firestore
+NOTE: Currently some features are not supported: transactions, sorting, query by example, projections, auditing.
 
 https://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode.
+Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode, providing reactive template and repositories support.
 To begin using this library, add the `spring-cloud-gcp-data-firestore` artifact to your project.
 
 Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
@@ -104,7 +105,7 @@ dependencies {
 }
 ----
 
-===== Repository settings
+===== Reactive Repository settings
 
 Spring Data Repositories can be configured via the `@EnableReactiveFirestoreRepositories` annotation on your main `@Configuration` class.
 With our Spring Boot Starter for Spring Data Cloud Firestore, `@EnableReactiveFirestoreRepositories` is automatically added.
@@ -129,6 +130,8 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
 
 ----
+
+NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
 
 === Reactive Repositories
 
@@ -159,6 +162,8 @@ include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springfra
 ----
 
 Repositories allow you to define custom Query Methods (detailed in the following sections) for retrieving and counting based on filtering and paging parameters.
+
+NOTE: Custom queries with `@Query` annotation are not supported since there is no query language in Cloud Firestore
 
 ==== Query methods by convention
 
