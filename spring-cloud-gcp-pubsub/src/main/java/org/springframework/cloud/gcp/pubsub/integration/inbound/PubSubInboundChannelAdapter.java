@@ -153,7 +153,14 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
-				message.nack();
+				if (getErrorChannel() != null) {
+					// If the error channel is present, acknowledge the message.
+					// It gets forwarded to the error channel once PubSubException is thrown.
+					message.ack();
+				}
+				else {
+					message.nack();
+				}
 			}
 			throw new PubSubException("Sending Spring message failed.", re);
 		}

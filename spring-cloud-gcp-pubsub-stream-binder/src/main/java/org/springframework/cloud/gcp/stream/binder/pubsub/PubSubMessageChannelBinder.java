@@ -80,7 +80,13 @@ public class PubSubMessageChannelBinder
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
 
-		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(this.pubSubTemplate,
+				destination.getName());
+
+		ErrorInfrastructure errorInfrastructure = registerErrorInfrastructure(destination, group, properties);
+		adapter.setErrorChannel(errorInfrastructure.getErrorChannel());
+
+		return adapter;
 	}
 
 	@Override
