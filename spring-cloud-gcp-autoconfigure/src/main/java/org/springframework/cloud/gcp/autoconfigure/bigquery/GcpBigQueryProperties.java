@@ -30,12 +30,20 @@ import org.springframework.cloud.gcp.core.GcpScope;
 @ConfigurationProperties("spring.cloud.gcp.bigquery")
 public class GcpBigQueryProperties implements CredentialsSupplier {
 
-	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
+	/**
+	 * Overrides the GCP OAuth2 credentials specified in the Core module.
+	 */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.BIG_QUERY.getUrl());
 
+	/**
+	 * Overrides the GCP project ID specified in the Core module to use for BigQuery.
+	 */
 	private String projectId;
 
+	/**
+	 * Name of the BigQuery dataset to use.
+	 */
 	private String datasetName;
 
 	public Credentials getCredentials() {
