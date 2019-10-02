@@ -1,0 +1,33 @@
+= Spring GCP BigQuery Sample Application
+
+BigQuery is Google's fully managed, petabyte scale, low cost analytics data warehouse.
+
+This code sample shows how the Spring Cloud GCP integrations can simplify the use of https://cloud.google.com/bigquery/[Google Cloud BigQuery].
+
+== Overview
+
+This application allows you to load CSV data into BigQuery tables through either file upload or inputting CSV data into a text field.
+
+== Running the sample
+
+1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
+
+2. Enable the BigQuery API from https://console.cloud.google.com/apis/library/bigquery-json.googleapis.com[the APIs & Services menu] of the Google Cloud Console.
+
+3. Authenticate in one of two ways:
+
+a. Use the Google Cloud SDK to https://developers.google.com/identity/protocols/application-default-credentials#toolcloudsdk[authenticate with application default credentials].
+b. https://cloud.google.com/iam/docs/creating-managing-service-accounts[Create a new service account], download its private key and point the `spring.cloud.gcp.credentials.location` property to it.
++
+Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
+
+4. Create a BigQuery dataset for yourself by navigating to the https://console.cloud.google.com/bigquery[BigQuery dashboard].
+   Under the *Resources* panel, click on your project ID, and then click *Create Dataset* under your project.
+
+5. In `src/main/resources/application.properties`, set the value of `spring.cloud.gcp.bigquery.datasetName` to the name of the dataset you created.
+
+6. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+7. Go to http://localhost:8080 in your browser and try loading some data into a BigQuery table under your dataset.
+   The application accepts CSV file uploads or CSV data inputted into the text area.
+   If the table does not already exist under the BigQuery dataset, it will be created for you.

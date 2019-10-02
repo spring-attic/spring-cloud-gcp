@@ -285,6 +285,10 @@
             <artifactId>janino</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-bigquery</artifactId>
+        </dependency>
 
     </dependencies>
 </project>
