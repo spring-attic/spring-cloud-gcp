@@ -342,7 +342,7 @@ Google Cloud Pub/Sub API, if different from the ones in the
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 | `spring.cloud.gcp.pubsub.keepAliveIntervalMinutes` | Determines frequency of keepalive gRPC ping | No | `5 minutes`
-| `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
+| `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | 1
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
