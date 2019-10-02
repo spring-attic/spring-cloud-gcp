@@ -30,6 +30,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -69,6 +70,7 @@ public class GcpBigQueryAutoConfiguration {
 		BigQueryOptions bigQueryOptions = BigQueryOptions.newBuilder()
 				.setProjectId(this.projectId)
 				.setCredentials(this.credentialsProvider.getCredentials())
+				.setHeaderProvider(new UserAgentHeaderProvider(GcpBigQueryAutoConfiguration.class))
 				.build();
 		return bigQueryOptions.getService();
 	}
