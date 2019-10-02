@@ -335,6 +335,8 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Pub/Sub API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.pubsub.emulator-host` | The host and port of the local running emulator.
+If provided, this will setup the client to connect against a running https://cloud.google.com/pubsub/docs/emulator[Google Cloud Pub/Sub Emulator]. | No |
 | `spring.cloud.gcp.pubsub.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key for authenticating with the
 Google Cloud Pub/Sub API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
