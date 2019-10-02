@@ -184,8 +184,8 @@
 
         <!-- BigQuery -->
         <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-bigquery</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-bigquery</artifactId>
             <optional>true</optional>
         </dependency>
 
@@ -284,10 +284,6 @@
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-bigquery</artifactId>
         </dependency>
 
     </dependencies>
