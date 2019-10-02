@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.bigquery.core;
 
-import org.springframework.dao.DataAccessException;
+import org.springframework.core.NestedRuntimeException;
 
 /**
  * Exception wrapping errors that occur with BigQuery.
@@ -24,7 +24,7 @@ import org.springframework.dao.DataAccessException;
  * @author Daniel Zou
  * @since 1.2
  */
-public class BigQueryException extends DataAccessException {
+public class BigQueryException extends NestedRuntimeException {
 	public BigQueryException(String msg) {
 		super(msg);
 	}
