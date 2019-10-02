@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
  *
  * @author Chengyuan Zhao
  */
+//tag::repository[]
 public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAge(Integer age);
 
@@ -39,3 +40,4 @@ public interface UserRepository extends FirestoreReactiveRepository<User> {
 
 	Mono<Long> countByAgeIsGreaterThan(Integer age);
 }
+//end::repository[]

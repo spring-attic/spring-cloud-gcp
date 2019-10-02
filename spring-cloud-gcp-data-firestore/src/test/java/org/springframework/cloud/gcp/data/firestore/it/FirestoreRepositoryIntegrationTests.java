@@ -39,9 +39,10 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
 public class FirestoreRepositoryIntegrationTests {
-
+	//tag::autowire[]
 	@Autowired
 	UserRepository userRepository;
+	//end::autowire[]
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
@@ -67,6 +68,7 @@ public class FirestoreRepositoryIntegrationTests {
 	}
 
 	@Test
+	//tag::repository_built_in[]
 	public void writeReadDeleteTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
@@ -78,8 +80,10 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
 				.containsExactlyInAnyOrder("Alice", "Bob");
 	}
+	//end::repository_built_in[]
 
 	@Test
+	//tag::repository_part_tree[]
 	public void partTreeRepositoryMethodTest() {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
@@ -93,6 +97,7 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
 				u2);
 	}
+	//end::repository_part_tree[]
 
 	@Test
 	public void pageableQueryTest() {

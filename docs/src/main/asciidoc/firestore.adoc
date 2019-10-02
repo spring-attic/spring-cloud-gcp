@@ -1,6 +1,159 @@
-== Cloud Firestore
+:spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
-Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode.
+== Spring Data Recative Repositories for Cloud Firestore
+NOTE: Currently some features are not supported: transactions, sorting, query by example, projections, auditing.
+
+https://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode, providing reactive template and repositories support.
+To begin using this library, add the `spring-cloud-gcp-data-firestore` artifact to your project.
+
+Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-gcp-data-firestore</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-firestore'
+}
+----
+
+We provide a Spring Boot Starter for Spring Data Firestore, with which you can use our recommended auto-configuration setup. To use the starter, see the coordinates below.
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-firestore'
+}
+----
+
+=== Configuration
+==== Properties
+The Spring Boot starter for Google Cloud Firestore provides the following configuration options:
+
+|=========================================================
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.firestore.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
+| `spring.cloud.gcp.firestore.project-id` | GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Firestore credentials | No | https://www.googleapis.com/auth/datastore
+|=========================================================
+
+
+==== Reactive Repository settings
+
+Spring Data Repositories can be configured via the `@EnableReactiveFirestoreRepositories` annotation on your main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Cloud Firestore, `@EnableReactiveFirestoreRepositories` is automatically added.
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-firestore/src/main/java/org/springframework/cloud/gcp/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java[`@EnableReactiveFirestoreRepositories`].
+
+==== Autoconfiguration
+
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
+
+- an instance of `FirestoreTemplate`
+- instances of all user defined repositories extending `FirestoreReactiveRepository` (an extension of `ReactiveCrudRepository` with additional Cloud Firestore features) when repositories are enabled
+- an instance of https://developers.google.com/resources/api-libraries/documentation/firestore/v1/java/latest/[`Firestore`] from the Google Cloud Java Client for Firestore, for convenience and lower level API access
+
+=== Object Mapping
+
+Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.google.com/docs/firestore/data-model#collections[Cloud Firestore collections] and documents via annotations:
+
+[source,java,indent=0]
+----
+import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.firestore.Entity;
+
+include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
+
+----
+
+`@Entity(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
+
+`@Id` annotation marks a field to be used as document id. This annotation is required.
+
+NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
+
+=== Reactive Repositories
+
+https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/reactive/ReactiveCrudRepository.html[Spring Data Repositories] is an abstraction that can reduce boilerplate code.
+
+For example:
+
+[source,java]
+----
+
+include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]
+
+----
+
+Spring Data generates a working implementation of the specified interface, which can be autowired into an application.
+
+The `User` type parameter to `FirestoreReactiveRepository` refers to the underlying domain type.
+
+[source,java]
+----
+public class MyApplication {
+
+include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
+
+include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
+}
+
+----
+
+Repositories allow you to define custom Query Methods (detailed in the following sections) for retrieving and counting based on filtering and paging parameters.
+
+NOTE: Custom queries with `@Query` annotation are not supported since there is no query language in Cloud Firestore
+
+=== Query methods by convention
+
+[source, java]
+----
+public class MyApplication {
+include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
+}
+----
+
+In the example above the query method implementations in `UserRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+
+Cloud Firestore only supports filter components joined by AND, and the following operations:
+
+* `equals`
+* `greater than or equals`
+* `greater than`
+* `less than or equals`
+* `less than`
+* `is null`
+
+After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
+
+=== Reactice Repository Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[sample application] is available.
+
+=== Cloud Firestore Spring Boot Starter
+
+If you prefer using Firestore client only, Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode.
 
 See https://cloud.google.com/firestore/docs/[documentation] to learn more about Cloud Firestore.
 
@@ -25,7 +178,8 @@ dependencies {
 }
 ----
 
-=== Using Cloud Firestore
+
+==== Using Cloud Firestore
 
 The starter automatically configures and registers a `Firestore` bean in the Spring application context. To start using it, simply use the `@Autowired` annotation.
 
@@ -39,19 +193,6 @@ include::../../test/java/org/springframework/cloud/gcp/sample/firestore/Firestor
 include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
 ----
 
-=== Configuration
-
-The Spring Boot starter for Google Cloud Firestore provides the following configuration options:
-
-|=========================================================
-| Name | Description | Required | Default value
-| `spring.cloud.gcp.firestore.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.firestore.project-id` | GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.firestore.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.firestore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.firestore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
-|=========================================================
-
-=== Sample
+==== Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
