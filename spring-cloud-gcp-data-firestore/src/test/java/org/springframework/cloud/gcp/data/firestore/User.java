@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Objects;
 
-import org.springframework.data.annotation.Id;
+import com.google.cloud.firestore.annotation.DocumentId;
 
 /**
  * Sample entity for integration tests.
@@ -26,9 +26,9 @@ import org.springframework.data.annotation.Id;
  * @author Daniel Zou
  */
 //tag::class_definition[]
-@Entity(collectionName = "usersCollection")
+@Document(collectionName = "usersCollection")
 public class User {
-	@Id
+	@DocumentId
 	private String name;
 
 	private Integer age;

@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.data.firestore.mapping;
 
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.firestore.Entity;
+import org.springframework.cloud.gcp.data.firestore.Document;
 import org.springframework.data.util.ClassTypeInformation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,11 +44,11 @@ public class FirestorePersistentEntityImplTests {
 		assertThat(firestorePersistentEntity.collectionName()).isEqualTo("employee_table");
 	}
 
-	@Entity
+	@Document
 	private static class Student {
 	}
 
-	@Entity(collectionName = "employee_table")
+	@Document(collectionName = "employee_table")
 	private static class Employee {
 	}
 }

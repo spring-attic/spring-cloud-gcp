@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
-import org.springframework.cloud.gcp.data.firestore.Entity;
+import org.springframework.cloud.gcp.data.firestore.Document;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -35,6 +35,8 @@ public class FirestorePersistentEntityImpl<T>
 		implements FirestorePersistentEntity<T> {
 
 	private final String collectionName;
+
+	private FirestorePersistentProperty idProperty;
 
 	public FirestorePersistentEntityImpl(TypeInformation<T> information) {
 		super(information);
@@ -57,11 +59,11 @@ public class FirestorePersistentEntityImpl<T>
 	}
 
 	private static <T> String getEntityCollectionName(TypeInformation<T> typeInformation) {
-		Entity entity = AnnotationUtils.findAnnotation(typeInformation.getType(), Entity.class);
-		String collectionName = (String) AnnotationUtils.getValue(entity, "collectionName");
+		Document document = AnnotationUtils.findAnnotation(typeInformation.getType(), Document.class);
+		String collectionName = (String) AnnotationUtils.getValue(document, "collectionName");
 
 		if (StringUtils.isEmpty(collectionName)) {
-			// Infer the collection name as the uncapitalized entity name.
+			// Infer the collection name as the uncapitalized document name.
 			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
 		}
 		else {

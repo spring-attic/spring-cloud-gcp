@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a class that represents a Firestore Entity.
+ * Annotation for a class that represents a Firestore Document.
  *
  * @author Dmitry Solomakha
  *
@@ -33,12 +33,12 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Entity {
+public @interface Document {
 
 	/**
-	 * The collection name of the Entity in Firestore, which can differ from the name of the
+	 * The collection name of the Document in Firestore, which can differ from the name of the
 	 * class which it annotates.
-	 * @return The Collection name of the Entity
+	 * @return The Collection name of the Document
 	 */
 	String collectionName() default "";
 }

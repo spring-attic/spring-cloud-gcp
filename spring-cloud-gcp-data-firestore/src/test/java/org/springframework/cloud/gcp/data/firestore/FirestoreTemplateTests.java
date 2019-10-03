@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
@@ -84,7 +83,7 @@ public class FirestoreTemplateTests {
 	@Test
 	public void findByIdTest() {
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onNext(buildDocument("e1", 100L));
 
 			streamObserver.onCompleted();
@@ -105,7 +104,7 @@ public class FirestoreTemplateTests {
 	@Test
 	public void findByIdErrorTest() {
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onError(new RuntimeException("Firestore error"));
 			return null;
 		}).when(this.firestoreStub).getDocument(any(), any());
@@ -127,7 +126,7 @@ public class FirestoreTemplateTests {
 	@Test
 	public void findByIdNotFoundTest() {
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
 
 			streamObserver.onCompleted();
@@ -158,7 +157,7 @@ public class FirestoreTemplateTests {
 				.build();
 
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onNext(buildDocument("e1", 100L));
 
 			streamObserver.onCompleted();
@@ -166,7 +165,7 @@ public class FirestoreTemplateTests {
 		}).when(this.firestoreStub).getDocument(eq(request1), any());
 
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onNext(buildDocument("e2", 200L));
 
 			streamObserver.onCompleted();
@@ -174,7 +173,7 @@ public class FirestoreTemplateTests {
 		}).when(this.firestoreStub).getDocument(eq(request2), any());
 
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
 
 			streamObserver.onCompleted();
@@ -260,7 +259,7 @@ public class FirestoreTemplateTests {
 				.build();
 
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onNext(buildDocument("e1", 100L));
 
 			streamObserver.onCompleted();
@@ -282,7 +281,7 @@ public class FirestoreTemplateTests {
 				.build();
 
 		doAnswer(invocation -> {
-			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
 			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
 
 			streamObserver.onCompleted();
@@ -304,8 +303,8 @@ public class FirestoreTemplateTests {
 		return valuesMap;
 	}
 
-	private Document buildDocument(String name, long l) {
-		return Document.newBuilder().setName(this.parent + "/testEntities/" + name)
+	private com.google.firestore.v1.Document buildDocument(String name, long l) {
+		return com.google.firestore.v1.Document.newBuilder().setName(this.parent + "/testEntities/" + name)
 				.putAllFields(createValuesMap(name, l)).build();
 	}
 
@@ -323,7 +322,7 @@ public class FirestoreTemplateTests {
 		}).when(this.firestoreStub).runQuery(any(), any());
 	}
 
-	@Entity(collectionName = "testEntities")
+	@Document(collectionName = "testEntities")
 	static class TestEntity {
 		@Id
 		String idField;

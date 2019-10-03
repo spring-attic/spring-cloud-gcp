@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
+import com.google.cloud.firestore.annotation.DocumentId;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -50,5 +52,10 @@ public class FirestorePersistentPropertyImpl
 	@Override
 	protected Association<FirestorePersistentProperty> createAssociation() {
 		return new Association<>(this, null);
+	}
+
+	@Override
+	public boolean isIdProperty() {
+		return findAnnotation(DocumentId.class) != null;
 	}
 }
