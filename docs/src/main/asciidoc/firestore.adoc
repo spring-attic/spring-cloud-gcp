@@ -81,15 +81,16 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 [source,java,indent=0]
 ----
 import org.springframework.data.annotation.Id;
-import org.springframework.cloud.gcp.data.firestore.Entity;
+import org.springframework.cloud.gcp.data.firestore.Document;
 
 include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
 
 ----
 
-`@Entity(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
+`@Document(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
+This annotation is optional, by default the collection name is derived from the class name.
 
-`@Id` annotation marks a field to be used as document id. This annotation is required.
+`@DocumentId` annotation marks a field to be used as document id. This annotation is required.
 
 NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
 

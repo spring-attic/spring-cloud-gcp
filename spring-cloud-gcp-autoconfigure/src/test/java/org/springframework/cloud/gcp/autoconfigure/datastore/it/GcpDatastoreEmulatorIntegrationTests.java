@@ -117,7 +117,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 	}
 
 	/**
-	 * Entity to be stored on Datastore. An instance of `LocalDatastoreHelper` as a bean.
+	 * Document to be stored on Datastore. An instance of `LocalDatastoreHelper` as a bean.
 	 */
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
 	static class EmulatorEntityTest {

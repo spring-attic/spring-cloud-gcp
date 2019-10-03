@@ -23,7 +23,7 @@ import java.util.Collections;
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.cloud.gcp.data.firestore.Entity;
+import org.springframework.cloud.gcp.data.firestore.Document;
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
 import org.springframework.cloud.gcp.data.firestore.repository.support.FirestoreRepositoryFactoryBean;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -64,7 +64,7 @@ public class FirestoreRepositoryConfigurationExtension extends RepositoryConfigu
 
 	@Override
 	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
-		return Collections.singleton(Entity.class);
+		return Collections.singleton(Document.class);
 	}
 
 	@Override

@@ -16,18 +16,19 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.firestore.Entity;
-import org.springframework.data.annotation.Id;
+import com.google.cloud.firestore.annotation.DocumentId;
+
+import org.springframework.cloud.gcp.data.firestore.Document;
 
 /**
  * Example POJO to demonstrate Spring Cloud GCP Spring Data Firestore operations.
  *
  * @author Daniel Zou
  */
-@Entity(collectionName = "users")
+@Document(collectionName = "users")
 public class User {
 
-	@Id
+	@DocumentId
 	String name;
 
 	int age;

@@ -28,4 +28,5 @@ import org.springframework.data.mapping.PersistentProperty;
 public interface FirestorePersistentProperty
 		extends PersistentProperty<FirestorePersistentProperty> {
 
+	boolean isDocumemtId();
 }

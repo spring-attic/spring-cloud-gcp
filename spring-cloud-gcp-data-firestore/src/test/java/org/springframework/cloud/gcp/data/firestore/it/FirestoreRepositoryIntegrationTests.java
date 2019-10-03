@@ -93,7 +93,8 @@ public class FirestoreRepositoryIntegrationTests {
 
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
-		assertThat(this.userRepository.findByAgeAndName(22, "Cloud").collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
+				.containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
 				u2);
 	}
