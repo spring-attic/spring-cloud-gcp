@@ -84,7 +84,7 @@ image::bus_sample_github.png[]
 example.message = message from GitHub
 ----
 
-2. In configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to either HTTPS or SSH repository URI.
+2. In configuration server's link:spring-cloud-gcp-pubsub-bus-config-sample-server-github/src/main/resources/application.properties[application.properties], set the value of `spring.cloud.config.server.git.uri` property to a valid repository URI (Git protocol for unauthenticated connection; HTTPS or SSH otherwise).
 +
 If you opted for SSH, the keys stored in `~/.ssh` should work automatically.
 If the key registered with GitHub is passphrase protected, set `spring.cloud.config.server.git.passphrase` property.
