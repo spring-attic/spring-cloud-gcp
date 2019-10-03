@@ -7354,16 +7354,17 @@ It is not required to add it to any other class, unless there is a need to overr
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.springframework.data.annotation.Id;
-import org.springframework.cloud.gcp.data.firestore.Entity;
+import org.springframework.cloud.gcp.data.firestore.Document;
 
 Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>@Entity(collectionName = "usersCollection")</code> annotation configures the collection name for the documents of this type.</p>
+<p><code>@Document(collectionName = "usersCollection")</code> annotation configures the collection name for the documents of this type.
+This annotation is optional, by default the collection name is derived from the class name.</p>
 </div>
 <div class="paragraph">
-<p><code>@Id</code> annotation marks a field to be used as document id. This annotation is required.</p>
+<p><code>@DocumentId</code> annotation marks a field to be used as document id. This annotation is required.</p>
 </div>
 <div class="admonitionblock note">
 <table>
