@@ -145,6 +145,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			});
 		}
 
+		boolean messageNacked = false;
+
 		try {
 			sendMessage(getMessageBuilderFactory()
 					.withPayload(message.getPayload())
@@ -153,20 +155,17 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
-				if (getErrorChannel() != null) {
-					// If the error channel is present, acknowledge the message.
-					// It gets forwarded to the error channel once PubSubException is thrown.
-					message.ack();
-				}
-				else {
-					message.nack();
-				}
+				message.nack();
+				messageNacked = true;
 			}
 			throw new PubSubException("Sending Spring message failed.", re);
 		}
-
-		if ((this.ackMode == AckMode.AUTO) || (this.ackMode == AckMode.AUTO_ACK)) {
-			message.ack();
+		finally {
+			if (this.ackMode == AckMode.AUTO || this.ackMode == AckMode.AUTO_ACK) {
+				if (!messageNacked) {
+					message.ack();
+				}
+			}
 		}
 	}
 
