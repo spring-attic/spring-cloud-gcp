@@ -16,8 +16,7 @@
 
 package com.example;
 
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.List;
 
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
@@ -64,13 +63,10 @@ public class VisionController {
 		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
 				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
-		Map<String, Float> imageLabels =
-				response.getLabelAnnotationsList()
-						.stream()
-						.collect(Collectors.toMap(
-								EntityAnnotation::getDescription, EntityAnnotation::getScore));
+		// This gets the annotations of the image from the response object.
+		List<EntityAnnotation> annotations = response.getLabelAnnotationsList();
 
-		map.addAttribute("annotations", imageLabels);
+		map.addAttribute("annotations", annotations);
 		map.addAttribute("imageUrl", imageUrl);
 
 		return new ModelAndView("result", map);
