@@ -874,7 +874,8 @@ The topic name could either be a canonical topic name within the current project
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=publish]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Map&lt;String, String&gt; headers = Collections.singletonMap("key1", "val1");
+pubSubTemplate.publish(topicName, "message", headers).get();</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -896,7 +897,11 @@ The subscription name could either be a canonical subscription name within the c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=subscribe]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName, (message) -&gt; {
+    logger.info("Message received from " + subscriptionName + " subscription: "
+            + message.getPubsubMessage().getData().toStringUtf8());
+    message.ack();
+});</code></pre>
 </div>
 </div>
 </div>
@@ -938,7 +943,15 @@ This is different from subscribing to a subscription, in the sense that subscrib
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=pull]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">int maxMessages = 10;
+boolean returnImmediately = false;
+List&lt;AcknowledgeablePubsubMessage&gt; messages = pubSubTemplate.pull(subscriptionName, maxMessages,
+        returnImmediately);
+
+//acknowledge the messages
+pubSubTemplate.ack(messages);
+
+messages.forEach(message -&gt; logger.info(message.getPubsubMessage().getData().toStringUtf8()));</code></pre>
 </div>
 </div>
 </div>
@@ -1013,7 +1026,13 @@ All <code>ack()</code>, <code>nack()</code>, and <code>modifyAckDeadline()</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_bean]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
+// You will have to configure your own instance if you are unable to depend
+// on the ObjectMapper provided by Spring Boot starters.
+@Bean
+public PubSubMessageConverter pubSubMessageConverter() {
+    return new JacksonPubSubMessageConverter(new ObjectMapper());
+}</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -1034,7 +1053,28 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_convertible_class]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">static class TestUser {
+
+    String username;
+
+    String password;
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    void setPassword(String password) {
+        this.password = password;
+    }
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1042,7 +1082,10 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_publish]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">TestUser user = new TestUser();
+user.setUsername("John");
+user.setPassword("password");
+pubSubTemplate.publish(topicName, user);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1050,7 +1093,17 @@ Other implementations of the <code>PubSubMessageConverter</code> can also be con
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=json_pull]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">int maxMessages = 1;
+boolean returnImmediately = false;
+List&lt;ConvertedAcknowledgeablePubsubMessage&lt;TestUser&gt;&gt; messages = pubSubTemplate.pullAndConvert(
+        subscriptionName, maxMessages, returnImmediately, TestUser.class);
+
+ConvertedAcknowledgeablePubsubMessage&lt;TestUser&gt; message = messages.get(0);
+
+//acknowledge the message
+message.ack();
+
+TestUser receivedTestUser = message.getPayload();</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1180,7 +1233,11 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a <code>PubSubAdmin</cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_topics]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">List&lt;String&gt; topics = pubSubAdmin
+        .listTopics()
+        .stream()
+        .map(Topic::getName)
+        .collect(Collectors.toList());</code></pre>
 </div>
 </div>
 </div>
@@ -1261,7 +1318,11 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in pubsub.adoc - include::../../test/java/org/springframework/cloud/gcp/autoconfigure/pubsub/it/PubSubTemplateDocumentationTests.java[tag=list_subscriptions]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">List&lt;String&gt; subscriptions = pubSubAdmin
+        .listSubscriptions()
+        .stream()
+        .map(Subscription::getName)
+        .collect(Collectors.toList());</code></pre>
 </div>
 </div>
 </div>
@@ -7356,7 +7417,13 @@ It is not required to add it to any other class, unless there is a need to overr
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.springframework.data.annotation.Id;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]</code></pre>
+@Document(collectionName = "usersCollection")
+public class User {
+    @DocumentId
+    private String name;
+
+    private Integer age;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7389,7 +7456,17 @@ Internally we use Firestore client library object mapping. See <a href="https://
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserRepository extends FirestoreReactiveRepository&lt;User&gt; {
+    Flux&lt;User&gt; findByAge(Integer age);
+
+    Flux&lt;User&gt; findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
+
+    Flux&lt;User&gt; findByAgeGreaterThan(Integer age);
+
+    Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Pageable pageable);
+
+    Mono&lt;Long&gt; countByAgeIsGreaterThan(Integer age);
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7402,9 +7479,20 @@ Internally we use Firestore client library object mapping. See <a href="https://
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
+    @Autowired
+    UserRepository userRepository;
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
+    public void writeReadDeleteTest() {
+        User alice = new User("Alice", 29);
+        User bob = new User("Bob", 60);
+
+        this.userRepository.save(alice).block();
+        this.userRepository.save(bob).block();
+
+        assertThat(this.userRepository.count().block()).isEqualTo(2);
+        assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
+                .containsExactlyInAnyOrder("Alice", "Bob");
+    }
 }</code></pre>
 </div>
 </div>
@@ -7429,7 +7517,20 @@ Custom queries with <code>@Query</code> annotation are not supported since there
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
+    public void partTreeRepositoryMethodTest() {
+        User u1 = new User("Cloud", 22);
+        User u2 = new User("Squall", 17);
+        Flux&lt;User&gt; users = Flux.fromArray(new User[] { u1, u2 });
+
+        this.userRepository.saveAll(users).blockLast();
+
+        assertThat(this.userRepository.count().block()).isEqualTo(2);
+        assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+        assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
+                .containsExactly(u1);
+        assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
+                u2);
+    }
 }</code></pre>
 </div>
 </div>
@@ -7510,12 +7611,32 @@ Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-d
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"> @Autowired
- Firestore firestore;
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+Firestore firestore;
 
-Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+   void writeDocumentFromObject() throws ExecutionException, InterruptedException {
+       // Add document data with id "joe" using a custom User class
+       User data = new User("Joe",
+               Arrays.asList(
+                       new Phone(12345, PhoneType.CELL),
+                       new Phone(54321, PhoneType.WORK)));
 
-Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]</code></pre>
+       // .get() blocks on response
+       WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
+
+       LOGGER.info("Update time: " + writeResult.getUpdateTime());
+   }
+
+   User readDocumentToObject() throws ExecutionException, InterruptedException {
+           ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
+                   this.firestore.document("users/joe").get();
+
+           User user = documentFuture.get().toObject(User.class);
+
+           LOGGER.info("read: " + user);
+
+           return user;
+   }</code></pre>
 </div>
 </div>
 </div>

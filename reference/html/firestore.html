@@ -263,7 +263,13 @@ It is not required to add it to any other class, unless there is a need to overr
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.springframework.data.annotation.Id;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]</code></pre>
+@Document(collectionName = "usersCollection")
+public class User {
+	@DocumentId
+	private String name;
+
+	private Integer age;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -296,7 +302,17 @@ Internally we use Firestore client library object mapping. See <a href="https://
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserRepository extends FirestoreReactiveRepository&lt;User&gt; {
+	Flux&lt;User&gt; findByAge(Integer age);
+
+	Flux&lt;User&gt; findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Pageable pageable);
+
+	Mono&lt;Long&gt; countByAgeIsGreaterThan(Integer age);
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -309,9 +325,20 @@ Internally we use Firestore client library object mapping. See <a href="https://
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
+	@Autowired
+	UserRepository userRepository;
 
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
+	public void writeReadDeleteTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).block();
+		this.userRepository.save(bob).block();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("Alice", "Bob");
+	}
 }</code></pre>
 </div>
 </div>
@@ -336,7 +363,20 @@ Custom queries with <code>@Query</code> annotation are not supported since there
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
-Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
+	public void partTreeRepositoryMethodTest() {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux&lt;User&gt; users = Flux.fromArray(new User[] { u1, u2 });
+
+		this.userRepository.saveAll(users).blockLast();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
+				.containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
+				u2);
+	}
 }</code></pre>
 </div>
 </div>
@@ -417,12 +457,32 @@ Unresolved directive in firestore.adoc - include::../../../../spring-cloud-gcp-d
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java"> @Autowired
- Firestore firestore;
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+Firestore firestore;
 
-Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+void writeDocumentFromObject() throws ExecutionException, InterruptedException {
+	// Add document data with id "joe" using a custom User class
+	User data = new User("Joe",
+			Arrays.asList(
+					new Phone(12345, PhoneType.CELL),
+					new Phone(54321, PhoneType.WORK)));
 
-Unresolved directive in firestore.adoc - include::../../test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]</code></pre>
+	// .get() blocks on response
+	WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
+
+	LOGGER.info("Update time: " + writeResult.getUpdateTime());
+}
+
+User readDocumentToObject() throws ExecutionException, InterruptedException {
+		ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
+				this.firestore.document("users/joe").get();
+
+		User user = documentFuture.get().toObject(User.class);
+
+		LOGGER.info("read: " + user);
+
+		return user;
+}</code></pre>
 </div>
 </div>
 </div>
