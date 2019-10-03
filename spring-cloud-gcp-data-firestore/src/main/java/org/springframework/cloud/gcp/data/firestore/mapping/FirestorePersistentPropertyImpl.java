@@ -55,7 +55,7 @@ public class FirestorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isDocumemtId() {
+	public boolean isIdProperty() {
 		return findAnnotation(DocumentId.class) != null;
 	}
 }

@@ -70,24 +70,4 @@ public class FirestorePersistentEntityImpl<T>
 			return collectionName;
 		}
 	}
-
-	@Override
-	public void addPersistentProperty(FirestorePersistentProperty property) {
-		super.addPersistentProperty(property);
-
-		if (property.isDocumemtId()) {
-			this.idProperty = property;
-		}
-	}
-
-	@Override
-	public FirestorePersistentProperty getIdProperty() {
-		return this.idProperty;
-	}
-
-	@Override
-	public boolean hasIdProperty() {
-		return this.idProperty != null;
-	}
-
 }
