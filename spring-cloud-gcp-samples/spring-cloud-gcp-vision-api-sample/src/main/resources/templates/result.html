@@ -12,13 +12,13 @@
       <th>Score</th>
     </tr>
     <tr th:each="entry : ${annotations}">
-      <td>[[${entry.key}]]</td>
-      <td>[[${entry.value}]]</td>
+      <td>[[${entry.getDescription()}]]</td>
+      <td>[[${entry.getScore()}]]</td>
     </tr>
   </table>
 
   <p>
-    <img th:src="${imageUrl}"/>
+    <img style="max-width: 500px" th:src="${imageUrl}"/>
   </p>
 </body>
 </html>
