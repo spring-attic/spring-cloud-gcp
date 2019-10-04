@@ -4,18 +4,39 @@
   <title>Google Cloud Vision Results</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
+
+<style>
+  .extracted_text {
+    width: 30em;
+    min-height: 20em;
+    font-family: "Lucida Console", Monaco, monospace;
+    background-color: #f2f2f2;
+  }
+</style>
+
 <body>
-  <h1>Annotations Produced for the Image</h1>
-  <table border="1">
-    <tr>
-      <th>Description</th>
-      <th>Score</th>
-    </tr>
-    <tr th:each="entry : ${annotations}">
-      <td>[[${entry.getDescription()}]]</td>
-      <td>[[${entry.getScore()}]]</td>
-    </tr>
-  </table>
+  <h1>Image Analysis Results</h1>
+
+  <div th:if="${annotations}">
+    <h3>We think your image is...</h3>
+    <table border="1">
+      <tr>
+        <th>Description</th>
+        <th>Score</th>
+      </tr>
+      <tr th:each="entry : ${annotations}">
+        <td>[[${entry.getDescription()}]]</td>
+        <td>[[${entry.getScore()}]]</td>
+      </tr>
+    </table>
+  </div>
+
+  <div th:if="${text}">
+    <h3>We think the text inside the image is...</h3>
+    <div class="extracted_text">
+      [[${text}]]
+    </div>
+  </div>
 
   <p>
     <img style="max-width: 500px" th:src="${imageUrl}"/>
