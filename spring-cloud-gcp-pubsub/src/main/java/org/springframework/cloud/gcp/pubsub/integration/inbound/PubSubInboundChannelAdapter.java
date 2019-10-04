@@ -161,10 +161,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			throw new PubSubException("Sending Spring message failed.", re);
 		}
 		finally {
-			if (this.ackMode == AckMode.AUTO || this.ackMode == AckMode.AUTO_ACK) {
-				if (!messageNacked) {
-					message.ack();
-				}
+			if (!messageNacked && (this.ackMode == AckMode.AUTO || this.ackMode == AckMode.AUTO_ACK)) {
+				message.ack();
 			}
 		}
 	}
