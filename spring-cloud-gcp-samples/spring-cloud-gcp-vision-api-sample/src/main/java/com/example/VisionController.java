@@ -73,10 +73,13 @@ public class VisionController {
 	}
 
 	@GetMapping("/extractText")
-	public String extractText(String imageUrl) {
-		String textFromImage = this.cloudVisionTemplate.extractTextFromImage(
+	public ModelAndView extractText(String imageUrl, ModelMap map) {
+		String text = this.cloudVisionTemplate.extractTextFromImage(
 				this.resourceLoader.getResource(imageUrl));
-		return "Text from image: " + textFromImage;
-	}
 
+		map.addAttribute("text", text);
+		map.addAttribute("imageUrl", imageUrl);
+
+		return new ModelAndView("result", map);
+	}
 }

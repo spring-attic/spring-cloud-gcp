@@ -66,8 +66,9 @@ public class VisionApiSampleApplicationTests {
 	public void testExtractTextFromImage() throws Exception {
 		this.mockMvc.perform(get(TEXT_IMAGE_URL))
 				.andDo((response) -> {
-					String textImageResponse = response.getResponse().getContentAsString();
-					assertThat(textImageResponse).isEqualTo("Text from image: STOP\n");
+					ModelAndView result = response.getModelAndView();
+					String textFromImage = ((String) result.getModelMap().get("text")).trim();
+					assertThat(textFromImage).isEqualTo("STOP");
 				});
 	}
 
