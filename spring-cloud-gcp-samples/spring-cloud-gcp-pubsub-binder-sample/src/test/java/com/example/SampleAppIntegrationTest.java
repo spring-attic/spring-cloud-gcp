@@ -49,8 +49,9 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-		"spring.cloud.stream.bindings.input.destination=sub1",
-		"spring.cloud.stream.bindings.output.destination=sub1" })
+		"spring.cloud.stream.bindings.input.destination=my-topic",
+		"spring.cloud.stream.bindings.output.destination=my-topic",
+		"spring.cloud.stream.bindings.input.group=my-group"})
 @DirtiesContext
 public class SampleAppIntegrationTest {
 
