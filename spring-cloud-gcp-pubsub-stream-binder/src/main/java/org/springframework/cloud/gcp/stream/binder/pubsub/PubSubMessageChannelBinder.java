@@ -90,6 +90,12 @@ public class PubSubMessageChannelBinder
 	}
 
 	@Override
+	protected String errorsBaseName(
+			ConsumerDestination destination, String group, ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
+		return destination.getName() + ".errors";
+	}
+
+	@Override
 	public PubSubConsumerProperties getExtendedConsumerProperties(String channelName) {
 		return this.pubSubExtendedBindingProperties.getExtendedConsumerProperties(channelName);
 	}
