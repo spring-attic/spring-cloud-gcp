@@ -1,8 +1,12 @@
 = Spring Cloud GCP Stream Binder for Pub/Sub Code Sample
 
 This code sample demonstrates how to use the Spring Cloud Stream binder for Google Cloud Pub/Sub.
+
 The sample app prompts a user for a message and their user name.
 That data is added to a `UserMessage` object, together with the time of message creation, and is sent through Google Cloud Pub/Sub to a sink which simply logs the message.
+
+Additionally, you may specify the setting `throwError` through the app.
+If set to true, this will trigger an exception in the message handler and demonstrate how messages will be forwarded to the error channel.
 
 If the topic for the sink and source does not exist, the binder will automatically create them in Google Cloud Pub/Sub based on the values in link:src/main/resources/application.properties[application.properties].
 
@@ -16,10 +20,11 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 2. Set your project ID using the `spring.cloud.gcp.project-id` property in link:src/main/resources/application.properties[application.properties] or use the `gcloud config set project [PROJECT_ID]` Cloud SDK command.
 
-3. Set the topic and, optionally, group name in the link:src/main/resources/application.properties[application.properties] file.
+3. In the link:src/main/resources/application.properties[application.properties] file, a topic and group name is already preconfigured for you.
+The topic will be created in your account if it does not already exist.
 +
-You can rely on the binder to create the topic and subscription, or you can create them manually from the https://console.cloud.google.com/cloudpubsub[Google Cloud Console].
-If you create the subscription manually, make sure it follows the naming convention of `<topicName>.<consumerGroup>`.
+Setting the topic name and group allows you to configure error handling for your Pub/Sub binder.
+An error handler is configured in link:src/main/java/com/example/SinkExample.java[SinkExample.java].
 
 4. Run the `mvn clean spring-boot:run` in the root of the code sample to get the app running.
 

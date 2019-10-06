@@ -76,7 +76,11 @@ The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `Ac
 Automatic acking (`AckMode.AUTO`)
 
 A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
-If a `RuntimeException` is thrown while the message is processed, then the message is nacked.
+
+If a `RuntimeException` is thrown while the message is processed, then the message is handled in the following way:
+
+* If an error channel is configured for the adapter (`pubSubInboundChannelAdapater.getErrorChannel() != null`) then the message will be acked and forwarded with the error to the error channel.
+* If no error channel is configured for the adapter, then the message is nacked.
 
 Automatic acking OK (`AckMode.AUTO_ACK`)
 

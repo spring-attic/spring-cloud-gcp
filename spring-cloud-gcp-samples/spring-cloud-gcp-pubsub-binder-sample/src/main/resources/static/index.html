@@ -9,6 +9,14 @@
     <form action="/newMessage" method="post">
         Message body: <input type="text" name="messageBody" /><br/>
         Username: <input type="text" name="username" /><br/>
+
+        Throw Error? (triggers the error handler)
+        <select name="throwError">
+            <option value="false" selected>false</option>
+            <option value="true">true</option>
+        </select>
+        <br/>
+
         <input type="submit" value="Post it!"/>
     </form>
 </body>

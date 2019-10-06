@@ -19,6 +19,7 @@ package com.example;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.AfterClass;
@@ -35,6 +36,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -47,8 +49,9 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-		"spring.cloud.stream.bindings.input.destination=sub1",
-		"spring.cloud.stream.bindings.output.destination=sub1" })
+		"spring.cloud.stream.bindings.input.destination=my-topic",
+		"spring.cloud.stream.bindings.output.destination=my-topic",
+		"spring.cloud.stream.bindings.input.group=my-group"})
 @DirtiesContext
 public class SampleAppIntegrationTest {
 
@@ -78,23 +81,36 @@ public class SampleAppIntegrationTest {
 	}
 
 	@Test
-	public void testSample() throws Exception {
+	public void testSample_successfulMessage() throws Exception {
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		String message = "test message " + UUID.randomUUID();
 
 		map.add("messageBody", message);
 		map.add("username", "testUserName");
+		map.add("throwError", false);
 
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
-		boolean messageReceived = false;
-		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains("New message received from testUserName: " + message + " at ")) {
-				messageReceived = true;
-				break;
-			}
-			Thread.sleep(100);
-		}
-		assertThat(messageReceived).isTrue();
+		await()
+				.atMost(20, TimeUnit.SECONDS)
+				.untilAsserted(() -> assertThat(baos.toString())
+						.contains("New message received from testUserName: " + message + " at "));
+	}
+
+	@Test
+	public void testSample_error() throws Exception {
+		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+		String message = "test message " + UUID.randomUUID();
+
+		map.add("messageBody", message);
+		map.add("username", "testUserName");
+		map.add("throwError", true);
+
+		this.restTemplate.postForObject("/newMessage", map, String.class);
+
+		await()
+				.atMost(20, TimeUnit.SECONDS)
+				.untilAsserted(() -> assertThat(baos.toString())
+						.contains("The message that was sent is now processed by the error handler."));
 	}
 }
