@@ -2003,8 +2003,20 @@ The Spring Boot starter for GCP Pub/Sub provides a configured <code>SubscriberFa
 <p>Automatic acking (<code>AckMode.AUTO</code>)</p>
 </div>
 <div class="paragraph">
-<p>A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
-If a <code>RuntimeException</code> is thrown while the message is processed, then the message is nacked.</p>
+<p>A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.</p>
+</div>
+<div class="paragraph">
+<p>If a <code>RuntimeException</code> is thrown while the message is processed, then the message is handled in the following way:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If an error channel is configured for the adapter (<code>pubSubInboundChannelAdapater.getErrorChannel() != null</code>) then the message will be acked and forwarded with the error to the error channel.</p>
+</li>
+<li>
+<p>If no error channel is configured for the adapter, then the message is nacked.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>Automatic acking OK (<code>AckMode.AUTO_ACK</code>)</p>
