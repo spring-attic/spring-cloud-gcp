@@ -880,13 +880,13 @@ Because read-only transactions are non-locking and can be performed on points in
 
 This feature requires a bean of `SpannerTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-spanner`.
 
-`SpannerTemplate` and `SpannerRepository` support running methods with the `@Transactional` [annotation](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative) as transactions.
+`SpannerTemplate` and `SpannerRepository` support running methods with the `@Transactional` https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative[annotation] as transactions.
 If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
 `performReadOnlyTransaction` and `performReadWriteTransaction` cannot be used in `@Transactional` annotated methods because Cloud Spanner does not support transactions within transactions.
 
 ==== DML Statements
 
-`SpannerTemplate` supports [DML](https://cloud.google.com/spanner/docs/dml-tasks) `Statements`.
+`SpannerTemplate` supports https://cloud.google.com/spanner/docs/dml-tasks:[DML] `Statements`.
 DML statements can also be executed in transactions via `performReadWriteTransaction` or using the `@Transactional` annotation.
 
 === Repositories
