@@ -4753,7 +4753,7 @@ a few exceptions:</p>
 <p>This feature requires a bean of <code>SpannerTransactionManager</code>, which is provided when using <code>spring-cloud-gcp-starter-data-spanner</code>.</p>
 </div>
 <div class="paragraph">
-<p><code>SpannerTemplate</code> and <code>SpannerRepository</code> support running methods with the <code>@Transactional</code> [annotation](<a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative" class="bare">docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative</a>) as transactions.
+<p><code>SpannerTemplate</code> and <code>SpannerRepository</code> support running methods with the <code>@Transactional</code> <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative">annotation</a> as transactions.
 If a method annotated with <code>@Transactional</code> calls another method also annotated, then both methods will work within the same transaction.
 <code>performReadOnlyTransaction</code> and <code>performReadWriteTransaction</code> cannot be used in <code>@Transactional</code> annotated methods because Cloud Spanner does not support transactions within transactions.</p>
 </div>
@@ -4762,7 +4762,7 @@ If a method annotated with <code>@Transactional</code> calls another method also
 <div class="sect3">
 <h4 id="dml-statements"><a class="anchor" href="#dml-statements"></a><a class="link" href="#dml-statements">13.3.7. DML Statements</a></h4>
 <div class="paragraph">
-<p><code>SpannerTemplate</code> supports [DML](<a href="https://cloud.google.com/spanner/docs/dml-tasks" class="bare">cloud.google.com/spanner/docs/dml-tasks</a>) <code>Statements</code>.
+<p><code>SpannerTemplate</code> supports <a href="https://cloud.google.com/spanner/docs/dml-tasks:">DML</a> <code>Statements</code>.
 DML statements can also be executed in transactions via <code>performReadWriteTransaction</code> or using the <code>@Transactional</code> annotation.</p>
 </div>
 </div>
