@@ -97,7 +97,7 @@ final class OcrPageRange {
 
 		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
 		String jsonContent = new String(blob.getContent());
-		JsonFormat.parser().merge(jsonContent, annotateFileResponseBuilder);
+		JsonFormat.parser().ignoringUnknownFields().merge(jsonContent, annotateFileResponseBuilder);
 
 		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();
 
