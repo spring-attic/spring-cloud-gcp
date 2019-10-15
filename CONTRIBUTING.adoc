@@ -10,10 +10,10 @@ The first step to contributing is to fork the repository and clone it onto your 
 
 2. Try running some tests.
 +
-Run `./mvnw test` in the root directory of the project to run the tests.
+Run `./mvnw clean test` in the root directory of the project to run the tests.
 The `./mvnw` is a self-contained https://maven.apache.org/[Maven] wrapper that allows you to build the project without having Maven installed on your local machine.
 +
-You can run the tests of a specific module by using the `-f` flag like this: `./mvnw test -f spring-cloud-gcp-pubsub`
+You can run the tests of a specific module by using the `-f` flag like this: `./mvnw clean test -f spring-cloud-gcp-pubsub`
 
 3. (Optional) Install the https://cloud.google.com/sdk/docs/[Google Cloud SDK].
 The Google Cloud SDK a set of tools that you can use to manage resources and applications hosted on Google Cloud Platform.
