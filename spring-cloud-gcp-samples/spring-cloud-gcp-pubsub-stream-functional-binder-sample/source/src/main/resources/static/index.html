@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Cloud GCP Pub/Sub Stream Binder Code Sample</title>
+
+    <script>
+
+        var userWebSocket;
+
+        function initializeConnection() {
+            userWebSocket = new WebSocket("ws://localhost:8080/users");
+            userWebSocket.onopen = function(event) {
+                updateStatus("Ready to send users");
+            }
+
+        }
+
+        function updateStatus(msg) {
+            document.getElementById("status").innerHTML = msg;
+        }
+
+        function postUser() {
+            // validate
+            if (failIfEmpty("username") || failIfEmpty("body")) {
+              return false;
+            }
+
+            // send user to server
+            userWebSocket.send(
+              JSON.stringify(
+                {
+                    username: document.getElementById("username").value,
+                    body: document.getElementById("body").value,
+                    throwError: document.getElementById("throwError").value
+                }
+              )
+            );
+
+            return false;
+        }
+
+        function failIfEmpty(id) {
+            if (!document.getElementById(id).value) {
+                updateStatus("Please provide non-empty " + id);
+                return true;
+            }
+            return false;
+        }
+
+    </script>
+</head>
+<body onLoad="initializeConnection();">
+    <div id="status" style="background: #AFDBE8; width: 20em; padding: 0.5em;">&nbsp;</div>
+
+
+    New message:<br/>
+    <form onSubmit="return postUser();">
+        Message body: <input id="body" name="messageBody" /><br/>
+        Username: <input id="username" name="username" /><br/>
+
+        Throw Error? (triggers the error handler)
+        <select id="throwError" name="throwError">
+            <option value="false" selected>false</option>
+            <option value="true">true</option>
+        </select>
+        <br/>
+
+        <input type="submit" value="Post it!" />
+    </form>
+</body>
+</html>
