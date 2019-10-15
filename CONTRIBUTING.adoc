@@ -1,6 +1,6 @@
 = Contributing to Spring Cloud GCP
 
-We graciously welcome contributions to Spring Cloud GCP.
+We welcome contributions to Spring Cloud GCP.
 
 == Building the Project
 
@@ -24,7 +24,7 @@ a. Run `gcloud auth application-default login` to log into your https://console.
 +
 b. Run `gcloud config set project [YOUR_PROJECT_ID]` to set the GCP project ID you wish to use.
 +
-c. Verify your settings using  `gcloud config list`.
+c. Verify your settings using `gcloud config list`.
 This will display the account settings that will be used to authenticate with Google Cloud on your machine.
 +
 NOTE: These methods are recommended for local development only and not for production use.
@@ -55,20 +55,20 @@ Consider disabling the option if optimization does not yield the expected result
 
 == Contributing a patch
 
-1. Submit an issue describing your proposed change
+1. Submit an issue describing your proposed change.
 
-1. A repository owner will respond to your issue as soon as possible
+1. A repository owner will respond to your issue as soon as possible.
 
 1. If your proposed change is accepted, and you haven't already done so, sign a
-https://cla.pivotal.io/[Contributor License Agreement]
+https://cla.pivotal.io/[Contributor License Agreement].
 
-1. Fork the repository, develop and test your code changes
+1. Fork the repository, develop and test your code changes.
 
 1. Ensure that your code adheres to the
 https://github.com/spring-projects/spring-framework/wiki/Code-Style[Spring Style
-Guide]
+Guide].
 
-1. Ensure your code has an appropriate set of unit tests which all pass
+1. Ensure your code has an appropriate set of unit tests which all pass.
 
 1. Make sure all new or modified `java` files include the current year as the copyright range end.
 The range start should always be `2017`:
