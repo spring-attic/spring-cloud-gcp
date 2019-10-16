@@ -234,16 +234,6 @@
 						<link>https://googleapis.dev/java/google-cloud-clients/latest/</link>
 					</links>
 				</configuration>
-
-				<executions>
-					<execution>
-						<id>aggregate-javadoc</id>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
