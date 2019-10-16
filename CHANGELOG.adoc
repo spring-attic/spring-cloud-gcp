@@ -1,0 +1,80 @@
+= Spring Cloud GCP Changelog
+
+https://spring.io/projects/spring-cloud-gcp:[Spring Cloud GCP] is a set of integrations between Spring Framework and Google Cloud Platform. It makes it much easier for Spring framework users to run their applications on Google Cloud Platform.
+
+This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
+For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
+
+== 1.2.0.M3 (2019-10-03) (PRE-RELEASE)
+
+=== BigQuery
+
+* New module.
+* Autoconfiguration for the BigQuery client objects with credentials needed to interface with BigQuery.
+* A Spring Integration message handler for loading data into BigQuery tables in your Spring integration pipelines.
+
+=== Cloud Foundry
+
+* Created a separate starter for Cloud Foundry: spring-cloud-gcp-starter-cloudfoundry
+
+=== Datastore
+
+* Datastore emulator support and auto-configuration
+* Entity Inheritance Hierarchies support
+* Query by example
+* Support Pagination for @Query annotated methods
+* Support key fields in name-based query methods
+* Events and Auditing support
+* Support for multiple namespaces
+* Spring Boot Actuator Support for Datastore Health Indicator (#1423)
+
+=== Firestore
+
+* Spring Data Reactive Repositories for Cloud Firestore
+* Cloud Firestore Spring Boot Starter
+
+=== Logging
+
+* Additional metadata support for JSON logging (#1310)
+* Add service context for Stackdriver Error Reporting
+* Add option to add custom json to log messages
+* A separate module for Logging outside of autoconfiguration (#1455)
+
+=== Pub/Sub
+
+* PubsubTemplate publish to topics in other projects (#1678)
+* PubsubTemplate subscribe in other projects (#1880)
+* Reactive support for Pub/Sub subscription (#1461)
+* add keepalive property to pubsub (#1807)
+* Spring Integration - Pollable Message Source (using Pub/Sub Synchronous Pull) (#1321)
+* Pubsub stream binder via synchronous pull (#1419)
+
+=== IAP
+
+* Added support to allow multiple IAP audience claims (#1856)
+
+=== Spanner
+
+* Expose Spanner failIfPoolExhausted property (#1889)
+* Lazy fetch support for interleaved collections (#1460)
+* Bounded staleness option support (#1727)
+* Spring Data Spanner Repositories `In` clause queries support (#1701)
+* Spanner array param binding
+* Events and Auditing support
+* Multi-Instance support (#1530)
+
+=== Spring Cloud Bus
+
+* Spring Cloud Config and Bus over Pub/Sub sample/docs (#1550)
+
+=== Vision
+
+* Cloud Vision Document OCR support
+
+== 1.1.0.RELEASE (2019-01-22)
+
+* https://cloud.google.com/blog/products/application-development/announcing-spring-cloud-gcp-1-1-deepening-ties-pivotals-spring-framework[1.1 announcement]
+
+== 1.0.0.RELEASE (2018-09-18)
+
+* https://cloud.google.com/blog/products/gcp/calling-java-developers-spring-cloud-gcp-1-0-is-now-generally-available[1.0 announcement]
