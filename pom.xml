@@ -223,6 +223,28 @@
 				<artifactId>appengine-maven-plugin</artifactId>
 				<version>${app-engine-maven-plugin.version}</version>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<excludePackageNames>com.example,com.google.cloud.firestore</excludePackageNames>
+
+					<links>
+						<link>https://googleapis.dev/java/google-cloud-clients/latest/</link>
+					</links>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>aggregate-javadoc</id>
+						<goals>
+							<goal>aggregate</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
