@@ -2,7 +2,7 @@
 
 https://spring.io/projects/spring-cloud-gcp:[Spring Cloud GCP] is a set of integrations between Spring Framework and Google Cloud Platform. It makes it much easier for Spring framework users to run their applications on Google Cloud Platform.
 
-This document provides a high-level view of the changes introduced in Spring Cloud GCP by release.
+This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
 == 1.2.0.M3 (2019-10-03) (PRE-RELEASE)
@@ -12,7 +12,9 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * New module.
 * Autoconfiguration for the BigQuery client objects with credentials needed to interface with BigQuery.
 * A Spring Integration message handler for loading data into BigQuery tables in your Spring integration pipelines.
-* Cloud Foundry
+
+=== Cloud Foundry
+
 * Created a separate starter for Cloud Foundry: spring-cloud-gcp-starter-cloudfoundry
 
 === Datastore
