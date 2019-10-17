@@ -12,9 +12,10 @@
   <artifactId>spring-cloud-gcp-pubsub-stream-functional-binder-sample</artifactId>
   <packaging>pom</packaging>
   <name>Spring Cloud GCP Stream Functional Style Pub/Sub Code Sample</name>
+
   <modules>
-    <module>source</module>
-    <module>sink</module>
+    <module>spring-cloud-gcp-pubsub-stream-functional-binder-sample-source</module>
+    <module>spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink</module>
   </modules>
 
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
