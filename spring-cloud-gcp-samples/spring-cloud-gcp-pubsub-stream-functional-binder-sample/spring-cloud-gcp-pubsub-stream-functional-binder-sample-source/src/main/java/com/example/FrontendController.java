@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
 /**
+ * Controller for the user message form submission.
  *
+ * <p>The {@link EmitterProcessor} is used to locally send messages to {@link Source}.
  */
 @RestController
 public class FrontendController {
@@ -37,9 +39,8 @@ public class FrontendController {
 	@PostMapping("/postMessage")
 	public RedirectView sendMessage(
 			@RequestParam("messageBody") String messageBody,
-			@RequestParam("username") String username,
-			@RequestParam("throwError") boolean shouldThrowError) {
-		UserMessage userMessage = new UserMessage(messageBody, username, shouldThrowError);
+			@RequestParam("username") String username) {
+		UserMessage userMessage = new UserMessage(messageBody, username);
 		postOffice.onNext(userMessage);
 
 		return new RedirectView("index.html");

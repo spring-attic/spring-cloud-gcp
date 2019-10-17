@@ -27,7 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 /**
- *
+ * All-in-one Spring Boot app with a Spring Cloud Stream sink.
  */
 @SpringBootApplication
 public class Sink {
@@ -37,9 +37,6 @@ public class Sink {
 	@Bean
 	public Consumer<UserMessage> convertUserMessageToString() {
 		return userMessage -> {
-			if (userMessage.isThrowError()) {
-				throw new RuntimeException("An error was triggered in the message handler!");
-			}
 
 			LOGGER.info(String.format("New message received from %s: %s at %s",
 					userMessage.getUsername(), userMessage.getBody(), userMessage.getCreatedAt()));

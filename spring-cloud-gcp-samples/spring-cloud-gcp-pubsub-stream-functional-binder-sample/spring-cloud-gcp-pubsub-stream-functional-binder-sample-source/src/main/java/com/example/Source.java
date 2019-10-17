@@ -26,6 +26,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration for Spring Cloud Stream source.
+ *
+ * <p>What makes this class a valid Spring Cloud Stream source is the presence of a {@link Supplier}
+ * bean.
+ *
+ * The {@link EmitterProcessor} is used only as a local communication mechanism between the
+ * {@link FrontendController} and this Spring Cloud Stream source.
+ */
 @Configuration
 public class Source {
 

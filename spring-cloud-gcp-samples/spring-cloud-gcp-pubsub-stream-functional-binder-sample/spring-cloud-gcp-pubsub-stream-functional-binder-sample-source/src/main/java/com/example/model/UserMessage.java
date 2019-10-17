@@ -29,16 +29,13 @@ public class UserMessage {
 
 	private LocalDateTime createdAt;
 
-	private boolean throwError;
-
 	public UserMessage() {
 	}
 
-	public UserMessage(String body, String username, boolean throwError) {
+	public UserMessage(String body, String username) {
 		this.body = body;
 		this.username = username;
 		this.createdAt = LocalDateTime.now();
-		this.throwError = throwError;
 	}
 
 	public String getBody() {
@@ -65,21 +62,12 @@ public class UserMessage {
 		this.createdAt = createdAt;
 	}
 
-	public boolean isThrowError() {
-		return throwError;
-	}
-
-	public void setThrowError(boolean throwError) {
-		this.throwError = throwError;
-	}
-
 	@Override
 	public String toString() {
 		return "UserMessage{" +
 				"body='" + body + '\'' +
 				", username='" + username + '\'' +
 				", createdAt=" + createdAt +
-				", throwError=" + throwError +
 				'}';
 	}
 }

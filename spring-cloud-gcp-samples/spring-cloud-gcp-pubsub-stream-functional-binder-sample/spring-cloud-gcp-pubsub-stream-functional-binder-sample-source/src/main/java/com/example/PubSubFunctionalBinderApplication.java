@@ -25,6 +25,9 @@ import org.springframework.context.annotation.Bean;
 
 /**
  * Spring Boot application for running the Spring Cloud Stream source.
+ *
+ * <p>This class bootstraps the Spring Boot application and creates the {@link EmitterProcessor}
+ * bean that is used for communication between {@link FrontendController} and {@link Source}.
  */
 @SpringBootApplication
 public class PubSubFunctionalBinderApplication {

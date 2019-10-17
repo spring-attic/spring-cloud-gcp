@@ -29,8 +29,6 @@ public class UserMessage {
 
 	private LocalDateTime createdAt;
 
-	private boolean throwError;
-
 	public UserMessage() {
 	}
 
@@ -58,21 +56,12 @@ public class UserMessage {
 		this.createdAt = createdAt;
 	}
 
-	public boolean isThrowError() {
-		return throwError;
-	}
-
-	public void setThrowError(boolean throwError) {
-		this.throwError = throwError;
-	}
-
 	@Override
 	public String toString() {
 		return "UserMessage{" +
 				"body='" + body + '\'' +
 				", username='" + username + '\'' +
 				", createdAt=" + createdAt +
-				", throwError=" + throwError +
 				'}';
 	}
 }
