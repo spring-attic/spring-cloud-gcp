@@ -19,5 +19,11 @@
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
     </dependency>
+
+    <!-- JSON deserialization support -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-json</artifactId>
+    </dependency>
   </dependencies>
 </project>

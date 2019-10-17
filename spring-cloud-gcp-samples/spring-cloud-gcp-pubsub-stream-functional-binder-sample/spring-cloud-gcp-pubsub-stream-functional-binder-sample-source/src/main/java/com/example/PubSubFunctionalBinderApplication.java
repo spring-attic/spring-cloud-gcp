@@ -16,25 +16,29 @@
 
 package com.example;
 
-import java.util.function.Supplier;
-
 import com.example.model.UserMessage;
 import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class Source {
+/**
+ * Spring Boot application for running the Spring Cloud Stream source.
+ */
+@SpringBootApplication
+public class PubSubFunctionalBinderApplication {
 
-	@Autowired
-	private EmitterProcessor<UserMessage> postOffice;
-
+	/**
+	 * Allows {@link Source} to subscribe to {@link UserMessage} instances from front-end.
+	 * @return {@link EmitterProcessor} used for passing {@link UserMessage} objects.
+	 */
 	@Bean
-	Supplier<Flux<UserMessage>> generateUserMessages() {
-		return () -> postOffice;
+	public EmitterProcessor<UserMessage> postOffice() {
+		return EmitterProcessor.create();
 	}
 
+	public static void main(String[] args) {
+		SpringApplication.run(PubSubFunctionalBinderApplication.class, args);
+	}
 }

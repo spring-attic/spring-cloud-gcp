@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,32 @@
 
 package com.example;
 
-import java.util.function.Supplier;
-
 import com.example.model.UserMessage;
 import reactor.core.publisher.EmitterProcessor;
-import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
-@Configuration
-public class Source {
+/**
+ *
+ */
+@RestController
+public class FrontendController {
 
 	@Autowired
 	private EmitterProcessor<UserMessage> postOffice;
 
-	@Bean
-	Supplier<Flux<UserMessage>> generateUserMessages() {
-		return () -> postOffice;
-	}
+	@PostMapping("/postMessage")
+	public RedirectView sendMessage(
+			@RequestParam("messageBody") String messageBody,
+			@RequestParam("username") String username,
+			@RequestParam("throwError") boolean shouldThrowError) {
+		UserMessage userMessage = new UserMessage(messageBody, username, shouldThrowError);
+		postOffice.onNext(userMessage);
 
+		return new RedirectView("index.html");
+	}
 }
