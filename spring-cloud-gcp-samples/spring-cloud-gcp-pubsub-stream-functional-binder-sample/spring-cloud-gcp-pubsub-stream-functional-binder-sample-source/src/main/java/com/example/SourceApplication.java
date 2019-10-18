@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Bean;
  * bean that is used for communication between {@link FrontendController} and {@link Source}.
  */
 @SpringBootApplication
-public class PubSubFunctionalBinderApplication {
+public class SourceApplication {
 
 	/**
 	 * Allows {@link Source} to subscribe to {@link UserMessage} instances from front-end.
@@ -42,6 +42,6 @@ public class PubSubFunctionalBinderApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(PubSubFunctionalBinderApplication.class, args);
+		SpringApplication.run(SourceApplication.class, args);
 	}
 }
