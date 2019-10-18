@@ -1,13 +1,46 @@
-= Code formatting guidelines
+= Contributing to Spring Cloud GCP
+
+We welcome contributions to Spring Cloud GCP.
+
+== Building the Project
+
+The first step to contributing is to fork the repository and clone it onto your machine.
+
+1. Ensure you have Java version 8 or later installed on your machine.
+
+2. Try running some tests.
++
+Run `./mvnw clean test` in the root directory of the project to run the tests.
+The `./mvnw` is a self-contained https://maven.apache.org/[Maven] wrapper that allows you to build the project without having Maven installed on your local machine.
++
+You can run the tests of a specific module by using the `-f` flag like this: `./mvnw clean test -f spring-cloud-gcp-pubsub`
+
+3. (Optional) Install the https://cloud.google.com/sdk/docs/[Google Cloud SDK].
+The Google Cloud SDK a set of tools that you can use to manage resources and applications hosted on Google Cloud Platform.
++
+For our purposes, it contains the `gcloud` command line tool which allows you to specify a GCP account and project with which you can run our integration tests and sample applications on your machine.
++
+a. Run `gcloud auth application-default login` to log into your https://console.cloud.google.com[Google Cloud Platform account].
++
+b. Run `gcloud config set project [YOUR_PROJECT_ID]` to set the GCP project ID you wish to use.
++
+c. Verify your settings using `gcloud config list`.
+This will display the account settings that will be used to authenticate with Google Cloud on your machine.
++
+NOTE: These methods are recommended for local development only and not for production use.
+It is recommended to use https://cloud.google.com/iam/docs/service-accounts#whats_next[Service Accounts] for authentication in production applications.
+
+
+== Code formatting guidelines
 
 The directory src/eclipse has two files for use with code formatting, `eclipse-code-formatter.xml` for the majority of the code formatting rules and `eclipse.importorder` to order the import statements.
 
-== Eclipse
+=== Eclipse
 Import these files by navigating `Windows -> Preferences` and then the menu items
 `Preferences > Java > Code Style > Formatter` and `Preferences > Java > Code Style >
 Organize Imports` respectively.
 
-== IntelliJ IDEA
+=== IntelliJ IDEA
 Install the plugin `Eclipse Code Formatter`.
 You can find it by searching in "Browse Repositories", under `Settings > Plugins` within IDEA (Once installed, you will need to reboot IDEA for it to take effect).
 
@@ -20,22 +53,22 @@ Enable the `Eclipse code formatter` by clicking `Use the Eclipse code formatter`
 * IDEA's "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter import optimization.
 Consider disabling the option if optimization does not yield the expected results.
 
-= Contributing a patch
+== Contributing a patch
 
-1. Submit an issue describing your proposed change
+1. Submit an issue describing your proposed change.
 
-1. A repository owner will respond to your issue as soon as possible
+1. A repository owner will respond to your issue as soon as possible.
 
 1. If your proposed change is accepted, and you haven't already done so, sign a
-https://cla.pivotal.io/[Contributor License Agreement]
+https://cla.pivotal.io/[Contributor License Agreement].
 
-1. Fork the repository, develop and test your code changes
+1. Fork the repository, develop and test your code changes.
 
 1. Ensure that your code adheres to the
 https://github.com/spring-projects/spring-framework/wiki/Code-Style[Spring Style
-Guide]
+Guide].
 
-1. Ensure your code has an appropriate set of unit tests which all pass
+1. Ensure your code has an appropriate set of unit tests which all pass.
 
 1. Make sure all new or modified `java` files include the current year as the copyright range end.
 The range start should always be `2017`:
@@ -53,5 +86,5 @@ To update already-committed files, pass a commit hash or a branch name to use as
 
  $ bash util/update-license-year.sh master
 
-1. Submit a pull request.
-It will be approved and merged by a committer
+1. Create a pull request with the proposed code change.
+It will be approved and merged by a committer.
