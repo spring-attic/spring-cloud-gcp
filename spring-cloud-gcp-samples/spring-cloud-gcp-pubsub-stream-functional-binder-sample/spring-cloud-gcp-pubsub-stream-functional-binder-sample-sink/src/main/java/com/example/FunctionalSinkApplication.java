@@ -14,50 +14,23 @@
  * limitations under the License.
  */
 
-package com.example.model;
+package com.example;
 
-import java.time.LocalDateTime;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * A user message for the sample app.
+ * Spring Boot application launcher.
  *
  * @author Elena Felder
  *
  * @since 1.2
  */
-public class UserMessage {
+@SpringBootApplication
+public class FunctionalSinkApplication {
 
-	private String body;
-
-	private String username;
-
-	private LocalDateTime createdAt;
-
-	public UserMessage() {
-	}
-
-	public String getBody() {
-		return this.body;
-	}
-
-	public void setBody(String body) {
-		this.body = body;
-	}
-
-	public String getUsername() {
-		return this.username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return this.createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
+	public static void main(String[] args) {
+		SpringApplication.run(FunctionalSinkApplication.class, args);
 	}
 
 }

@@ -22,20 +22,23 @@ import com.example.model.UserMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * All-in-one Spring Boot app with a Spring Cloud Stream sink.
+ * Spring Cloud Stream sink that receives {@link UserMessage} objects and acts on them.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.2
  */
-@SpringBootApplication
+@Configuration
 public class Sink {
 
 	private static final Log LOGGER = LogFactory.getLog(Sink.class);
 
 	@Bean
-	public Consumer<UserMessage> convertUserMessageToString() {
+	public Consumer<UserMessage> logUserMessage() {
 		return userMessage -> {
 
 			LOGGER.info(String.format("New message received from %s: %s at %s",
@@ -43,7 +46,4 @@ public class Sink {
 		};
 	}
 
-	public static void main(String[] args) {
-		SpringApplication.run(Sink.class, args);
-	}
 }

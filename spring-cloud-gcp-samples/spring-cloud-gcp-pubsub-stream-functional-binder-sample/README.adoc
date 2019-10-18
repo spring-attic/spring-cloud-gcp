@@ -1,4 +1,4 @@
-= Spring Cloud GCP Stream Binder (functional style) for Pub/Sub Code Sample
+= Spring Cloud GCP Stream Binder (without annotations) for Pub/Sub Code Sample
 
 This code sample demonstrates how to use the Spring Cloud Stream binder for Google Cloud Pub/Sub. For the legacy annotation-based style, see link:../spring-cloud-gcp-pubsub-binder-sample[this sample].
 
@@ -23,8 +23,14 @@ The topic and subscription will be created in your account if they do not alread
 
 1. In separate terminal windows, start the `spring-cloud-gcp-pubsub-stream-functional-binder-sample-source` and `spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-5. Browse to the source application at `http://localhost:8080`, type in a message and a user name, and press the `Post it!` button.
+2. Browse to the source application at `http://localhost:8080`, type in a message and a user name, and press the `Post it!` button.
 
-6. Verify in the `spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink` app's logs that the message was received:
+3. Verify in the `spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink` app's logs that the message was received:
 +
 `New message received from [USERNAME] at [TIME_MESSAGE_SENT]: [MESSAGE]`
+
+
+== Cleanup
+
+Delete the test topic (`my-topic`) and subscription (`my-topic.my-group`).
+Note that if you do not use the `group` property for the binding, the automatically created anonymous subscription (`anonymous.my-topic.<randomUUID>`) gets cleaned up automatically when the `spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink` application shuts down.

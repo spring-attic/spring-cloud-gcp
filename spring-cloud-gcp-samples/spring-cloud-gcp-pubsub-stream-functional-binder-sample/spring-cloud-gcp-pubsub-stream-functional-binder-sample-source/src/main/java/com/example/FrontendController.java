@@ -29,6 +29,10 @@ import org.springframework.web.servlet.view.RedirectView;
  * Controller for the user message form submission.
  *
  * <p>The {@link EmitterProcessor} is used to locally send messages to {@link Source}.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.2
  */
 @RestController
 public class FrontendController {

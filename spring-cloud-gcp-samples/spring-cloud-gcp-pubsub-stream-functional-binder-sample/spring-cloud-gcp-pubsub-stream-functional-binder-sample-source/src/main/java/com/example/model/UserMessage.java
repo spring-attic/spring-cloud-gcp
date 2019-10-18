@@ -20,6 +20,14 @@ import java.time.LocalDateTime;
 
 /**
  * A user message for the sample app.
+ *
+ * The Source version of {@link UserMessage} object is immutable.
+ * The data will be serialized as JSON, so as long as the objects are compatible, they do not have
+ * to be the same.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.2
  */
 public class UserMessage {
 
@@ -28,9 +36,6 @@ public class UserMessage {
 	private String username;
 
 	private LocalDateTime createdAt;
-
-	public UserMessage() {
-	}
 
 	public UserMessage(String body, String username) {
 		this.body = body;
@@ -42,32 +47,12 @@ public class UserMessage {
 		return this.body;
 	}
 
-	public void setBody(String body) {
-		this.body = body;
-	}
-
 	public String getUsername() {
 		return this.username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 	public LocalDateTime getCreatedAt() {
 		return this.createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	@Override
-	public String toString() {
-		return "UserMessage{" +
-				"body='" + body + '\'' +
-				", username='" + username + '\'' +
-				", createdAt=" + createdAt +
-				'}';
-	}
 }

@@ -28,9 +28,13 @@ import org.springframework.context.annotation.Bean;
  *
  * <p>This class bootstraps the Spring Boot application and creates the {@link EmitterProcessor}
  * bean that is used for communication between {@link FrontendController} and {@link Source}.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.2
  */
 @SpringBootApplication
-public class SourceApplication {
+public class FunctionalSourceApplication {
 
 	/**
 	 * Allows {@link Source} to subscribe to {@link UserMessage} instances from front-end.
@@ -42,6 +46,6 @@ public class SourceApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(SourceApplication.class, args);
+		SpringApplication.run(FunctionalSourceApplication.class, args);
 	}
 }
