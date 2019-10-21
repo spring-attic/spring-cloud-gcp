@@ -14,8 +14,8 @@
   <name>Spring Cloud GCP Stream Functional Style Pub/Sub Code Sample</name>
 
   <modules>
-    <module>spring-cloud-gcp-pubsub-stream-functional-binder-sample-source</module>
-    <module>spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink</module>
+    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-source</module>
+    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</module>
   </modules>
 
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
