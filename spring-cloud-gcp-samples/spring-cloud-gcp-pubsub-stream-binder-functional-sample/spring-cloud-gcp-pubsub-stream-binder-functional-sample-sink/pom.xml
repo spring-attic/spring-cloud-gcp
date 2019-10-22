@@ -4,14 +4,14 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <!-- Your own application should inherit from spring-boot-starter-parent -->
-    <artifactId>spring-cloud-gcp-pubsub-stream-functional-binder-sample</artifactId>
+    <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample</artifactId>
     <groupId>org.springframework.cloud</groupId>
     <version>1.2.0.BUILD-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>spring-cloud-gcp-pubsub-stream-functional-binder-sample-sink</artifactId>
-  <name>Spring Cloud GCP Pub/Sub Functional Cloud Stream Code Sample - Sink</name>
+  <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</artifactId>
+  <name>Spring Cloud GCP Pub/Sub Stream Binder Functional Code Sample - Sink</name>
 
 
   <dependencies>

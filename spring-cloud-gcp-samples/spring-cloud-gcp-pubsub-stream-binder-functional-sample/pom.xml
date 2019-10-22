@@ -9,9 +9,9 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>spring-cloud-gcp-pubsub-stream-functional-binder-sample</artifactId>
+  <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample</artifactId>
   <packaging>pom</packaging>
-  <name>Spring Cloud GCP Stream Functional Style Pub/Sub Code Sample</name>
+  <name>Spring Cloud GCP Pub/Sub Stream Binder Functional Code Sample</name>
 
   <modules>
     <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-source</module>
