@@ -160,8 +160,10 @@ $(addBlockSwitches);
 <ul class="sectlevel2">
 <li><a href="#overview">8.1. Overview</a></li>
 <li><a href="#configuration-2">8.2. Configuration</a></li>
-<li><a href="#streaming-vs-polled-input">8.3. Streaming vs. Polled Input</a></li>
-<li><a href="#sample-5">8.4. Sample</a></li>
+<li><a href="#binding-with-functions">8.3. Binding with Functions</a></li>
+<li><a href="#binding-with-annotations">8.4. Binding with Annotations</a></li>
+<li><a href="#streaming-vs-polled-input">8.5. Streaming vs. Polled Input</a></li>
+<li><a href="#sample-5">8.6. Sample</a></li>
 </ul>
 </li>
 <li><a href="#spring-cloud-bus">9. Spring Cloud Bus</a>
@@ -2480,7 +2482,100 @@ spring.cloud.stream.bindings.events.group=consumerGroup1</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="streaming-vs-polled-input"><a class="anchor" href="#streaming-vs-polled-input"></a><a class="link" href="#streaming-vs-polled-input">8.3. Streaming vs. Polled Input</a></h3>
+<h3 id="binding-with-functions"><a class="anchor" href="#binding-with-functions"></a><a class="link" href="#binding-with-functions">8.3. Binding with Functions</a></h3>
+<div class="paragraph">
+<p>Since version 3.0, Spring Cloud Stream supports a functional programming model natively.
+This means that the only requirement for turning your application into a sink is presence of a <code>java.util.function.Consumer</code> bean in the application context.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>@Bean
+public Consumer&lt;UserMessage&gt; logUserMessage() {
+  return userMessage -&gt; {
+    // process message
+  }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A source application is one where a <code>Supplier</code> bean is present.
+It can return an object, in which case Spring Cloud Stream will invoke the supplier repeatedly.
+Alternatively, the function can return a reactive stream, which will be used as is.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>@Bean
+Supplier&lt;Flux&lt;UserMessage&gt;&gt; generateUserMessages() {
+  return () -&gt; /* flux creation logic */;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A processor application works similarly to a source application, except it is triggered by presence of a <code>Function</code> bean.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Even though Spring Cloud Stream is able to autodiscover functional beans, when using the <code>spring-cloud-gcp-pubsub-stream-binder</code> dependency, configuring the <code>spring.cloud.function.definition</code> property to indicate the function bean is <strong>required</strong>.
+If this property is omitted, you will see a warning <code>Found more then one function beans in BeanFactory: [<em>your-bean-name</em>, pubSubReactiveScheduler]</code>, and the function returned by <em>your-bean-name</em> will never be bound to a Cloud Pub/Sub topic or subscription.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="binding-with-annotations"><a class="anchor" href="#binding-with-annotations"></a><a class="link" href="#binding-with-annotations">8.4. Binding with Annotations</a></h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As of version 3.0, annotation binding is considered legacy.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>To set up a sink application in this style, you would associate a class with a binding interface, such as the built-in <code>Sink</code> interface.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>@EnableBinding(Sink.class)
+public class SinkExample {
+
+    @StreamListener(Sink.INPUT)
+    public void handleMessage(UserMessage userMessage) {
+        // process message
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To set up a source application, you would similarly associate a class with a built-in <code>Source</code> interface, and inject an instance of it provided by Spring Cloud Stream.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>@EnableBinding(Source.class)
+public class SourceExample {
+
+    @Autowired
+    private Source source;
+
+    public void sendMessage() {
+        this.source.output().send(new GenericMessage&lt;&gt;(/* your object here */));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="streaming-vs-polled-input"><a class="anchor" href="#streaming-vs-polled-input"></a><a class="link" href="#streaming-vs-polled-input">8.5. Streaming vs. Polled Input</a></h3>
 <div class="paragraph">
 <p>Many Spring Cloud Stream applications will use the built-in <code>Sink</code> binding, which triggers the <em>streaming</em> input binder creation.
 Messages can then be consumed with an input handler marked by <code>@StreamListener(Sink.INPUT)</code> annotation, at whatever rate Pub/Sub sends them.</p>
@@ -2521,14 +2616,17 @@ public class SinkExample {
 </div>
 </div>
 <div class="sect2">
-<h3 id="sample-5"><a class="anchor" href="#sample-5"></a><a class="link" href="#sample-5">8.4. Sample</a></h3>
+<h3 id="sample-5"><a class="anchor" href="#sample-5"></a><a class="link" href="#sample-5">8.6. Sample</a></h3>
 <div class="paragraph">
 <p>Sample applications are available:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>For <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample">streaming input</a>.</p>
+<p>For <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample">streaming input, annotation-based</a>.</p>
+</li>
+<li>
+<p>For <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-binder-functional-sample">streaming input, functional style</a>.</p>
 </li>
 <li>
 <p>For <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample">polled input</a>.</p>
