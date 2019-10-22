@@ -49,6 +49,7 @@
 		<module>spring-cloud-gcp-data-multi-sample</module>
 		<module>spring-cloud-gcp-data-firestore-sample</module>
 		<module>spring-cloud-gcp-bigquery-sample</module>
+		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
 	</modules>
 
 	<build>

@@ -76,6 +76,69 @@ spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=tr
 spring.cloud.stream.bindings.events.group=consumerGroup1
 ----
 
+=== Binding with Functions
+
+Since version 3.0, Spring Cloud Stream supports a functional programming model natively.
+This means that the only requirement for turning your application into a sink is presence of a `java.util.function.Consumer` bean in the application context.
+
+```
+@Bean
+public Consumer<UserMessage> logUserMessage() {
+  return userMessage -> {
+    // process message
+  }
+};
+```
+
+A source application is one where a `Supplier` bean is present.
+It can return an object, in which case Spring Cloud Stream will invoke the supplier repeatedly.
+Alternatively, the function can return a reactive stream, which will be used as is.
+
+```
+@Bean
+Supplier<Flux<UserMessage>> generateUserMessages() {
+  return () -> /* flux creation logic */;
+}
+```
+
+A processor application works similarly to a source application, except it is triggered by presence of a `Function` bean.
+
+WARNING: Even though Spring Cloud Stream is able to autodiscover functional beans, when using the `spring-cloud-gcp-pubsub-stream-binder` dependency, configuring the `spring.cloud.function.definition` property to indicate the function bean is *required*.
+If this property is omitted, you will see a warning `Found more then one function beans in BeanFactory: [_your-bean-name_, pubSubReactiveScheduler]`, and the function returned by _your-bean-name_ will never be bound to a Cloud Pub/Sub topic or subscription.
+
+=== Binding with Annotations
+
+NOTE: As of version 3.0, annotation binding is considered legacy.
+
+To set up a sink application in this style, you would associate a class with a binding interface, such as the built-in `Sink` interface.
+
+```
+@EnableBinding(Sink.class)
+public class SinkExample {
+
+	@StreamListener(Sink.INPUT)
+	public void handleMessage(UserMessage userMessage) {
+		// process message
+	}
+}
+```
+
+To set up a source application, you would similarly associate a class with a built-in `Source` interface, and inject an instance of it provided by Spring Cloud Stream.
+
+```
+@EnableBinding(Source.class)
+public class SourceExample {
+
+	@Autowired
+	private Source source;
+
+	public void sendMessage() {
+		this.source.output().send(new GenericMessage<>(/* your object here */));
+	}
+}
+```
+
+
 === Streaming vs. Polled Input
 
 Many Spring Cloud Stream applications will use the built-in `Sink` binding, which triggers the _streaming_ input binder creation.
@@ -117,5 +180,6 @@ public class SinkExample {
 
 Sample applications are available:
 
-* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input, annotation-based].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-binder-functional-sample[streaming input, functional style].
 * For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample[polled input].
