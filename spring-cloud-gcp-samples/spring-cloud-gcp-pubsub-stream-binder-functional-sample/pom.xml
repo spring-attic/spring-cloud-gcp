@@ -16,6 +16,7 @@
   <modules>
     <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-source</module>
     <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</module>
+    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-test</module>
   </modules>
 
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
