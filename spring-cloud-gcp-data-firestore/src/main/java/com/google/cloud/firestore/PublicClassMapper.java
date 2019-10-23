@@ -46,12 +46,12 @@ public final class PublicClassMapper {
 	public static <T> Value convertToFirestoreValue(T entity) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromMap(NOT_USED_PATH,
 				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, entity).build());
-		return documentSnapshot.getProtoFields().get(VALUE_FIELD_NAME);
+		return INTERNAL.protoFromSnapshot(documentSnapshot).get(VALUE_FIELD_NAME);
 	}
 
 	public static <T> Map<String, Value> convertToFirestoreTypes(T entity) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
-		return documentSnapshot.getProtoFields();
+		return INTERNAL.protoFromSnapshot(documentSnapshot);
 	}
 
 	public static <T> T convertToCustomClass(Document document, Class<T> clazz) {

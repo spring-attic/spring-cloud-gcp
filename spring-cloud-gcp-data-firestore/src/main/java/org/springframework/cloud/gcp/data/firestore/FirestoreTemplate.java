@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingCont
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
+import org.springframework.transaction.reactive.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 /**
@@ -281,6 +283,19 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 
 	private Mono<Document> getDocument(String id, Class aClass, DocumentMask documentMask) {
+
+		TransactionSynchronizationManager.forCurrentTransaction()
+				.log()
+				//.filter(TransactionSynchronizationManager::isSynchronizationActive) //
+				.log()
+				.flatMap(synchronizationManager -> {
+
+					return Mono.just(synchronizationManager.getSynchronizations());
+				})
+				.onErrorMap(throwable ->
+						new FirestoreDataException("TransactionSynchronization", throwable))
+				.defaultIfEmpty(new ArrayList<>()).block();
+
 		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
 		GetDocumentRequest.Builder builder = GetDocumentRequest.newBuilder()
 				.setName(buildResourceName(persistentEntity, id));

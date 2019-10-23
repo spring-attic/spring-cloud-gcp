@@ -22,6 +22,7 @@ import com.google.firestore.v1.CommitRequest;
 import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.FirestoreGrpc;
 import com.google.firestore.v1.RollbackRequest;
+import com.google.firestore.v1.TransactionOptions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import reactor.core.publisher.Mono;
@@ -123,10 +124,14 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	}
 
 	private Mono<ReactiveFirestoreResourceHolder> newResourceHolder(TransactionDefinition definition) {
+		BeginTransactionRequest.newBuilder().setOptions(
+				TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build()).build())
+				.build();
 		return ObservableReactiveUtil
 				.<BeginTransactionResponse>unaryCall(
 						obs -> this.firestore.beginTransaction(BeginTransactionRequest.getDefaultInstance(), obs))
-				.map(beginTransactionResponse -> new ReactiveFirestoreResourceHolder(beginTransactionResponse.getTransaction()));
+				.map(beginTransactionResponse -> new ReactiveFirestoreResourceHolder(
+						beginTransactionResponse.getTransaction()));
 	}
 
 	/**

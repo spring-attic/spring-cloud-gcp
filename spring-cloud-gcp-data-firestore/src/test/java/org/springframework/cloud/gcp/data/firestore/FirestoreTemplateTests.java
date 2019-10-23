@@ -323,7 +323,7 @@ public class FirestoreTemplateTests {
 	}
 
 	@Document(collectionName = "testEntities")
-	static class TestEntity {
+	public static class TestEntity {
 		@Id
 		String idField;
 
