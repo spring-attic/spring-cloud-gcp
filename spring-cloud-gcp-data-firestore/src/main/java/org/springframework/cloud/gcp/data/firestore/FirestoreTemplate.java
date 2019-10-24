@@ -16,37 +16,27 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.Document;
-import com.google.firestore.v1.DocumentMask;
+import com.google.firestore.v1.*;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
-import com.google.firestore.v1.GetDocumentRequest;
-import com.google.firestore.v1.RunQueryRequest;
-import com.google.firestore.v1.RunQueryResponse;
-import com.google.firestore.v1.StructuredQuery;
-import com.google.firestore.v1.Value;
-import com.google.firestore.v1.Write;
-import com.google.firestore.v1.WriteRequest;
-import com.google.firestore.v1.WriteResponse;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
-import org.springframework.transaction.reactive.TransactionSynchronization;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreResourceHolder;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
-import org.springframework.transaction.reactive.TransactionSynchronizationManager;
+import org.springframework.transaction.reactive.TransactionContext;
 import org.springframework.util.Assert;
-import reactor.util.function.Tuple2;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An implementation of {@link FirestoreReactiveOperations}.
@@ -128,7 +118,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> Mono<Boolean> existsById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return Flux.from(idPublisher).next()
-				.flatMap(id -> getDocument(null, id, entityClass, NAME_ONLY_MASK))
+				.flatMap(id -> getDocument(id, entityClass, NAME_ONLY_MASK))
 				.map(d -> true)
 				.switchIfEmpty(Mono.just(false))
 				.onErrorMap(
@@ -143,11 +133,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> Flux<T> findAllById(Publisher<String> idPublisher, Class<T> entityClass) {
 		return Flux.from(idPublisher)
-		.zipWith(TransactionSynchronizationManager.forCurrentTransaction())
-		.flatMap((Tuple2 tuple) -> {
-
-					return getDocument((TransactionSynchronizationManager)tuple.getT2(), (String)tuple.getT1(), entityClass, null);
-				})
+				.flatMap(id -> getDocument(id, entityClass, null))
 				.onErrorMap(throwable -> new FirestoreDataException("Error while reading entries by id", throwable))
 				.map(document -> PublicClassMapper.convertToCustomClass(document, entityClass));
 	}
@@ -288,43 +274,26 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 
-	private Mono<Document> getDocument(TransactionSynchronizationManager synchronizationManager, String id, Class aClass, DocumentMask documentMask) {
+	private Mono<Document> getDocument(String id, Class aClass, DocumentMask documentMask) {
+		return Mono.subscriberContext().flatMap(ctx -> {
+			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
+			GetDocumentRequest.Builder builder = GetDocumentRequest.newBuilder()
+					.setName(buildResourceName(persistentEntity, id));
 
-		System.out.println("sync manager: " + synchronizationManager);
+			Optional<TransactionContext> transactionContext = ctx.getOrEmpty(TransactionContext.class);
+			transactionContext.ifPresent(transactionCtx -> {
+				ReactiveFirestoreResourceHolder holder = (ReactiveFirestoreResourceHolder) transactionCtx.getResources().get(firestore);
+				builder.setTransaction(holder.getTransactionId());
+			});
 
-		/*
-				.map(b -> {
-					System.out.println("************************** HELLOOOOOOOO");
-					return b;
-				})
-				.log()
-				//.filter(TransactionSynchronizationManager::isSynchronizationActive) //
-				.log()
-				.flatMap(synchronizationManager -> {
+			if (documentMask != null) {
+				builder.setMask(documentMask);
+			}
 
-					return Mono.just(synchronizationManager.getSynchronizations());
-				})
-				.onErrorMap(throwable ->
-						new FirestoreDataException("TransactionSynchronization", throwable))
-				.defaultIfEmpty(new ArrayList<>()).block();
-
-		 */
-
-		FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(aClass);
-		GetDocumentRequest.Builder builder = GetDocumentRequest.newBuilder()
-				.setName(buildResourceName(persistentEntity, id));
-
-		if (documentMask != null) {
-			builder.setMask(documentMask);
-		}
-
-		return ObservableReactiveUtil.<Document>unaryCall(obs -> this.firestore.getDocument(builder.build(), obs))
-				.onErrorResume(throwable -> throwable.getMessage().startsWith(NOT_FOUND_DOCUMENT_MESSAGE),
-						throwable -> {
-							System.out.println("GAAAAAH! Error! Returning empty mono!");
-							throwable.printStackTrace();
-							return Mono.empty();
-						});
+			return ObservableReactiveUtil.<Document>unaryCall(obs -> this.firestore.getDocument(builder.build(), obs))
+					.onErrorResume(throwable -> throwable.getMessage().startsWith(NOT_FOUND_DOCUMENT_MESSAGE),
+							throwable -> Mono.empty());
+		});
 	}
 
 	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {

@@ -16,32 +16,23 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import com.google.firestore.v1.DocumentMask;
+import com.google.firestore.v1.*;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
-import com.google.firestore.v1.GetDocumentRequest;
-import com.google.firestore.v1.RunQueryRequest;
-import com.google.firestore.v1.RunQueryResponse;
-import com.google.firestore.v1.StructuredQuery;
-import com.google.firestore.v1.Value;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.data.annotation.Id;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import org.springframework.data.annotation.Id;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Dmitry Solomakha
@@ -53,7 +44,7 @@ public class FirestoreTemplateTests {
 
 	private final FirestoreStub firestoreStub = mock(FirestoreStub.class);
 
-	private final String parent = "projects/my-project/databases/(default)/documents";
+	private static final String parent = "projects/my-project/databases/(default)/documents";
 
 	@Before
 	public void setup() {
@@ -296,15 +287,15 @@ public class FirestoreTemplateTests {
 
 	}
 
-	private Map<String, Value> createValuesMap(String test_entity_1, long value) {
+	private static Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
 		valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
 		return valuesMap;
 	}
 
-	private com.google.firestore.v1.Document buildDocument(String name, long l) {
-		return com.google.firestore.v1.Document.newBuilder().setName(this.parent + "/testEntities/" + name)
+	public static com.google.firestore.v1.Document buildDocument(String name, long l) {
+		return com.google.firestore.v1.Document.newBuilder().setName(parent + "/testEntities/" + name)
 				.putAllFields(createValuesMap(name, l)).build();
 	}
 
@@ -332,7 +323,7 @@ public class FirestoreTemplateTests {
 		TestEntity() {
 		}
 
-		TestEntity(String idField, Long longField) {
+		public TestEntity(String idField, Long longField) {
 			this.idField = idField;
 			this.longField = longField;
 		}

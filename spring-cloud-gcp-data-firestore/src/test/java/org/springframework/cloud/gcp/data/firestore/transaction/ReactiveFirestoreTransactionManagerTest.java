@@ -1,26 +1,23 @@
 package org.springframework.cloud.gcp.data.firestore.transaction;
 
-import com.google.firestore.v1.BeginTransactionResponse;
-import com.google.firestore.v1.CommitResponse;
-import com.google.firestore.v1.Document;
-import com.google.firestore.v1.FirestoreGrpc;
+import com.google.firestore.v1.*;
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
-import java.time.Duration;
 import org.junit.Test;
-import reactor.core.publisher.Hooks;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplateTests;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import reactor.core.publisher.Hooks;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.time.Duration;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 /*
  *  Copyright 2018 original author or authors.
@@ -67,10 +64,10 @@ public class ReactiveFirestoreTransactionManagerTest {
 
 
 		doAnswer(invocation -> {
+			GetDocumentRequest request = invocation.getArgument(0);
 			StreamObserver<Document> streamObserver = invocation.getArgument(1);
-		//	streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
-
-			streamObserver.onNext(Document.newBuilder().build());
+			String name = request.getName();
+			streamObserver.onNext(FirestoreTemplateTests.buildDocument(name.substring(name.length()-2), 100L));
 			streamObserver.onCompleted();
 			return null;
 		}).when(this.firestoreStub).getDocument(any(), any());
@@ -86,19 +83,32 @@ public class ReactiveFirestoreTransactionManagerTest {
 		Hooks.onOperatorDebug();
 
 
-		Object result = template.findById(Mono.just("e1"), Document.class)
-
+		Object result = template.findById(Mono.just("e1"), FirestoreTemplateTests.TestEntity.class).log()
+				.concatWith(template.findById(Mono.just("e2"), FirestoreTemplateTests.TestEntity.class))
 				.as(operator::transactional)
 				//.timeout(Duration.ofSeconds(20))
 				//.block();
 				.as(StepVerifier::create)
-				.expectNext(Document.newBuilder().build())
+				.expectNext(
+						new FirestoreTemplateTests.TestEntity("e1", 100L),
+						new FirestoreTemplateTests.TestEntity("e2", 100L))
 				.verifyComplete();
 
 
 		verify(this.firestoreStub).beginTransaction(any(), any());
 		verify(this.firestoreStub).commit(any(), any());
 
-	}
+		GetDocumentRequest request1 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e1")
+				.setTransaction(ByteString.copyFromUtf8("transaction1"))
+				.build();
+		verify(this.firestoreStub, times(1)).getDocument(eq(request1), any());
 
+		GetDocumentRequest request2 = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/" + "e2")
+				.setTransaction(ByteString.copyFromUtf8("transaction1"))
+				.build();
+		verify(this.firestoreStub, times(1)).getDocument(eq(request2), any());
+
+	}
 }
