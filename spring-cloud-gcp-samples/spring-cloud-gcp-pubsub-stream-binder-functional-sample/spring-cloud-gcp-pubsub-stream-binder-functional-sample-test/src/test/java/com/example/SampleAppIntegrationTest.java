@@ -17,8 +17,6 @@
 package com.example;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +28,7 @@ import org.junit.Test;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.system.OutputCaptureRule;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -62,28 +61,14 @@ public class SampleAppIntegrationTest {
 	public void testSample() throws Exception {
 
 		// Run Source app
-		Map<String, Object> sourceProperties = new HashMap<>();
-		sourceProperties.put("spring.cloud.stream.bindings.generateUserMessages-out-0.destination", "my-topic");
-		sourceProperties.put("spring.cloud.function.definition", "generateUserMessages");
-
-		SpringApplicationBuilder sourceBuilder = new SpringApplicationBuilder(
-				FunctionalSourceApplication.class)
-				.resourceLoader(new PropertyRemovingResourceLoader())
-				.properties(sourceProperties);
+		SpringApplicationBuilder sourceBuilder = new SpringApplicationBuilder(FunctionalSourceApplication.class)
+				.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-source"));
 		sourceBuilder.run();
 
 
 		//Run Sink app
-		Map<String, Object> sinkProperties = new HashMap<>();
-		sinkProperties.put("spring.cloud.stream.function.bindings.logUserMessage-in-0", "input");
-		sinkProperties.put("spring.cloud.stream.bindings.input.destination", "my-topic");
-		sinkProperties.put("spring.cloud.function.definition", "logUserMessage");
-		sinkProperties.put("spring.cloud.stream.bindings.input.group", "my-group");
-		sinkProperties.put("server.port", "8081");
-
 		SpringApplicationBuilder sinkBuilder = new SpringApplicationBuilder(FunctionalSinkApplication.class)
-			.resourceLoader(new PropertyRemovingResourceLoader())
-			.properties(sinkProperties);
+			.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink"));
 		sinkBuilder.run();
 
 
@@ -105,13 +90,20 @@ public class SampleAppIntegrationTest {
 	}
 
 	/**
-	 * Removes both /application.properties files coming from the two apps.
+	 * Resolves the correct /application.properties file for the specific application.
 	 */
 	static class PropertyRemovingResourceLoader extends DefaultResourceLoader {
+		private String moduleName;
+
+		PropertyRemovingResourceLoader(String moduleName) {
+			this.moduleName = moduleName;
+		}
+
 		@Override
 		public Resource getResource(String location) {
 			if (location.contains("classpath:/application.properties")) {
-				return null;
+				return new FileSystemResource(
+						String.format("../%s/src/main/resources/application.properties", this.moduleName));
 			}
 
 			return super.getResource(location);
