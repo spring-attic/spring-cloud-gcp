@@ -2,10 +2,13 @@ package org.springframework.cloud.gcp.data.firestore.transaction;
 
 import com.google.firestore.v1.BeginTransactionResponse;
 import com.google.firestore.v1.CommitResponse;
+import com.google.firestore.v1.Document;
 import com.google.firestore.v1.FirestoreGrpc;
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
+import java.time.Duration;
 import org.junit.Test;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -64,9 +67,10 @@ public class ReactiveFirestoreTransactionManagerTest {
 
 
 		doAnswer(invocation -> {
-			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
-			streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
+			StreamObserver<Document> streamObserver = invocation.getArgument(1);
+		//	streamObserver.onError(new RuntimeException("NOT_FOUND: Document"));
 
+			streamObserver.onNext(Document.newBuilder().build());
 			streamObserver.onCompleted();
 			return null;
 		}).when(this.firestoreStub).getDocument(any(), any());
@@ -78,9 +82,17 @@ public class ReactiveFirestoreTransactionManagerTest {
 		TransactionalOperator operator = TransactionalOperator.create(txManager, new DefaultTransactionDefinition());
 
 
-		template.findById(Mono.just("e1"), FirestoreTemplateTests.TestEntity.class)
+		StepVerifier.setDefaultTimeout(Duration.ofSeconds(5));
+		Hooks.onOperatorDebug();
+
+
+		Object result = template.findById(Mono.just("e1"), Document.class)
+
 				.as(operator::transactional)
+				//.timeout(Duration.ofSeconds(20))
+				//.block();
 				.as(StepVerifier::create)
+				.expectNext(Document.newBuilder().build())
 				.verifyComplete();
 
 
