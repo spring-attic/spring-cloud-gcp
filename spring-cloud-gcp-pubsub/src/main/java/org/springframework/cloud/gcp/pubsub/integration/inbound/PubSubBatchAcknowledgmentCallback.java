@@ -23,7 +23,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.util.Assert;
 
-public class PubSubBatchAcknowledgementCallback implements AcknowledgmentCallback {
+public class PubSubBatchAcknowledgmentCallback implements AcknowledgmentCallback {
 
 	private final Collection<AcknowledgeablePubsubMessage> messages;
 
@@ -31,7 +31,7 @@ public class PubSubBatchAcknowledgementCallback implements AcknowledgmentCallbac
 
 	private boolean acknowledged;
 
-	public PubSubBatchAcknowledgementCallback(Collection<AcknowledgeablePubsubMessage> messages,
+	public PubSubBatchAcknowledgmentCallback(Collection<AcknowledgeablePubsubMessage> messages,
 			AckMode ackMode) {
 		Assert.notNull(messages, "message to be acknowledged cannot be null");
 		Assert.notNull(ackMode, "ackMode cannot be null");

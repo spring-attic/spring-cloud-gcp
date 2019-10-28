@@ -97,7 +97,7 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
 		return getMessageBuilderFactory()
 				.withPayload(messages)
 				.copyHeaders(Collections.singletonMap(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
-						new PubSubBatchAcknowledgementCallback(messages, this.ackMode)));
+						new PubSubBatchAcknowledgmentCallback(messages, this.ackMode)));
 	}
 
 	@Override
