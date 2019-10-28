@@ -165,7 +165,9 @@ Messages can only be retrieved one at a time from a `PubSubMessageSource`. To re
 public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 	PubSubBatchMessageSource messageSource = new PubSubBatchMessageSource(pubSubTemplate, "exampleSubscription");
 	messageSource.setAckMode(AckMode.MANUAL);
+	messageSource.setBlockOnPull(true);
 	messageSource.setMaxFetchSize(100);
+	return messageSource;
 }
 ----
 
