@@ -16,18 +16,17 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.mapping.HeaderMapper;
-import org.springframework.integration.support.AbstractIntegrationMessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -78,7 +77,7 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
   }
 
   /**
-   * Provides a single polled message.
+   * Provides a List of messages with max size of provided fetchSize. Returns null if
    * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
    * by {@code fetchSize}.
    *
@@ -94,15 +93,10 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
     if (messages.isEmpty()) {
       return null;
     }
-
-    //TODO not sure what to put in headers.
-    Map<String, Object> messageHeaders =
-        this.headerMapper.toHeaders(messages.get(0).getPubsubMessage().getAttributesMap());
-    messageHeaders.put(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
-        new PubSubBatchAcknowledgementCallback(messages, this.ackMode));
     return getMessageBuilderFactory()
         .withPayload(messages)
-        .copyHeaders(messageHeaders);
+        .copyHeaders(ImmutableMap.of(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
+            new PubSubBatchAcknowledgementCallback(messages, this.ackMode)));
   }
 
   @Override
