@@ -16,98 +16,93 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.mapping.HeaderMapper;
-import org.springframework.integration.support.AbstractIntegrationMessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
- * A <a href="https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub
- * Synchronous pull</a> implementation of {@link AbstractMessageSource}.
+ * A <a href="https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub Synchronous pull</a>
+ * implementation of {@link AbstractMessageSource}.
  *
  * @author Eric Ngeo
  * @since 1.2
  */
 public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource<Object> {
 
-  private final String subscriptionName;
+	private final String subscriptionName;
 
-  private final PubSubSubscriberOperations pubSubSubscriberOperations;
+	private final PubSubSubscriberOperations pubSubSubscriberOperations;
 
-  private AckMode ackMode = AckMode.AUTO;
+	private AckMode ackMode = AckMode.AUTO;
 
-  private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
+	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-  private boolean blockOnPull;
+	private boolean blockOnPull;
 
-  public PubSubBatchMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
-      String subscriptionName) {
-    Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
-    Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
-    this.pubSubSubscriberOperations = pubSubSubscriberOperations;
-    this.subscriptionName = subscriptionName;
-  }
+	public PubSubBatchMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
+			String subscriptionName) {
+		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
+		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
+		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
+		this.subscriptionName = subscriptionName;
+	}
 
-  public void setAckMode(AckMode ackMode) {
-    Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
-    this.ackMode = ackMode;
-  }
+	public void setAckMode(AckMode ackMode) {
+		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
+		this.ackMode = ackMode;
+	}
 
-  public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
-    Assert.notNull(headerMapper, "The header mapper can't be null.");
-    this.headerMapper = headerMapper;
-  }
+	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		Assert.notNull(headerMapper, "The header mapper can't be null.");
+		this.headerMapper = headerMapper;
+	}
 
-  /**
-   * Instructs synchronous pull to wait until at least one message is available.
-   *
-   * @param blockOnPull whether to block until a message is available
-   */
-  public void setBlockOnPull(boolean blockOnPull) {
-    this.blockOnPull = blockOnPull;
-  }
+	/**
+	 * Instructs synchronous pull to wait until at least one message is available.
+	 *
+	 * @param blockOnPull whether to block until a message is available
+	 */
+	public void setBlockOnPull(boolean blockOnPull) {
+		this.blockOnPull = blockOnPull;
+	}
 
-  /**
-   * Provides a single polled message.
-   * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
-   * by {@code fetchSize}.
-   *
-   * @param fetchSize number of messages to fetch from Pub/Sub.
-   * @return {@link Message} wrapper containing the original message.
-   */
-  @Override
-  protected Object doReceive(int fetchSize) {
-    Integer maxMessages = (fetchSize > 0) ? fetchSize : 1;
+	/**
+	 * Provides a single polled message.
+	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
+	 * by {@code fetchSize}.
+	 *
+	 * @param fetchSize number of messages to fetch from Pub/Sub.
+	 * @return {@link Message} wrapper containing the original message.
+	 */
+	@Override
+	protected Object doReceive(int fetchSize) {
+		Integer maxMessages = (fetchSize > 0) ? fetchSize : 1;
 
-    List<AcknowledgeablePubsubMessage> messages = this.pubSubSubscriberOperations
-        .pull(this.subscriptionName, maxMessages, !this.blockOnPull);
-    if (messages.isEmpty()) {
-      return null;
-    }
+		List<AcknowledgeablePubsubMessage> messages = this.pubSubSubscriberOperations
+				.pull(this.subscriptionName, maxMessages, !this.blockOnPull);
+		if (messages.isEmpty()) {
+			return null;
+		}
+		return getMessageBuilderFactory()
+				.withPayload(messages)
+				.copyHeaders(Collections.singletonMap(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
+						new PubSubBatchAcknowledgementCallback(messages, this.ackMode)));
+	}
 
-    //TODO not sure what to put in headers.
-    Map<String, Object> messageHeaders =
-        this.headerMapper.toHeaders(messages.get(0).getPubsubMessage().getAttributesMap());
-    messageHeaders.put(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
-        new PubSubBatchAcknowledgementCallback(messages, this.ackMode));
-    return getMessageBuilderFactory()
-        .withPayload(messages)
-        .copyHeaders(messageHeaders);
-  }
-
-  @Override
-  public String getComponentType() {
-    return "gcp-pubsub:batching-message-source";
-  }
+	@Override
+	public String getComponentType() {
+		return "gcp-pubsub:batching-message-source";
+	}
 
 }
