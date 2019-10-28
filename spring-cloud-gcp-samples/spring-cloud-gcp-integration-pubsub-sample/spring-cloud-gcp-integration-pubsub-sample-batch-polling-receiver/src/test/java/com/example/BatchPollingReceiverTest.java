@@ -80,6 +80,7 @@ public class BatchPollingReceiverTest {
 	@Test
 	public void testSample() throws Exception {
 		String expectedString = "final message";
+		int maxBatchSize = 5;
 		Pattern numMessagesPattern = Pattern.compile("Batch of (\\d+) message\\(s\\) arrived by Synchronous Pull!");
 
 		for (int i = 0; i < 100; i++) {
@@ -92,7 +93,7 @@ public class BatchPollingReceiverTest {
 				.until(() -> baos.toString().contains(expectedString));
 		Matcher numMessagesMatcher = numMessagesPattern.matcher(baos.toString());
 		while (numMessagesMatcher.find()) {
-			assertThat(Integer.parseInt(numMessagesMatcher.group(1)) <= 5);
+			assertThat(Integer.parseInt(numMessagesMatcher.group(1)) <= maxBatchSize);
 		}
 	}
 }
