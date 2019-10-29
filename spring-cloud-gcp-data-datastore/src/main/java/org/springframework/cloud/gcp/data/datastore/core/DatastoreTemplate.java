@@ -645,10 +645,20 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 					Class descendantType = descendantPersistentProperty
 							.getComponentType();
 
+					Key entityKey = (Key) entity.getKey();
+
+					Key.Builder ancestorLookupKey;
+					if (entityKey.hasName()) {
+						ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getName());
+					} else {
+						ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getId());
+					}
+					ancestorLookupKey.setNamespace(entityKey.getNamespace());
+
 					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
 							.setKind(this.datastoreMappingContext
 									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.setFilter(PropertyFilter.hasAncestor(ancestorLookupKey.build()))
 							.build();
 
 					List entities = convertEntitiesForRead(

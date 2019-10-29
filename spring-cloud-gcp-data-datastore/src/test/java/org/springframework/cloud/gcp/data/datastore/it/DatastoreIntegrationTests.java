@@ -718,6 +718,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
 	}
 
+	@Test
+	public void sameClassDescendantsTest() {
+		Student entity3 = new Student(Collections.EMPTY_LIST);
+		Student entity2 = new Student(Collections.EMPTY_LIST);
+		Student entity1 = new Student(Arrays.asList(entity2, entity3));
+		School school = new School(1L, Arrays.asList(entity1));
+		this.datastoreTemplate.save(school);
+
+		School readSchool = this.datastoreTemplate.findById(school.id, School.class);
+		Student child = readSchool.descendants.get(0);
+
+		assertThat(child.id).isEqualTo(entity1.id);
+		assertThat(child.subordinates).containsExactlyInAnyOrderElementsOf(entity1.subordinates);
+	}
 }
 
 /**
@@ -869,6 +883,65 @@ class Event {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.eventName, this.preferences);
+	}
+}
+
+@Entity
+class School {
+	@Id
+	Long id;
+
+	@Descendants
+	List<Student> descendants;
+
+	School(Long id, List<Student> descendants) {
+		this.id = id;
+		this.descendants = descendants;
+	}
+}
+
+@Entity
+class Student {
+	@Id
+	public Key id;
+
+	@Descendants
+	public List<Student> subordinates;
+
+	Student(List<Student> subordinates) {
+		this.subordinates = subordinates;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Student that = (Student) o;
+		return Objects.equals(this.id, that.id) &&
+				Objects.equals(this.subordinates, that.subordinates);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.id, this.subordinates);
+	}
+
+	@Override
+	public String toString() {
+		return "Student{" +
+				"id=" + id.getNameOrId() +
+				", subordinates="
+				+ (subordinates != null
+				? subordinates.stream()
+				.map(student -> student.id.getNameOrId())
+				.collect(Collectors.toList())
+				: null)
+				+
+				'}';
 	}
 }
 
