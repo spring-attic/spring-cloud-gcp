@@ -123,7 +123,7 @@ The default behavior is to return from the synchronous pull operation immediatel
 This can be overridden by using `setBlockOnPull()` method to wait for at least one message to arrive.
 
 By default, `PubSubMessageSource` pulls from the subscription one message at a time.
-To pull a batch of messages on each request, use the `setMaxFetchSize()` method to set the batch size.
+To pull multiple messages on each request, use the `setMaxFetchSize()` method to set the max number of messages to pull.
 
 [source,java]
 ----
@@ -142,7 +142,7 @@ public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 The `@InboundChannelAdapter` annotation above ensures that the configured `MessageSource` is polled for messages, which are then available for manipulation with any Spring Integration mechanism on the `pubsubInputChannel` message channel.
 For example, messages can be retrieved in a method annotated with `@ServiceActivator`, as seen below.
 
-For additional flexibility, `PubSubMessageSource` attaches an `AcknowledgeablePubSubMessage` object to the `GcpPubSubHeaders.ORIGINAL_MESSAGE` message header.
+For additional flexibility, `PubSubMessageSource` attaches an `AcknowledgeablePubsubMessage` object to the `GcpPubSubHeaders.ORIGINAL_MESSAGE` message header.
 The object can be used for manually (n)acking the message.
 
 [source,java]
@@ -156,7 +156,36 @@ public void messageReceiver(String payload,
 }
 ----
 
-NOTE: `AcknowledgeablePubSubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs.
+Messages can only be retrieved one at a time from a `PubSubMessageSource`. To retrieve a batch of messages, use `PubSubBatchMessageSource`.
+
+[source,java]
+----
+@Bean
+@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
+public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
+	PubSubBatchMessageSource messageSource = new PubSubBatchMessageSource(pubSubTemplate, "exampleSubscription");
+	messageSource.setAckMode(AckMode.MANUAL);
+	messageSource.setBlockOnPull(true);
+	messageSource.setMaxFetchSize(100);
+	return messageSource;
+}
+----
+
+Payload type is not configurable for `PubSubBatchMessageSource`, since batched messages are delivered as a list of `AcknowledgeablePubsubMessage` objects.
+
+[source,java]
+----
+@ServiceActivator(inputChannel = "pubsubInputChannel")
+public void messageReceiver(List<AcknowledgeablePubsubMessage> payload) {
+	LOGGER.info("Batch of " + payload.size() + " message(s) arrived by Synchronous Pull!");
+	for (AcknowledgeablePubsubMessage message : payload) {
+		LOGGER.info("Payload: " + message.getPubsubMessage().getData().toStringUtf8());
+		message.ack();
+	}
+}
+----
+
+NOTE: `AcknowledgeablePubsubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs.
 Streaming pull does not expose this information due to limitations of the underlying API, and returns `BasicAcknowledgeablePubsubMessage` objects that allow acking/nacking individual messages, but not extracting acknowledgement IDs for future processing.
 
 ==== Outbound channel adapter
