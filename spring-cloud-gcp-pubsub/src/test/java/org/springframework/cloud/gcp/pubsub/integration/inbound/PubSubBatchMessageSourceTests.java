@@ -16,22 +16,16 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -42,6 +36,13 @@ import org.springframework.integration.endpoint.MessageSourcePollingTemplate;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link PubSubBatchMessageSource}.
@@ -66,10 +67,6 @@ public class PubSubBatchMessageSourceTests {
 	@Before
 	public void setUp() {
 		this.mockPubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
-
-		when(this.msg1.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
-		when(this.msg2.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
-		when(this.msg3.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
 
 		when(this.mockPubSubSubscriberOperations.pull("sub1", 1, true))
 				.thenReturn(Collections.singletonList(this.msg1));
@@ -100,24 +97,8 @@ public class PubSubBatchMessageSourceTests {
 		Message<Object> message = pubSubMessageSource.receive();
 		List<AcknowledgeablePubsubMessage> payload = (List<AcknowledgeablePubsubMessage>) message.getPayload();
 		assertThat(payload.size()).isEqualTo(3);
-		assertThat(payload.containsAll(Arrays.asList(msg1, msg2, msg3)));
+		assertThat(payload.containsAll(Arrays.asList(msg1, msg2, msg3))).isTrue();
 	}
-
-	//TODO should batch size zero be valid
-	// @Test
-	// @SuppressWarnings("unchecked")
-	// public void doReceive_pullsOneAtATimeWhenMaxFetchSizeZeroe() {
-	// 	PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
-	// 			this.mockPubSubSubscriberOperations, "sub1");
-	//
-	// 	MessageBuilder<String> message = (MessageBuilder<String>) pubSubMessageSource.doReceive(0);
-	//
-	// 	assertThat(message).isNotNull();
-	// 	assertThat(message.getPayload()).isEqualTo("msg1");
-	//
-	// 	verify(this.mockPubSubSubscriberOperations, times(1))
-	// 			.pullAndConvert("sub1", 1, true, String.class);
-	// }
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -125,10 +106,10 @@ public class PubSubBatchMessageSourceTests {
 		PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
 
-		MessageBuilder<AcknowledgeablePubsubMessage> message = (MessageBuilder<AcknowledgeablePubsubMessage>) pubSubMessageSource.doReceive(-1);
+		MessageBuilder<AcknowledgeablePubsubMessage> message = (MessageBuilder<AcknowledgeablePubsubMessage>) pubSubMessageSource
+				.doReceive(-1);
 
 		assertThat(message).isNotNull();
-		assertThat(message.getPayload());
 
 		verify(this.mockPubSubSubscriberOperations, times(1))
 				.pull("sub1", 1, true);
