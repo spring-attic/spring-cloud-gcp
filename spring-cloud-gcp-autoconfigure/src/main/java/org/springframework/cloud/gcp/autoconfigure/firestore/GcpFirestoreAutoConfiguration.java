@@ -38,6 +38,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -128,6 +129,14 @@ public class GcpFirestoreAutoConfiguration {
 		@ConditionalOnMissingBean
 		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
 			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public ReactiveFirestoreTransactionManager firestoreTransactionManager(
+				FirestoreGrpc.FirestoreStub firestoreStub) {
+			return new ReactiveFirestoreTransactionManager(firestoreStub,
+					GcpFirestoreAutoConfiguration.this.firestoreRootPath);
 		}
 
 		@Bean

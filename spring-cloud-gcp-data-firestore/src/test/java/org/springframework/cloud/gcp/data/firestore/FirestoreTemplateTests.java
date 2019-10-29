@@ -16,23 +16,31 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import com.google.firestore.v1.*;
-import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
-import io.grpc.stub.StreamObserver;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.data.annotation.Id;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.firestore.v1.DocumentMask;
+import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
+import com.google.firestore.v1.GetDocumentRequest;
+import com.google.firestore.v1.RunQueryRequest;
+import com.google.firestore.v1.RunQueryResponse;
+import com.google.firestore.v1.StructuredQuery;
+import com.google.firestore.v1.Value;
+import io.grpc.stub.StreamObserver;
+import org.junit.Before;
+import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Dmitry Solomakha
@@ -289,7 +297,7 @@ public class FirestoreTemplateTests {
 
 	private static Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
-		valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
+		//valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
 		return valuesMap;
 	}
@@ -315,7 +323,7 @@ public class FirestoreTemplateTests {
 
 	@Document(collectionName = "testEntities")
 	public static class TestEntity {
-		@Id
+		@DocumentId
 		String idField;
 
 		Long longField;

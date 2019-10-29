@@ -1,17 +1,17 @@
 /*
- *  Copyright 2018 original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.springframework.cloud.gcp.data.firestore.transaction;
@@ -25,6 +25,7 @@ import com.google.firestore.v1.RollbackRequest;
 import com.google.firestore.v1.TransactionOptions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
@@ -39,7 +40,7 @@ import org.springframework.transaction.support.SmartTransactionObject;
 import org.springframework.util.Assert;
 
 /**
- * Firestore-specific implementation of {@link org.springframework.transaction.ReactiveTransactionManager}
+ * Firestore-specific implementation of {@link org.springframework.transaction.ReactiveTransactionManager}.
  *
  * @author Dmitry Solomakha
  */
@@ -47,19 +48,24 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 
 	private final FirestoreGrpc.FirestoreStub firestore;
 
-	public ReactiveFirestoreTransactionManager(FirestoreGrpc.FirestoreStub firestore) {
+	private final String databasePath;
+
+	public ReactiveFirestoreTransactionManager(FirestoreGrpc.FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
+		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
 	}
 
 	@Override
-	protected Object doGetTransaction(TransactionSynchronizationManager synchronizationManager) throws TransactionException {
+	protected Object doGetTransaction(TransactionSynchronizationManager synchronizationManager)
+			throws TransactionException {
 		ReactiveFirestoreResourceHolder resourceHolder = (ReactiveFirestoreResourceHolder) synchronizationManager
 				.getResource(getRequiredDatabase());
 		return new ReactiveFirestoreTransactionObject(resourceHolder);
 	}
 
 	@Override
-	protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, Object o, TransactionDefinition transactionDefinition) throws TransactionException {
+	protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, Object o,
+			TransactionDefinition transactionDefinition) throws TransactionException {
 		return Mono.defer(() -> {
 			ReactiveFirestoreTransactionObject transactionObject = extractFirestoreTransaction(o);
 			Mono<ReactiveFirestoreResourceHolder> holder = newResourceHolder(transactionDefinition);
@@ -77,13 +83,17 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	@Override
 	protected Mono<Void> doCommit(TransactionSynchronizationManager transactionSynchronizationManager,
 			GenericReactiveTransaction genericReactiveTransaction) throws TransactionException {
-		ReactiveFirestoreTransactionObject transactionObject = extractFirestoreTransaction(genericReactiveTransaction);
+		ReactiveFirestoreResourceHolder resourceHolder =
+				extractFirestoreTransaction(genericReactiveTransaction).getResourceHolder();
+
+		CommitRequest.Builder builder = CommitRequest.newBuilder()
+				.setDatabase(this.databasePath)
+				.setTransaction(resourceHolder.getTransactionId());
+
+		resourceHolder.getWrites().forEach(builder::addWrites);
 
 		return ObservableReactiveUtil
-				.<CommitResponse>unaryCall(
-						obs -> this.firestore.commit(
-								CommitRequest.newBuilder().setTransaction(transactionObject.getTransactionId()).build(),
-								obs))
+				.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
 				.then();
 	}
 
@@ -124,24 +134,31 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	}
 
 	private Mono<ReactiveFirestoreResourceHolder> newResourceHolder(TransactionDefinition definition) {
-		BeginTransactionRequest.newBuilder().setOptions(
-				TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build()).build())
+		TransactionOptions transactionOptions = definition.isReadOnly()
+				? TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build()).build()
+				: TransactionOptions.newBuilder().setReadWrite(TransactionOptions.ReadWrite.newBuilder().build())
+						.build();
+
+		BeginTransactionRequest beginTransactionRequest = BeginTransactionRequest.newBuilder()
+				.setOptions(transactionOptions)
+				.setDatabase(this.databasePath)
 				.build();
 		return ObservableReactiveUtil
 				.<BeginTransactionResponse>unaryCall(
-						obs -> this.firestore.beginTransaction(BeginTransactionRequest.getDefaultInstance(), obs))
+						obs -> this.firestore.beginTransaction(beginTransactionRequest, obs))
 				.map(beginTransactionResponse -> new ReactiveFirestoreResourceHolder(
 						beginTransactionResponse.getTransaction()));
 	}
 
 	/**
-	 * MongoDB specific transaction object, representing a {@link ReactiveFirestoreResourceHolder}. Used as transaction object by
+	 * Firestore specific transaction object, representing a
+	 * {@link ReactiveFirestoreResourceHolder}. Used as transaction object by
 	 * {@link ReactiveFirestoreTransactionManager}.
 	 */
-	private class ReactiveFirestoreTransactionObject  implements SmartTransactionObject {
+	private class ReactiveFirestoreTransactionObject implements SmartTransactionObject {
 		private @Nullable ReactiveFirestoreResourceHolder resourceHolder;
 
-		public ReactiveFirestoreTransactionObject(@Nullable ReactiveFirestoreResourceHolder resourceHolder) {
+		ReactiveFirestoreTransactionObject(@Nullable ReactiveFirestoreResourceHolder resourceHolder) {
 			this.resourceHolder = resourceHolder;
 		}
 

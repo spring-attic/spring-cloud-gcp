@@ -31,8 +31,11 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -50,6 +53,9 @@ public class FirestoreIntegrationTests {
 	@Autowired
 	FirestoreTemplate firestoreTemplate;
 
+	@Autowired
+	ReactiveFirestoreTransactionManager txManager;
+
 	@BeforeClass
 	public static void checkToRun() throws IOException {
 		assumeThat("Firestore-sample tests are disabled. "
@@ -65,6 +71,37 @@ public class FirestoreIntegrationTests {
 	@Before
 	public void cleanTestEnvironment() {
 		this.firestoreTemplate.deleteAll(User.class).block();
+	}
+
+	@Test
+	public void transactionTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+		transactionDefinition.setReadOnly(false);
+		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+
+		this.firestoreTemplate.findAll(User.class).collectList()
+				.flatMap(a -> this.firestoreTemplate.save(alice))
+				.flatMap(a -> this.firestoreTemplate.save(bob))
+				.as(operator::transactional).block();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
+				.containsExactlyInAnyOrder(bob, alice);
+
+		this.firestoreTemplate.findAll(User.class)
+				.flatMap(a -> {
+					a.setAge(a.getAge() - 1);
+					return this.firestoreTemplate.save(a);
+				})
+				.as(operator::transactional).collectList().block();
+
+		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
+
+		this.firestoreTemplate.deleteAll(User.class).as(operator::transactional).block();
+		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 	}
 
 	@Test
