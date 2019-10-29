@@ -731,6 +731,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(child.id).isEqualTo(entity1.id);
 		assertThat(child.subordinates).containsExactlyInAnyOrderElementsOf(entity1.subordinates);
+
+		assertThat(readSchool.descendants).hasSize(1);
+		assertThat(readSchool.descendants.get(0).id).isEqualTo(entity1.id);
 	}
 }
 
