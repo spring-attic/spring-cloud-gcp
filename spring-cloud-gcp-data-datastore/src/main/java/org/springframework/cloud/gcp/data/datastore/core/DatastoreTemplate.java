@@ -65,6 +65,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
+import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
@@ -646,19 +647,12 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 							.getComponentType();
 
 					Key entityKey = (Key) entity.getKey();
-
-					Key.Builder ancestorLookupKey;
-					if (entityKey.hasName()) {
-						ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getName());
-					} else {
-						ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getId());
-					}
-					ancestorLookupKey.setNamespace(entityKey.getNamespace());
+					Key ancestorKey = KeyUtil.getKeyWithoutAncestors(entityKey);
 
 					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
 							.setKind(this.datastoreMappingContext
 									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor(ancestorLookupKey.build()))
+							.setFilter(PropertyFilter.hasAncestor(ancestorKey))
 							.build();
 
 					List entities = convertEntitiesForRead(

@@ -720,20 +720,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void sameClassDescendantsTest() {
-		Student entity3 = new Student(Collections.EMPTY_LIST);
-		Student entity2 = new Student(Collections.EMPTY_LIST);
-		Student entity1 = new Student(Arrays.asList(entity2, entity3));
-		School school = new School(1L, Arrays.asList(entity1));
-		this.datastoreTemplate.save(school);
+		Employee entity3 = new Employee(Collections.EMPTY_LIST);
+		Employee entity2 = new Employee(Collections.EMPTY_LIST);
+		Employee entity1 = new Employee(Arrays.asList(entity2, entity3));
+		Company company = new Company(1L, Arrays.asList(entity1));
+		this.datastoreTemplate.save(company);
 
-		School readSchool = this.datastoreTemplate.findById(school.id, School.class);
-		Student child = readSchool.descendants.get(0);
+		Company readCompany = this.datastoreTemplate.findById(company.id, Company.class);
+		Employee child = readCompany.leaders.get(0);
 
 		assertThat(child.id).isEqualTo(entity1.id);
 		assertThat(child.subordinates).containsExactlyInAnyOrderElementsOf(entity1.subordinates);
 
-		assertThat(readSchool.descendants).hasSize(1);
-		assertThat(readSchool.descendants.get(0).id).isEqualTo(entity1.id);
+		assertThat(readCompany.leaders).hasSize(1);
+		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
 	}
 }
 
@@ -890,28 +890,28 @@ class Event {
 }
 
 @Entity
-class School {
+class Company {
 	@Id
 	Long id;
 
 	@Descendants
-	List<Student> descendants;
+	List<Employee> leaders;
 
-	School(Long id, List<Student> descendants) {
+	Company(Long id, List<Employee> leaders) {
 		this.id = id;
-		this.descendants = descendants;
+		this.leaders = leaders;
 	}
 }
 
 @Entity
-class Student {
+class Employee {
 	@Id
 	public Key id;
 
 	@Descendants
-	public List<Student> subordinates;
+	public List<Employee> subordinates;
 
-	Student(List<Student> subordinates) {
+	Employee(List<Employee> subordinates) {
 		this.subordinates = subordinates;
 	}
 
@@ -923,7 +923,7 @@ class Student {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		Student that = (Student) o;
+		Employee that = (Employee) o;
 		return Objects.equals(this.id, that.id) &&
 				Objects.equals(this.subordinates, that.subordinates);
 	}
@@ -935,12 +935,12 @@ class Student {
 
 	@Override
 	public String toString() {
-		return "Student{" +
+		return "Employee{" +
 				"id=" + id.getNameOrId() +
 				", subordinates="
 				+ (subordinates != null
 				? subordinates.stream()
-				.map(student -> student.id.getNameOrId())
+				.map(employee -> employee.id.getNameOrId())
 				.collect(Collectors.toList())
 				: null)
 				+
