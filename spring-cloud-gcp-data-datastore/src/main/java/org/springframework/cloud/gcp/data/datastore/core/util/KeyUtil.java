@@ -27,19 +27,24 @@ import com.google.cloud.datastore.Key;
  */
 public final class KeyUtil {
 
-	private KeyUtil() {}
+	private KeyUtil() {
+	}
 
 	/**
 	 * Returns a copy of the provided {@code entityKey} with its ancestors removed.
 	 *
 	 * <p>This is useful for performing HAS_ANCESTOR queries in Datastore which do not
 	 * expect a fully qualified ancestors key list in the provided key.
+	 *
+	 * @param entityKey The Datastore entity key to transform.
+	 * @return A copy of the {@code entityKey} with ancestors removed.
 	 */
 	public static Key getKeyWithoutAncestors(Key entityKey) {
 		Key.Builder ancestorLookupKey;
 		if (entityKey.hasName()) {
 			ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getName());
-		} else {
+		}
+		else {
 			ancestorLookupKey = Key.newBuilder(entityKey.getProjectId(), entityKey.getKind(), entityKey.getId());
 		}
 		ancestorLookupKey.setNamespace(entityKey.getNamespace());
