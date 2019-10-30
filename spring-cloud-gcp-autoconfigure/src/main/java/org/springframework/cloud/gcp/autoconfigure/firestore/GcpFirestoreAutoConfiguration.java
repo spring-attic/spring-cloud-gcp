@@ -26,6 +26,7 @@ import com.google.firestore.v1.FirestoreGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import reactor.core.publisher.Flux;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -133,6 +134,7 @@ public class GcpFirestoreAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
+		@ConditionalOnClass({ Flux.class })
 		public ReactiveFirestoreTransactionManager firestoreTransactionManager(
 				FirestoreGrpc.FirestoreStub firestoreStub) {
 			return new ReactiveFirestoreTransactionManager(firestoreStub,

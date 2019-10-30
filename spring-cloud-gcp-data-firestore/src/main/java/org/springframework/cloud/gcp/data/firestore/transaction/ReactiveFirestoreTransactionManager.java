@@ -25,9 +25,9 @@ import com.google.firestore.v1.RollbackRequest;
 import com.google.firestore.v1.TransactionOptions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
-import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 
+import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionDefinition;
@@ -50,31 +50,37 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 
 	private final String databasePath;
 
+	/**
+	 * Constructor for ReactiveFirestoreTransactionManager.
+	 * @param firestore Firestore gRPC stub
+	 * @param parent the parent resource. For example:
+	 *     projects/{project_id}/databases/{database_id}/documents or
+	 *     projects/{project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}
+	 */
 	public ReactiveFirestoreTransactionManager(FirestoreGrpc.FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
-		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
+		this.databasePath = FirestoreTemplate.extractDatabasePath(parent);
 	}
 
 	@Override
 	protected Object doGetTransaction(TransactionSynchronizationManager synchronizationManager)
 			throws TransactionException {
 		ReactiveFirestoreResourceHolder resourceHolder = (ReactiveFirestoreResourceHolder) synchronizationManager
-				.getResource(getRequiredDatabase());
+				.getResource(this.firestore);
 		return new ReactiveFirestoreTransactionObject(resourceHolder);
 	}
 
 	@Override
-	protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, Object o,
+	protected Mono<Void> doBegin(TransactionSynchronizationManager synchronizationManager, Object transactionObject,
 			TransactionDefinition transactionDefinition) throws TransactionException {
 		return Mono.defer(() -> {
-			ReactiveFirestoreTransactionObject transactionObject = extractFirestoreTransaction(o);
-			Mono<ReactiveFirestoreResourceHolder> holder = newResourceHolder(transactionDefinition);
+			Mono<ReactiveFirestoreResourceHolder> holder = startTransaction(transactionDefinition);
 
-			return holder.doOnNext(transactionObject::setResourceHolder)
+			return holder.doOnNext(extractFirestoreTransaction(transactionObject)::setResourceHolder)
 					.onErrorMap(
 							ex -> new TransactionSystemException("Could not start Firestore transaction", ex))
 					.doOnSuccess(resourceHolder -> {
-						synchronizationManager.bindResource(getRequiredDatabase(), resourceHolder);
+						synchronizationManager.bindResource(this.firestore, resourceHolder);
 					})
 					.then();
 		});
@@ -83,34 +89,33 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	@Override
 	protected Mono<Void> doCommit(TransactionSynchronizationManager transactionSynchronizationManager,
 			GenericReactiveTransaction genericReactiveTransaction) throws TransactionException {
-		ReactiveFirestoreResourceHolder resourceHolder =
-				extractFirestoreTransaction(genericReactiveTransaction).getResourceHolder();
+		return Mono.defer(() -> {
+			ReactiveFirestoreResourceHolder resourceHolder = extractFirestoreTransaction(genericReactiveTransaction)
+					.getResourceHolder();
 
-		CommitRequest.Builder builder = CommitRequest.newBuilder()
-				.setDatabase(this.databasePath)
-				.setTransaction(resourceHolder.getTransactionId());
+			CommitRequest.Builder builder = CommitRequest.newBuilder()
+					.setDatabase(this.databasePath)
+					.setTransaction(resourceHolder.getTransactionId());
 
-		resourceHolder.getWrites().forEach(builder::addWrites);
+			resourceHolder.getWrites().forEach(builder::addWrites);
 
-		return ObservableReactiveUtil
-				.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
-				.then();
+			return ObservableReactiveUtil
+					.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+					.then();
+		});
 	}
 
 	@Override
 	protected Mono<Void> doRollback(TransactionSynchronizationManager transactionSynchronizationManager,
 			GenericReactiveTransaction genericReactiveTransaction) throws TransactionException {
-		ReactiveFirestoreTransactionObject transactionObject = extractFirestoreTransaction(genericReactiveTransaction);
 
 		return ObservableReactiveUtil
 				.<Empty>unaryCall(
 						obs -> this.firestore.rollback(RollbackRequest.newBuilder()
-								.setTransaction(transactionObject.getTransactionId()).build(), obs))
+								.setTransaction(
+										extractFirestoreTransaction(genericReactiveTransaction).getTransactionId())
+								.build(), obs))
 				.then();
-	}
-
-	private FirestoreGrpc.FirestoreStub getRequiredDatabase() {
-		return this.firestore;
 	}
 
 	private static ReactiveFirestoreTransactionObject extractFirestoreTransaction(Object transaction) {
@@ -123,17 +128,18 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 		return (ReactiveFirestoreTransactionObject) transaction;
 	}
 
-	private static ReactiveFirestoreTransactionObject extractFirestoreTransaction(GenericReactiveTransaction status) {
+	private static ReactiveFirestoreTransactionObject extractFirestoreTransaction(
+			GenericReactiveTransaction transaction) {
 
-		Assert.isInstanceOf(ReactiveFirestoreTransactionObject.class, status.getTransaction(),
+		Assert.isInstanceOf(ReactiveFirestoreTransactionObject.class, transaction.getTransaction(),
 				() -> String.format("Expected to find a %s but it turned out to be %s.",
 						ReactiveFirestoreTransactionObject.class,
-						status.getTransaction().getClass()));
+						transaction.getTransaction().getClass()));
 
-		return (ReactiveFirestoreTransactionObject) status.getTransaction();
+		return (ReactiveFirestoreTransactionObject) transaction.getTransaction();
 	}
 
-	private Mono<ReactiveFirestoreResourceHolder> newResourceHolder(TransactionDefinition definition) {
+	private Mono<ReactiveFirestoreResourceHolder> startTransaction(TransactionDefinition definition) {
 		TransactionOptions transactionOptions = definition.isReadOnly()
 				? TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build()).build()
 				: TransactionOptions.newBuilder().setReadWrite(TransactionOptions.ReadWrite.newBuilder().build())
@@ -181,6 +187,7 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 			return false;
 		}
 
+		//not supported in Firestore
 		@Override
 		public void flush() {
 

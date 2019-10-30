@@ -297,7 +297,6 @@ public class FirestoreTemplateTests {
 
 	private static Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
-		//valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
 		return valuesMap;
 	}

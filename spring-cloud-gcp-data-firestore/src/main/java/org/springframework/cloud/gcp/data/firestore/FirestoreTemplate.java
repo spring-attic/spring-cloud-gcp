@@ -92,7 +92,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public FirestoreTemplate(FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
-		this.databasePath = parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
+		this.databasePath = extractDatabasePath(parent);
+	}
+
+	public static String extractDatabasePath(String parent) {
+		return parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
 	}
 
 
@@ -168,6 +172,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				ReactiveFirestoreResourceHolder holder = (ReactiveFirestoreResourceHolder) transactionContext.get()
 						.getResources().get(this.firestore);
 				List<Write> writes = holder.getWrites();
+				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(instances).doOnNext(t -> writes.add(createUpdateWrite(t)));
 			}
 
@@ -250,6 +255,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				ReactiveFirestoreResourceHolder holder = (ReactiveFirestoreResourceHolder) transactionContext.get()
 						.getResources().get(this.firestore);
 				List<Write> writes = holder.getWrites();
+				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(documentNames).doOnNext(t -> writes.add(createDeleteWrite(t)));
 			}
 			return ObservableReactiveUtil.streamingBidirectionalCall(

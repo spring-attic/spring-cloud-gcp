@@ -83,8 +83,8 @@ public class FirestoreIntegrationTests {
 		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
 
 		this.firestoreTemplate.findAll(User.class).collectList()
-				.flatMap(a -> this.firestoreTemplate.save(alice))
-				.flatMap(a -> this.firestoreTemplate.save(bob))
+				.then(this.firestoreTemplate.save(alice))
+				.then(this.firestoreTemplate.save(bob))
 				.as(operator::transactional).block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
