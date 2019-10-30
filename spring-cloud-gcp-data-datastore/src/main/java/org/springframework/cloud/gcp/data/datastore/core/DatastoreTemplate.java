@@ -65,6 +65,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
+import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
@@ -645,10 +646,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 					Class descendantType = descendantPersistentProperty
 							.getComponentType();
 
+					Key entityKey = (Key) entity.getKey();
+					Key ancestorKey = KeyUtil.getKeyWithoutAncestors(entityKey);
+
 					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
 							.setKind(this.datastoreMappingContext
 									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.setFilter(PropertyFilter.hasAncestor(ancestorKey))
 							.build();
 
 					List entities = convertEntitiesForRead(
