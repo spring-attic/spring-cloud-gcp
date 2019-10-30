@@ -140,13 +140,12 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	}
 
 	private Mono<ReactiveFirestoreResourceHolder> startTransaction(TransactionDefinition definition) {
-		TransactionOptions transactionOptions = definition.isReadOnly()
-				? TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build()).build()
-				: TransactionOptions.newBuilder().setReadWrite(TransactionOptions.ReadWrite.newBuilder().build())
-						.build();
+		TransactionOptions.Builder txOptions = definition.isReadOnly()
+				? TransactionOptions.newBuilder().setReadOnly(TransactionOptions.ReadOnly.newBuilder().build())
+				: TransactionOptions.newBuilder().setReadWrite(TransactionOptions.ReadWrite.newBuilder().build());
 
 		BeginTransactionRequest beginTransactionRequest = BeginTransactionRequest.newBuilder()
-				.setOptions(transactionOptions)
+				.setOptions(txOptions)
 				.setDatabase(this.databasePath)
 				.build();
 		return ObservableReactiveUtil
