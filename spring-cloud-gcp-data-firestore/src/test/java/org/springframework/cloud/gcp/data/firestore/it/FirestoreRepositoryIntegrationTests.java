@@ -28,9 +28,12 @@ import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -43,6 +46,11 @@ public class FirestoreRepositoryIntegrationTests {
 	@Autowired
 	UserRepository userRepository;
 	//end::autowire[]
+
+	//tag::autowire_tx_manager[]
+	@Autowired
+	ReactiveFirestoreTransactionManager txManager;
+	//end::autowire_tx_manager[]
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
@@ -81,6 +89,35 @@ public class FirestoreRepositoryIntegrationTests {
 				.containsExactlyInAnyOrder("Alice", "Bob");
 	}
 	//end::repository_built_in[]
+
+	@Test
+	public void transactionalOperatorTest() {
+		//tag::repository_transactional_operator[]
+		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+		transactionDefinition.setReadOnly(false);
+		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+		//end::repository_transactional_operator[]
+
+		//tag::repository_operations_in_a_transaction[]
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice)
+				.then(this.userRepository.save(bob))
+				.as(operator::transactional)
+				.block();
+
+		this.userRepository.findAll()
+				.flatMap(a -> {
+					a.setAge(a.getAge() - 1);
+					return this.userRepository.save(a);
+				})
+				.as(operator::transactional).collectList().block();
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
+		//end::repository_operations_in_a_transaction[]
+	}
 
 	@Test
 	//tag::repository_part_tree[]

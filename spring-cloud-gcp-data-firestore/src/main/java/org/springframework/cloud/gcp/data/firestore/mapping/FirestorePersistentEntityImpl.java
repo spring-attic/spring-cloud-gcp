@@ -36,8 +36,6 @@ public class FirestorePersistentEntityImpl<T>
 
 	private final String collectionName;
 
-	private FirestorePersistentProperty idProperty;
-
 	public FirestorePersistentEntityImpl(TypeInformation<T> information) {
 		super(information);
 		this.collectionName = getEntityCollectionName(information);

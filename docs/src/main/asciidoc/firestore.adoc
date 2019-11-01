@@ -148,7 +148,39 @@ Cloud Firestore only supports filter components joined by AND, and the following
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 
-=== Reactice Repository Sample
+=== Transactions
+Read-only and read-write transactions are provided by `TransactionalOperator` (see this https://spring.io/blog/2019/05/16/reactive-transactions-with-spring[blog post] on reactive transactions for details).
+In order to use it, you would need to autowire `ReactiveFirestoreTransactionManager` like this:
+
+[source, java]
+----
+public class MyApplication {
+include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_tx_manager]
+}
+----
+
+After that you will be able to use it to create an instance of `TransactionalOperator`.
+Note that you can switch between read-only and read-write transactions using `TransactionDefinition` object:
+
+[source, java, indent=0]
+----
+include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
+----
+
+When you have an instance of  `TransactionalOperator`, you can execute a sequence of Firestore operations in a transaction using `operator::transactional`:
+
+[source, java, indent=0]
+----
+include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_operations_in_a_transaction]
+----
+
+NOTE: Read operations in a transaction can only happen before write operations.
+All write operations are applied atomically.
+Read documents are locked until the transaction finishes with a commit or a rollback, which are handled by Spring Data.
+If an `Exception` is thrown within a transaction, the rollback operation is executed.
+Otherwise, the commit operation is executed.
+
+=== Reactive Repository Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[sample application] is available.
 
