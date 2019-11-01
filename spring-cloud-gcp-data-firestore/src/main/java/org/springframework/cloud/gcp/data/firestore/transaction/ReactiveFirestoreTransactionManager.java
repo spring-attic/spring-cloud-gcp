@@ -27,8 +27,8 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
+import org.springframework.cloud.gcp.data.firestore.util.Util;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -59,7 +59,7 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 	 */
 	public ReactiveFirestoreTransactionManager(FirestoreGrpc.FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
-		this.databasePath = FirestoreTemplate.extractDatabasePath(parent);
+		this.databasePath = Util.extractDatabasePath(parent);
 	}
 
 	@Override
@@ -186,7 +186,9 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 			return false;
 		}
 
-		//not supported in Firestore
+		/**
+		 * Not supported in Firestore.
+		 */
 		@Override
 		public void flush() {
 

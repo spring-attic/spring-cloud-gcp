@@ -93,12 +93,13 @@ public class ReactiveFirestoreTransactionManagerTest {
 		ReactiveFirestoreTransactionManager txManager = new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent);
 		TransactionalOperator operator = TransactionalOperator.create(txManager);
 
-		template.findById(Mono.defer(() -> {throw new FirestoreDataException("BOOM!");}), FirestoreTemplateTests.TestEntity.class)
+		template.findById(Mono.defer(() -> {
+			throw new FirestoreDataException("BOOM!");
+		}), FirestoreTemplateTests.TestEntity.class)
 				.as(operator::transactional)
 				.as(StepVerifier::create)
 				.expectError()
 				.verify();
-
 
 		verify(this.firestoreStub, times(1)).beginTransaction(any(), any());
 		verify(this.firestoreStub, times(0)).commit(any(), any());

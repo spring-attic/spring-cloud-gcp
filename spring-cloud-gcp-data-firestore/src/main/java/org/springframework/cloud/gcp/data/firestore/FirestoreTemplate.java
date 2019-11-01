@@ -35,7 +35,6 @@ import com.google.firestore.v1.Write;
 import com.google.firestore.v1.WriteRequest;
 import com.google.firestore.v1.WriteResponse;
 import io.grpc.stub.StreamObserver;
-import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -46,6 +45,7 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentE
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreResourceHolder;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
+import org.springframework.cloud.gcp.data.firestore.util.Util;
 import org.springframework.transaction.reactive.TransactionContext;
 import org.springframework.util.Assert;
 
@@ -92,13 +92,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public FirestoreTemplate(FirestoreStub firestore, String parent) {
 		this.firestore = firestore;
 		this.parent = parent;
-		this.databasePath = extractDatabasePath(parent);
+		this.databasePath = Util.extractDatabasePath(parent);
 	}
-
-	public static String extractDatabasePath(String parent) {
-		return parent.substring(0, StringUtils.ordinalIndexOf(parent, "/", 4));
-	}
-
 
 	/**
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending

@@ -29,6 +29,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
@@ -82,13 +83,21 @@ public class FirestoreIntegrationTests {
 		transactionDefinition.setReadOnly(false);
 		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
 
-		this.firestoreTemplate.findAll(User.class).collectList()
-				.then(this.firestoreTemplate.save(alice))
+		this.firestoreTemplate.save(alice)
 				.then(this.firestoreTemplate.save(bob))
 				.as(operator::transactional).block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
 				.containsExactlyInAnyOrder(bob, alice);
+
+
+		// test rollback
+		this.firestoreTemplate.saveAll(Mono.defer(() -> {
+			throw new FirestoreDataException("BOOM!");
+		}))
+				.then(this.firestoreTemplate.deleteAll(User.class)).onErrorReturn(0L).block();
+
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 
 		this.firestoreTemplate.findAll(User.class)
 				.flatMap(a -> {

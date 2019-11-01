@@ -56,7 +56,7 @@ public class FirestoreRepositoryIntegrationTests {
 	public static void checkToRun() throws IOException {
 		assumeThat("Firestore-sample tests are disabled. "
 				+ "Please use '-Dit.firestore=true' to enable them. ",
-				"true", is("true"));
+				System.getProperty("it.firestore"), is("true"));
 	}
 
 	@Before
