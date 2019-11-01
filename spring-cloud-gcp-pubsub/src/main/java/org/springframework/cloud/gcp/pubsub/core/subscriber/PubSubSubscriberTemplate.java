@@ -286,6 +286,7 @@ public class PubSubSubscriberTemplate
 	@Override
 	public void destroy() {
 		this.defaultAckExecutor.shutdown();
+		this.subscriberStub.close();
 	}
 
 	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
