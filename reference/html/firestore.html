@@ -101,7 +101,8 @@ $(addBlockSwitches);
 <li><a href="#_object_mapping">Object Mapping</a></li>
 <li><a href="#_reactive_repositories">Reactive Repositories</a></li>
 <li><a href="#_query_methods_by_convention">Query methods by convention</a></li>
-<li><a href="#_reactice_repository_sample">Reactice Repository Sample</a></li>
+<li><a href="#_transactions">Transactions</a></li>
+<li><a href="#_reactive_repository_sample">Reactive Repository Sample</a></li>
 <li><a href="#_cloud_firestore_spring_boot_starter">Cloud Firestore Spring Boot Starter</a></li>
 </ul>
 </li>
@@ -413,7 +414,73 @@ Custom queries with <code>@Query</code> annotation are not supported since there
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reactice_repository_sample"><a class="link" href="#_reactice_repository_sample">Reactice Repository Sample</a></h3>
+<h3 id="_transactions"><a class="link" href="#_transactions">Transactions</a></h3>
+<div class="paragraph">
+<p>Read-only and read-write transactions are provided by <code>TransactionalOperator</code> (see this <a href="https://spring.io/blog/2019/05/16/reactive-transactions-with-spring">blog post</a> on reactive transactions for details).
+In order to use it, you would need to autowire <code>ReactiveFirestoreTransactionManager</code> like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+	@Autowired
+	ReactiveFirestoreTransactionManager txManager;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that you will be able to use it to create an instance of <code>TransactionalOperator</code>.
+Note that you can switch between read-only and read-write transactions using <code>TransactionDefinition</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+transactionDefinition.setReadOnly(false);
+TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When you have an instance of  <code>TransactionalOperator</code>, you can execute a sequence of Firestore operations in a transaction using <code>operator::transactional</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">User alice = new User("Alice", 29);
+User bob = new User("Bob", 60);
+
+this.userRepository.save(alice)
+		.then(this.userRepository.save(bob))
+		.as(operator::transactional)
+		.block();
+
+this.userRepository.findAll()
+		.flatMap(a -&gt; {
+			a.setAge(a.getAge() - 1);
+			return this.userRepository.save(a);
+		})
+		.as(operator::transactional).collectList().block();
+
+assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+		.containsExactlyInAnyOrder(28, 59);</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Read operations in a transaction can only happen before write operations.
+All write operations are applied atomically.
+Read documents are locked until the transaction finishes with a commit or a rollback, which are handled by Spring Data.
+If an <code>Exception</code> is thrown within a transaction, the rollback operation is executed.
+Otherwise, the commit operation is executed.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reactive_repository_sample"><a class="link" href="#_reactive_repository_sample">Reactive Repository Sample</a></h3>
 <div class="paragraph">
 <p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample">sample application</a> is available.</p>
 </div>
