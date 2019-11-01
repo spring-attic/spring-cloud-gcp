@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
@@ -33,8 +34,6 @@ import org.junit.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import org.springframework.data.annotation.Id;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -53,7 +52,7 @@ public class FirestoreTemplateTests {
 
 	private final FirestoreStub firestoreStub = mock(FirestoreStub.class);
 
-	private final String parent = "projects/my-project/databases/(default)/documents";
+	private static final String parent = "projects/my-project/databases/(default)/documents";
 
 	@Before
 	public void setup() {
@@ -296,15 +295,14 @@ public class FirestoreTemplateTests {
 
 	}
 
-	private Map<String, Value> createValuesMap(String test_entity_1, long value) {
+	private static Map<String, Value> createValuesMap(String test_entity_1, long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
-		valuesMap.put("idField", Value.newBuilder().setStringValue(test_entity_1).build());
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
 		return valuesMap;
 	}
 
-	private com.google.firestore.v1.Document buildDocument(String name, long l) {
-		return com.google.firestore.v1.Document.newBuilder().setName(this.parent + "/testEntities/" + name)
+	public static com.google.firestore.v1.Document buildDocument(String name, long l) {
+		return com.google.firestore.v1.Document.newBuilder().setName(parent + "/testEntities/" + name)
 				.putAllFields(createValuesMap(name, l)).build();
 	}
 
@@ -323,8 +321,8 @@ public class FirestoreTemplateTests {
 	}
 
 	@Document(collectionName = "testEntities")
-	static class TestEntity {
-		@Id
+	public static class TestEntity {
+		@DocumentId
 		String idField;
 
 		Long longField;
@@ -332,7 +330,7 @@ public class FirestoreTemplateTests {
 		TestEntity() {
 		}
 
-		TestEntity(String idField, Long longField) {
+		public TestEntity(String idField, Long longField) {
 			this.idField = idField;
 			this.longField = longField;
 		}

@@ -718,6 +718,23 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
 	}
 
+	@Test
+	public void sameClassDescendantsTest() {
+		Employee entity3 = new Employee(Collections.EMPTY_LIST);
+		Employee entity2 = new Employee(Collections.EMPTY_LIST);
+		Employee entity1 = new Employee(Arrays.asList(entity2, entity3));
+		Company company = new Company(1L, Arrays.asList(entity1));
+		this.datastoreTemplate.save(company);
+
+		Company readCompany = this.datastoreTemplate.findById(company.id, Company.class);
+		Employee child = readCompany.leaders.get(0);
+
+		assertThat(child.id).isEqualTo(entity1.id);
+		assertThat(child.subordinates).containsExactlyInAnyOrderElementsOf(entity1.subordinates);
+
+		assertThat(readCompany.leaders).hasSize(1);
+		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
+	}
 }
 
 /**
@@ -869,6 +886,65 @@ class Event {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.eventName, this.preferences);
+	}
+}
+
+@Entity
+class Company {
+	@Id
+	Long id;
+
+	@Descendants
+	List<Employee> leaders;
+
+	Company(Long id, List<Employee> leaders) {
+		this.id = id;
+		this.leaders = leaders;
+	}
+}
+
+@Entity
+class Employee {
+	@Id
+	public Key id;
+
+	@Descendants
+	public List<Employee> subordinates;
+
+	Employee(List<Employee> subordinates) {
+		this.subordinates = subordinates;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Employee that = (Employee) o;
+		return Objects.equals(this.id, that.id) &&
+				Objects.equals(this.subordinates, that.subordinates);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.id, this.subordinates);
+	}
+
+	@Override
+	public String toString() {
+		return "Employee{" +
+				"id=" + id.getNameOrId() +
+				", subordinates="
+				+ (subordinates != null
+				? subordinates.stream()
+				.map(employee -> employee.id.getNameOrId())
+				.collect(Collectors.toList())
+				: null)
+				+
+				'}';
 	}
 }
 
