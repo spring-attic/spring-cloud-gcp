@@ -20,7 +20,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -41,6 +40,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
+import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.util.Assert;
 
