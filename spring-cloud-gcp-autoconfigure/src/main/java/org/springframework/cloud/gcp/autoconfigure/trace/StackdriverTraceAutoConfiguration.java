@@ -127,6 +127,7 @@ public class StackdriverTraceAutoConfiguration {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 		scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
 		scheduler.setThreadNamePrefix("gcp-trace-sender");
+		scheduler.setDaemon(true);
 		return scheduler;
 	}
 
