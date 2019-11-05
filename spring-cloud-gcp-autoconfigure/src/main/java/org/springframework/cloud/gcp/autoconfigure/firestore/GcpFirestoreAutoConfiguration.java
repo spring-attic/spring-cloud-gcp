@@ -109,7 +109,7 @@ public class GcpFirestoreAutoConfiguration {
 	/**
 	 * The Firestore reactive template and data repositories support auto-configuration.
 	 */
-	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class })
+	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class, Flux.class })
 	class FirestoreReactiveAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
@@ -134,7 +134,6 @@ public class GcpFirestoreAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		@ConditionalOnClass({ Flux.class })
 		public ReactiveFirestoreTransactionManager firestoreTransactionManager(
 				FirestoreGrpc.FirestoreStub firestoreStub) {
 			return new ReactiveFirestoreTransactionManager(firestoreStub,
