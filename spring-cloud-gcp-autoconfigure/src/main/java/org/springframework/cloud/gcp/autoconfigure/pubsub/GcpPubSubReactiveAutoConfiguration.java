@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
+import java.util.Optional;
+
+import javax.annotation.PreDestroy;
+
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -43,17 +47,30 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(value = "spring.cloud.gcp.pubsub.reactive.enabled", matchIfMissing = true)
 public class GcpPubSubReactiveAutoConfiguration {
 
-	@Bean
-	@ConditionalOnMissingBean(name = "pubSubReactiveScheduler")
-	Scheduler pubSubReactiveScheduler() {
-		return Schedulers.elastic();
-	}
+	private Scheduler defaultPubSubReactiveScheduler;
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubReactiveFactory pubSubReactiveFactory(
-		PubSubSubscriberTemplate subscriberTemplate, @Qualifier("pubSubReactiveScheduler") Scheduler scheduler) {
+			PubSubSubscriberTemplate subscriberTemplate,
+			@Qualifier("pubSubReactiveScheduler") Optional<Scheduler> userProvidedScheduler) {
+
+		Scheduler scheduler = null;
+		if (userProvidedScheduler.isPresent()) {
+			scheduler = userProvidedScheduler.get();
+		}
+		else {
+			this.defaultPubSubReactiveScheduler = Schedulers.newElastic("pubSubReactiveScheduler");
+			scheduler = this.defaultPubSubReactiveScheduler;
+		}
 		return new PubSubReactiveFactory(subscriberTemplate, scheduler);
+	}
+
+	@PreDestroy
+	public void closeScheduler() {
+		if (this.defaultPubSubReactiveScheduler != null) {
+			this.defaultPubSubReactiveScheduler.dispose();
+		}
 	}
 
 }
