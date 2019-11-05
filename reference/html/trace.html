@@ -314,8 +314,21 @@ Read <a href="https://cloud.spring.io/spring-cloud-sleuth/">Sleuth documentation
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
-spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.</code></pre>
+spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
+spring.sleuth.scheduled.enabled=false                   # disable executor 'async' traces</code></pre>
 </div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which causes many traces with the name <code>async</code> to appear in Stackdriver Trace. This is especially a problem because our starter comes with an executor. To avoid this noise, please disable automatic instrumentation of executors via <code>spring.sleuth.scheduled.enabled=false</code> in your application configuration.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Spring Cloud GCP Trace does override some Sleuth configurations:</p>
