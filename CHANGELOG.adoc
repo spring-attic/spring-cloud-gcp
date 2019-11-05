@@ -45,9 +45,13 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * PubsubTemplate publish to topics in other projects (#1678)
 * PubsubTemplate subscribe in other projects (#1880)
 * Reactive support for Pub/Sub subscription (#1461)
-* add keepalive property to pubsub (#1807)
 * Spring Integration - Pollable Message Source (using Pub/Sub Synchronous Pull) (#1321)
 * Pubsub stream binder via synchronous pull (#1419)
+* Add keepalive property to pubsub; set default at 5 minutes (#1807)
+* Change thread pools to create daemon threads that do not prevent JVM shutdown (#2010)
+** This is a change in behavior for non-web applications that subscribe to a Cloud Pub/Sub topic.
+The subscription threads used to keep the application alive, but will now allow the application to shut down if no other work needs to be done.
+
 
 === IAP
 
