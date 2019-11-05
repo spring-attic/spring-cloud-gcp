@@ -931,6 +931,20 @@ The subscription name could either be a canonical subscription name within the c
 </tr>
 </tbody>
 </table>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As of version 1.2, subscribing by itself is not enough to keep an application running.
+For a command-line application, you may want to provide your own <code>ThreadPoolTaskScheduler</code> bean named <code>pubsubSubscriberThreadPool</code>, which by default creates non-daemon threads that will keep an application from stopping.
+This default behavior has been overridden in Spring Cloud GCP for consistency with Cloud Pub/Sub client library, and to avoid holding up command-line applications that would like to shut down once their work is done.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect3">
