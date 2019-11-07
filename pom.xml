@@ -50,9 +50,7 @@
 		<spring-cloud-commons.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-sleuth.version>2.2.0.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Horsham.BUILD-SNAPSHOT</spring-cloud-stream.version>
-		<zipkin-gcp.version>0.14.0</zipkin-gcp.version>
-		<!-- this is a temporary workaround until we upgrade to the latest zipkin-sender-stackdriver -->
-		<brave.version>5.7.0</brave.version>
+		<zipkin-gcp.version>0.15.2</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 		<kotlin.version>1.3.31</kotlin.version>
 	</properties>
@@ -133,12 +131,6 @@
 						<artifactId>brave</artifactId>
 					</exclusion>
 				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>io.zipkin.brave</groupId>
-				<artifactId>brave</artifactId>
-				<version>${brave.version}</version>
 			</dependency>
 
 		</dependencies>
