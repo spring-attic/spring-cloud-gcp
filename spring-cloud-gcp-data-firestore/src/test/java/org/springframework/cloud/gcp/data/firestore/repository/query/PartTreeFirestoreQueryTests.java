@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.firestore.repository.query;
 
 import java.util.function.Consumer;
 
-import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.StructuredQuery;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;

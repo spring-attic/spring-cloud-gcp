@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.google.cloud.firestore.PublicClassMapper;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -43,6 +42,7 @@ import reactor.util.context.Context;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
+import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreResourceHolder;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.cloud.gcp.data.firestore.util.Util;

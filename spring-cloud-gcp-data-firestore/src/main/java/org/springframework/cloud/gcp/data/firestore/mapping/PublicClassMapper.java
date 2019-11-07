@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.google.cloud.firestore;
+package org.springframework.cloud.gcp.data.firestore.mapping;
 
 import java.util.Map;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.Internal;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.Value;
 
@@ -34,7 +37,7 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
 public final class PublicClassMapper {
 
 	private static final Internal INTERNAL = new Internal(
-			new FirestoreImpl(FirestoreOptions.newBuilder().setProjectId("dummy-project-id").build(), null));
+			FirestoreOptions.newBuilder().setProjectId("dummy-project-id").build(), null);
 
 	private static final String VALUE_FIELD_NAME = "value";
 
