@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -103,7 +106,10 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 			@Override
 			public void onFailure(Throwable throwable) {
 				LOGGER.warn("Publishing to " + topic + " topic failed.", throwable);
-				settableFuture.setException(throwable);
+				Message<?> originalMessage = MessageBuilder.withPayload(pubsubMessage).build();
+				MessageHandlingException messageHandlingException = new MessageHandlingException(
+						originalMessage, throwable);
+				settableFuture.setException(messageHandlingException);
 			}
 
 			@Override
