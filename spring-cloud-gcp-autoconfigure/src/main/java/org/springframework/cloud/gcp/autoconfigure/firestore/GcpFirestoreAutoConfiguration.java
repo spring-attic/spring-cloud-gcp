@@ -22,6 +22,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.spi.v1.FirestoreRpc;
 import com.google.firestore.v1.FirestoreGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -37,6 +38,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.data.firestore.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
@@ -122,14 +124,22 @@ public class GcpFirestoreAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public FirestoreMappingContext firestoreMappingContext() {
-			return new FirestoreMappingContext();
+		public FirestoreMappingContext firestoreMappingContext(FirestoreClassMapper mapper) {
+			return new FirestoreMappingContext(mapper);
 		}
 
 		@Bean
 		@ConditionalOnMissingBean
-		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath);
+		public FirestoreClassMapper firestoreClassMapper(FirestoreOptions firestoreOptions, Firestore firestore) {
+			return new FirestoreClassMapper(firestoreOptions, (FirestoreRpc) firestoreOptions.getRpc());
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreTemplate firestoreTemplate(
+				FirestoreGrpc.FirestoreStub firestoreStub, FirestoreClassMapper classMapper) {
+			return new FirestoreTemplate(
+					firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath, classMapper);
 		}
 
 		@Bean

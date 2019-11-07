@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
 
+import org.springframework.cloud.gcp.data.firestore.FirestoreClassMapper;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.model.Property;
@@ -35,6 +36,12 @@ public class FirestoreMappingContext extends
 		AbstractMappingContext<FirestorePersistentEntity<?>, FirestorePersistentProperty>
 		implements ApplicationContextAware {
 
+	private FirestoreClassMapper firestoreClassMapper;
+
+	public FirestoreMappingContext(FirestoreClassMapper classMapper) {
+		this.firestoreClassMapper = classMapper;
+	}
+
 	@Override
 	protected <T> FirestorePersistentEntity<?> createPersistentEntity(TypeInformation<T> typeInformation) {
 		return new FirestorePersistentEntityImpl<>(typeInformation);
@@ -44,5 +51,9 @@ public class FirestoreMappingContext extends
 	protected FirestorePersistentProperty createPersistentProperty(Property property,
 			FirestorePersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 		return new FirestorePersistentPropertyImpl(property, owner, simpleTypeHolder);
+	}
+
+	public FirestoreClassMapper getClassMapper() {
+		return this.firestoreClassMapper;
 	}
 }

@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.firestore.transaction;
 
 import java.time.Duration;
 
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.spi.v1.FirestoreRpc;
 import com.google.firestore.v1.BeginTransactionResponse;
 import com.google.firestore.v1.CommitRequest;
 import com.google.firestore.v1.CommitResponse;
@@ -28,10 +30,12 @@ import com.google.firestore.v1.RollbackRequest;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import org.springframework.cloud.gcp.data.firestore.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplateTests;
@@ -43,6 +47,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 public class ReactiveFirestoreTransactionManagerTest {
@@ -50,6 +55,19 @@ public class ReactiveFirestoreTransactionManagerTest {
 	private final FirestoreGrpc.FirestoreStub firestoreStub = mock(FirestoreGrpc.FirestoreStub.class);
 
 	private final String parent = "projects/my-project/databases/(default)/documents";
+
+	private FirestoreOptions mockFirestoreOptions = mock(FirestoreOptions.class);
+
+	private FirestoreRpc mockFirestoreRpc = mock(FirestoreRpc.class);
+
+	FirestoreClassMapper classMapper;
+
+	@Before
+	public void setUp() {
+		when(mockFirestoreOptions.getProjectId()).thenReturn("fake-project");
+		when(mockFirestoreOptions.getDatabaseId()).thenReturn("fake-db");
+		this.classMapper  = new FirestoreClassMapper(mockFirestoreOptions, mockFirestoreRpc);
+	}
 
 	@Test
 	public void triggerCommitCorrectly() {
@@ -196,7 +214,7 @@ public class ReactiveFirestoreTransactionManagerTest {
 		}).when(this.firestoreStub).getDocument(any(), any());
 
 
-		FirestoreTemplate template = new FirestoreTemplate(this.firestoreStub, this.parent);
+		FirestoreTemplate template = new FirestoreTemplate(this.firestoreStub, this.parent, this.classMapper);
 
 		StepVerifier.setDefaultTimeout(Duration.ofSeconds(5));
 		return template;

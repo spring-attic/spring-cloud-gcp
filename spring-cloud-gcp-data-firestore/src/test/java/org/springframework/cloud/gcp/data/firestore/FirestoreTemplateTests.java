@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.spi.v1.FirestoreRpc;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
@@ -41,6 +43,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Dmitry Solomakha
@@ -54,9 +57,19 @@ public class FirestoreTemplateTests {
 
 	private static final String parent = "projects/my-project/databases/(default)/documents";
 
+	private FirestoreOptions mockFirestoreOptions = mock(FirestoreOptions.class);
+
+	private FirestoreRpc mockFirestoreRpc = mock(FirestoreRpc.class);
+
+	FirestoreClassMapper classMapper;
+
 	@Before
 	public void setup() {
-		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
+		when(mockFirestoreOptions.getProjectId()).thenReturn("fake-project");
+		when(mockFirestoreOptions.getDatabaseId()).thenReturn("fake-db");
+		this.classMapper  = new FirestoreClassMapper(mockFirestoreOptions, mockFirestoreRpc);
+
+		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent, this.classMapper);
 	}
 
 	@Test

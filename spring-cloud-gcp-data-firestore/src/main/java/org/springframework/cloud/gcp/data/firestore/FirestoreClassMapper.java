@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package com.google.cloud.firestore;
+package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Map;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.Internal;
+import com.google.cloud.firestore.spi.v1.FirestoreRpc;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.Value;
 
@@ -26,36 +30,36 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
 
 /**
  *
- * Temporary class to expose package-private methods, will be removed in the future.
+ * TBD.
  *
  * @author Dmitry Solomakha
  *
  */
-public final class PublicClassMapper {
+public final class FirestoreClassMapper {
 
-	private static final Internal INTERNAL = new Internal(
-			new FirestoreImpl(FirestoreOptions.newBuilder().setProjectId("dummy-project-id").build(), null));
+	private final Internal delegate;
 
 	private static final String VALUE_FIELD_NAME = "value";
 
 	private static final String NOT_USED_PATH = "/not/used/path";
 
-	private PublicClassMapper() {
+	public FirestoreClassMapper(FirestoreOptions firestoreOptions, FirestoreRpc firestoreRpc) {
+		this.delegate = new Internal(firestoreOptions, firestoreRpc);
 	}
 
-	public static <T> Value convertToFirestoreValue(T entity) {
-		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromMap(NOT_USED_PATH,
+	public <T> Value convertToFirestoreValue(T entity) {
+		DocumentSnapshot documentSnapshot = this.delegate.snapshotFromMap(NOT_USED_PATH,
 				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, entity).build());
-		return INTERNAL.protoFromSnapshot(documentSnapshot).get(VALUE_FIELD_NAME);
+		return this.delegate.protoFromSnapshot(documentSnapshot).get(VALUE_FIELD_NAME);
 	}
 
-	public static <T> Map<String, Value> convertToFirestoreTypes(T entity) {
-		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
-		return INTERNAL.protoFromSnapshot(documentSnapshot);
+	public <T> Map<String, Value> convertToFirestoreTypes(T entity) {
+		DocumentSnapshot documentSnapshot = this.delegate.snapshotFromObject(NOT_USED_PATH, entity);
+		return this.delegate.protoFromSnapshot(documentSnapshot);
 	}
 
-	public static <T> T convertToCustomClass(Document document, Class<T> clazz) {
-		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
+	public <T> T convertToCustomClass(Document document, Class<T> clazz) {
+		DocumentSnapshot documentSnapshot = this.delegate.snapshotFromProto(Timestamp.now(), document);
 		return documentSnapshot.toObject(clazz);
 	}
 }

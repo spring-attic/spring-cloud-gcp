@@ -18,7 +18,10 @@ package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
 
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.cloud.firestore.spi.v1.FirestoreRpc;
 import com.google.firestore.v1.FirestoreGrpc;
 import io.grpc.CallCredentials;
 import io.grpc.ManagedChannel;
@@ -27,6 +30,7 @@ import io.grpc.auth.MoreCallCredentials;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.gcp.data.firestore.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
@@ -45,6 +49,11 @@ public class FirestoreIntegrationTestsConfiguration {
 	@Value("projects/${test.integration.firestore.project-id}/databases/(default)/documents")
 	String defaultParent;
 
+	@Value("${test.integration.firestore.project-id}")
+	String projectId;
+
+	String hostPort = "firestore.googleapis.com:443";
+
 	@Bean
 	FirestoreGrpc.FirestoreStub firestoreStub()  throws IOException {
 		GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
@@ -58,14 +67,28 @@ public class FirestoreIntegrationTestsConfiguration {
 	}
 
 	@Bean
-	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-
-		return new FirestoreTemplate(firestoreStub, this.defaultParent);
+	public FirestoreClassMapper firestoreClassMapper() {
+		FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+				.setCredentialsProvider(() -> GoogleCredentials.getApplicationDefault())
+				.setProjectId(this.projectId)
+				.setChannelProvider(
+						InstantiatingGrpcChannelProvider.newBuilder()
+								.setEndpoint(this.hostPort)
+								.build())
+				.build();
+		return new FirestoreClassMapper(firestoreOptions, (FirestoreRpc) firestoreOptions.getRpc());
 	}
 
 	@Bean
-	public FirestoreMappingContext firestoreMappingContext() {
-		return new FirestoreMappingContext();
+	public FirestoreTemplate firestoreTemplate(
+			FirestoreGrpc.FirestoreStub firestoreStub, FirestoreClassMapper classMapper) {
+
+		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper);
+	}
+
+	@Bean
+	public FirestoreMappingContext firestoreMappingContext(FirestoreClassMapper classMapper) {
+		return new FirestoreMappingContext(classMapper);
 	}
 
 	@Bean
