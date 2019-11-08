@@ -41,5 +41,11 @@ public class PubSubDeliveryException extends PubSubException {
 	public PubsubMessage getFailedMessage() {
 		return this.failedMessage;
 	}
-	
+
+	@Override
+	public String toString() {
+
+		return super.toString() + (this.failedMessage == null ? ""
+				: (", failedMessage=" + this.failedMessage));
+	}
 }
