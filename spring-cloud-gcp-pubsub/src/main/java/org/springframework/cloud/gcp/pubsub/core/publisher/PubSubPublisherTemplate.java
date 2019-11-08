@@ -25,12 +25,10 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubDeliveryException;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -44,6 +42,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author SateeshKumar Kota
  *
  * @since 1.1
  */
@@ -106,10 +105,8 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 			@Override
 			public void onFailure(Throwable throwable) {
 				LOGGER.warn("Publishing to " + topic + " topic failed.", throwable);
-				Message<?> originalMessage = MessageBuilder.withPayload(pubsubMessage).build();
-				MessageHandlingException messageHandlingException = new MessageHandlingException(
-						originalMessage, throwable);
-				settableFuture.setException(messageHandlingException);
+				PubSubDeliveryException pubSubDeliveryException = new PubSubDeliveryException(pubsubMessage, throwable);
+				settableFuture.setException(pubSubDeliveryException);
 			}
 
 			@Override

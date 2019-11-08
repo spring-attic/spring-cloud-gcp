@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Doug Hoard
  * @author Mike Eltsufin
+ * @author SateeshKumar Kota
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
