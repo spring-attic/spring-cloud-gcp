@@ -33,44 +33,13 @@ public class PubSubDeliveryException extends PubSubException {
 	@Nullable
 	private final PubsubMessage failedMessage;
 
-	public PubSubDeliveryException(PubsubMessage pubsubMessage) {
-		super(null, null);
-		this.failedMessage = pubsubMessage;
-	}
-
-	public PubSubDeliveryException(String description) {
-		super(description);
-		this.failedMessage = null;
-	}
-
-	public PubSubDeliveryException(@Nullable String description, @Nullable Throwable cause) {
-		super(description, cause);
-		this.failedMessage = null;
-	}
-
-	public PubSubDeliveryException(PubsubMessage pubsubMessage, String description) {
-		super(description);
-		this.failedMessage = pubsubMessage;
-	}
-
 	public PubSubDeliveryException(PubsubMessage pubsubMessage, Throwable cause) {
 		super(null, cause);
-		this.failedMessage = pubsubMessage;
-	}
-
-	public PubSubDeliveryException(PubsubMessage pubsubMessage, @Nullable String description, @Nullable Throwable cause) {
-		super(description, cause);
 		this.failedMessage = pubsubMessage;
 	}
 
 	public PubsubMessage getFailedMessage() {
 		return this.failedMessage;
 	}
-
-	@Override
-	public String toString() {
-
-		return super.toString() + (this.failedMessage == null ? ""
-				: (", failedMessage=" + this.failedMessage));
-	}
+	
 }
