@@ -145,18 +145,18 @@ public class WebController {
 		return buildStatusView("Subscribed.");
 	}
 
-	@PostMapping("/deleteTopic")
-	public RedirectView deleteTopic(@RequestParam("topic") String topicName) {
-		this.pubSubAdmin.deleteTopic(topicName);
-
-		return buildStatusView("Topic deleted successfully.");
-	}
-
 	@PostMapping("/deleteSubscription")
 	public RedirectView deleteSubscription(@RequestParam("subscription") String subscriptionName) {
 		this.pubSubAdmin.deleteSubscription(subscriptionName);
 
 		return buildStatusView("Subscription deleted successfully.");
+	}
+
+	@PostMapping("/deleteTopic")
+	public RedirectView deleteTopic(@RequestParam("topic") String topicName) {
+		this.pubSubAdmin.deleteTopic(topicName);
+
+		return buildStatusView("Topic deleted successfully.");
 	}
 
 	private RedirectView buildStatusView(String statusMessage) {
