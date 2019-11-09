@@ -206,8 +206,9 @@ public class PubSubTemplateTests {
 	public void testPublish_onFailureWithPayload() {
 		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
 		this.settableApiFuture.setException(new Exception("Publish failed"));
-		assertThatThrownBy(() -> future.get()).isInstanceOf(ExecutionException.class).hasMessageContaining("permanating")
+		assertThatThrownBy(() -> future.get()).isInstanceOf(ExecutionException.class).hasCauseInstanceOf(PubSubDeliveryException.class)
 				.hasMessageContaining("Publish failed");
+
 	}
 
 	@Test

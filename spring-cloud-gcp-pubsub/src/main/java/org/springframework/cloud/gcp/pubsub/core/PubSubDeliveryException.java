@@ -33,8 +33,8 @@ public class PubSubDeliveryException extends PubSubException {
 	@Nullable
 	private final PubsubMessage failedMessage;
 
-	public PubSubDeliveryException(PubsubMessage pubsubMessage, Throwable cause) {
-		super(null, cause);
+	public PubSubDeliveryException(PubsubMessage pubsubMessage, String description, Throwable cause) {
+		super(description, cause);
 		this.failedMessage = pubsubMessage;
 	}
 
@@ -42,10 +42,4 @@ public class PubSubDeliveryException extends PubSubException {
 		return this.failedMessage;
 	}
 
-	@Override
-	public String toString() {
-
-		return super.toString() + (this.failedMessage == null ? ""
-				: (", failedMessage=" + this.failedMessage));
-	}
 }
