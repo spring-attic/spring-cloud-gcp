@@ -104,8 +104,9 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 
 			@Override
 			public void onFailure(Throwable throwable) {
-				LOGGER.warn("Publishing to " + topic + " topic failed.", throwable);
-				PubSubDeliveryException pubSubDeliveryException = new PubSubDeliveryException(pubsubMessage, throwable.getMessage(), throwable);
+				String errorMessage = "Publishing to " + topic + " topic failed.";
+				LOGGER.warn(errorMessage, throwable);
+				PubSubDeliveryException pubSubDeliveryException = new PubSubDeliveryException(pubsubMessage, errorMessage, throwable);
 				settableFuture.setException(pubSubDeliveryException);
 			}
 
