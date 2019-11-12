@@ -83,7 +83,7 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 import org.springframework.data.annotation.Id;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
 
 ----
 
@@ -103,7 +103,7 @@ For example:
 [source,java]
 ----
 
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]
 
 ----
 
@@ -115,9 +115,9 @@ The `User` type parameter to `FirestoreReactiveRepository` refers to the underly
 ----
 public class MyApplication {
 
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
 
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
 }
 
 ----
@@ -131,7 +131,7 @@ NOTE: Custom queries with `@Query` annotation are not supported since there is n
 [source, java]
 ----
 public class MyApplication {
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
 }
 ----
 
@@ -155,7 +155,7 @@ In order to use it, you would need to autowire `ReactiveFirestoreTransactionMana
 [source, java]
 ----
 public class MyApplication {
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_tx_manager]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_tx_manager]
 }
 ----
 
@@ -164,14 +164,14 @@ Note that you can switch between read-only and read-write transactions using `Tr
 
 [source, java, indent=0]
 ----
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
 ----
 
 When you have an instance of  `TransactionalOperator`, you can execute a sequence of Firestore operations in a transaction using `operator::transactional`:
 
 [source, java, indent=0]
 ----
-include::../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_operations_in_a_transaction]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_operations_in_a_transaction]
 ----
 
 NOTE: Read operations in a transaction can only happen before write operations.
@@ -221,9 +221,9 @@ The starter automatically configures and registers a `Firestore` bean in the Spr
  @Autowired
  Firestore firestore;
 
-include::../../src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
 
-include::../../src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
+include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
 ----
 
 ==== Sample
