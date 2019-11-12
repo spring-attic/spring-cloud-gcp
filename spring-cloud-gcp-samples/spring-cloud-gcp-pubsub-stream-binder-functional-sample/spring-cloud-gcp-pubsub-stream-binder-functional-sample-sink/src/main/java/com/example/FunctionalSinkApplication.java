@@ -31,6 +31,8 @@ public class FunctionalSinkApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(FunctionalSinkApplication.class, args);
+		System.out.println("Hit 'Enter' to terminate");
+		System.in.read();
 	}
 
 }
