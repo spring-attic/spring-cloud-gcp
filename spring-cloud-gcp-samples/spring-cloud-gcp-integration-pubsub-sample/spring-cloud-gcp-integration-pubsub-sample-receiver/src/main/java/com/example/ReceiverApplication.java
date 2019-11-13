@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,8 +50,10 @@ public class ReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		SpringApplication.run(ReceiverApplication.class, args);
+		System.out.println("Hit 'Enter' to terminate");
+		System.in.read();
 	}
 
 	@Bean
