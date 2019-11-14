@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -166,6 +167,8 @@ public class FirestoreRepositoryIntegrationTests {
 
 	@Test
 	public void declarativeTransactionRollbackTest() {
+		reset(this.transactionManager);
+
 		this.userService.deleteUsers().onErrorResume(throwable -> Mono.empty()).block();
 
 		verify(this.transactionManager, times(0)).commit(any());
@@ -177,6 +180,8 @@ public class FirestoreRepositoryIntegrationTests {
 	public void declarativeTransactionCommitTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
+
+		reset(this.transactionManager);
 
 		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
 

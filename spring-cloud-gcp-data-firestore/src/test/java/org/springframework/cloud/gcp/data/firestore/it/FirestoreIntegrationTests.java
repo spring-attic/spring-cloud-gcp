@@ -42,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -91,6 +92,8 @@ public class FirestoreIntegrationTests {
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(false);
 		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+
+		reset(this.txManager);
 
 		// test rollback
 		this.firestoreTemplate.saveAll(Mono.defer(() -> {
