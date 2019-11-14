@@ -25,6 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
@@ -38,6 +39,9 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
@@ -51,6 +55,14 @@ public class FirestoreRepositoryIntegrationTests {
 	@Autowired
 	ReactiveFirestoreTransactionManager txManager;
 	//end::autowire_tx_manager[]
+
+	//tag::autowire_user_service[]
+	@Autowired
+	UserService userService;
+	//end::autowire_user_service[]
+
+	@Autowired
+	ReactiveFirestoreTransactionManager transactionManager;
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
@@ -124,7 +136,7 @@ public class FirestoreRepositoryIntegrationTests {
 	public void partTreeRepositoryMethodTest() {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
-		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
 
 		this.userRepository.saveAll(users).blockLast();
 
@@ -150,5 +162,31 @@ public class FirestoreRepositoryIntegrationTests {
 				.block();
 
 		assertThat(pagedUsers).containsExactlyInAnyOrder("blah-person5", "blah-person6");
+	}
+
+	@Test
+	public void declarativeTransactionRollbackTest() {
+		this.userService.deleteUsers().onErrorResume(throwable -> Mono.empty()).block();
+
+		verify(this.transactionManager, times(0)).commit(any());
+		verify(this.transactionManager, times(1)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+	}
+
+	@Test
+	public void declarativeTransactionCommitTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
+
+		this.userService.updateUsers().block();
+
+		verify(this.transactionManager, times(1)).commit(any());
+		verify(this.transactionManager, times(0)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
 	}
 }
