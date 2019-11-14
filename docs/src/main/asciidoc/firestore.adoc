@@ -181,7 +181,6 @@ If an `Exception` is thrown within a transaction, the rollback operation is exec
 Otherwise, the commit operation is executed.
 
 ===== Declarative Transactions with @Transactional Annotation
-
 In order to use this feature you would need to do the following.
 
 . Annotate your configuration class with the @EnableTransactionManagement annotation.
@@ -190,27 +189,26 @@ In order to use this feature you would need to do the following.
 
 [source, java, indent=0]
 ----
-include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserService.java[tag=user_service]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserService.java[tag=user_service]
 ----
 
-[start=2]
-. Make a Spring managed bean that represents an instance of that class:
+[start=3]
+. Make a Spring Bean provider that creates an instance of that class:
 
 [source, java, indent=0]
 ----
-include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTestsConfiguration.java[tag=user_service_bean]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTestsConfiguration.java[tag=user_service_bean]
 ----
 
 After that, you can autowire your service like so:
 [source, java]
 ----
 public class MyApplication {
-include::../../../../spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_user_service]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_user_service]
 }
 ----
 
-Now when you call the methods annotated with @Transactional on your service object, a transaction will be automatically started.
-If an error occurs during the execution, the transaction will be rolled back.
+Now when you call the methods annotated with @Transactional on your service object, a transaction will be automatically started. If an error occurs during the execution, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
 === Reactive Repository Sample
