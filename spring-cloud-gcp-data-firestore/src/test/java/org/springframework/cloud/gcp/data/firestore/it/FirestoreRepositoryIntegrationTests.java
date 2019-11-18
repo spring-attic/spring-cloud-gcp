@@ -75,6 +75,7 @@ public class FirestoreRepositoryIntegrationTests {
 	@Before
 	public void cleanTestEnvironment() {
 		this.userRepository.deleteAll().block();
+		reset(this.transactionManager);
 	}
 
 	@Test
@@ -167,8 +168,6 @@ public class FirestoreRepositoryIntegrationTests {
 
 	@Test
 	public void declarativeTransactionRollbackTest() {
-		reset(this.transactionManager);
-
 		this.userService.deleteUsers().onErrorResume(throwable -> Mono.empty()).block();
 
 		verify(this.transactionManager, times(0)).commit(any());
@@ -180,8 +179,6 @@ public class FirestoreRepositoryIntegrationTests {
 	public void declarativeTransactionCommitTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
-
-		reset(this.transactionManager);
 
 		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
 
@@ -199,8 +196,6 @@ public class FirestoreRepositoryIntegrationTests {
 	public void transactionPropagationTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
-
-		reset(this.transactionManager);
 
 		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
 
