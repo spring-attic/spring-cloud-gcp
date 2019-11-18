@@ -84,14 +84,22 @@ public class FirestoreIntegrationTests {
 		User bob = new User("Bob", 60);
 
 
-		this.firestoreTemplate.save(alice).then(this.firestoreTemplate.save(bob)).block();
+		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+		transactionDefinition.setReadOnly(false);
+		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+
+		reset(this.txManager);
+
+		this.firestoreTemplate.save(alice).then(this.firestoreTemplate.save(bob))
+				.as(operator::transactional)
+				.block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
 				.containsExactlyInAnyOrder(bob, alice);
 
-		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
-		transactionDefinition.setReadOnly(false);
-		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+		verify(this.txManager, times(1)).commit(any());
+		verify(this.txManager, times(0)).rollback(any());
+		verify(this.txManager, times(1)).getReactiveTransaction(any());
 
 		reset(this.txManager);
 

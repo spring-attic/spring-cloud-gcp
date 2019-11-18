@@ -181,7 +181,13 @@ If an `Exception` is thrown within a transaction, the rollback operation is exec
 Otherwise, the commit operation is executed.
 
 ===== Declarative Transactions with @Transactional Annotation
-In order to use this feature you would need to do the following.
+
+This feature requires a bean of `SpannerTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-firestore`.
+
+`FirestoreTemplate` and `FirestoreReactiveRepository` support running methods with the `@Transactional` https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative[annotation] as transactions.
+If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
+
+One way to use this feature is illustrated here. You would need to do the following:
 
 . Annotate your configuration class with the @EnableTransactionManagement annotation.
 
@@ -208,7 +214,8 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 }
 ----
 
-Now when you call the methods annotated with @Transactional on your service object, a transaction will be automatically started. If an error occurs during the execution, the transaction will be rolled back. 
+Now when you call the methods annotated with @Transactional on your service object, a transaction will be automatically started. 
+If an error occurs during the execution, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
 === Reactive Repository Sample

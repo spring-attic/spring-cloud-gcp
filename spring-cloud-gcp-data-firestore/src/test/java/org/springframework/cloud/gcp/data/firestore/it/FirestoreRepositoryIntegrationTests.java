@@ -194,4 +194,23 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
 				.containsExactlyInAnyOrder(28, 59);
 	}
+
+	@Test
+	public void transactionPropagationTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		reset(this.transactionManager);
+
+		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
+
+		this.userService.updateUsersTransactionPropagation().block();
+
+		verify(this.transactionManager, times(1)).commit(any());
+		verify(this.transactionManager, times(0)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
+	}
 }

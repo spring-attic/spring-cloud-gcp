@@ -77,7 +77,8 @@ public class FirestoreIntegrationTestsConfiguration {
 			FirestoreGrpc.FirestoreStub firestoreStub) {
 		return Mockito.spy(new ReactiveFirestoreTransactionManager(firestoreStub, this.defaultParent));
 	}
-//tag::user_service_bean[]
+
+	//tag::user_service_bean[]
 	@Bean
 	public UserService userService() {
 		return new UserService();

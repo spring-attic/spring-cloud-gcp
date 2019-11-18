@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.data.firestore.it;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
+import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -32,6 +34,21 @@ class UserService {
 	private UserRepository userRepository;
 
 	//end::user_service[]
+	@Transactional
+	public Mono<Void> updateUsersTransactionPropagation() {
+		return findAll()
+				.flatMap(a -> {
+					a.setAge(a.getAge() - 1);
+					return this.userRepository.save(a);
+				})
+				.then();
+	}
+
+	@Transactional
+	private Flux<User> findAll() {
+		return this.userRepository.findAll();
+	}
+
 	@Transactional
 	public Mono<Void> deleteUsers() {
 		return this.userRepository.saveAll(Mono.defer(() -> {
