@@ -485,7 +485,6 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey(keyOrder = 2)
 		Long id2;
 
-
 		@PrimaryKey(keyOrder = 3)
 		Double id3;
 	}

@@ -28,6 +28,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  * @author Chengyuan Zhao
  */
 @RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
+//TODO: switch back to String id when this issue is fixed: https://github.com/spring-cloud/spring-cloud-gcp/issues/2049
 public interface TraderRepository extends SpannerRepository<Trader, Key> {
 
 }

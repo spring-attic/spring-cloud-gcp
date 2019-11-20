@@ -75,7 +75,7 @@ public interface SpannerPersistentEntity<T> extends
 	 * more persistent properties.
 	 * @return a SpannerEntityWriter.
 	 */
-	SpannerEntityWriter getSpannerEntityWriter();
+	SpannerEntityWriter getSpannerEntityProcessor();
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();
