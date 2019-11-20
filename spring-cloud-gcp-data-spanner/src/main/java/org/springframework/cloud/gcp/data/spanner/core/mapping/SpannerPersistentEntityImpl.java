@@ -25,10 +25,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityWriter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerReadConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -85,6 +88,9 @@ public class SpannerPersistentEntityImpl<T>
 	private SpannerCompositeKeyProperty idProperty;
 
 	private String tableName;
+
+	private SpannerReadConverter readConverter = new SpannerReadConverter();
+
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}.
@@ -379,9 +385,22 @@ public class SpannerPersistentEntityImpl<T>
 			public void setProperty(PersistentProperty property,
 					@Nullable Object value) {
 				if (property.isIdProperty()) {
-					throw new SpannerDataException(
-							"Setting the primary key directly via the Key ID property is not supported. "
-									+ "Please set the underlying column properties.");
+					SpannerPersistentEntity owner = (SpannerPersistentEntity) property.getOwner();
+					SpannerPersistentProperty[] primaryKeyProperties = owner.getPrimaryKeyProperties();
+
+					Key keyValue = (Key) value;
+					ArrayList<Object> keyParts = new ArrayList<>();
+					keyValue.getParts().forEach(keyParts::add);
+					if (keyParts.size() != primaryKeyProperties.length) {
+						throw new SpannerDataException(
+								"The number of key parts is not equal to the number of primary key properties");
+					}
+					for (int i = 0; i < primaryKeyProperties.length; i++) {
+						SpannerPersistentProperty prop = primaryKeyProperties[i];
+						delegatedAccessor.setProperty(prop,
+								SpannerPersistentEntityImpl.this.readConverter.convert(keyParts.get(i),
+										prop.getType()));
+					}
 				}
 				else {
 					delegatedAccessor.setProperty(property, value);

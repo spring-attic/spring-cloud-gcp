@@ -16,6 +16,8 @@
 
 package com.example;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
@@ -26,6 +28,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  * @author Chengyuan Zhao
  */
 @RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
-public interface TraderRepository extends SpannerRepository<Trader, String> {
+public interface TraderRepository extends SpannerRepository<Trader, Key> {
 
 }
