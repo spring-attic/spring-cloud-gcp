@@ -104,8 +104,8 @@ public class SpannerPersistentEntityImpl<T>
 	 * @param information type information about the underlying entity type.
 	 * @param spannerMappingContext a mapping context that can be used to create persistent
 	 *     entities from properties of this entity
-	 * @param spannerEntityProcessor an entity writer used to create keys by converting and
-	 *     combining id properties.
+	 * @param spannerEntityProcessor an entity processor used to create keys by converting and
+	 *     combining id properties, as well as to convert keys to property values
 	 */
 	public SpannerPersistentEntityImpl(TypeInformation<T> information,
 			SpannerMappingContext spannerMappingContext, SpannerEntityProcessor spannerEntityProcessor) {
