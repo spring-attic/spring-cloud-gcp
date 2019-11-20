@@ -113,7 +113,7 @@ public class SpannerPersistentEntityImpl<T>
 
 		Assert.notNull(spannerMappingContext,
 				"A non-null SpannerMappingContext is required.");
-		Assert.notNull(spannerEntityProcessor, "A non-null SpannerEntityWriter is required.");
+		Assert.notNull(spannerEntityProcessor, "A non-null SpannerEntityProcessor is required.");
 
 		this.spannerMappingContext = spannerMappingContext;
 
