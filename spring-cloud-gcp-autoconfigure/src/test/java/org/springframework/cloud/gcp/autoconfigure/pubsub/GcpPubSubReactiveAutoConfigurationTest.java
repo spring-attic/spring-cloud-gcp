@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.util.Arrays;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +32,9 @@ import reactor.test.StepVerifier;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.reactive.PubSubReactiveFactory;
@@ -40,6 +44,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -59,6 +64,43 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 		this.mockSubscriberTemplate = Mockito.mock(PubSubSubscriberTemplate.class);
 		this.mockMessage = Mockito.mock(AcknowledgeablePubsubMessage.class);
 
+	}
+
+	@Test
+	public void reactiveFactoryAutoconfiguredByDefault() {
+
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(TestConfig.class));
+		contextRunner.run(ctx -> {
+			assertThat(ctx.containsBean("pubSubReactiveFactory")).isTrue();
+		});
+	}
+
+	@Test
+	public void reactiveConfigDisabledWhenPubSubDisabled() {
+
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(TestConfig.class))
+				.withPropertyValues("spring.cloud.gcp.pubsub.enabled=false");
+
+		contextRunner.run(ctx -> {
+			assertThat(ctx.containsBean("pubSubReactiveFactory")).isFalse();
+		});
+	}
+
+	@Test
+	public void reactiveConfigDisabledWhenReactivePubSubDisabled() {
+
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(TestConfig.class))
+				.withPropertyValues("spring.cloud.gcp.pubsub.reactive.enabled=false");
+
+		contextRunner.run(ctx -> {
+			assertThat(ctx.containsBean("pubSubReactiveFactory")).isFalse();
+		});
 	}
 
 	@Test
@@ -117,6 +159,20 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 		@Qualifier("pubSubReactiveScheduler")
 		public Scheduler customScheduler() {
 			return Schedulers.newSingle("myCustomScheduler");
+		}
+	}
+
+	@Configuration
+	@ImportAutoConfiguration({GcpPubSubReactiveAutoConfiguration.class, GcpPubSubAutoConfiguration.class})
+	static class TestConfig {
+		@Bean
+		public GcpProjectIdProvider projectIdProvider() {
+			return () -> "fake project";
+		}
+
+		@Bean
+		public CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
 		}
 	}
 
