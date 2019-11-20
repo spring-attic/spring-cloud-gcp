@@ -120,7 +120,7 @@ public class SpannerRepositoryTests {
 				String.format("http://localhost:%s/traders/t123", this.port),
 				HttpMethod.PUT,
 				new HttpEntity<>("{\"firstName\": \"John\", \"lastName\": \"Smith\"}", headers),
-				new ParameterizedTypeReference<Trader>() {});
+				new ParameterizedTypeReference<Trader>() { });
 
 		Trader expected = new Trader("t123", "John", "Smith");
 		assertThat(tradesResponse.getBody()).isEqualTo(expected);
