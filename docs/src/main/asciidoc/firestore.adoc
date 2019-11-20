@@ -189,9 +189,9 @@ If a method annotated with `@Transactional` calls another method also annotated,
 
 One way to use this feature is illustrated here. You would need to do the following:
 
-. Annotate your configuration class with the @EnableTransactionManagement annotation.
+. Annotate your configuration class with the `@EnableTransactionManagement` annotation.
 
-. Create a service class:
+. Create a service class that has methods annotated with `@Transactional`:
 
 [source, java, indent=0]
 ----
@@ -214,8 +214,8 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 }
 ----
 
-Now when you call the methods annotated with @Transactional on your service object, a transaction will be automatically started. 
-If an error occurs during the execution, the transaction will be rolled back. 
+Now when you call the methods annotated with `@Transactional` on your service object, a transaction will be automatically started. 
+If an error occurs during the execution of a method annotated with `@Transactional`, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
 === Reactive Repository Sample
