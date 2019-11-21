@@ -7658,7 +7658,7 @@ Custom queries with <code>@Query</code> annotation are not supported since there
     public void partTreeRepositoryMethodTest() {
         User u1 = new User("Cloud", 22);
         User u2 = new User("Squall", 17);
-        Flux&lt;User&gt; users = Flux.fromArray(new User[] { u1, u2 });
+        Flux&lt;User&gt; users = Flux.fromArray(new User[] {u1, u2});
 
         this.userRepository.saveAll(users).blockLast();
 
@@ -7768,6 +7768,78 @@ Otherwise, the commit operation is executed.
 </td>
 </tr>
 </table>
+</div>
+<div class="sect4">
+<h5 id="declarative-transactions-with-transactional-annotation-3"><a class="anchor" href="#declarative-transactions-with-transactional-annotation-3"></a><a class="link" href="#declarative-transactions-with-transactional-annotation-3">Declarative Transactions with @Transactional Annotation</a></h5>
+<div class="paragraph">
+<p>This feature requires a bean of <code>SpannerTransactionManager</code>, which is provided when using <code>spring-cloud-gcp-starter-data-firestore</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>FirestoreTemplate</code> and <code>FirestoreReactiveRepository</code> support running methods with the <code>@Transactional</code> <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative">annotation</a> as transactions.
+If a method annotated with <code>@Transactional</code> calls another method also annotated, then both methods will work within the same transaction.</p>
+</div>
+<div class="paragraph">
+<p>One way to use this feature is illustrated here. You would need to do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Annotate your configuration class with the <code>@EnableTransactionManagement</code> annotation.</p>
+</li>
+<li>
+<p>Create a service class that has methods annotated with <code>@Transactional</code>:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">class UserService {
+    @Autowired
+    private UserRepository userRepository;
+
+    @Transactional
+    public Mono&lt;Void&gt; updateUsers() {
+        return this.userRepository.findAll()
+                .flatMap(a -&gt; {
+                    a.setAge(a.getAge() - 1);
+                    return this.userRepository.save(a);
+                })
+                .then();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="3">
+<li>
+<p>Make a Spring Bean provider that creates an instance of that class:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public UserService userService() {
+    return new UserService();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that, you can autowire your service like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+    @Autowired
+    UserService userService;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now when you call the methods annotated with <code>@Transactional</code> on your service object, a transaction will be automatically started.
+If an error occurs during the execution of a method annotated with <code>@Transactional</code>, the transaction will be rolled back.
+If no error occurs, the transaction will be committed.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
