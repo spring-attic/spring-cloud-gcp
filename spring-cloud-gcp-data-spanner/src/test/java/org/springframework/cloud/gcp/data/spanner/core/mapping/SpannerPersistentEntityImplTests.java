@@ -178,7 +178,21 @@ public class SpannerPersistentEntityImplTests {
 
 		MultiIdsEntity t = new MultiIdsEntity();
 		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah", 123L, 123.45D, "abc"));
+	}
 
+	@Test
+	public void testSetIdPropertyNullKey() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"The number of key parts is not equal to the number of primary key properties");
+
+		SpannerPersistentEntity entity = new SpannerMappingContext()
+				.getPersistentEntity(MultiIdsEntity.class);
+
+		PersistentProperty idProperty = entity.getIdProperty();
+
+		MultiIdsEntity t = new MultiIdsEntity();
+		entity.getPropertyAccessor(t).setProperty(idProperty, null);
 	}
 
 
