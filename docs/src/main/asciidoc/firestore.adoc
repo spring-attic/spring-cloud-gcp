@@ -180,6 +180,44 @@ Read documents are locked until the transaction finishes with a commit or a roll
 If an `Exception` is thrown within a transaction, the rollback operation is executed.
 Otherwise, the commit operation is executed.
 
+===== Declarative Transactions with @Transactional Annotation
+
+This feature requires a bean of `SpannerTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-firestore`.
+
+`FirestoreTemplate` and `FirestoreReactiveRepository` support running methods with the `@Transactional` https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative[annotation] as transactions.
+If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
+
+One way to use this feature is illustrated here. You would need to do the following:
+
+. Annotate your configuration class with the `@EnableTransactionManagement` annotation.
+
+. Create a service class that has methods annotated with `@Transactional`:
+
+[source, java, indent=0]
+----
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserService.java[tag=user_service]
+----
+
+[start=3]
+. Make a Spring Bean provider that creates an instance of that class:
+
+[source, java, indent=0]
+----
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTestsConfiguration.java[tag=user_service_bean]
+----
+
+After that, you can autowire your service like so:
+[source, java]
+----
+public class MyApplication {
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_user_service]
+}
+----
+
+Now when you call the methods annotated with `@Transactional` on your service object, a transaction will be automatically started. 
+If an error occurs during the execution of a method annotated with `@Transactional`, the transaction will be rolled back. 
+If no error occurs, the transaction will be committed.
+
 === Reactive Repository Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[sample application] is available.

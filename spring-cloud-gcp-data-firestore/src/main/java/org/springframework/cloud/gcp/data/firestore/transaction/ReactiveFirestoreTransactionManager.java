@@ -114,6 +114,7 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 						obs -> this.firestore.rollback(RollbackRequest.newBuilder()
 								.setTransaction(
 										extractFirestoreTransaction(genericReactiveTransaction).getTransactionId())
+								.setDatabase(this.databasePath)
 								.build(), obs))
 				.then();
 	}

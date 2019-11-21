@@ -41,6 +41,10 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Dmitry Solomakha
@@ -79,23 +83,38 @@ public class FirestoreIntegrationTests {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
 
+
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(false);
 		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
 
-		this.firestoreTemplate.save(alice)
-				.then(this.firestoreTemplate.save(bob))
-				.as(operator::transactional).block();
+		reset(this.txManager);
+
+		this.firestoreTemplate.save(alice).then(this.firestoreTemplate.save(bob))
+				.as(operator::transactional)
+				.block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
 				.containsExactlyInAnyOrder(bob, alice);
 
+		verify(this.txManager, times(1)).commit(any());
+		verify(this.txManager, times(0)).rollback(any());
+		verify(this.txManager, times(1)).getReactiveTransaction(any());
+
+		reset(this.txManager);
 
 		// test rollback
 		this.firestoreTemplate.saveAll(Mono.defer(() -> {
 			throw new FirestoreDataException("BOOM!");
 		}))
-				.then(this.firestoreTemplate.deleteAll(User.class)).onErrorReturn(0L).block();
+				.then(this.firestoreTemplate.deleteAll(User.class))
+				.as(operator::transactional)
+				.onErrorResume(throwable -> Mono.empty())
+				.block();
+
+		verify(this.txManager, times(0)).commit(any());
+		verify(this.txManager, times(1)).rollback(any());
+		verify(this.txManager, times(1)).getReactiveTransaction(any());
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 
@@ -148,7 +167,7 @@ public class FirestoreIntegrationTests {
 
 
 	@Test
-	public void saveTest() throws InterruptedException {
+	public void saveTest() {
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 
 		User u1 = new User("Cloud", 22);
@@ -159,7 +178,7 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
-	public void saveAllTest() throws InterruptedException {
+	public void saveAllTest() {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
 		Flux<User> users = Flux.fromArray(new User[]{u1, u2});
@@ -173,7 +192,7 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
-	public void saveAllBulkTest() throws InterruptedException {
+	public void saveAllBulkTest() {
 		Flux<User> users = Flux.create(sink -> {
 			for (int i = 0; i < 1000; i++) {
 				sink.next(new User("testUser " + i, i));
@@ -189,7 +208,7 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
-	public void deleteTest() throws InterruptedException {
+	public void deleteTest() {
 		this.firestoreTemplate.save(new User("alpha", 45)).block();
 		this.firestoreTemplate.save(new User("beta", 23)).block();
 		this.firestoreTemplate.save(new User("gamma", 44)).block();
