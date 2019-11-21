@@ -16,6 +16,8 @@
 
 package com.example;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
@@ -26,6 +28,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  * @author Chengyuan Zhao
  */
 @RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
-public interface TraderRepository extends SpannerRepository<Trader, String> {
+//TODO: switch back to String id when this issue is fixed: https://github.com/spring-cloud/spring-cloud-gcp/issues/2049
+public interface TraderRepository extends SpannerRepository<Trader, Key> {
 
 }

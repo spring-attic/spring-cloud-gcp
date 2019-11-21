@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.Objects;
+
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -77,5 +79,24 @@ public class Trader {
 				", firstName='" + this.firstName + '\'' +
 				", lastName='" + this.lastName + '\'' +
 				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Trader trader = (Trader) o;
+		return Objects.equals(getTraderId(), trader.getTraderId()) &&
+				Objects.equals(getFirstName(), trader.getFirstName()) &&
+				Objects.equals(getLastName(), trader.getLastName());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getTraderId(), getFirstName(), getLastName());
 	}
 }

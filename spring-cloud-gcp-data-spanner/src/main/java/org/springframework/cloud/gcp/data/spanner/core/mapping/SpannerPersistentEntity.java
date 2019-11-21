@@ -71,11 +71,11 @@ public interface SpannerPersistentEntity<T> extends
 	SpannerMappingContext getSpannerMappingContext();
 
 	/**
-	 * Gets a SpannerEntityWriter that can be used to create Cloud Spanner keys from one or
+	 * Gets a SpannerEntityProcessor that can be used to create Cloud Spanner keys from one or
 	 * more persistent properties.
-	 * @return a SpannerEntityWriter.
+	 * @return a SpannerEntityProcessor.
 	 */
-	SpannerEntityWriter getSpannerEntityWriter();
+	SpannerEntityWriter getSpannerEntityProcessor();
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();
