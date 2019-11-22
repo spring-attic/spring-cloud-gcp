@@ -18,16 +18,13 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
-import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
-import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -46,8 +43,6 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
-
 	private boolean blockOnPull;
 
 	public PubSubBatchMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
@@ -63,11 +58,6 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
 		this.ackMode = ackMode;
 	}
 
-	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
-		Assert.notNull(headerMapper, "The header mapper can't be null.");
-		this.headerMapper = headerMapper;
-	}
-
 	/**
 	 * Instructs synchronous pull to wait until at least one message is available.
 	 *
@@ -78,12 +68,12 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
 	}
 
 	/**
-	 * Provides a single polled message.
+	 * Provides a collection of messages.
 	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
 	 * by {@code fetchSize}.
 	 *
 	 * @param fetchSize number of messages to fetch from Pub/Sub.
-	 * @return {@link Message} wrapper containing the original message.
+	 * @return {@link Message} wrapper containing a payload with a List of messages.
 	 */
 	@Override
 	protected Object doReceive(int fetchSize) {
@@ -97,7 +87,8 @@ public class PubSubBatchMessageSource extends AbstractFetchLimitingMessageSource
 		return getMessageBuilderFactory()
 				.withPayload(messages)
 				.copyHeaders(Collections.singletonMap(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
-						new PubSubBatchAcknowledgmentCallback(messages, this.ackMode)));
+						new PubSubBatchAcknowledgmentCallback(messages, this.ackMode,
+								this.pubSubSubscriberOperations)));
 	}
 
 	@Override

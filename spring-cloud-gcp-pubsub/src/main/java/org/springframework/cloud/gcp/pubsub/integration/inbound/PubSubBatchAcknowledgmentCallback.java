@@ -18,25 +18,35 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
 import java.util.Collection;
 
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.util.Assert;
 
+/**
+ * PubSub Tests for {@link PubSubBatchMessageSource}.
+ *
+ * @author Eric Ngeo
+ */
 public class PubSubBatchAcknowledgmentCallback implements AcknowledgmentCallback {
 
 	private final Collection<AcknowledgeablePubsubMessage> messages;
 
 	private final AckMode ackMode;
 
+	private PubSubSubscriberOperations ops;
+
 	private boolean acknowledged;
 
 	public PubSubBatchAcknowledgmentCallback(Collection<AcknowledgeablePubsubMessage> messages,
-			AckMode ackMode) {
+			AckMode ackMode, PubSubSubscriberOperations ops) {
 		Assert.notNull(messages, "message to be acknowledged cannot be null");
 		Assert.notNull(ackMode, "ackMode cannot be null");
+		Assert.notNull(ops, "ops cannot be null");
 		this.messages = messages;
 		this.ackMode = ackMode;
+		this.ops = ops;
 	}
 
 	/**
@@ -47,10 +57,10 @@ public class PubSubBatchAcknowledgmentCallback implements AcknowledgmentCallback
 	@Override
 	public void acknowledge(Status status) {
 		if (status == AcknowledgmentCallback.Status.ACCEPT) {
-			messages.forEach(AcknowledgeablePubsubMessage::ack);
+			this.ops.ack(messages);
 		}
 		else if (this.ackMode == AckMode.MANUAL || this.ackMode == AckMode.AUTO) {
-			messages.forEach(AcknowledgeablePubsubMessage::nack);
+			this.ops.nack(messages);
 		}
 		this.acknowledged = true;
 	}

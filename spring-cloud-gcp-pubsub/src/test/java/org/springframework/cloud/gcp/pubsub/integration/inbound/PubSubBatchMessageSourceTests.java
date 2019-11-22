@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
@@ -40,6 +41,7 @@ import org.springframework.messaging.MessageHandlingException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,8 +49,7 @@ import static org.mockito.Mockito.when;
 /**
  * Tests for {@link PubSubBatchMessageSource}.
  *
- * @author Elena Felder
- * @since 1.2
+ * @author Eric Ngeo
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubBatchMessageSourceTests {
@@ -88,7 +89,7 @@ public class PubSubBatchMessageSourceTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void doReceive_callsPubsubAndCachesCorrectly() {
+	public void doReceive_callsPubsubAndBatchesCorrectly() {
 		when(this.mockPubSubSubscriberOperations.pull("sub1", 3, true))
 				.thenReturn(Arrays.asList(this.msg1, this.msg2, this.msg3));
 		PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
@@ -117,7 +118,7 @@ public class PubSubBatchMessageSourceTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void doReceive_manualAckModeAppliesAcknowledgmentHeaderAndDoesNotAck() {
+	public void doReceive_manualAckModeDoesNotAck() {
 
 		PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -134,15 +135,15 @@ public class PubSubBatchMessageSourceTests {
 				.get(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK);
 		assertThat(callback).isNotNull();
 		assertThat(callback.isAcknowledged()).isFalse();
-		verify(this.msg1, times(0)).ack();
+		verify(this.mockPubSubSubscriberOperations, never()).ack(Mockito.any());
 
 		callback.acknowledge(AcknowledgmentCallback.Status.ACCEPT);
-		verify(this.msg1, times(1)).ack();
+		verify(this.mockPubSubSubscriberOperations).ack(Mockito.any());
 		assertThat(callback.isAcknowledged()).isTrue();
 	}
 
 	@Test
-	public void doReceive_autoModeAcksAndAddsOriginalMessageHeader() {
+	public void doReceive_autoModeAcks() {
 
 		PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -155,12 +156,11 @@ public class PubSubBatchMessageSourceTests {
 			assertThat(payload).containsOnly(msg1);
 			assertThat(message.getHeaders()).doesNotContainKey(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 		});
-
-		verify(this.msg1).ack();
+		verify(this.mockPubSubSubscriberOperations).ack(Mockito.any());
 	}
 
 	@Test
-	public void doReceive_autoAckModeAcksAndAddsOriginalMessageHeader() {
+	public void doReceive_autoAckModeAcks() {
 
 		PubSubBatchMessageSource pubSubMessageSource = new PubSubBatchMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -173,7 +173,7 @@ public class PubSubBatchMessageSourceTests {
 			assertThat(payload).containsOnly(msg1);
 		});
 
-		verify(this.msg1).ack();
+		verify(this.mockPubSubSubscriberOperations).ack(Mockito.anyList());
 	}
 
 	@Test
@@ -188,8 +188,7 @@ public class PubSubBatchMessageSourceTests {
 			List<AcknowledgeablePubsubMessage> payload = (List<AcknowledgeablePubsubMessage>) message.getPayload();
 			assertThat(payload).containsOnly(msg1);
 		});
-
-		verify(this.msg1).ack();
+		verify(this.mockPubSubSubscriberOperations).ack(Mockito.any());
 	}
 
 	@Test
@@ -206,7 +205,7 @@ public class PubSubBatchMessageSourceTests {
 			});
 		}).isInstanceOf(MessageHandlingException.class).hasMessageContaining("Nope.");
 
-		verify(this.msg1).nack();
+		verify(this.mockPubSubSubscriberOperations).nack(Mockito.any());
 	}
 
 	@Test
