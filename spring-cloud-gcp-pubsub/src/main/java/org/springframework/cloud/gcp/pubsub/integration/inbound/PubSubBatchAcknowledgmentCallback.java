@@ -25,7 +25,7 @@ import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.util.Assert;
 
 /**
- * PubSub Tests for {@link PubSubBatchMessageSource}.
+ * Acknowledgement callback that works for a collection of AcknowledgeablePubsubMessages
  *
  * @author Eric Ngeo
  */
