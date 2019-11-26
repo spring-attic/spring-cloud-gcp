@@ -58,8 +58,8 @@ public class FirestoreTemplateTests {
 
 	@Before
 	public void setup() {
-		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
-		this.firestoreTemplate.setClassMapper(new FirestoreDefaultClassMapper());
+		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent,
+				new FirestoreDefaultClassMapper());
 	}
 
 	@Test

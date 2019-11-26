@@ -104,12 +104,6 @@ public class GcpFirestoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreClassMapper getClassMapper() {
-		return new FirestoreDefaultClassMapper();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
 	public Firestore firestore(FirestoreOptions firestoreOptions) {
 		return firestoreOptions.getService();
 	}
@@ -136,8 +130,16 @@ public class GcpFirestoreAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath);
+		public FirestoreClassMapper getClassMapper() {
+			return new FirestoreDefaultClassMapper();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+				FirestoreClassMapper classMapper) {
+			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath,
+					classMapper);
 		}
 
 		@Bean

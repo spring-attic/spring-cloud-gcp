@@ -63,9 +63,9 @@ public class FirestoreIntegrationTestsConfiguration {
 	}
 
 	@Bean
-	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-
-		return new FirestoreTemplate(firestoreStub, this.defaultParent);
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+			FirestoreClassMapper classMapper) {
+		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper);
 	}
 
 	@Bean

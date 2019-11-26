@@ -170,6 +170,6 @@ public class PartTreeFirestoreQueryTests {
 		when(this.queryMethod.getResultProcessor()).thenReturn(resultProcessor);
 
 		return new PartTreeFirestoreQuery(this.queryMethod,
-				this.firestoreTemplate, new FirestoreMappingContext(), new FirestoreDefaultClassMapper());
+				this.firestoreTemplate, new FirestoreMappingContext(), this.classMapper);
 	}
 }

@@ -37,7 +37,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
@@ -57,7 +56,6 @@ import org.springframework.util.Assert;
  * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
-	@Autowired
 	private FirestoreClassMapper classMapper;
 
 	private static final int FIRESTORE_WRITE_MAX_SIZE = 500;
@@ -89,12 +87,13 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * @param firestore Firestore gRPC stub
 	 * @param parent the parent resource. For example:
 	 *     projects/{project_id}/databases/{database_id}/documents or
-	 *     projects/{project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}
+	 * @param classMapper a {@link FirestoreClassMapper} used for conversion
 	 */
-	public FirestoreTemplate(FirestoreStub firestore, String parent) {
+	public FirestoreTemplate(FirestoreStub firestore, String parent, FirestoreClassMapper classMapper) {
 		this.firestore = firestore;
 		this.parent = parent;
 		this.databasePath = Util.extractDatabasePath(parent);
+		this.classMapper = classMapper;
 	}
 
 	/**
@@ -387,9 +386,5 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	public FirestoreClassMapper getClassMapper() {
 		return this.classMapper;
-	}
-
-	public void setClassMapper(FirestoreClassMapper classMapper) {
-		this.classMapper = classMapper;
 	}
 }
