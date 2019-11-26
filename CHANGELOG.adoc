@@ -67,6 +67,7 @@ The subscription threads used to keep the application alive, but will now allow 
 * Events and Auditing support
 * Multi-Instance support (#1530)
 * Fixed conversion for timestamps older than unix epoch (#2043)
+* Fixed REST Repositories PUT by populating key fields when virtual key property is set (#2053)
 
 === Spring Cloud Bus
 
