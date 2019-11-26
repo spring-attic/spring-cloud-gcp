@@ -5,13 +5,13 @@ https://spring.io/projects/spring-cloud-gcp:[Spring Cloud GCP] is a set of integ
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
-== 1.2.0.M3 (2019-10-03) (PRE-RELEASE)
+== 1.2.0.RELEASE (2019-11-26)
 
 === BigQuery
 
-* New module.
-* Autoconfiguration for the BigQuery client objects with credentials needed to interface with BigQuery.
-* A Spring Integration message handler for loading data into BigQuery tables in your Spring integration pipelines.
+* New module
+* Autoconfiguration for the BigQuery client objects with credentials needed to interface with BigQuery
+* A Spring Integration message handler for loading data into BigQuery tables in your Spring integration pipelines
 
 === Cloud Foundry
 
@@ -51,7 +51,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * Change thread pools to create daemon threads that do not prevent JVM shutdown (#2010)
 ** This is a change in behavior for non-web applications that subscribe to a Cloud Pub/Sub topic.
 The subscription threads used to keep the application alive, but will now allow the application to shut down if no other work needs to be done.
-
+* Added original message to the throwable for Pub/Sub publish failures (#2020)
 
 === IAP
 
@@ -66,6 +66,8 @@ The subscription threads used to keep the application alive, but will now allow 
 * Spanner array param binding
 * Events and Auditing support
 * Multi-Instance support (#1530)
+* Fixed conversion for timestamps older than unix epoch (#2043)
+* Fixed REST Repositories PUT by populating key fields when virtual key property is set (#2053)
 
 === Spring Cloud Bus
 
