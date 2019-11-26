@@ -51,7 +51,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * Change thread pools to create daemon threads that do not prevent JVM shutdown (#2010)
 ** This is a change in behavior for non-web applications that subscribe to a Cloud Pub/Sub topic.
 The subscription threads used to keep the application alive, but will now allow the application to shut down if no other work needs to be done.
-* Added original message to the throwble for Pub/Sub publish failures (#2020)
+* Added original message to the throwable for Pub/Sub publish failures (#2020)
 
 === IAP
 
