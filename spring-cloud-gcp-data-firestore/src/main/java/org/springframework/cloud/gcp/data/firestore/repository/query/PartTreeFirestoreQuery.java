@@ -143,7 +143,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 				}
 				filter.getFieldFilterBuilder().setField(fieldReference)
 						.setOp(filterOp)
-						.setValue(this.classMapper.convertToFirestoreValue(it.next()));
+						.setValue(this.classMapper.toFirestoreValue(it.next()));
 			}
 			compositeFilter.addFilters(filter.build());
 		});
