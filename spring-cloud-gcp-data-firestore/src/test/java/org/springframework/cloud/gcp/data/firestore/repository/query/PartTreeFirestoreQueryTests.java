@@ -65,7 +65,7 @@ public class PartTreeFirestoreQueryTests {
 			filterAge.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
 					.setFieldPath("age").build())
 					.setOp(StructuredQuery.FieldFilter.Operator.EQUAL)
-					.setValue(this.classMapper.convertToFirestoreValue(22));
+					.setValue(this.classMapper.toFirestoreValue(22));
 
 			compositeFilter.addFilters(filterAge.build());
 
@@ -102,7 +102,7 @@ public class PartTreeFirestoreQueryTests {
 			filterAge.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
 					.setFieldPath("age").build())
 					.setOp(StructuredQuery.FieldFilter.Operator.GREATER_THAN)
-					.setValue(this.classMapper.convertToFirestoreValue(22));
+					.setValue(this.classMapper.toFirestoreValue(22));
 
 			compositeFilter.addFilters(filterAge.build());
 			builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));

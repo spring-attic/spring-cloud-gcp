@@ -32,7 +32,8 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
  * Uses Firestore client library to provide  object mapping functionality.
  *
  * @author Dmitry Solomakha
- *
+ * @author Mike Eltsufin
+ * @since 1.3
  */
 public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 
@@ -46,18 +47,21 @@ public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 	public FirestoreDefaultClassMapper() {
 	}
 
-	public <T> Value convertToFirestoreValue(T entity) {
+	public <T> Value toFirestoreValue(T sourceValue) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromMap(NOT_USED_PATH,
-				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, entity).build());
+				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, sourceValue).build());
 		return INTERNAL.protoFromSnapshot(documentSnapshot).get(VALUE_FIELD_NAME);
 	}
 
-	public <T> Map<String, Value> convertToFirestoreTypes(T entity) {
+	public <T> Document entityToDocument(T entity, String documentResourceName) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
-		return INTERNAL.protoFromSnapshot(documentSnapshot);
+		Map<String, Value> valuesMap = INTERNAL.protoFromSnapshot(documentSnapshot);
+		return Document.newBuilder()
+				.putAllFields(valuesMap)
+				.setName(documentResourceName).build();
 	}
 
-	public <T> T convertToCustomClass(Document document, Class<T> clazz) {
+	public <T> T documentToEntity(Document document, Class<T> clazz) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
 		return documentSnapshot.toObject(clazz);
 	}

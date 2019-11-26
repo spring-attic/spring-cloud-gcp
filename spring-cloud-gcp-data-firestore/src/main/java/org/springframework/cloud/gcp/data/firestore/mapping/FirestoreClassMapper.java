@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.firestore.mapping;
 
-import java.util.Map;
-
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.Value;
 
@@ -25,33 +23,36 @@ import com.google.firestore.v1.Value;
  * An interface used for object mapping for Cloud Firestore.
  *
  * @author Dmitry Solomakha
+ * @author Mike Eltsufin
+ * @since 1.3
  */
 public interface FirestoreClassMapper {
 	/**
 	 * Converts an entity to a Firestore type.
 	 *
 	 * @param <T> the type of the object to convert
-	 * @param entity the object to convert
-	 * @return value that can be saved in Firestore
+	 * @param sourceValue the object to convert
+	 * @return value that can be used to bind to a Firestore query
 	 */
-	<T> Value convertToFirestoreValue(T entity);
+	<T> Value toFirestoreValue(T sourceValue);
 
 	/**
-	 * Converts an entity to a map where key is the property name and the value is a Firestore type.
+	 * Converts an entity to a Firestore document.
 	 *
 	 * @param <T> the type of the object to convert
 	 * @param entity the object to convert
-	 * @return a map where key is the property name and the value is a Firestore type
+	 * @param documentResourceName the fully-qualified identifier of the document
+	 * @return a {@link Document} that can be stored in Firestore
 	 */
-	<T> Map<String, Value> convertToFirestoreTypes(T entity);
+	<T> Document entityToDocument(T entity, String documentResourceName);
 
 	/**
-	 * Converts a Firestore document to a Java object.
+	 * Converts a Firestore document to an entity.
 	 *
 	 * @param <T> the type of the target object
-	 * @param document the document to convert
-	 * @param clazz the type of the target object
-	 * @return Java object that the Firestore document was concerted to
+	 * @param document the {@link Document} to convert
+	 * @param clazz the type of the target entity
+	 * @return the entity that the Firestore document was converted to
 	 */
-	<T> T convertToCustomClass(Document document, Class<T> clazz);
+	<T> T documentToEntity(Document document, Class<T> clazz);
 }
