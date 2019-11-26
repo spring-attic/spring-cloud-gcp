@@ -135,9 +135,24 @@ Also, you can define your own properties.
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.credentials.encoded-key</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.credentials.scopes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.dataset-name</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the BigQuery dataset to use.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.enabled</p></td>
@@ -147,10 +162,20 @@ Also, you can define your own properties.
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.bigquery.project-id</p></td>
 <td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the GCP project ID specified in the Core module to use for BigQuery.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.config.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.config.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.config.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.config.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -180,12 +205,32 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">Timeout for Google Runtime Configuration API calls.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.credentials.encoded-key</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.datastore.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.credentials.scopes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.datastore.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.datastore.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.datastore.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -230,7 +275,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.firestore.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.firestore.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.firestore.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.firestore.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -260,7 +315,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where services are running.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.pubsub.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.pubsub.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.pubsub.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.pubsub.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -495,7 +560,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.spanner.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.spanner.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.spanner.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.spanner.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -585,7 +660,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.storage.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.storage.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.storage.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.storage.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -605,7 +690,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">Compression to use for the call.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.trace.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.trace.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.trace.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.trace.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
@@ -650,7 +745,17 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">Waits for the channel to be ready in case of a transient failure. Defaults to failing fast in that case.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.vision.credentials.default-scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.vision.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.vision.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.vision.credentials.scopes</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
