@@ -41,8 +41,10 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 
+import static org.springframework.data.repository.query.parser.Part.Type.CONTAINING;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.IN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_PROPERTY;
@@ -69,6 +71,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 					.put(GREATER_THAN, StructuredQuery.FieldFilter.Operator.GREATER_THAN)
 					.put(LESS_THAN_EQUAL, StructuredQuery.FieldFilter.Operator.LESS_THAN_OR_EQUAL)
 					.put(LESS_THAN, StructuredQuery.FieldFilter.Operator.LESS_THAN)
+					.put(IN, StructuredQuery.FieldFilter.Operator.IN)
+					.put(CONTAINING, StructuredQuery.FieldFilter.Operator.ARRAY_CONTAINS_ANY)
 					.build();
 
 	public PartTreeFirestoreQuery(FirestoreQueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
