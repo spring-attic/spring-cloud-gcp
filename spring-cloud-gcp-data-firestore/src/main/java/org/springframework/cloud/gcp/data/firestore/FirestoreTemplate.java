@@ -39,10 +39,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
-import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreResourceHolder;
 import org.springframework.cloud.gcp.data.firestore.util.ObservableReactiveUtil;
 import org.springframework.cloud.gcp.data.firestore.util.Util;
@@ -57,6 +58,8 @@ import org.springframework.util.Assert;
  * @since 1.2
  */
 public class FirestoreTemplate implements FirestoreReactiveOperations {
+	@Autowired
+	private FirestoreClassMapper classMapper;
 
 	private static final int FIRESTORE_WRITE_MAX_SIZE = 500;
 
@@ -145,7 +148,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return Flux.from(idPublisher)
 				.flatMap(id -> getDocument(id, entityClass, null))
 				.onErrorMap(throwable -> new FirestoreDataException("Error while reading entries by id", throwable))
-				.map(document -> PublicClassMapper.convertToCustomClass(document, entityClass));
+				.map(document -> getClassMapper().convertToCustomClass(document, entityClass));
 	}
 
 	@Override
@@ -181,7 +184,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public <T> Flux<T> findAll(Class<T> clazz) {
 		return Flux.defer(() ->
 				findAllDocuments(clazz)
-						.map(document -> PublicClassMapper.convertToCustomClass(document, clazz)));
+						.map(document -> getClassMapper().convertToCustomClass(document, clazz)));
 	}
 
 	@Override
@@ -236,7 +239,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public <T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityType) {
 		return Flux.defer(() ->
 				findAllDocuments(entityType, null, builder)
-				.map(document -> PublicClassMapper.convertToCustomClass(document, entityType)));
+				.map(document -> getClassMapper().convertToCustomClass(document, entityType)));
 	}
 
 	public FirestoreMappingContext getMappingContext() {
@@ -357,7 +360,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private <T> Write createUpdateWrite(T entity) {
 		String documentResourceName = buildResourceName(entity);
-		Map<String, Value> valuesMap = PublicClassMapper.convertToFirestoreTypes(entity);
+		Map<String, Value> valuesMap = getClassMapper().convertToFirestoreTypes(entity);
 		return Write.newBuilder()
 				.setUpdate(Document.newBuilder()
 						.putAllFields(valuesMap)
@@ -385,4 +388,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return idVal.toString();
 	}
 
+	public FirestoreClassMapper getClassMapper() {
+		return this.classMapper;
+	}
+
+	public void setClassMapper(FirestoreClassMapper classMapper) {
+		this.classMapper = classMapper;
+	}
 }

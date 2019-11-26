@@ -35,6 +35,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -57,6 +59,7 @@ public class FirestoreTemplateTests {
 	@Before
 	public void setup() {
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent);
+		this.firestoreTemplate.setClassMapper(new FirestoreDefaultClassMapper());
 	}
 
 	@Test

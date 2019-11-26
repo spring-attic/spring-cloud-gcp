@@ -38,6 +38,8 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.context.annotation.Bean;
@@ -98,6 +100,12 @@ public class GcpFirestoreAutoConfiguration {
 								.setEndpoint(this.hostPort)
 								.build())
 				.build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreClassMapper getClassMapper() {
+		return new FirestoreDefaultClassMapper();
 	}
 
 	@Bean
