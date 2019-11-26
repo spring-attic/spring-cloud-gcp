@@ -35,6 +35,7 @@ import reactor.test.StepVerifier;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplateTests;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.transaction.reactive.TransactionalOperator;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -196,7 +197,8 @@ public class ReactiveFirestoreTransactionManagerTest {
 		}).when(this.firestoreStub).getDocument(any(), any());
 
 
-		FirestoreTemplate template = new FirestoreTemplate(this.firestoreStub, this.parent);
+		FirestoreTemplate template = new FirestoreTemplate(this.firestoreStub, this.parent,
+				new FirestoreDefaultClassMapper());
 
 		StepVerifier.setDefaultTimeout(Duration.ofSeconds(5));
 		return template;

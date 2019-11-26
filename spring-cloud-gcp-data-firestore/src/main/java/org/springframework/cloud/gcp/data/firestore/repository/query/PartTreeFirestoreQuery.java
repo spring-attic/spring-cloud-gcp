@@ -28,10 +28,10 @@ import com.google.protobuf.Int32Value;
 import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
-import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -62,6 +62,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 	private final FirestorePersistentEntity<?> persistentEntity;
 
+	private final FirestoreClassMapper classMapper;
+
 	private static final Map<Part.Type, StructuredQuery.FieldFilter.Operator> PART_TO_FILTER_OP =
 			new MapBuilder<Part.Type, StructuredQuery.FieldFilter.Operator>()
 					.put(SIMPLE_PROPERTY, StructuredQuery.FieldFilter.Operator.EQUAL)
@@ -72,12 +74,13 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 					.build();
 
 	public PartTreeFirestoreQuery(FirestoreQueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
-			FirestoreMappingContext mappingContext) {
+			FirestoreMappingContext mappingContext, FirestoreClassMapper classMapper) {
 		this.queryMethod = queryMethod;
 		this.reactiveOperations = reactiveOperations;
 		ReturnedType returnedType = queryMethod.getResultProcessor().getReturnedType();
 		this.tree = new PartTree(queryMethod.getName(), returnedType.getDomainType());
 		this.persistentEntity = mappingContext.getPersistentEntity(returnedType.getDomainType());
+		this.classMapper = classMapper;
 	}
 
 	@Override
@@ -140,7 +143,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 				}
 				filter.getFieldFilterBuilder().setField(fieldReference)
 						.setOp(filterOp)
-						.setValue(PublicClassMapper.convertToFirestoreValue(it.next()));
+						.setValue(this.classMapper.toFirestoreValue(it.next()));
 			}
 			compositeFilter.addFilters(filter.build());
 		});
