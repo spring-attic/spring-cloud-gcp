@@ -91,7 +91,7 @@
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
 							<failsOnError>true</failsOnError>
 							<failOnViolation>true</failOnViolation>
-							<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+							<suppressionsLocation>./checkstyle-samples-suppressions.xml</suppressionsLocation>
 							<violationSeverity>warning</violationSeverity>
 						</configuration>
 						<goals>
