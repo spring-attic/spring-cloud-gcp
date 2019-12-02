@@ -52,55 +52,65 @@
 		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
 	</modules>
 
+	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
+	<profiles>
+		<profile>
+			<id>full-checkstyle</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-checkstyle-plugin</artifactId>
+						<version>3.0.0</version>
+						<dependencies>
+							<dependency>
+								<groupId>com.puppycrawl.tools</groupId>
+								<artifactId>checkstyle</artifactId>
+								<version>8.18</version>
+							</dependency>
+							<dependency>
+								<groupId>io.spring.javaformat</groupId>
+								<artifactId>spring-javaformat-checkstyle</artifactId>
+								<version>0.0.9</version>
+							</dependency>
+							<dependency>
+								<groupId>org.springframework.cloud</groupId>
+								<artifactId>spring-cloud-build-tools</artifactId>
+								<version>${spring-cloud-build-tools.version}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>checkstyle-validation</id>
+								<phase>validate</phase>
+								<configuration>
+									<propertyExpansion>
+										checkstyle.build.directory=${project.build.directory}
+										checkstyle.suppressions.file=${checkstyle.suppressions.file}
+										checkstyle.additional.suppressions.file=${checkstyle.additional.suppressions.file}
+									</propertyExpansion>
+									<configLocation>checkstyle.xml</configLocation>
+									<headerLocation>checkstyle-header.txt</headerLocation>
+									<consoleOutput>true</consoleOutput>
+									<includeTestSourceDirectory>true</includeTestSourceDirectory>
+									<failsOnError>true</failsOnError>
+									<failOnViolation>true</failOnViolation>
+									<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+									<violationSeverity>warning</violationSeverity>
+								</configuration>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.0.0</version>
-				<dependencies>
-					<dependency>
-						<groupId>com.puppycrawl.tools</groupId>
-						<artifactId>checkstyle</artifactId>
-						<version>8.18</version>
-					</dependency>
-					<dependency>
-						<groupId>io.spring.javaformat</groupId>
-						<artifactId>spring-javaformat-checkstyle</artifactId>
-						<version>0.0.9</version>
-					</dependency>
-					<dependency>
-						<groupId>org.springframework.cloud</groupId>
-						<artifactId>spring-cloud-build-tools</artifactId>
-						<version>${spring-cloud-build-tools.version}</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>checkstyle-validation</id>
-						<phase>validate</phase>
-						<configuration>
-							<propertyExpansion>
-								checkstyle.build.directory=${project.build.directory}
-								checkstyle.suppressions.file=${checkstyle.suppressions.file}
-								checkstyle.additional.suppressions.file=${checkstyle.additional.suppressions.file}
-							</propertyExpansion>
-							<configLocation>checkstyle.xml</configLocation>
-							<headerLocation>checkstyle-header.txt</headerLocation>
-							<consoleOutput>true</consoleOutput>
-							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-							<failsOnError>true</failsOnError>
-							<failOnViolation>true</failOnViolation>
-							<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-							<violationSeverity>warning</violationSeverity>
-						</configuration>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
