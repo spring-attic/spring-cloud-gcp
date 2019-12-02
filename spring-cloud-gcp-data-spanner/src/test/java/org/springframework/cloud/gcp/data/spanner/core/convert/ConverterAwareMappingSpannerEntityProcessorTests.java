@@ -98,6 +98,16 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		verifyCanConvert(converter, JavaType.class, SpannerType.class);
 	}
 
+	@Test
+	public void timestampCorrespondingType() {
+		ConverterAwareMappingSpannerEntityProcessor converter = new ConverterAwareMappingSpannerEntityProcessor(
+				new SpannerMappingContext());
+
+		Class<?> spannerJavaType = converter.getCorrespondingSpannerJavaType(java.sql.Timestamp.class, false);
+
+		assertThat(spannerJavaType).isEqualTo(Timestamp.class);
+	}
+
 	private void verifyCanConvert(ConverterAwareMappingSpannerEntityProcessor converter,
 			Class javaType, Class spannerType) {
 		SpannerWriteConverter writeConverter = converter.getWriteConverter();

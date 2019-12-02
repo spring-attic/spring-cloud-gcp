@@ -91,11 +91,11 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
 		map.put(Double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		map.put(double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
-		map.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
 		map.put(Timestamp.class,
 				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		map.put(ByteArray.class,
 				(BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to);
+		map.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
 		map.put(double[].class,
 				(BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array);
 		map.put(boolean[].class,
