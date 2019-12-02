@@ -29,12 +29,13 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
 
 /**
  *
- * Temporary class to expose package-private methods, will be removed in the future.
+ * Uses Firestore client library to provide  object mapping functionality.
  *
  * @author Dmitry Solomakha
- *
+ * @author Mike Eltsufin
+ * @since 1.3
  */
-public final class PublicClassMapper {
+public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 
 	private static final Internal INTERNAL = new Internal(
 			FirestoreOptions.newBuilder().setProjectId("dummy-project-id").build(), null);
@@ -43,21 +44,24 @@ public final class PublicClassMapper {
 
 	private static final String NOT_USED_PATH = "/not/used/path";
 
-	private PublicClassMapper() {
+	public FirestoreDefaultClassMapper() {
 	}
 
-	public static <T> Value convertToFirestoreValue(T entity) {
+	public <T> Value toFirestoreValue(T sourceValue) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromMap(NOT_USED_PATH,
-				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, entity).build());
+				new MapBuilder<String, Object>().put(VALUE_FIELD_NAME, sourceValue).build());
 		return INTERNAL.protoFromSnapshot(documentSnapshot).get(VALUE_FIELD_NAME);
 	}
 
-	public static <T> Map<String, Value> convertToFirestoreTypes(T entity) {
+	public <T> Document entityToDocument(T entity, String documentResourceName) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
-		return INTERNAL.protoFromSnapshot(documentSnapshot);
+		Map<String, Value> valuesMap = INTERNAL.protoFromSnapshot(documentSnapshot);
+		return Document.newBuilder()
+				.putAllFields(valuesMap)
+				.setName(documentResourceName).build();
 	}
 
-	public static <T> T convertToCustomClass(Document document, Class<T> clazz) {
+	public <T> T documentToEntity(Document document, Class<T> clazz) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
 		return documentSnapshot.toObject(clazz);
 	}

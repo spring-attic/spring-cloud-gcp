@@ -29,6 +29,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
@@ -61,9 +63,9 @@ public class FirestoreIntegrationTestsConfiguration {
 	}
 
 	@Bean
-	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub) {
-
-		return new FirestoreTemplate(firestoreStub, this.defaultParent);
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+			FirestoreClassMapper classMapper) {
+		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper);
 	}
 
 	@Bean
@@ -85,4 +87,10 @@ public class FirestoreIntegrationTestsConfiguration {
 	}
 	//end::user_service_bean[]
 
+
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreClassMapper getClassMapper() {
+		return new FirestoreDefaultClassMapper();
+	}
 }

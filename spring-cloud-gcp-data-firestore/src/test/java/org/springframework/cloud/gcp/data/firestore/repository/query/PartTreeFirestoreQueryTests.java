@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.firestore.repository.query;
 import java.util.function.Consumer;
 
 import com.google.firestore.v1.StructuredQuery;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import reactor.core.publisher.Flux;
@@ -28,8 +27,9 @@ import reactor.core.publisher.Mono;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
-import org.springframework.cloud.gcp.data.firestore.mapping.PublicClassMapper;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ResultProcessor;
 import org.springframework.data.repository.query.ReturnedType;
@@ -41,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PartTreeFirestoreQueryTests {
+	private FirestoreClassMapper classMapper = new FirestoreDefaultClassMapper();
 
 	private static final User DUMMY_USER = new User("Hello", 23);
 	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };
@@ -48,12 +49,6 @@ public class PartTreeFirestoreQueryTests {
 	private FirestoreTemplate firestoreTemplate = mock(FirestoreTemplate.class);
 
 	private FirestoreQueryMethod queryMethod = mock(FirestoreQueryMethod.class);
-
-	@Before
-	public void setupTest() {
-		this.firestoreTemplate = mock(FirestoreTemplate.class);
-		this.queryMethod = mock(FirestoreQueryMethod.class);
-	}
 
 	@Test
 	public void testPartTreeQuery() {
@@ -70,7 +65,7 @@ public class PartTreeFirestoreQueryTests {
 			filterAge.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
 					.setFieldPath("age").build())
 					.setOp(StructuredQuery.FieldFilter.Operator.EQUAL)
-					.setValue(PublicClassMapper.convertToFirestoreValue(22));
+					.setValue(this.classMapper.toFirestoreValue(22));
 
 			compositeFilter.addFilters(filterAge.build());
 
@@ -107,7 +102,7 @@ public class PartTreeFirestoreQueryTests {
 			filterAge.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
 					.setFieldPath("age").build())
 					.setOp(StructuredQuery.FieldFilter.Operator.GREATER_THAN)
-					.setValue(PublicClassMapper.convertToFirestoreValue(22));
+					.setValue(this.classMapper.toFirestoreValue(22));
 
 			compositeFilter.addFilters(filterAge.build());
 			builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
@@ -175,6 +170,6 @@ public class PartTreeFirestoreQueryTests {
 		when(this.queryMethod.getResultProcessor()).thenReturn(resultProcessor);
 
 		return new PartTreeFirestoreQuery(this.queryMethod,
-				this.firestoreTemplate, new FirestoreMappingContext());
+				this.firestoreTemplate, new FirestoreMappingContext(), this.classMapper);
 	}
 }

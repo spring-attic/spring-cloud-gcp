@@ -56,6 +56,8 @@ public class FirestoreQueryLookupStrategy implements QueryLookupStrategy {
 		return new PartTreeFirestoreQuery(
 				new FirestoreQueryMethod(method, repositoryMetadata, projectionFactory),
 				this.firestoreTemplate,
-				this.firestoreTemplate.getMappingContext());
+				this.firestoreTemplate.getMappingContext(),
+				this.firestoreTemplate.getClassMapper()
+		);
 	}
 }
