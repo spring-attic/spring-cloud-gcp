@@ -34,20 +34,25 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for the Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public class SpannerTransactionManagerTests {
 
@@ -60,145 +65,133 @@ public class SpannerTransactionManagerTests {
 	@Mock
 	DatabaseClient databaseClient;
 
+	@Mock
+	TransactionContext transactionContext;
+
+	@Mock
+	TransactionManager transactionManager;
+
+	@Mock
+	DefaultTransactionStatus status;
+
+	SpannerTransactionManager.Tx tx;
+
+	SpannerTransactionManager manager;
+
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+
+		this.manager = new SpannerTransactionManager(() -> this.databaseClient);
+
+		this.tx = new SpannerTransactionManager.Tx(databaseClient);
+
+		when(status.getTransaction()).thenReturn(tx);
+
+		when(databaseClient.transactionManager()).thenReturn(this.transactionManager);
+
+		TransactionSynchronizationManager.bindResource(this.databaseClient, tx);
 	}
 
 	@Test
 	public void testDoGetTransactionStarted() {
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
-
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
+		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		tx.transactionManager = transactionManager;
+		tx.transactionContext = transactionContext;
 
 		Assert.assertEquals(manager.doGetTransaction(), tx);
 
-		Mockito.verify(this.databaseClient, never()).transactionManager();
+		verify(this.databaseClient, never()).transactionManager();
 	}
+
+	@Test
+	public void testDoGetTransactionStartedReadOnly() {
+		tx.transactionManager = transactionManager;
+		tx.transactionContext = transactionContext;
+		tx.isReadOnly = true;
+
+		Assert.assertEquals(manager.doGetTransaction(), tx);
+
+		verify(this.databaseClient, never()).transactionManager();
+	}
+
 
 	@Test
 	public void testDoGetTransactionAborted() {
-		TransactionManager transactionManagerAborted = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManagerAborted.getState()).thenReturn(TransactionState.ABORTED);
+		TransactionManager transactionManagerAborted = mock(TransactionManager.class);
+		when(transactionManagerAborted.getState()).thenReturn(TransactionState.ABORTED);
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManagerAborted);
+		tx.transactionManager = transactionManager;
 
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
+		TransactionManager transactionManagerNew = mock(TransactionManager.class);
+		when(transactionManagerNew.getState()).thenReturn(TransactionState.STARTED);
 
-		TransactionManager transactionManagerNew = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManagerNew.getState()).thenReturn(TransactionState.STARTED);
-
-		Mockito.when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
+		when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
 
 		Assert.assertNotEquals(
 				"expected a new transaction but got the same one", tx, manager.doGetTransaction());
-
-		Mockito.verify(this.databaseClient, times(1)).transactionManager();
-	}
-
-	@Test
-	public void testDoGetTransactionNew() {
-		TransactionManager transactionManagerNew = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManagerNew.getState()).thenReturn(TransactionState.STARTED);
-		Mockito.when(this.databaseClient.transactionManager()).thenReturn(transactionManagerNew);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return null;
-			}
-		};
-
-		SpannerTransactionManager.Tx actual = (SpannerTransactionManager.Tx) manager.doGetTransaction();
-		Assert.assertNotNull(actual);
-		Assert.assertEquals(
-				ReflectionTestUtils.getField(actual, "transactionManager"), transactionManagerNew);
-
-		Mockito.verify(this.databaseClient, times(1)).transactionManager();
 	}
 
 	@Test
 	public void testDoBegin() {
-		TransactionContext transactionContext = Mockito.mock(TransactionContext.class);
+		when(transactionManager.begin()).thenReturn(transactionContext);
 
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManager.begin()).thenReturn(transactionContext);
-		Mockito.when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		TransactionSynchronizationManager.unbindResource(this.databaseClient);
 
 		TransactionDefinition definition = new DefaultTransactionDefinition();
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
 
 		manager.doBegin(tx, definition);
 
-		// need to use ReflectionTestUtils because tx is mocked and accessor won't work
-		Assert.assertEquals(ReflectionTestUtils.getField(tx, "transactionContext"), transactionContext);
+		Assert.assertEquals(tx.getTransactionManager(), transactionManager);
+		Assert.assertEquals(tx.getTransactionContext(), transactionContext);
+		Assert.assertFalse(tx.isReadOnly());
 
-		Mockito.verify(transactionManager, times(1)).begin();
-		Mockito.verify(transactionManager, times(1)).getState();
+		verify(transactionManager, times(1)).begin();
+	}
+
+	@Test
+	public void testDoBeginReadOnly() {
+		when(transactionManager.begin()).thenReturn(transactionContext);
+
+		DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+		definition.setReadOnly(true);
+
+		TransactionSynchronizationManager.unbindResource(this.databaseClient);
+
+		manager.doBegin(tx, definition);
+
+		Assert.assertNull(tx.getTransactionManager());
+		Assert.assertNotNull(tx.getTransactionContext());
+		Assert.assertNotEquals(tx.getTransactionContext(), transactionContext);
+		Assert.assertTrue(tx.isReadOnly());
+
+		verify(transactionManager, times(0)).begin();
+		verify(transactionManager, times(0)).getState();
 	}
 
 	@Test
 	public void testDoCommit() {
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
-		Mockito.doNothing().when(transactionManager).commit();
+		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		when(transactionManager.begin()).thenReturn(this.transactionContext);
+		doNothing().when(transactionManager).commit();
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
+		tx.transactionManager = transactionManager;
+		tx.transactionContext = transactionContext;
 
 		manager.doCommit(status);
 
-		Mockito.verify(transactionManager, times(1)).commit();
+		verify(transactionManager, times(1)).commit();
 	}
 
 	@Test
 	public void testDoCommitNotStarted() {
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
+		tx.transactionManager = transactionManager;
+		tx.transactionContext = transactionContext;
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
 		manager.doCommit(status);
 
-		Mockito.verify(transactionManager, never()).commit();
+		verify(transactionManager, never()).commit();
+		verify(this.transactionContext, never()).close();
 	}
 
 	@Test
@@ -208,21 +201,11 @@ public class SpannerTransactionManagerTests {
 		this.expectedEx.expectMessage("Transaction Got Rolled Back; " +
 				"nested exception is com.google.cloud.spanner.AbortedException");
 
-		TransactionManager abortedTxManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(abortedTxManager.getState()).thenReturn(TransactionState.STARTED);
-		Mockito.doThrow(AbortedException.class).when(abortedTxManager).commit();
+		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		Mockito.doThrow(AbortedException.class).when(transactionManager).commit();
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", abortedTxManager);
+		tx.transactionManager = transactionManager;
 
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
 		manager.doCommit(status);
 	}
 
@@ -236,66 +219,34 @@ public class SpannerTransactionManagerTests {
 		SpannerException exception = SpannerExceptionFactory.newSpannerException(
 				ErrorCode.ALREADY_EXISTS, "this is from a test");
 
-		TransactionManager dupeTxManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(dupeTxManager.getState()).thenReturn(TransactionState.STARTED);
-		Mockito.doThrow(exception).when(dupeTxManager).commit();
+		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		Mockito.doThrow(exception).when(transactionManager).commit();
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", dupeTxManager);
+		tx.transactionManager = transactionManager;
 
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
 		manager.doCommit(status);
 	}
 
 	@Test
 	public void testDoRollback() {
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
-		Mockito.when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
-		Mockito.doNothing().when(transactionManager).rollback();
+		when(transactionManager.getState()).thenReturn(TransactionState.STARTED);
+		when(transactionManager.begin()).thenReturn(this.transactionContext);
+		doNothing().when(transactionManager).rollback();
 
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
+		tx.transactionContext = transactionContext;
+		tx.transactionManager = transactionManager;
 
 		manager.doRollback(status);
 
-		Mockito.verify(transactionManager, times(1)).rollback();
+		verify(transactionManager, times(1)).rollback();
 	}
 
 	@Test
 	public void testDoRollbackNotStarted() {
-		TransactionManager transactionManager = Mockito.mock(TransactionManager.class);
-
-		SpannerTransactionManager.Tx tx = Mockito.mock(SpannerTransactionManager.Tx.class);
-		ReflectionTestUtils.setField(tx, "transactionManager", transactionManager);
-
-		DefaultTransactionStatus status = Mockito.mock(DefaultTransactionStatus.class);
-		Mockito.when(status.getTransaction()).thenReturn(tx);
-		SpannerTransactionManager manager = new SpannerTransactionManager(() -> this.databaseClient) {
-			@Override
-			protected Tx getCurrentTX() {
-				return tx;
-			}
-		};
+		tx.transactionManager = transactionManager;
 
 		manager.doRollback(status);
 
-		Mockito.verify(transactionManager, never()).rollback();
+		verify(transactionManager, never()).rollback();
 	}
 }

@@ -116,6 +116,7 @@ public class GcpPubSubAutoConfiguration {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 		scheduler.setPoolSize(this.gcpPubSubProperties.getPublisher().getExecutorThreads());
 		scheduler.setThreadNamePrefix("gcp-pubsub-publisher");
+		scheduler.setDaemon(true);
 		return scheduler;
 	}
 
@@ -132,6 +133,7 @@ public class GcpPubSubAutoConfiguration {
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 		scheduler.setPoolSize(this.gcpPubSubProperties.getSubscriber().getExecutorThreads());
 		scheduler.setThreadNamePrefix("gcp-pubsub-subscriber");
+		scheduler.setDaemon(true);
 		return scheduler;
 	}
 
@@ -157,6 +159,7 @@ public class GcpPubSubAutoConfiguration {
 		ThreadPoolTaskExecutor ackExecutor = new ThreadPoolTaskExecutor();
 		ackExecutor.setMaxPoolSize(this.gcpPubSubProperties.getSubscriber().getMaxAcknowledgementThreads());
 		ackExecutor.setThreadNamePrefix("gcp-pubsub-ack-executor");
+		ackExecutor.setDaemon(true);
 		return ackExecutor;
 	}
 
@@ -379,7 +382,9 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
-		return InstantiatingGrpcChannelProvider.newBuilder().build();
+		return InstantiatingGrpcChannelProvider.newBuilder()
+			.setKeepAliveTime(Duration.ofMinutes(this.gcpPubSubProperties.getKeepAliveIntervalMinutes()))
+			.build();
 	}
 
 }

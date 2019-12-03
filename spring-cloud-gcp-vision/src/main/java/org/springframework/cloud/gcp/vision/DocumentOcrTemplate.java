@@ -41,7 +41,6 @@ import com.google.cloud.vision.v1.InputConfig;
 import com.google.cloud.vision.v1.OperationMetadata;
 import com.google.cloud.vision.v1.OutputConfig;
 import com.google.cloud.vision.v1.TextAnnotation;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
 import org.springframework.util.Assert;
@@ -182,7 +181,7 @@ public class DocumentOcrTemplate {
 	 *
 	 * @param jsonFile the location of the JSON output file
 	 * @return the list of {@link TextAnnotation} containing the OCR results
-	 * @throws InvalidProtocolBufferException if the JSON file cannot be deserialized into a
+	 * @throws RuntimeException if the JSON file cannot be deserialized into a
 	 *     {@link TextAnnotation} object
 	 */
 	public DocumentOcrResultSet readOcrOutputFile(GoogleStorageLocation jsonFile) {

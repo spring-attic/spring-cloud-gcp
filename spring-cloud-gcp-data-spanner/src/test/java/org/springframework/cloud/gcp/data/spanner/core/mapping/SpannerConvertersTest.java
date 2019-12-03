@@ -55,7 +55,7 @@ public class SpannerConvertersTest {
 
 	@Test
 	public void timestampConversionTest() {
-		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
+		Timestamp timestamp = Timestamp.ofTimeMicroseconds(-12345678);
 		assertThat(SpannerConverters.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER
 				.convert(SpannerConverters.SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp)))
 						.isEqualTo(timestamp);

@@ -20,14 +20,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityWriter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
@@ -78,7 +82,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	private final SpannerEntityWriter spannerEntityWriter;
+	private final SpannerEntityProcessor spannerEntityProcessor;
 
 	private StandardEvaluationContext context;
 
@@ -100,20 +104,20 @@ public class SpannerPersistentEntityImpl<T>
 	 * @param information type information about the underlying entity type.
 	 * @param spannerMappingContext a mapping context that can be used to create persistent
 	 *     entities from properties of this entity
-	 * @param spannerEntityWriter an entity writer used to create keys by converting and
-	 *     combining id properties.
+	 * @param spannerEntityProcessor an entity processor used to create keys by converting and
+	 *     combining id properties, as well as to convert keys to property values
 	 */
 	public SpannerPersistentEntityImpl(TypeInformation<T> information,
-			SpannerMappingContext spannerMappingContext, SpannerEntityWriter spannerEntityWriter) {
+			SpannerMappingContext spannerMappingContext, SpannerEntityProcessor spannerEntityProcessor) {
 		super(information);
 
 		Assert.notNull(spannerMappingContext,
 				"A non-null SpannerMappingContext is required.");
-		Assert.notNull(spannerEntityWriter, "A non-null SpannerEntityWriter is required.");
+		Assert.notNull(spannerEntityProcessor, "A non-null SpannerEntityProcessor is required.");
 
 		this.spannerMappingContext = spannerMappingContext;
 
-		this.spannerEntityWriter = spannerEntityWriter;
+		this.spannerEntityProcessor = spannerEntityProcessor;
 
 		this.rawType = information.getType();
 
@@ -321,8 +325,8 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public SpannerEntityWriter getSpannerEntityWriter() {
-		return this.spannerEntityWriter;
+	public SpannerEntityWriter getSpannerEntityProcessor() {
+		return this.spannerEntityProcessor;
 	}
 
 	@Override
@@ -379,9 +383,22 @@ public class SpannerPersistentEntityImpl<T>
 			public void setProperty(PersistentProperty property,
 					@Nullable Object value) {
 				if (property.isIdProperty()) {
-					throw new SpannerDataException(
-							"Setting the primary key directly via the Key ID property is not supported. "
-									+ "Please set the underlying column properties.");
+					SpannerPersistentEntity owner = (SpannerPersistentEntity) property.getOwner();
+					SpannerPersistentProperty[] primaryKeyProperties = owner.getPrimaryKeyProperties();
+
+					Key keyValue = (Key) value;
+					if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
+						throw new SpannerDataException(
+								"The number of key parts is not equal to the number of primary key properties");
+					}
+
+					Iterator<Object> partsIterator = keyValue.getParts().iterator();
+					for (int i = 0; i < primaryKeyProperties.length; i++) {
+						SpannerPersistentProperty prop = primaryKeyProperties[i];
+						delegatedAccessor.setProperty(prop,
+								SpannerPersistentEntityImpl.this.spannerEntityProcessor.getReadConverter().convert(
+										partsIterator.next(), prop.getType()));
+					}
 				}
 				else {
 					delegatedAccessor.setProperty(property, value);

@@ -24,6 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.EntityValue;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
@@ -196,7 +199,15 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	private Value setExcludeFromIndexes(Value convertedVal) {
 		// ListValues must have its contents individually excluded instead.
 		// the entire list must NOT be excluded or there will be an exception.
-		if (convertedVal.getClass().equals(ListValue.class)) {
+		// Same for maps which are stored as EntityValue.
+		if (convertedVal.getClass().equals(EntityValue.class)) {
+			FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder();
+			((EntityValue) convertedVal).get().getProperties().entrySet().stream().forEach(
+					stringValueEntry -> builder.set(stringValueEntry.getKey(), stringValueEntry.getValue().toBuilder().setExcludeFromIndexes(true).build())
+			);
+			return EntityValue.of(builder.build());
+		}
+		else if (convertedVal.getClass().equals(ListValue.class)) {
 			return ListValue.of(((ListValue) convertedVal).get().stream()
 					.map(val -> val.toBuilder().setExcludeFromIndexes(true).build()).collect(Collectors.toList()));
 		}

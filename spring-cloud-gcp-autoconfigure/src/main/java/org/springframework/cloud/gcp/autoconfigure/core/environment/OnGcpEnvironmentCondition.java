@@ -29,7 +29,8 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.Assert;
 
 /**
- * {@Condition} that determines which GCP environment the application is running on.
+ * {@link org.springframework.context.annotation.Condition} that determines which GCP environment the application is
+ * running on.
  *
  * @author Elena Felder
  *

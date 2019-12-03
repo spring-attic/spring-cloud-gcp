@@ -30,6 +30,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -79,6 +81,9 @@ public class DatastoreSampleApplicationTests {
 	@Autowired
 	private SingerRepository singerRepository;
 
+	@Autowired
+	DatastoreTemplate datastoreTemplate;
+
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(System.getProperty("it.datastore"))
@@ -91,12 +96,27 @@ public class DatastoreSampleApplicationTests {
 		System.setOut(new PrintStream(out));
 	}
 
+	@After
+	public void cleanUp() {
+		this.datastoreTemplate.deleteAll(Instrument.class);
+		this.datastoreTemplate.deleteAll(Band.class);
+		this.datastoreTemplate.deleteAll(Singer.class);
+	}
+
 	@Test
+	public void runTests() throws Exception {
+		basicTest();
+		testCompoundKeyRestResource();
+	}
+
 	public void basicTest() throws Exception {
 		Singer johnDoe = new Singer(null, "John", "Doe", null);
 		Singer janeDoe = new Singer(null, "Jane", "Doe", null);
 		Singer richardRoe = new Singer(null, "Richard", "Roe", null);
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
+
+		Awaitility.await().atMost(15, TimeUnit.SECONDS)
+				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 3);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
 		assertThat(singersAsc)
@@ -176,20 +196,24 @@ public class DatastoreSampleApplicationTests {
 				"Singer{singerId='singer2', firstName='Jane', lastName='Doe', " +
 				"albums=[Album{albumName='a', date=2012-01-20}");
 
+		assertThat(baos.toString()).contains("Find by reference with query\n" + "[Richard]");
+
+		assertThat(baos.toString()).contains("Find by reference\n" + "[Richard]");
+
 		assertThat(baos.toString()).contains("This concludes the sample.");
 	}
 
-	@Test
 	public void testCompoundKeyRestResource() throws IOException {
 		String allInstrumentsResponse = sendRequest("/instruments", null, HttpMethod.GET);
 		Map<String, Object> parsedResponse = this.mapper.readValue(allInstrumentsResponse,
 				new TypeReference<HashMap<String, Object>>() {
 				});
-		String instrumentUrl = (String) ((Map) ((Map) ((Map) ((List) ((Map) parsedResponse.get("_embedded"))
-				.get("instruments")).get(0)).get("_links")).get("instrument")).get("href");
+		Map instrument = (Map) ((List) ((Map) parsedResponse.get("_embedded")).get("instruments")).get(0);
+		String instrumentUrl = (String) ((Map) ((Map) instrument.get("_links")).get("instrument")).get("href");
+		String instrumentType = instrument.get("type").toString();
 		String instrumentResponse = sendRequest(instrumentUrl, null, HttpMethod.GET);
 		// An instrument JSON object is expected. In this case a recorder.
-		assertThat(instrumentResponse).contains("{\n" + "  \"type\" : \"recorder\"");
+		assertThat(instrumentResponse).contains("{\n" + "  \"type\" : \"" + instrumentType + "\"");
 	}
 
 	private String sendRequest(String url, String json, HttpMethod method) {

@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import brave.http.HttpClientParser;
@@ -30,6 +29,9 @@ import io.grpc.CallOptions;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import zipkin2.CheckResult;
 import zipkin2.Span;
 import zipkin2.propagation.stackdriver.StackdriverTracePropagation;
 import zipkin2.reporter.AsyncReporter;
@@ -59,6 +61,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * Config for Stackdriver Trace.
@@ -77,6 +80,8 @@ import org.springframework.context.annotation.Primary;
 @AutoConfigureBefore(TraceAutoConfiguration.class)
 @Import(SamplerAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
+
+	private static final Log LOGGER = LogFactory.getLog(StackdriverTraceAutoConfiguration.class);
 
 	/**
 	 * Stackdriver reporter bean name. Name of the bean matters for supporting multiple tracing
@@ -117,10 +122,19 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "traceSenderThreadPool")
+	public ThreadPoolTaskScheduler traceSenderThreadPool(GcpTraceProperties traceProperties) {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
+		scheduler.setThreadNamePrefix("gcp-trace-sender");
+		scheduler.setDaemon(true);
+		return scheduler;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(name = "traceExecutorProvider")
-	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties) {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
+	public ExecutorProvider traceExecutorProvider(@Qualifier("traceSenderThreadPool") ThreadPoolTaskScheduler scheduler) {
+		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
 	@Bean(destroyMethod = "shutdownNow")
@@ -135,11 +149,20 @@ public class StackdriverTraceAutoConfiguration {
 	@ConditionalOnMissingBean(name = REPORTER_BEAN_NAME)
 	public Reporter<Span> stackdriverReporter(ReporterMetrics reporterMetrics,
 			GcpTraceProperties trace, @Qualifier(SENDER_BEAN_NAME) Sender sender) {
-		return AsyncReporter.builder(sender)
+
+		AsyncReporter<Span> asyncReporter = AsyncReporter.builder(sender)
 				// historical constraint. Note: AsyncReporter supports memory bounds
 				.queuedMaxSpans(1000)
 				.messageTimeout(trace.getMessageTimeout(), TimeUnit.SECONDS)
-				.metrics(reporterMetrics).build(StackdriverEncoder.V1);
+				.metrics(reporterMetrics).build(StackdriverEncoder.V2);
+
+		CheckResult checkResult = asyncReporter.check();
+		if (!checkResult.ok()) {
+			LOGGER.warn(
+					"Error when performing Stackdriver AsyncReporter health check.", checkResult.error());
+		}
+
+		return asyncReporter;
 	}
 
 	@Bean(SENDER_BEAN_NAME)

@@ -28,8 +28,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,13 +43,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.bigquery.enabled", matchIfMissing = true)
-@ConditionalOnClass({ BigQuery.class })
+@ConditionalOnClass({ BigQuery.class, BigQueryTemplate.class })
 @EnableConfigurationProperties(GcpBigQueryProperties.class)
 public class GcpBigQueryAutoConfiguration {
 
 	private final String projectId;
 
 	private final CredentialsProvider credentialsProvider;
+
+	private final String datasetName;
 
 	GcpBigQueryAutoConfiguration(
 			GcpBigQueryProperties gcpBigQueryProperties,
@@ -61,6 +65,8 @@ public class GcpBigQueryAutoConfiguration {
 		this.credentialsProvider = (gcpBigQueryProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpBigQueryProperties)
 				: credentialsProvider);
+
+		this.datasetName = gcpBigQueryProperties.getDatasetName();
 	}
 
 	@Bean
@@ -69,7 +75,14 @@ public class GcpBigQueryAutoConfiguration {
 		BigQueryOptions bigQueryOptions = BigQueryOptions.newBuilder()
 				.setProjectId(this.projectId)
 				.setCredentials(this.credentialsProvider.getCredentials())
+				.setHeaderProvider(new UserAgentHeaderProvider(GcpBigQueryAutoConfiguration.class))
 				.build();
 		return bigQueryOptions.getService();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public BigQueryTemplate bigQueryTemplate(BigQuery bigQuery) {
+		return new BigQueryTemplate(bigQuery, this.datasetName);
 	}
 }

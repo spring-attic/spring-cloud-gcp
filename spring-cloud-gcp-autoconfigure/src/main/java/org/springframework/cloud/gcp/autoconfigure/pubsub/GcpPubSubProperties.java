@@ -56,6 +56,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	private String emulatorHost;
 
 	/**
+	 * How often to ping the server to keep the channel alive.
+	 */
+	private int keepAliveIntervalMinutes = 5;
+
+	/**
 	 * Overrides the GCP OAuth2 credentials specified in the Core module.
 	 */
 	@NestedConfigurationProperty
@@ -91,6 +96,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	 */
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
+	}
+
+	public int getKeepAliveIntervalMinutes() {
+		return keepAliveIntervalMinutes;
+	}
+
+	public void setKeepAliveIntervalMinutes(int keepAliveIntervalMinutes) {
+		this.keepAliveIntervalMinutes = keepAliveIntervalMinutes;
 	}
 
 	/**

@@ -31,6 +31,7 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.EntityValue;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.ListValue;
@@ -43,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItemCollections.ComparableBeanContextSupport;
 import org.springframework.cloud.gcp.data.datastore.core.convert.TestItemWithEmbeddedEntity.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -608,6 +610,7 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setIndexedField(1L);
 		item.setUnindexedField(2L);
 		item.setUnindexedStringListField(Arrays.asList("a", "b"));
+		item.setUnindexedMapField(new MapBuilder<String, String>().put("c", "C").put("d", "D").build());
 
 		Entity.Builder builder = getEntityBuilder();
 		ENTITY_CONVERTER.write(item, builder);
@@ -625,11 +628,17 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate excludeFromIndexes on unindexed field").isTrue();
 
 		// the ListValue itself must NOT be unindexed or it will cause exception. the contents
-		// individually must be.
+		// individually must be. Same for map.
 		assertThat(entity.getValue("unindexedStringListField").excludeFromIndexes()).isFalse();
 		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(0).excludeFromIndexes())
 				.isTrue();
 		assertThat(((ListValue) entity.getValue("unindexedStringListField")).get().get(1).excludeFromIndexes())
+				.isTrue();
+
+		assertThat(entity.getValue("unindexedMapField").excludeFromIndexes()).isFalse();
+		assertThat(((EntityValue) entity.getValue("unindexedMapField")).get().getValue("c").excludeFromIndexes())
+				.isTrue();
+		assertThat(((EntityValue) entity.getValue("unindexedMapField")).get().getValue("d").excludeFromIndexes())
 				.isTrue();
 	}
 

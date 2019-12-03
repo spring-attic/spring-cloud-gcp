@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -656,6 +657,56 @@ public class DatastoreTemplateTests {
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity5), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
 		verify(this.datastore, times(1)).put(ArgumentMatchers.<FullEntity[]>any());
+	}
+
+	@Test
+	public void saveAllMaxWriteSizeTest() {
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.ob1), any()))
+				.thenReturn(this.key1);
+		when(this.objectToKeyFactory.getKeyFromObject(same(this.ob2), any()))
+				.thenReturn(this.key2);
+		Entity writtenEntity1 = Entity.newBuilder(this.key1)
+				.set("singularReference", this.childKey4)
+				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
+				.build();
+		Entity writtenEntity2 = Entity.newBuilder(this.key2).build();
+		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
+		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
+		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
+		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
+		Set<Entity> entities = new HashSet<>();
+		entities.addAll(Arrays.asList(writtenChildEntity2, writtenChildEntity3,
+				writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1, writtenEntity2));
+		doAnswer(invocation -> {
+			assertThat(invocation.getArguments()).hasSize(1);
+			assertThat(entities).contains((Entity) invocation.getArguments()[0]);
+			entities.remove(invocation.getArguments()[0]);
+			return null;
+		}).when(this.datastore).put(ArgumentMatchers.<FullEntity[]>any());
+
+		List<Entity> expected = Arrays.asList(writtenChildEntity2, writtenChildEntity3,
+				writtenChildEntity4, writtenChildEntity5, writtenChildEntity6, writtenEntity1, writtenEntity2);
+		List javaExpected = Arrays.asList(this.ob1, this.ob2);
+
+		this.datastoreTemplate.setMaxWriteSize(1);
+		verifyBeforeAndAfterEvents(new BeforeSaveEvent(javaExpected),
+				new AfterSaveEvent(expected, javaExpected),
+				() -> this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2)),
+				x -> {
+				});
+
+		assertThat(entities).isEmpty();
+
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity4), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity5), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
+
+		verify(this.datastore, times(7)).put(ArgumentMatchers.<FullEntity[]>any());
 	}
 
 	@Test

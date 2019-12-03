@@ -91,7 +91,10 @@ For example, when you are testing to see the traces are going through, you can s
 ----
 spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
+spring.sleuth.scheduled.enabled=false                   # disable executor 'async' traces
 ----
+
+WARNING: By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which causes many traces with the name `async` to appear in Stackdriver Trace. This is especially a problem because our starter comes with an executor. To avoid this noise, please disable automatic instrumentation of executors via `spring.sleuth.scheduled.enabled=false` in your application configuration.
 
 Spring Cloud GCP Trace does override some Sleuth configurations:
 

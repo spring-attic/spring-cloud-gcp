@@ -17,9 +17,9 @@
 package com.example;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.google.cloud.vision.v1.EntityAnnotation;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,8 +66,9 @@ public class VisionApiSampleApplicationTests {
 	public void testExtractTextFromImage() throws Exception {
 		this.mockMvc.perform(get(TEXT_IMAGE_URL))
 				.andDo((response) -> {
-					String textImageResponse = response.getResponse().getContentAsString();
-					assertThat(textImageResponse).isEqualTo("Text from image: STOP\n");
+					ModelAndView result = response.getModelAndView();
+					String textFromImage = ((String) result.getModelMap().get("text")).trim();
+					assertThat(textFromImage).isEqualTo("STOP");
 				});
 	}
 
@@ -76,10 +77,10 @@ public class VisionApiSampleApplicationTests {
 		this.mockMvc.perform(get(LABEL_IMAGE_URL))
 				.andDo((response) -> {
 					ModelAndView result = response.getModelAndView();
-					Map<String, Float> annotations = (Map<String, Float>) result.getModelMap().get("annotations");
+					List<EntityAnnotation> annotations = (List<EntityAnnotation>) result.getModelMap().get("annotations");
 
-					List<String> annotationNames = annotations.keySet().stream()
-							.map(name -> name.toLowerCase().trim())
+					List<String> annotationNames = annotations.stream()
+							.map(annotation -> annotation.getDescription().toLowerCase().trim())
 							.collect(Collectors.toList());
 
 					assertThat(annotationNames).contains("boston terrier");

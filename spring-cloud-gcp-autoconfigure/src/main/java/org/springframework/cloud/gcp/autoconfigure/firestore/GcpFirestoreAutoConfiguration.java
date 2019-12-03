@@ -19,12 +19,15 @@ package org.springframework.cloud.gcp.autoconfigure.firestore;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.TransportOptions;
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
+import com.google.firestore.v1.FirestoreGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.auth.MoreCallCredentials;
+import reactor.core.publisher.Flux;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,6 +36,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -50,9 +59,18 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreAutoConfiguration {
 
+	private static final String ROOT_PATH_FORMAT = "projects/%s/databases/(default)/documents";
+
+	private static final UserAgentHeaderProvider USER_AGENT_HEADER_PROVIDER =
+			new UserAgentHeaderProvider(GcpFirestoreAutoConfiguration.class);
+
 	private final String projectId;
 
 	private final CredentialsProvider credentialsProvider;
+
+	private final String hostPort;
+
+	private final String firestoreRootPath;
 
 	GcpFirestoreAutoConfiguration(GcpFirestoreProperties gcpFirestoreProperties,
 			GcpProjectIdProvider projectIdProvider,
@@ -65,17 +83,23 @@ public class GcpFirestoreAutoConfiguration {
 		this.credentialsProvider = (gcpFirestoreProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpFirestoreProperties)
 				: credentialsProvider);
+
+		this.hostPort = gcpFirestoreProperties.getHostPort();
+		this.firestoreRootPath = String.format(ROOT_PATH_FORMAT, this.projectId);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public FirestoreOptions firestoreOptions(ObjectProvider<TransportOptions> transportOptionsObjectProvider,
-			ObjectProvider<TransportChannelProvider> transportChannelProviderObjectProvider) {
-		FirestoreOptions.Builder builder = FirestoreOptions.getDefaultInstance().toBuilder()
+	public FirestoreOptions firestoreOptions() {
+		return FirestoreOptions.getDefaultInstance().toBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
-				.setProjectId(this.projectId);
-
-		return builder.build();
+				.setProjectId(this.projectId)
+				.setHeaderProvider(USER_AGENT_HEADER_PROVIDER)
+				.setChannelProvider(
+						InstantiatingGrpcChannelProvider.newBuilder()
+								.setEndpoint(this.hostPort)
+								.build())
+				.build();
 	}
 
 	@Bean
@@ -84,4 +108,55 @@ public class GcpFirestoreAutoConfiguration {
 		return firestoreOptions.getService();
 	}
 
+	/**
+	 * The Firestore reactive template and data repositories support auto-configuration.
+	 */
+	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class, Flux.class })
+	class FirestoreReactiveAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
+				ManagedChannel firestoreManagedChannel) throws IOException {
+			return FirestoreGrpc.newStub(firestoreManagedChannel)
+					.withCallCredentials(MoreCallCredentials.from(
+							GcpFirestoreAutoConfiguration.this.credentialsProvider.getCredentials()));
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreMappingContext firestoreMappingContext() {
+			return new FirestoreMappingContext();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreClassMapper getClassMapper() {
+			return new FirestoreDefaultClassMapper();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+				FirestoreClassMapper classMapper) {
+			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath,
+					classMapper);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public ReactiveFirestoreTransactionManager firestoreTransactionManager(
+				FirestoreGrpc.FirestoreStub firestoreStub) {
+			return new ReactiveFirestoreTransactionManager(firestoreStub,
+					GcpFirestoreAutoConfiguration.this.firestoreRootPath);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public ManagedChannel firestoreManagedChannel() {
+			return ManagedChannelBuilder
+					.forTarget(GcpFirestoreAutoConfiguration.this.hostPort)
+					.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
+					.build();
+		}
+	}
 }

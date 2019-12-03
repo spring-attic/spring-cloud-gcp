@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-		 xmlns="https://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>spring-cloud-gcp</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>1.2.0.BUILD-SNAPSHOT</version>
+		<version>1.3.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP Starters</name>
@@ -22,6 +22,7 @@
 	<modules>
 		<module>spring-cloud-gcp-starter</module>
 		<module>spring-cloud-gcp-starter-bus-pubsub</module>
+		<module>spring-cloud-gcp-starter-cloudfoundry</module>
 		<module>spring-cloud-gcp-starter-pubsub</module>
 		<module>spring-cloud-gcp-starter-config</module>
 		<module>spring-cloud-gcp-starter-storage</module>
@@ -34,5 +35,7 @@
 		<module>spring-cloud-gcp-starter-sql-postgresql</module>
 		<module>spring-cloud-gcp-starter-security-iap</module>
 		<module>spring-cloud-gcp-starter-vision</module>
+		<module>spring-cloud-gcp-starter-data-firestore</module>
+		<module>spring-cloud-gcp-starter-bigquery</module>
 	</modules>
 </project>

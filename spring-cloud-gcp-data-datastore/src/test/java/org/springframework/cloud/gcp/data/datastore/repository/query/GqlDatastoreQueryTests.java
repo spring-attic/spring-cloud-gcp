@@ -26,6 +26,9 @@ import java.util.Optional;
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.DoubleValue;
 import com.google.cloud.datastore.GqlQuery;
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.LongValue;
 import com.google.cloud.datastore.Value;
 import org.assertj.core.data.Offset;
@@ -117,14 +120,18 @@ public class GqlDatastoreQueryTests {
 				+ "price<>:#{#tag7 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
-				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
+				+ "price>@tag6 AND price<=@tag7 AND trade_ref = @tag8) ORDER BY id DESC LIMIT 3;";
 
 		String entityResolvedGql = "SELECT * FROM trades"
 				+ " WHERE price=@SpELtag1 AND price<>@SpELtag2 OR price<>@SpELtag3 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
-				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
+				+ "price>@tag6 AND price<=@tag7 AND trade_ref = @tag8) ORDER BY id DESC LIMIT 3";
+
+
+		Trade trade = new Trade();
+		trade.id = "tradeId1";
 
 		Object[] paramVals = new Object[] { "BUY", "abcd",
 				// this is an array param of the non-natively supported type and will need conversion
@@ -132,12 +139,18 @@ public class GqlDatastoreQueryTests {
 				new double[] { 8.88, 9.99 },
 				3, // this parameter is a simple int, which is not a directly supported type and uses
 					// conversions
-				"blahblah", 1.11, 2.22 };
+				"blahblah", 1.11, 2.22, trade };
 
 		String[] paramNames = new String[] { "tag0", "tag1", "tag2", "tag3", "tag4",
-				"tag5", "tag6", "tag7" };
+				"tag5", "tag6", "tag7", "tag8" };
 
 		buildParameters(paramVals, paramNames);
+
+		KeyFactory keyFactory = new KeyFactory("proj");
+		keyFactory.setKind("kind");
+		Key key = keyFactory.newKey("tradeid1-key");
+
+		doReturn(key).when(this.datastoreTemplate).getKey(any());
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < paramVals.length; i++) {
@@ -180,6 +193,8 @@ public class GqlDatastoreQueryTests {
 					DELTA);
 			assertThat((double) paramMap.get("SpELtag3").get()).isEqualTo(-1 * (double) paramVals[7],
 					DELTA);
+
+			assertThat(((KeyValue) paramMap.get("tag8")).get()).isSameAs(key);
 
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));

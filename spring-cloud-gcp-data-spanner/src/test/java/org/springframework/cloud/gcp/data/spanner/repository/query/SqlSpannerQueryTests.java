@@ -127,6 +127,48 @@ public class SqlSpannerQueryTests {
 	}
 
 	@Test
+	public void noPageableParamNotWrappedQueryTest() throws NoSuchMethodException {
+		String sql = "SELECT DISTINCT * FROM "
+				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
+
+		String entityResolvedSql = "SELECT DISTINCT * FROM trades";
+
+		Parameters parameters = mock(Parameters.class);
+
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
+
+		when(parameters.getNumberOfParameters()).thenReturn(0);
+
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+				.thenReturn(evaluationContext);
+
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
+
+		doAnswer((invocation) -> {
+			Statement statement = invocation.getArgument(0);
+			SpannerQueryOptions queryOptions = invocation.getArgument(1);
+			assertThat(queryOptions.isAllowPartialRead()).isTrue();
+
+			assertThat(statement.getSql()).isEqualTo(entityResolvedSql);
+
+			return null;
+		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+		// This dummy method was created so the metadata for the ARRAY param inner type is
+		// provided.
+		Method method = QueryHolder.class.getMethod("dummyMethod2");
+		when(this.queryMethod.getMethod()).thenReturn(method);
+
+		sqlSpannerQuery.execute(new Object[] {});
+
+		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
+	}
+
+	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
 
 		String sql = "SELECT DISTINCT * FROM "
@@ -347,6 +389,10 @@ public class SqlSpannerQueryTests {
 				Object tag6, Object tag7, Object tag8, Object tag9, Object tag11,
 				@Param("tag10") List<String> blahblah) {
 			// tag10 is intentionally named via annotation.
+			return 0;
+		}
+
+		public long dummyMethod2() {
 			return 0;
 		}
 	}

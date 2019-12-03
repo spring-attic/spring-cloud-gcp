@@ -44,6 +44,7 @@ import static org.mockito.Mockito.when;
  * Tests for the Datastore transactional annotation manager.
  *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public class DatastoreTransactionManagerTests {
 
@@ -59,7 +60,7 @@ public class DatastoreTransactionManagerTests {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
-	private Tx tx = new Tx();
+	private Tx tx;
 
 	private DatastoreTransactionManager manager;
 
@@ -68,18 +69,18 @@ public class DatastoreTransactionManagerTests {
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+
+		this.manager = new DatastoreTransactionManager(() -> datastore);
+		this.tx = (Tx) manager.doGetTransaction();
+
 		when(this.datastore.newTransaction()).thenReturn(this.transaction);
 		when(this.status.getTransaction()).thenReturn(this.tx);
-		this.manager = new DatastoreTransactionManager(() -> this.datastore) {
-			@Override
-			protected Tx getCurrentTX() {
-				return DatastoreTransactionManagerTests.this.tx;
-			}
-		};
+
 	}
 
 	@Test
 	public void testDoGetTransactionActive() {
+		this.manager.doBegin(this.tx, TransactionDefinition.withDefaults());
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		assertThat(this.manager.doGetTransaction()).isSameAs(this.tx);
@@ -87,6 +88,7 @@ public class DatastoreTransactionManagerTests {
 
 	@Test
 	public void testDoGetTransactionNotActive() {
+		this.manager.doBegin(this.tx, TransactionDefinition.withDefaults());
 		when(this.transaction.isActive()).thenReturn(false);
 		this.tx.setTransaction(this.transaction);
 		assertThat(this.manager.doGetTransaction()).isNotSameAs(this.tx);

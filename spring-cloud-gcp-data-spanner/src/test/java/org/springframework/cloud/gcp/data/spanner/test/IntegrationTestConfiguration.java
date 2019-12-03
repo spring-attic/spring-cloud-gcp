@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 
@@ -103,6 +104,7 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerOptions spannerOptions() {
 		return SpannerOptions.newBuilder().setProjectId(getProjectId())
+				.setSessionPoolOption(SessionPoolOptions.newBuilder().setMaxSessions(10).build())
 				.setCredentials(getCredentials()).build();
 	}
 

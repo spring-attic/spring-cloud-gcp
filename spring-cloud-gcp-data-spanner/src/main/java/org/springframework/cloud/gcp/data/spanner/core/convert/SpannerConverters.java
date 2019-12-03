@@ -150,7 +150,9 @@ public final class SpannerConverters {
 						@Nullable
 						@Override
 						public Timestamp convert(java.sql.Timestamp timestamp) {
-							return Timestamp.of(timestamp);
+							long secs = Math.floorDiv(timestamp.getTime(), 1000L);
+							int nanos = timestamp.getNanos();
+							return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
 						}
 					};
 

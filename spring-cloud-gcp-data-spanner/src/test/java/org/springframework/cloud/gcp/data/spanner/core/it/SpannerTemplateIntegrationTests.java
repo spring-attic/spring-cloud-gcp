@@ -16,8 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
+import java.util.concurrent.TimeUnit;
+
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,6 +54,18 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 	@Autowired
 	TemplateTransactionalService transactionalService;
+
+	@Test
+	public void testReadOnlyOperation() {
+		// Integration tests are configured with 10 sessions max. This will hang and fail if there
+		// is a leak.
+		for (int i = 0; i < 20; i++) {
+			Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+				this.transactionalService.testReadOnlyOperation();
+				return true;
+			});
+		}
+	}
 
 	@Test
 	public void insertAndDeleteSequence() {
@@ -119,6 +134,11 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 			// because the insert happens within the same transaction, this count is unchanged.
 			assertThat(this.spannerTemplate.count(Trade.class)).isEqualTo(beforeCount);
+		}
+
+		@Transactional(readOnly = true)
+		public void testReadOnlyOperation() {
+			this.spannerTemplate.count(Trade.class);
 		}
 	}
 }

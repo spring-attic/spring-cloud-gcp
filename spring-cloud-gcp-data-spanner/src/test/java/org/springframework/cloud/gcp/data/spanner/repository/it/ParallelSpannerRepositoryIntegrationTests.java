@@ -21,6 +21,8 @@ import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
 import com.google.cloud.spanner.KeySet;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,10 +47,14 @@ public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIn
 	@Autowired
 	TradeRepository tradeRepository;
 
+	@Before
+	@After
+	public void cleanUpData() {
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+	}
+
 	@Test
 	public void testParallelOperations() {
-
-		this.spannerOperations.delete(Trade.class, KeySet.all());
 
 		this.tradeRepository.performReadWriteTransaction(repo -> {
 

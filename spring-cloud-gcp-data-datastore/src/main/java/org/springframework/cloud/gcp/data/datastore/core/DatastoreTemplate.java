@@ -65,6 +65,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQuer
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
+import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
+import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -78,8 +80,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.lang.Nullable;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 import org.springframework.util.TypeUtils;
@@ -92,6 +92,8 @@ import org.springframework.util.TypeUtils;
  * @since 1.1
  */
 public class DatastoreTemplate implements DatastoreOperations, ApplicationEventPublisherAware {
+
+	private int maxWriteSize = 500;
 
 	private final Supplier<? extends DatastoreReaderWriter> datastore;
 
@@ -168,7 +170,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (!instances.isEmpty()) {
 			maybeEmitEvent(new BeforeSaveEvent(instances));
 			List<Entity> entities = getEntitiesForSave(instances, new HashSet<>(), ancestors);
-			getDatastoreReadWriter().put(entities.toArray(new Entity[0]));
+			SliceUtil.sliceAndExecute(
+					entities.toArray(new Entity[0]), this.maxWriteSize, getDatastoreReadWriter()::put);
 			maybeEmitEvent(new AfterSaveEvent(entities, instances));
 		}
 	}
@@ -203,7 +206,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private void performDelete(Key[] keys, Iterable ids, Iterable entities, Class entityClass) {
 		maybeEmitEvent(new BeforeDeleteEvent(keys, entityClass, ids, entities));
-		getDatastoreReadWriter().delete(keys);
+		SliceUtil.sliceAndExecute(keys, this.maxWriteSize, getDatastoreReadWriter()::delete);
 		maybeEmitEvent(new AfterDeleteEvent(keys, entityClass, ids, entities));
 	}
 
@@ -643,10 +646,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 					Class descendantType = descendantPersistentProperty
 							.getComponentType();
 
+					Key entityKey = (Key) entity.getKey();
+					Key ancestorKey = KeyUtil.getKeyWithoutAncestors(entityKey);
+
 					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
 							.setKind(this.datastoreMappingContext
 									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.setFilter(PropertyFilter.hasAncestor(ancestorKey))
 							.build();
 
 					List entities = convertEntitiesForRead(
@@ -666,6 +672,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private Key getKeyFromId(Object id, Class entityClass) {
 		return this.objectToKeyFactory.getKeyFromId(id,
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
+	}
+
+	public Key getKey(Object entity) {
+		return getKey(entity, false);
 	}
 
 	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
@@ -695,10 +705,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private DatastoreReaderWriter getDatastoreReadWriter() {
-		return TransactionSynchronizationManager.isActualTransactionActive()
-				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-						.currentTransactionStatus()).getTransaction()).getTransaction()
-				: this.datastore.get();
+		if (TransactionSynchronizationManager.isActualTransactionActive()) {
+			DatastoreTransactionManager.Tx tx = (DatastoreTransactionManager.Tx) TransactionSynchronizationManager
+					.getResource(this.datastore.get());
+			if (tx != null && tx.getTransaction() != null) {
+				return tx.getTransaction();
+			}
+		}
+		return this.datastore.get();
 	}
 
 	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
@@ -780,6 +794,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	void setMaxWriteSize(int maxWriteSize) {
+		this.maxWriteSize = maxWriteSize;
 	}
 
 	/**

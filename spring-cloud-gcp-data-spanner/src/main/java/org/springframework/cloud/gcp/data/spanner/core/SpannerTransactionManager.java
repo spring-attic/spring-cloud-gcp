@@ -35,19 +35,19 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.UnexpectedRollbackException;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -58,30 +58,16 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		this.databaseClientProvider = databaseClientProvider;
 	}
 
-	protected Tx getCurrentTX() {
-		try {
-			return (SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus())
-							.getTransaction();
-		}
-		catch (NoTransactionException ex) {
-			return null;
-		}
-	}
-
 	@Override
 	protected Object doGetTransaction() throws TransactionException {
-		Tx tx = getCurrentTX();
-		if (tx != null
-				&& tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
-			logger.debug(tx + " reuse; state = " + tx.transactionManager.getState());
+		Tx tx = (Tx) TransactionSynchronizationManager.getResource(databaseClientProvider.get());
+		if (tx != null && tx.getTransactionContext() != null
+				&& (tx.getTransactionManager() != null
+						&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED ||
+						tx.isReadOnly())) {
 			return tx;
 		}
-		// create a new one if current is not there
-		tx = new Tx();
-		tx.transactionManager = this.databaseClientProvider.get().transactionManager();
-		logger.debug(tx + " create; state = " + tx.transactionManager.getState());
-		return tx;
+		return new Tx(databaseClientProvider.get());
 	}
 
 	@Override
@@ -100,7 +86,8 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		if (transactionDefinition.isReadOnly()) {
 			final ReadContext targetTransactionContext = this.databaseClientProvider.get()
 					.readOnlyTransaction();
-
+			tx.isReadOnly = true;
+			tx.transactionManager = null;
 			tx.transactionContext = new TransactionContext() {
 				@Override
 				public void buffer(Mutation mutation) {
@@ -176,10 +163,12 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			};
 		}
 		else {
-			tx.transactionContext = tx.transactionManager.begin();
+			tx.transactionManager = tx.databaseClient.transactionManager();
+			tx.transactionContext = tx.getTransactionManager().begin();
+			tx.isReadOnly = false;
 		}
 
-		logger.debug(tx + " begin; state = " + tx.transactionManager.getState());
+		TransactionSynchronizationManager.bindResource(tx.getDatabaseClient(), tx);
 	}
 
 	@Override
@@ -187,11 +176,13 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		try {
-			logger.debug(tx + " beforeCommit; state = " + tx.transactionManager.getState());
-			if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
+			if (tx.getTransactionManager() != null &&
+					tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
 
-				tx.transactionManager.commit();
-				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
+				tx.getTransactionManager().commit();
+			}
+			if (tx.isReadOnly()) {
+				tx.getTransactionContext().close();
 			}
 		}
 		catch (AbortedException ex) {
@@ -214,28 +205,59 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	protected void doRollback(DefaultTransactionStatus defaultTransactionStatus)
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
-		logger.debug(tx + " beforeRollback; state = " + tx.transactionManager.getState());
-		if (tx.transactionManager.getState() == TransactionManager.TransactionState.STARTED) {
-			tx.transactionManager.rollback();
+		if (tx.getTransactionManager() != null
+				&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+			tx.getTransactionManager().rollback();
 		}
-		logger.debug(tx + " afterRollback; state = " + tx.transactionManager.getState());
+		if (tx.isReadOnly()) {
+			tx.getTransactionContext().close();
+		}
 	}
 
+	@Override
 	protected boolean isExistingTransaction(Object transaction) {
-		logger.debug("existing transaction " + transaction + "=" + getCurrentTX());
-		return transaction == getCurrentTX();
+		return ((Tx) transaction).getTransactionContext() != null;
+	}
+
+	@Override
+	protected void doCleanupAfterCompletion(Object transaction) {
+		Tx tx = (Tx) transaction;
+		TransactionSynchronizationManager.unbindResource(tx.getDatabaseClient());
+		tx.transactionManager = null;
+		tx.transactionContext = null;
+		tx.isReadOnly = false;
 	}
 
 	/**
 	 * A transaction object that holds the transaction context.
 	 */
 	public static class Tx {
-		private TransactionManager transactionManager;
+		TransactionManager transactionManager;
 
-		private TransactionContext transactionContext;
+		TransactionContext transactionContext;
+
+		boolean isReadOnly;
+
+		DatabaseClient databaseClient;
+
+		public Tx(DatabaseClient databaseClient) {
+			this.databaseClient = databaseClient;
+		}
 
 		public TransactionContext getTransactionContext() {
 			return this.transactionContext;
+		}
+
+		public TransactionManager getTransactionManager() {
+			return this.transactionManager;
+		}
+
+		public boolean isReadOnly() {
+			return this.isReadOnly;
+		};
+
+		public DatabaseClient getDatabaseClient() {
+			return databaseClient;
 		}
 	}
 }

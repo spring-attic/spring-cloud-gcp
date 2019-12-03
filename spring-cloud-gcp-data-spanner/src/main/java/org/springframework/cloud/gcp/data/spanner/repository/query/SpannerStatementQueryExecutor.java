@@ -137,6 +137,14 @@ public final class SpannerStatementQueryExecutor {
 			SpannerMappingContext mappingContext) {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);
+
+		// Cloud Spanner does not preserve the order of derived tables so we must not wrap the
+		// derived table
+		// in SELECT * FROM () if there is no overriding pageable param.
+		if ((options.getSort() == null || options.getSort().isUnsorted()) && options.getLimit() == null
+				&& options.getOffset() == null) {
+			return sql;
+		}
 		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
 				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
@@ -255,21 +263,6 @@ public final class SpannerStatementQueryExecutor {
 	public static String getColumnsStringForSelect(
 			SpannerPersistentEntity spannerPersistentEntity) {
 		return String.join(" , ", spannerPersistentEntity.columns());
-	}
-
-	private static BiFunction<ValueBinder, ?, ?> getSingleValueBinderBiFunction(Object param) {
-		if (Struct.class.isAssignableFrom(param.getClass())) {
-			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(Struct.class);
-		}
-		else if (param.getClass().isEnum()) {
-			return (binder,
-					value) -> ((BiFunction<ValueBinder, String, ?>)
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
-							.get(String.class)).apply(binder, value.toString());
-		}
-		else {
-			return ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.get(param.getClass());
-		}
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
