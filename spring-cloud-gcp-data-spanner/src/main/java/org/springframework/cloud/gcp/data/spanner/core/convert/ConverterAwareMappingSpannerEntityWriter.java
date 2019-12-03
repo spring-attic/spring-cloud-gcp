@@ -85,6 +85,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	static {
 		Map<Class<?>, BiFunction<ValueBinder, ?, ?>> map = new LinkedHashMap<>();
 
+		map.put(Timestamp.class,
+				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		map.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
 		map.put(Boolean.class, (BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to);
 		map.put(Long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
@@ -92,8 +94,6 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(Double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		map.put(double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		map.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
-		map.put(Timestamp.class,
-				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		map.put(ByteArray.class,
 				(BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to);
 		map.put(double[].class,
