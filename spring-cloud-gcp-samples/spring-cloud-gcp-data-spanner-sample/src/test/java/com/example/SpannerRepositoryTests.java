@@ -86,7 +86,7 @@ public class SpannerRepositoryTests {
 		assumeThat(
 				"Spanner integration tests are disabled. "
 						+ "Please use '-Dit.spanner=true' to enable them. ",
-				"true", is("true"));
+				System.getProperty("it.spanner"), is("true"));
 	}
 
 	@Before

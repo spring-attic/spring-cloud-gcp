@@ -74,9 +74,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(Long.class, ValueBinder::toInt64Array);
 		map.put(Double.class, ValueBinder::toFloat64Array);
 		map.put(Timestamp.class, ValueBinder::toTimestampArray);
-		map.put(com.google.cloud.Date.class, ValueBinder::toDateArray);
-		map.put(String.class, ValueBinder::toStringArray);
+		map.put(Date.class, ValueBinder::toDateArray);
 		map.put(ByteArray.class, ValueBinder::toBytesArray);
+		map.put(String.class, ValueBinder::toStringArray);
 
 		return Collections.unmodifiableMap(map);
 	}
