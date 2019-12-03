@@ -105,8 +105,12 @@ public class Trader {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		Trader trader = (Trader) o;
 		return Objects.equals(getTraderId(), trader.getTraderId()) &&
 				Objects.equals(getFirstName(), trader.getFirstName()) &&
