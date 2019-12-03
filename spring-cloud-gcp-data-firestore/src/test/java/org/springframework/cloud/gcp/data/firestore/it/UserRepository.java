@@ -46,6 +46,8 @@ public interface UserRepository extends FirestoreReactiveRepository<User> {
 
 	Flux<User> findByPetsContains(List<String> pets);
 
+	Flux<User> findByPetsContainsAndAgeIn(String pets, List<Integer> ages);
+
 	Mono<Long> countByAgeIsGreaterThan(Integer age);
 }
 //end::repository[]

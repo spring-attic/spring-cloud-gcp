@@ -226,6 +226,13 @@ public class FirestoreRepositoryIntegrationTests {
 				.block();
 
 		assertThat(pagedUsers).containsExactlyInAnyOrder("Squall");
+
+		pagedUsers = this.userRepository.findByPetsContainsAndAgeIn("cat", Arrays.asList(22, 23))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud");
 	}
 
 	@Test
