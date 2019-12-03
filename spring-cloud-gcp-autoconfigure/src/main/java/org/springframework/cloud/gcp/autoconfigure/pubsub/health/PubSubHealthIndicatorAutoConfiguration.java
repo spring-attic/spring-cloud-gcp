@@ -29,10 +29,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- *
+ * {@link HealthContributorAutoConfiguration Auto-configuration} for
+ * {@link PubSubHealthIndicator}.
+ * 
  * @author Vinicius Carvalho
  *
- * @since 1.2
+ * @since 1.3
  */
 
 @Configuration

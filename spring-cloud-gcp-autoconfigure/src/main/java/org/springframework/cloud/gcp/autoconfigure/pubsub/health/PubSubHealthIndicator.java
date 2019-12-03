@@ -34,7 +34,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
  *
  * @author Vinicius Carvalho
  *
- * @since 1.2
+ * @since 1.3
  */
 public class PubSubHealthIndicator extends AbstractHealthIndicator {
 
