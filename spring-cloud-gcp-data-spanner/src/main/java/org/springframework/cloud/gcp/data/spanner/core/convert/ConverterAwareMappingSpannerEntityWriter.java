@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -71,12 +70,12 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	@SuppressWarnings("unchecked")
 	private static Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> createIterableTypeMapping() {
 		Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> map = new LinkedHashMap<>();
-		map.put(com.google.cloud.Date.class, ValueBinder::toDateArray);
 		map.put(Boolean.class, ValueBinder::toBoolArray);
 		map.put(Long.class, ValueBinder::toInt64Array);
-		map.put(String.class, ValueBinder::toStringArray);
 		map.put(Double.class, ValueBinder::toFloat64Array);
 		map.put(Timestamp.class, ValueBinder::toTimestampArray);
+		map.put(com.google.cloud.Date.class, ValueBinder::toDateArray);
+		map.put(String.class, ValueBinder::toStringArray);
 		map.put(ByteArray.class, ValueBinder::toBytesArray);
 
 		return Collections.unmodifiableMap(map);
@@ -85,7 +84,6 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	static {
 		Map<Class<?>, BiFunction<ValueBinder, ?, ?>> map = new LinkedHashMap<>();
 
-		map.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
 		map.put(Boolean.class, (BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to);
 		map.put(Long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
 		map.put(long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
@@ -93,6 +91,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		map.put(Timestamp.class,
 				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
+		map.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
 		map.put(ByteArray.class,
 				(BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to);
 		map.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
@@ -118,14 +117,12 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	}
 
 	public static Class<?> findFirstCompatibleSpannerSingleItemNativeType(Predicate<Class> testFunc) {
-		Optional<Class<?>> compatible = singleItemTypeValueBinderMethodMap.keySet().stream().filter(testFunc)
-				.findFirst();
-		return compatible.isPresent() ? compatible.get() : null;
+		return singleItemTypeValueBinderMethodMap.keySet().stream().filter(testFunc)
+				.findFirst().orElse(null);
 	}
 
 	public static Class<?> findFirstCompatibleSpannerMultipleItemNativeType(Predicate<Class> testFunc) {
-		Optional<Class<?>> compatible = iterablePropertyTypeToMethodMap.keySet().stream().filter(testFunc).findFirst();
-		return compatible.isPresent() ? compatible.get() : null;
+		return iterablePropertyTypeToMethodMap.keySet().stream().filter(testFunc).findFirst().orElse(null);
 	}
 
 	@Override
