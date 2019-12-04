@@ -16,7 +16,11 @@
 
 package com.example;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -39,13 +43,29 @@ public class Trader {
 	@Column(name = "last_name")
 	private String lastName;
 
+	@Column(name = "CREATED_ON")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd HH:mm:ss z")
+	private java.sql.Timestamp createdOn;
+
+	@Column(name = "MODIFIED_ON")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd HH:mm:ss z")
+	private List<java.sql.Timestamp> modifiedOn;
+
 	public Trader() {
 	}
 
-	public Trader(String id, String firstName, String lastName) {
-		this.traderId = id;
+	public Trader(String traderId, String firstName, String lastName) {
+		this.traderId = traderId;
 		this.firstName = firstName;
 		this.lastName = lastName;
+	}
+
+	public Trader(String traderId, String firstName, String lastName, Timestamp createdOn, List<Timestamp> modifiedOn) {
+		this.traderId = traderId;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.createdOn = createdOn;
+		this.modifiedOn = modifiedOn;
 	}
 
 	public String getTraderId() {
@@ -78,6 +98,8 @@ public class Trader {
 				"traderId='" + this.traderId + '\'' +
 				", firstName='" + this.firstName + '\'' +
 				", lastName='" + this.lastName + '\'' +
+				", createdOn=" + this.createdOn +
+				", modifiedOn=" + this.modifiedOn +
 				'}';
 	}
 
@@ -92,11 +114,13 @@ public class Trader {
 		Trader trader = (Trader) o;
 		return Objects.equals(getTraderId(), trader.getTraderId()) &&
 				Objects.equals(getFirstName(), trader.getFirstName()) &&
-				Objects.equals(getLastName(), trader.getLastName());
+				Objects.equals(getLastName(), trader.getLastName()) &&
+				Objects.equals(this.createdOn, trader.createdOn) &&
+				Objects.equals(this.modifiedOn, trader.modifiedOn);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getTraderId(), getFirstName(), getLastName());
+		return Objects.hash(getTraderId(), getFirstName(), getLastName(), this.createdOn, this.modifiedOn);
 	}
 }
