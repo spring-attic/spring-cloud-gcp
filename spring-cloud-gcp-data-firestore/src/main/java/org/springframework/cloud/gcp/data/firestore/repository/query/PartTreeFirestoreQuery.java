@@ -145,12 +145,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 							"Too few parameters are provided for query method: " + getQueryMethod().getName());
 				}
 				Object value = it.next();
-				OperatorSelector operatorSelector = PART_TO_FILTER_OP.get(part.getType());
-				if (operatorSelector == null) {
-					throw new FirestoreDataException("Unsupported predicate keyword: " + part.getType());
-				}
 				filter.getFieldFilterBuilder().setField(fieldReference)
-						.setOp(operatorSelector.getFiler(value))
+						.setOp(getOperator(part, value))
 						.setValue(this.classMapper.toFirestoreValue(value));
 			}
 			compositeFilter.addFilters(filter.build());
@@ -163,6 +159,15 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 	@Override
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
+	}
+
+
+	private StructuredQuery.FieldFilter.Operator getOperator(Part part, Object value) {
+		OperatorSelector operatorSelector = PART_TO_FILTER_OP.get(part.getType());
+		if (operatorSelector == null) {
+			throw new FirestoreDataException("Unsupported predicate keyword: " + part.getType());
+		}
+		return operatorSelector.getOperator(value);
 	}
 
 	static class OperatorSelector {
@@ -181,7 +186,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 			this.operatorForIterableType = commonOperator;
 		}
 
-		StructuredQuery.FieldFilter.Operator getFiler(Object val) {
+		StructuredQuery.FieldFilter.Operator getOperator(Object val) {
 			return val instanceof Iterable ? this.operatorForIterableType : this.operatorForSingleType;
 		}
 	}
