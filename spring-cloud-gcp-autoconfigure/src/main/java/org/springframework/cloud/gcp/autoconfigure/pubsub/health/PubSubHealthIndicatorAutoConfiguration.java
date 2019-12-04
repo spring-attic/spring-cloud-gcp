@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * {@link HealthContributorAutoConfiguration Auto-configuration} for
  * {@link PubSubHealthIndicator}.
- * 
+ *
  * @author Vinicius Carvalho
  *
  * @since 1.3
