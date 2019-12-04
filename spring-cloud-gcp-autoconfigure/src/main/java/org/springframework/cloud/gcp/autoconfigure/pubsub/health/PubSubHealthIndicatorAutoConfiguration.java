@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfigura
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 /**
  * {@link HealthContributorAutoConfiguration Auto-configuration} for
@@ -46,6 +47,7 @@ public class PubSubHealthIndicatorAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubHealthIndicator pubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
+		Assert.notNull(pubSubTemplate, "PubSubTemplate can't be null");
 		return new PubSubHealthIndicator(pubSubTemplate);
 	}
 

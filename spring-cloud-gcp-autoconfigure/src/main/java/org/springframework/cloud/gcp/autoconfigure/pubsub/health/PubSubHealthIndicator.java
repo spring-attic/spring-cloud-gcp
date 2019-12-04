@@ -24,6 +24,7 @@ import com.google.api.gax.rpc.StatusCode;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.util.Assert;
 
 /**
  * Default implemenation of
@@ -42,6 +43,7 @@ public class PubSubHealthIndicator extends AbstractHealthIndicator {
 
 	public PubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
 		super("Failed to connect to Pub/Sub APIs. Check your credentials and verify you have proper access to the service.");
+		Assert.notNull(pubSubTemplate, "PubSubTemplate can't be null");
 		this.pubSubTemplate = pubSubTemplate;
 	}
 
@@ -55,11 +57,11 @@ public class PubSubHealthIndicator extends AbstractHealthIndicator {
 				builder.up();
 			}
 			else {
-				builder.down();
+				builder.withException(aex).down();
 			}
 		}
 		catch (Exception e) {
-			builder.down();
+			builder.withException(e).down();
 		}
 	}
 
