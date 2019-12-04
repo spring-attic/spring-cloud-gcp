@@ -146,7 +146,7 @@ Cloud Firestore only supports filter components joined by AND, and the following
 * `less than`
 * `is null`
 
-Operations expecting List arguments:
+Operations expecting `List` arguments:
 
 * `contains` (allows for combining up to 10 array-contains clauses on the same field with a logical OR)
 * `in` (allows for combining up to 10 equality clauses on the same field with a logical OR)
