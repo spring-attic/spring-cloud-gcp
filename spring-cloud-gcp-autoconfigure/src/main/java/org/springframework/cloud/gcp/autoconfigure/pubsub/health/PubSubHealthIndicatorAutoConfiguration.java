@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.3
  */
-
 @Configuration
 @ConditionalOnClass(HealthIndicator.class)
 @ConditionalOnEnabledHealthIndicator("pubsub")
