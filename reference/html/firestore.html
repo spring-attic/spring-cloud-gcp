@@ -227,6 +227,58 @@ To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code
 </table>
 </div>
 <div class="sect3">
+<h4 id="_supported_types"><a class="link" href="#_supported_types">Supported types</a></h4>
+<div class="paragraph">
+<p>You may use the following field types when defining your persistent entities or when binding query parameters:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Long</code></p>
+</li>
+<li>
+<p><code>Integer</code></p>
+</li>
+<li>
+<p><code>Double</code></p>
+</li>
+<li>
+<p><code>Float</code></p>
+</li>
+<li>
+<p><code>String</code></p>
+</li>
+<li>
+<p><code>Boolean</code></p>
+</li>
+<li>
+<p><code>Character</code></p>
+</li>
+<li>
+<p><code>Date</code></p>
+</li>
+<li>
+<p><code>Map</code></p>
+</li>
+<li>
+<p><code>List</code></p>
+</li>
+<li>
+<p><code>Enum</code></p>
+</li>
+<li>
+<p><code>com.google.cloud.Timestamp</code></p>
+</li>
+<li>
+<p><code>com.google.cloud.firestore.GeoPoint</code></p>
+</li>
+<li>
+<p><code>com.google.cloud.firestore.Blob</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
 <h4 id="_reactive_repository_settings"><a class="link" href="#_reactive_repository_settings">Reactive Repository settings</a></h4>
 <div class="paragraph">
 <p>Spring Data Repositories can be configured via the <code>@EnableReactiveFirestoreRepositories</code> annotation on your main <code>@Configuration</code> class.
@@ -311,6 +363,14 @@ Internally we use Firestore client library object mapping. See <a href="https://
 	Flux&lt;User&gt; findByAgeGreaterThan(Integer age);
 
 	Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Pageable pageable);
+
+	Flux&lt;User&gt; findByAgeIn(List&lt;Integer&gt; ages);
+
+	Flux&lt;User&gt; findByAgeAndPetsContains(Integer age, List&lt;String&gt; pets);
+
+	Flux&lt;User&gt; findByPetsContains(List&lt;String&gt; pets);
+
+	Flux&lt;User&gt; findByPetsContainsAndAgeIn(String pets, List&lt;Integer&gt; ages);
 
 	Mono&lt;Long&gt; countByAgeIsGreaterThan(Integer age);
 }</code></pre>
@@ -407,7 +467,25 @@ Custom queries with <code>@Query</code> annotation are not supported since there
 <li>
 <p><code>is null</code></p>
 </li>
+<li>
+<p><code>contains</code> (accepts a <code>List</code> with up to 10 elements, or a singular value)</p>
+</li>
+<li>
+<p><code>in</code> (accepts a <code>List</code> with up to 10 elements)</p>
+</li>
 </ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If <code>in</code> operation is used in combination with <code>contains</code> operation, the argument to <code>contains</code> operation has to be a singular value.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.</p>
