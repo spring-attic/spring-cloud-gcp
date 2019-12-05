@@ -441,6 +441,7 @@ Natively supported types:
 * `java.util.Date`
 * `java.util.Instant`
 * `java.sql.Date`
+* `java.time.LocalDate`
 
 
 ==== Lists

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.time.LocalDate;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -34,9 +36,16 @@ public class SpannerConvertersTest {
 
 	@Test
 	public void dateConversionTest() {
-		Date date = Date.fromYearMonthDay(2018, 3, 29);
-		assertThat(SpannerConverters.JAVA_TO_SPANNER_DATE_CONVERTER
-				.convert(SpannerConverters.SPANNER_TO_JAVA_DATE_CONVERTER.convert(date))).isEqualTo(date);
+		Timestamp timestamp = Timestamp.now();
+		assertThat(SpannerConverters.DATE_TIMESTAMP_CONVERTER
+				.convert(SpannerConverters.TIMESTAMP_DATE_CONVERTER.convert(timestamp))).isEqualTo(timestamp);
+	}
+
+	@Test
+	public void localDateConversionTest() {
+		LocalDate localDate = LocalDate.now();
+		assertThat(SpannerConverters.TIMESTAMP_LOCAL_DATE_CONVERTER
+				.convert(SpannerConverters.LOCAL_DATE_TIMESTAMP_CONVERTER.convert(localDate))).isEqualTo(localDate);
 	}
 
 	@Test
