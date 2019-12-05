@@ -61,20 +61,22 @@ The Spring Boot starter for Google Cloud Firestore provides the following config
 
 
 ==== Supported types
-Firestore  object conversion supports the following types:
+You may use the following field types when defining your persistent entities or when binding query parameters:
 
-* Long
-* Integer
-* Double
-* Float
-* String
-* Boolean
-* Character
-* Map
-* List
-* Enum
-
-POJOs containing fields of these types are also supported.
+* `Long`
+* `Integer`
+* `Double`
+* `Float`
+* `String`
+* `Boolean`
+* `Character`
+* `Date`
+* `Map`
+* `List`
+* `Enum`
+* `com.google.cloud.Timestamp`
+* `com.google.cloud.firestore.GeoPoint`
+* `com.google.cloud.firestore.Blob`
 
 ==== Reactive Repository settings
 
