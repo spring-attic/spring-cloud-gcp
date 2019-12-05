@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.firestore.it;
 
+import java.util.List;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -37,6 +39,14 @@ public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAgeGreaterThan(Integer age);
 
 	Flux<User> findByAgeGreaterThan(Integer age, Pageable pageable);
+
+	Flux<User> findByAgeIn(List<Integer> ages);
+
+	Flux<User> findByAgeAndPetsContains(Integer age, List<String> pets);
+
+	Flux<User> findByPetsContains(List<String> pets);
+
+	Flux<User> findByPetsContainsAndAgeIn(String pets, List<Integer> ages);
 
 	Mono<Long> countByAgeIsGreaterThan(Integer age);
 }

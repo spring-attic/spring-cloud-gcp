@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -164,6 +166,73 @@ public class FirestoreRepositoryIntegrationTests {
 				.block();
 
 		assertThat(pagedUsers).containsExactlyInAnyOrder("blah-person5", "blah-person6");
+	}
+
+	@Test
+	public void inFilterQueryTest() {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
+
+		this.userRepository.saveAll(users).blockLast();
+
+		List<String> pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(22, 23, 24))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud");
+
+		pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(17, 22))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud", "Squall");
+
+		pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(18, 23))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).isEmpty();
+	}
+
+	@Test
+	public void containsFilterQueryTest() {
+		User u1 = new User("Cloud", 22, Arrays.asList("cat", "dog"));
+		User u2 = new User("Squall", 17, Collections.singletonList("pony"));
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
+
+		this.userRepository.saveAll(users).blockLast();
+
+		List<String> pagedUsers = this.userRepository.findByPetsContains(Arrays.asList("cat", "dog"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud");
+
+		pagedUsers = this.userRepository.findByPetsContains(Arrays.asList("cat", "pony"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud", "Squall");
+
+		pagedUsers = this.userRepository.findByAgeAndPetsContains(17, Arrays.asList("cat", "pony"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Squall");
+
+		pagedUsers = this.userRepository.findByPetsContainsAndAgeIn("cat", Arrays.asList(22, 23))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud");
 	}
 
 	@Test

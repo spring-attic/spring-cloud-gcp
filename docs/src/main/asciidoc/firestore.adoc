@@ -60,6 +60,24 @@ The Spring Boot starter for Google Cloud Firestore provides the following config
 |=========================================================
 
 
+==== Supported types
+You may use the following field types when defining your persistent entities or when binding query parameters:
+
+* `Long`
+* `Integer`
+* `Double`
+* `Float`
+* `String`
+* `Boolean`
+* `Character`
+* `Date`
+* `Map`
+* `List`
+* `Enum`
+* `com.google.cloud.Timestamp`
+* `com.google.cloud.firestore.GeoPoint`
+* `com.google.cloud.firestore.Blob`
+
 ==== Reactive Repository settings
 
 Spring Data Repositories can be configured via the `@EnableReactiveFirestoreRepositories` annotation on your main `@Configuration` class.
@@ -145,6 +163,10 @@ Cloud Firestore only supports filter components joined by AND, and the following
 * `less than or equals`
 * `less than`
 * `is null`
+* `contains` (accepts a `List` with up to 10 elements, or a singular value)
+* `in` (accepts a `List` with up to 10 elements)
+
+NOTE:  If `in` operation is used in combination with `contains` operation, the argument to `contains` operation has to be a singular value.
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 

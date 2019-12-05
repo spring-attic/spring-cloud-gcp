@@ -41,8 +41,10 @@ import org.springframework.data.repository.query.ReturnedType;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 
+import static org.springframework.data.repository.query.parser.Part.Type.CONTAINING;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
+import static org.springframework.data.repository.query.parser.Part.Type.IN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_PROPERTY;
@@ -64,13 +66,18 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 	private final FirestoreClassMapper classMapper;
 
-	private static final Map<Part.Type, StructuredQuery.FieldFilter.Operator> PART_TO_FILTER_OP =
-			new MapBuilder<Part.Type, StructuredQuery.FieldFilter.Operator>()
-					.put(SIMPLE_PROPERTY, StructuredQuery.FieldFilter.Operator.EQUAL)
-					.put(GREATER_THAN_EQUAL, StructuredQuery.FieldFilter.Operator.GREATER_THAN_OR_EQUAL)
-					.put(GREATER_THAN, StructuredQuery.FieldFilter.Operator.GREATER_THAN)
-					.put(LESS_THAN_EQUAL, StructuredQuery.FieldFilter.Operator.LESS_THAN_OR_EQUAL)
-					.put(LESS_THAN, StructuredQuery.FieldFilter.Operator.LESS_THAN)
+	private static final Map<Part.Type, OperatorSelector> PART_TO_FILTER_OP =
+			new MapBuilder<Part.Type, OperatorSelector>()
+					.put(SIMPLE_PROPERTY, new OperatorSelector(StructuredQuery.FieldFilter.Operator.EQUAL))
+					.put(GREATER_THAN_EQUAL,
+							new OperatorSelector(StructuredQuery.FieldFilter.Operator.GREATER_THAN_OR_EQUAL))
+					.put(GREATER_THAN, new OperatorSelector(StructuredQuery.FieldFilter.Operator.GREATER_THAN))
+					.put(LESS_THAN_EQUAL, new OperatorSelector(StructuredQuery.FieldFilter.Operator.LESS_THAN_OR_EQUAL))
+					.put(LESS_THAN, new OperatorSelector(StructuredQuery.FieldFilter.Operator.LESS_THAN))
+					.put(IN, new OperatorSelector(StructuredQuery.FieldFilter.Operator.IN))
+					.put(CONTAINING,
+							new OperatorSelector(StructuredQuery.FieldFilter.Operator.ARRAY_CONTAINS,
+									StructuredQuery.FieldFilter.Operator.ARRAY_CONTAINS_ANY))
 					.build();
 
 	public PartTreeFirestoreQuery(FirestoreQueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
@@ -137,13 +144,10 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 					throw new FirestoreDataException(
 							"Too few parameters are provided for query method: " + getQueryMethod().getName());
 				}
-				StructuredQuery.FieldFilter.Operator filterOp = PART_TO_FILTER_OP.get(part.getType());
-				if (filterOp == null) {
-					throw new FirestoreDataException("Unsupported predicate keyword: " + part.getType());
-				}
+				Object value = it.next();
 				filter.getFieldFilterBuilder().setField(fieldReference)
-						.setOp(filterOp)
-						.setValue(this.classMapper.toFirestoreValue(it.next()));
+						.setOp(getOperator(part, value))
+						.setValue(this.classMapper.toFirestoreValue(value));
 			}
 			compositeFilter.addFilters(filter.build());
 		});
@@ -155,5 +159,35 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 	@Override
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
+	}
+
+
+	private StructuredQuery.FieldFilter.Operator getOperator(Part part, Object value) {
+		OperatorSelector operatorSelector = PART_TO_FILTER_OP.get(part.getType());
+		if (operatorSelector == null) {
+			throw new FirestoreDataException("Unsupported predicate keyword: " + part.getType());
+		}
+		return operatorSelector.getOperator(value);
+	}
+
+	static class OperatorSelector {
+		StructuredQuery.FieldFilter.Operator operatorForSingleType;
+
+		StructuredQuery.FieldFilter.Operator operatorForIterableType;
+
+		OperatorSelector(StructuredQuery.FieldFilter.Operator operatorForSingleType,
+				StructuredQuery.FieldFilter.Operator operatorForIterableType) {
+			this.operatorForSingleType = operatorForSingleType;
+			this.operatorForIterableType = operatorForIterableType;
+		}
+
+		OperatorSelector(StructuredQuery.FieldFilter.Operator commonOperator) {
+			this.operatorForSingleType = commonOperator;
+			this.operatorForIterableType = commonOperator;
+		}
+
+		StructuredQuery.FieldFilter.Operator getOperator(Object val) {
+			return val instanceof Iterable ? this.operatorForIterableType : this.operatorForSingleType;
+		}
 	}
 }
