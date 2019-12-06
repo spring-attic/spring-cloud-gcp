@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -109,6 +110,34 @@ public final class SpannerConverters {
 					};
 
 	/**
+	 * A converter from {@link LocalDateTime} to the Spanner timestamp type.
+	 */
+	// @formatter:off
+	public static final Converter<LocalDateTime, Timestamp>
+			LOCAL_DATE_TIME_TIMESTAMP_CONVERTER = new Converter<LocalDateTime, Timestamp>() {
+		// @formatter:on
+		@Nullable
+		@Override
+		public Timestamp convert(LocalDateTime dateTime) {
+			return JAVA_TO_SPANNER_TIMESTAMP_CONVERTER.convert(java.sql.Timestamp.valueOf(dateTime));
+		}
+	};
+
+	/**
+	 * A converter from the Spanner timestamp type to {@link LocalDateTime}.
+	 */
+	// @formatter:off
+	public static final Converter<Timestamp, LocalDateTime> TIMESTAMP_LOCAL_DATE_TIME_CONVERTER =
+			new Converter<Timestamp, LocalDateTime>() {
+				// @formatter:on
+				@Nullable
+				@Override
+				public LocalDateTime convert(Timestamp timestamp) {
+					return SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp).toLocalDateTime();
+				}
+			};
+
+	/**
 	 * A converter from {@link java.util.Date} to the Spanner timestamp type.
 	 */
 	// @formatter:off
@@ -120,7 +149,7 @@ public final class SpannerConverters {
 		public Timestamp convert(java.util.Date date) {
 			long time = date.getTime();
 			long secs = Math.floorDiv(time, 1000L);
-			int nanos = Math.toIntExact((time % 1000L) * 1000000L);
+			int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
 			return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
 		}
 	};
@@ -231,7 +260,8 @@ public final class SpannerConverters {
 					JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
 					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER,
 					JAVA_SQL_TO_SPANNER_DATE_CONVERTER,
-					LOCAL_DATE_TIMESTAMP_CONVERTER));
+					LOCAL_DATE_TIMESTAMP_CONVERTER,
+					LOCAL_DATE_TIME_TIMESTAMP_CONVERTER));
 
 	/** Converters from common types to those used by Spanner. */
 	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = Collections.unmodifiableCollection(
@@ -241,5 +271,6 @@ public final class SpannerConverters {
 					SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER,
 					SPANNER_TO_JAVA_SQL_DATE_CONVERTER,
-					TIMESTAMP_LOCAL_DATE_CONVERTER));
+					TIMESTAMP_LOCAL_DATE_CONVERTER,
+					TIMESTAMP_LOCAL_DATE_TIME_CONVERTER));
 }
