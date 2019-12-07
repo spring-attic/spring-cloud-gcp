@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,8 +84,9 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		ConverterAwareMappingSpannerEntityProcessor converter = new ConverterAwareMappingSpannerEntityProcessor(
 				new SpannerMappingContext());
 
-		verifyCanConvert(converter, java.util.Date.class, Date.class);
+		verifyCanConvert(converter, java.util.Date.class, Timestamp.class);
 		verifyCanConvert(converter, Instant.class, Timestamp.class);
+		verifyCanConvert(converter, LocalDate.class, Date.class);
 	}
 
 	@Test
@@ -93,7 +95,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				new SpannerMappingContext(), Arrays.asList(JAVA_TO_SPANNER),
 				Arrays.asList(SPANNER_TO_JAVA));
 
-		verifyCanConvert(converter, java.util.Date.class, Date.class);
+		verifyCanConvert(converter, java.util.Date.class, Timestamp.class);
+		verifyCanConvert(converter, LocalDate.class, Date.class);
 		verifyCanConvert(converter, Instant.class, Timestamp.class);
 		verifyCanConvert(converter, JavaType.class, SpannerType.class);
 	}

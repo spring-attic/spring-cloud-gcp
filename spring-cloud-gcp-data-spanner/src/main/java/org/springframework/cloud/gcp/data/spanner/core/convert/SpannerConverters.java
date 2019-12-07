@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -80,38 +82,91 @@ public final class SpannerConverters {
 					};
 
 	/**
-	 * A converter from {@link java.util.Date} to the Spanner date type.
+	 * A converter from {@link LocalDate} to the Spanner date type.
 	 */
 	// @formatter:off
-	public static final Converter<java.util.Date, com.google.cloud.Date>
-					JAVA_TO_SPANNER_DATE_CONVERTER = new Converter<java.util.Date, com.google.cloud.Date>() {
+	public static final Converter<LocalDate, com.google.cloud.Date>
+					LOCAL_DATE_TIMESTAMP_CONVERTER = new Converter<LocalDate, com.google.cloud.Date>() {
 		// @formatter:on
 		@Nullable
 		@Override
-		public com.google.cloud.Date convert(java.util.Date date) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			return com.google.cloud.Date.fromYearMonthDay(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1,
-							cal.get(Calendar.DAY_OF_MONTH));
+		public com.google.cloud.Date convert(LocalDate date) {
+			return com.google.cloud.Date.fromYearMonthDay(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
 		}
 	};
 
 	/**
-	 * A converter from the Spanner date type to {@link java.util.Date}.
+	 * A converter from the Spanner date type to {@link LocalDate}.
 	 */
 	// @formatter:off
-	public static final Converter<com.google.cloud.Date, java.util.Date> SPANNER_TO_JAVA_DATE_CONVERTER =
-					new Converter<com.google.cloud.Date, java.util.Date>() {
+	public static final Converter<com.google.cloud.Date, LocalDate> TIMESTAMP_LOCAL_DATE_CONVERTER =
+					new Converter<com.google.cloud.Date, LocalDate>() {
 						// @formatter:on
 						@Nullable
 						@Override
-						public java.util.Date convert(com.google.cloud.Date date) {
-							Calendar cal = Calendar.getInstance();
-							cal.set(date.getYear(), date.getMonth() - 1, date.getDayOfMonth());
-							return cal.getTime();
+						public LocalDate convert(com.google.cloud.Date date) {
+							return LocalDate.of(date.getYear(), date.getMonth(), date.getDayOfMonth());
 						}
 					};
 
+	/**
+	 * A converter from {@link LocalDateTime} to the Spanner timestamp type.
+	 */
+	// @formatter:off
+	public static final Converter<LocalDateTime, Timestamp>
+			LOCAL_DATE_TIME_TIMESTAMP_CONVERTER = new Converter<LocalDateTime, Timestamp>() {
+		// @formatter:on
+		@Nullable
+		@Override
+		public Timestamp convert(LocalDateTime dateTime) {
+			return JAVA_TO_SPANNER_TIMESTAMP_CONVERTER.convert(java.sql.Timestamp.valueOf(dateTime));
+		}
+	};
+
+	/**
+	 * A converter from the Spanner timestamp type to {@link LocalDateTime}.
+	 */
+	// @formatter:off
+	public static final Converter<Timestamp, LocalDateTime> TIMESTAMP_LOCAL_DATE_TIME_CONVERTER =
+			new Converter<Timestamp, LocalDateTime>() {
+				// @formatter:on
+				@Nullable
+				@Override
+				public LocalDateTime convert(Timestamp timestamp) {
+					return SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp).toLocalDateTime();
+				}
+			};
+
+	/**
+	 * A converter from {@link java.util.Date} to the Spanner timestamp type.
+	 */
+	// @formatter:off
+	public static final Converter<java.util.Date, Timestamp>
+			DATE_TIMESTAMP_CONVERTER = new Converter<java.util.Date, Timestamp>() {
+		// @formatter:on
+		@Nullable
+		@Override
+		public Timestamp convert(java.util.Date date) {
+			long time = date.getTime();
+			long secs = Math.floorDiv(time, 1000L);
+			int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
+			return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
+		}
+	};
+
+	/**
+	 * A converter from the Spanner timestamp type to {@link java.util.Date}.
+	 */
+	// @formatter:off
+	public static final Converter<Timestamp, java.util.Date> TIMESTAMP_DATE_CONVERTER =
+			new Converter<Timestamp, java.util.Date>() {
+				// @formatter:on
+				@Nullable
+				@Override
+				public java.util.Date convert(Timestamp timestamp) {
+					return timestamp.toDate();
+				}
+			};
 	/**
 	 * A converter from {@link Instant} to the Spanner instantaneous time type.
 	 */
@@ -151,8 +206,7 @@ public final class SpannerConverters {
 						@Override
 						public Timestamp convert(java.sql.Timestamp timestamp) {
 							long secs = Math.floorDiv(timestamp.getTime(), 1000L);
-							int nanos = timestamp.getNanos();
-							return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
+							return Timestamp.ofTimeSecondsAndNanos(secs, timestamp.getNanos());
 						}
 					};
 
@@ -201,18 +255,22 @@ public final class SpannerConverters {
 	/** Converters from common types to those used by Spanner. */
 	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = Collections.unmodifiableCollection(
 			Arrays.asList(
-					JAVA_TO_SPANNER_DATE_CONVERTER,
+					DATE_TIMESTAMP_CONVERTER,
 					INSTANT_TIMESTAMP_CONVERTER,
 					JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
 					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER,
-					JAVA_SQL_TO_SPANNER_DATE_CONVERTER));
+					JAVA_SQL_TO_SPANNER_DATE_CONVERTER,
+					LOCAL_DATE_TIMESTAMP_CONVERTER,
+					LOCAL_DATE_TIME_TIMESTAMP_CONVERTER));
 
 	/** Converters from common types to those used by Spanner. */
 	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = Collections.unmodifiableCollection(
 			Arrays.asList(
-					SPANNER_TO_JAVA_DATE_CONVERTER,
+					TIMESTAMP_DATE_CONVERTER,
 					TIMESTAMP_INSTANT_CONVERTER,
 					SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER,
-					SPANNER_TO_JAVA_SQL_DATE_CONVERTER));
+					SPANNER_TO_JAVA_SQL_DATE_CONVERTER,
+					TIMESTAMP_LOCAL_DATE_CONVERTER,
+					TIMESTAMP_LOCAL_DATE_TIME_CONVERTER));
 }
