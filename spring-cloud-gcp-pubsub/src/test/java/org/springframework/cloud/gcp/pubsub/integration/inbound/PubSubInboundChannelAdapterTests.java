@@ -123,10 +123,7 @@ public class PubSubInboundChannelAdapterTests {
 		when(this.mockMessageChannel.send(any())).thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
 
 		this.adapter.setAckMode(AckMode.AUTO_ACK);
-
-		assertThatThrownBy(() -> {
-			this.adapter.start();
-		}).hasMessageContaining(EXCEPTION_MESSAGE);
+		this.adapter.start();
 
 		verify(mockAcknowledgeableMessage, times(0)).nack();
 	}

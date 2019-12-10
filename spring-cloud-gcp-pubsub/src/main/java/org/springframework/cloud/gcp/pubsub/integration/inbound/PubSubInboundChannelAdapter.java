@@ -145,24 +145,26 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			});
 		}
 
-		boolean messageNacked = false;
-
 		try {
 			sendMessage(getMessageBuilderFactory()
 					.withPayload(message.getPayload())
 					.copyHeaders(messageHeaders)
 					.build());
+
+			if (this.ackMode == AckMode.AUTO_ACK || this.ackMode == AckMode.AUTO) {
+				message.ack();
+			}
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				message.nack();
-				messageNacked = true;
 			}
-			throw new PubSubException("Sending Spring message failed.", re);
-		}
-		finally {
-			if (!messageNacked && (this.ackMode == AckMode.AUTO || this.ackMode == AckMode.AUTO_ACK)) {
-				message.ack();
+
+			if (this.ackMode == AckMode.AUTO_ACK) {
+				LOGGER.warn("Sending Spring message failed.", re);
+			}
+			else {
+				throw new PubSubException("Sending Spring message failed.", re);
 			}
 		}
 	}
