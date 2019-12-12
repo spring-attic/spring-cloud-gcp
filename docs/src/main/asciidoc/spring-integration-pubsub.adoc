@@ -71,28 +71,21 @@ Then, we declare a `PubSubInboundChannelAdapter` bean.
 It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber` objects from the Google Cloud Java Client for Pub/Sub.
 The Spring Boot starter for GCP Pub/Sub provides a configured `PubSubSubscriberOperations` object.
 
-The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value;
+The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value:
 
-Automatic acking (`AckMode.AUTO`)
+* Automatic acking and nacking (`AckMode.AUTO`)
+* Automatic acking only (`AckMode.AUTO_ACK`)
+* Manual acking and nacking (`AckMode.MANUAL`)
 
-A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
+===== Acking
 
-If a `RuntimeException` is thrown while the message is processed, then the message is handled in the following way:
+In `AUTO` and `AUTO_ACK` modes, a message acknowledgement is automatically sent to Cloud Pub/Sub if the message was successfully sent into the Spring Integration channel and processed with no exceptions.
 
-* If an error channel is configured for the adapter (`pubSubInboundChannelAdapater.getErrorChannel() != null`) then the message will be acked and forwarded with the error to the error channel.
-* If no error channel is configured for the adapter, then the message is nacked.
-
-Automatic acking OK (`AckMode.AUTO_ACK`)
-
-A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
-If a `RuntimeException` is thrown while the message is processed, then the message is neither acked / nor nacked.
-
-This is useful when using the subscription's ack deadline timeout as a retry delivery backoff mechanism.
-
-Manually acking (`AckMode.MANUAL`)
+In `MANUAL` mode, your application logic needs to manually acknowledge each message.
+If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
 
 The adapter attaches a `BasicAcknowledgeablePubsubMessage` object to the `Message` headers.
-Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to (n)ack a message.
+Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to ack (or nack) a message.
 
 [source,java]
 ----
@@ -107,6 +100,68 @@ public MessageHandler messageReceiver() {
     };
 }
 ----
+
+===== Nacking
+In the context of Cloud Pub/Sub, nacking simply means instructing the message to be redelivered immediately.
+This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.
+
+In `AUTO` mode, a message is nacked if processing causes any unchecked exceptions.
+
+In `AUTO_ACK` and `MANUAL` modes, behavior depends on whether an error channel was configured on the `PubSubInboundChannelAdapter`:
+
+* If an error channel is present (see <<#Error-Handling>> for how to configure one), the message is neither acked nor nacked.
+Instead, it is forwarded, together with the error, to the error channel.
+This is useful when using the subscription's ack deadline timeout as a retry delivery backoff mechanism or when manual control over nacking is needed.
+* If there is no error channel, the exception will be caught by the Cloud Pub/Sub client library and automatically nacked, causing instant redelivery.
+
+===== Error Handling
+
+If you want to have more control over message processing in case of an error, you need to associate the `PubSubInboundChannelAdapter` with a Spring Integration error channel and specify the behavior to be invoked with `@ServiceActivator`.
+
+If you don't explicitly ack or nack the message in `AUTO_ACK` and `MANUAL` modes, the message will get redelivered after its `ackDeadline` passes.
+
+[source,java]
+----
+@Bean
+public MessageChannel pubsubInputChannel() {
+    return new PublishSubscribeChannel();
+}
+
+@Bean
+public PubSubInboundChannelAdapter messageChannelAdapter(
+    @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
+    SubscriberFactory subscriberFactory) {
+    PubSubInboundChannelAdapter adapter =
+        new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
+    adapter.setOutputChannel(inputChannel);
+    adapter.setAckMode(AckMode.AUTO_ACK);
+    adapter.setErrorChannelName("pubsubErrors");
+
+    return adapter;
+}
+
+@ServiceActivator(inputChannel =  "pubsubErrors")
+public void pubsubErrorHandler(Message<MessagingException> message) {
+	LOGGER.warn("This message is neither acked nor nacked; ack deadline will determine redelivery");
+}
+----
+
+If you would prefer to manually ack or nack the message, you can do it by retrieving the header of exception payload:
+
+----
+
+@ServiceActivator(inputChannel =  "pubsubErrors")
+public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
+
+	BasicAcknowledgeablePubsubMessage originalMessage =
+	  (BasicAcknowledgeablePubsubMessage)exceptionMessage.getPayload().getFailedMessage()
+	    .getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+
+	originalMessage.nack();
+}
+----
+
+
 
 ==== Pollable Message Source (using Pub/Sub Synchronous Pull)
 
