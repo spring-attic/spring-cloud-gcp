@@ -23,6 +23,7 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
@@ -54,9 +55,7 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityType);
 
-		if (persistentEntity != null
-				&& persistentEntity.getIdProperty() != null
-				&& !persistentEntity.getIdProperty().getActualType().equals(Key.class)) {
+		if (persistentEntity != null && persistentEntity.hasMultiFieldKey()) {
 			return fromRequestIdSingleKey(id, persistentEntity.getIdProperty());
 		}
 		return fromRequestIdCompoundKey(id);
@@ -68,7 +67,11 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 	}
 
 	private Serializable fromRequestIdSingleKey(String id, SpannerPersistentProperty idProperty) {
-			return (Serializable) this.spannerEntityProcessor.getReadConverter().convert(id, idProperty.getType());
+		Object convertedId = this.spannerEntityProcessor.getReadConverter().convert(id, idProperty.getType());
+		if (convertedId instanceof Serializable) {
+			return (Serializable) convertedId;
+		}
+		throw new SpannerDataException("Property type for ID field has to be Serializable");
 	}
 
 	protected String getUrlIdSeparator() {

@@ -352,6 +352,12 @@ public class SpannerPersistentEntityImpl<T>
 		return this.tableName;
 	}
 
+	@Override
+	public boolean hasMultiFieldKey() {
+		return getIdProperty() != null
+				&& !getIdProperty().getActualType().equals(Key.class);
+	}
+
 	// Because SpEL expressions in table name definitions are allowed, validation is
 	// required.
 	private String validateTableName(String name) {
@@ -391,7 +397,6 @@ public class SpannerPersistentEntityImpl<T>
 						Key keyValue = (Key) value;
 						if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
 							throwWrongNumOfPartsException();
-							return;
 						}
 						partsIterator = keyValue.getParts().iterator();
 					}
