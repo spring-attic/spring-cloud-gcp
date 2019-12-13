@@ -16,12 +16,14 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters]
 * link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
 * link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore]
+* link:spring-cloud-gcp-data-firestore[Spring Data Cloud Firestore]
 * link:spring-cloud-gcp-vision[Google Cloud Vision API Template]
 * Spring Boot starters
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (Beta)
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Google Cloud Datastore]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-firestore[Google Cloud Firestore]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Google Cloud Logging]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Google Cloud SQL MySQL]
