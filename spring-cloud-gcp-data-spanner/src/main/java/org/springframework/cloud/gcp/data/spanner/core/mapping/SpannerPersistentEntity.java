@@ -100,7 +100,9 @@ public interface SpannerPersistentEntity<T> extends
 	void doWithColumnBackedProperties(PropertyHandler<SpannerPersistentProperty> handler);
 
 	/**
-	 * Returns true if the entity has a muti-field key
+	 * Returns true if the entity has a muti-field key.
+	 *
+	 * @return true if the entity has a muti-field key
 	 */
 	boolean hasMultiFieldKey();
 }
