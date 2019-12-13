@@ -386,13 +386,21 @@ public class SpannerPersistentEntityImpl<T>
 					SpannerPersistentEntity owner = (SpannerPersistentEntity) property.getOwner();
 					SpannerPersistentProperty[] primaryKeyProperties = owner.getPrimaryKeyProperties();
 
-					Key keyValue = (Key) value;
-					if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
-						throw new SpannerDataException(
-								"The number of key parts is not equal to the number of primary key properties");
+					Iterator<Object> partsIterator;
+					if (value instanceof Key) {
+						Key keyValue = (Key) value;
+						if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
+							throwWrongNumOfPartsException();
+							return;
+						}
+						partsIterator = keyValue.getParts().iterator();
 					}
-
-					Iterator<Object> partsIterator = keyValue.getParts().iterator();
+					else {
+						if (primaryKeyProperties.length > 1) {
+							throwWrongNumOfPartsException();
+						}
+						partsIterator = Collections.singleton(value).iterator();
+					}
 					for (int i = 0; i < primaryKeyProperties.length; i++) {
 						SpannerPersistentProperty prop = primaryKeyProperties[i];
 						delegatedAccessor.setProperty(prop,
@@ -403,6 +411,11 @@ public class SpannerPersistentEntityImpl<T>
 				else {
 					delegatedAccessor.setProperty(property, value);
 				}
+			}
+
+			private void throwWrongNumOfPartsException() {
+				throw new SpannerDataException(
+						"The number of key parts is not equal to the number of primary key properties");
 			}
 
 			@Nullable

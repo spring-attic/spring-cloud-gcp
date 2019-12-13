@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.cloud.spanner.Key;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -131,7 +130,7 @@ public class SpannerRepositoryTests {
 		Trader expected = new Trader("t123", "John", "Smith", expectedTimestamp,
 				Collections.singletonList(expectedTimestamp));
 		assertThat(tradesResponse.getBody()).isEqualTo(expected);
-		assertThat(this.traderRepository.findAllById(Collections.singleton(Key.of("t123"))).iterator().next())
+		assertThat(this.traderRepository.findAllById(Collections.singleton("t123")).iterator().next())
 				.isEqualTo(expected);
 	}
 
