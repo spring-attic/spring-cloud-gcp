@@ -21,8 +21,12 @@ import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
@@ -30,10 +34,14 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 public class SpannerKeyIdConverter implements BackendIdConverter {
 
 	private SpannerMappingContext mappingContext;
+
+	@Autowired
+	SpannerEntityProcessor spannerEntityProcessor;
 
 	public SpannerKeyIdConverter(SpannerMappingContext mappingContext) {
 		this.mappingContext = mappingContext;
@@ -44,8 +52,26 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 		if (id == null) {
 			return null;
 		}
+
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityType);
+
+		if (persistentEntity != null && persistentEntity.hasMultiFieldKey()) {
+			return fromRequestIdSingleKey(id, persistentEntity.getIdProperty());
+		}
+		return fromRequestIdCompoundKey(id);
+	}
+
+	private Serializable fromRequestIdCompoundKey(String id) {
 		Object[] parts = id.split(getUrlIdSeparator());
 		return Key.of(parts);
+	}
+
+	private Serializable fromRequestIdSingleKey(String id, SpannerPersistentProperty idProperty) {
+		Object convertedId = this.spannerEntityProcessor.getReadConverter().convert(id, idProperty.getType());
+		if (convertedId instanceof Serializable) {
+			return (Serializable) convertedId;
+		}
+		throw new SpannerDataException("Property type for ID field has to be Serializable");
 	}
 
 	protected String getUrlIdSeparator() {
@@ -62,11 +88,9 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 
 	@Override
 	public boolean supports(Class<?> type) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(type);
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(type);
 
 		return persistentEntity != null
-				&& persistentEntity.getIdProperty() != null
-				&& persistentEntity.getIdProperty().getActualType().equals(Key.class);
+				&& persistentEntity.getIdProperty() != null;
 	}
 }

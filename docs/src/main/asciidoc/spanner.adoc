@@ -1236,9 +1236,11 @@ If you prefer to configure parameters (such as path), you can use `@RepositoryRe
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, Key> {
 }
 ----
+
+NOTE: For classes that have composite keys (multiple `@PrimaryKey` fields), only the `Key` type is supported for the repository ID type.
 
 For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
 

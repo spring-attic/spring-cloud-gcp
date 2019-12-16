@@ -155,7 +155,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
 	@Override
 	public Class<?> getType() {
-		return Key.class;
+		return this.primaryKeyColumns.length == 1 ? this.primaryKeyColumns[0].getActualType() : Key.class;
 	}
 
 	@Override
