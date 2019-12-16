@@ -5340,9 +5340,21 @@ As a result accessing underlying properties take the form <code>target.&lt;prope
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends SpannerRepository&lt;Trade, String[]&gt; {
+public interface TradeRepository extends SpannerRepository&lt;Trade, Key&gt; {
 }</code></pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+For classes that have composite keys (multiple <code>@PrimaryKey</code> fields), only the <code>Key</code> type is supported for the repository ID type.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>For example, you can retrieve all <code>Trade</code> objects in the repository by using <code>curl http://&lt;server&gt;:&lt;port&gt;/trades</code>, or any specific trade via <code>curl http://&lt;server&gt;:&lt;port&gt;/trades/&lt;trader_id&gt;,&lt;trade_id&gt;</code>.</p>
