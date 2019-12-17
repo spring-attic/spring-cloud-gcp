@@ -47,7 +47,6 @@ public class PubSubHealthIndicatorAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubHealthIndicator pubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
-		Assert.notNull(pubSubTemplate, "PubSubTemplate can't be null");
 		return new PubSubHealthIndicator(pubSubTemplate);
 	}
 
