@@ -107,7 +107,7 @@ public class TraceSampleApplicationTests {
 				.getService();
 
 		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget("cloudtrace.googleapis.com")
+				.forTarget("dns:///cloudtrace.googleapis.com")
 				.build();
 
 		this.traceServiceStub = TraceServiceGrpc.newBlockingStub(channel)
