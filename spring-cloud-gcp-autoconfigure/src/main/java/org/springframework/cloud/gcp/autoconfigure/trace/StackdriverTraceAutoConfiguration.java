@@ -140,7 +140,7 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean(destroyMethod = "shutdownNow")
 	@ConditionalOnMissingBean(name = "stackdriverSenderChannel")
 	public ManagedChannel stackdriverSenderChannel() {
-		return ManagedChannelBuilder.forTarget("cloudtrace.googleapis.com")
+		return ManagedChannelBuilder.forTarget("dns:///cloudtrace.googleapis.com")
 				.userAgent(this.headerProvider.getUserAgent())
 				.build();
 	}
