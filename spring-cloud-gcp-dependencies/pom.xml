@@ -94,13 +94,6 @@
 				<artifactId>spring-cloud-gcp-vision</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
-			<!--Starters-->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-bigquery</artifactId>
@@ -108,6 +101,11 @@
 			</dependency>
 
 			<!--Starters-->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
