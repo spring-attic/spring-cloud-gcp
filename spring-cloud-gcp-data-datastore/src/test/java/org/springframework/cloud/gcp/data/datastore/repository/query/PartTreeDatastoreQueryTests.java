@@ -417,7 +417,6 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Page result = (Page) this.partTreeDatastoreQuery.execute(params);
-		System.out.println("Result: " + result + "; total = " + result.getTotalElements() + "; size = " + result.getSize());
 		assertThat(result.getTotalElements()).isEqualTo(4);
 		assertThat(result.getTotalPages()).isEqualTo(1);
 
