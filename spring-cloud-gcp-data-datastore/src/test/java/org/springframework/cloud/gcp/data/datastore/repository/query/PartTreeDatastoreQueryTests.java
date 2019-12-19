@@ -35,6 +35,7 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -418,6 +419,7 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
+	@Ignore
 	public void pageableQueryNoPageableParam() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
