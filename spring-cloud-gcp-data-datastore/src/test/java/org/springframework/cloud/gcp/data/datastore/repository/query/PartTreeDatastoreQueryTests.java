@@ -35,7 +35,6 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -418,7 +417,6 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Page result = (Page) this.partTreeDatastoreQuery.execute(params);
-		System.out.println("Result: " + result + "; total = " + result.getTotalElements() + "; size = " + result.getSize());
 		assertThat(result.getTotalElements()).isEqualTo(4);
 		assertThat(result.getTotalPages()).isEqualTo(1);
 
