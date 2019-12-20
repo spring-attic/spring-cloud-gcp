@@ -103,8 +103,6 @@ Supplier<Flux<UserMessage>> generateUserMessages() {
 
 A processor application works similarly to a source application, except it is triggered by presence of a `Function` bean.
 
-WARNING: Even though Spring Cloud Stream is able to autodiscover functional beans, when using the `spring-cloud-gcp-pubsub-stream-binder` dependency, configuring the `spring.cloud.function.definition` property to indicate the function bean is *required*.
-If this property is omitted, you will see a warning `Found more then one function beans in BeanFactory: [_your-bean-name_, pubSubReactiveScheduler]`, and the function returned by _your-bean-name_ will never be bound to a Cloud Pub/Sub topic or subscription.
 
 === Binding with Annotations
 
