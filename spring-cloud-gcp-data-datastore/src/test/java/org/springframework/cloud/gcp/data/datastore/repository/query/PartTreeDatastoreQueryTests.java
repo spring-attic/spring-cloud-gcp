@@ -35,7 +35,6 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -87,6 +86,11 @@ public class PartTreeDatastoreQueryTests {
 
 	private static final DatastoreResultsIterable<Object> EMPTY_RESPONSE = new DatastoreResultsIterable<>(
 			Collections.emptyIterator(), null);
+	static final CompositeFilter FILTER = CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+			PropertyFilter.eq("ticker", "abcd"),
+			PropertyFilter.lt("price", 8.88),
+			PropertyFilter.ge("price", 3.33),
+			PropertyFilter.isNull("__key__"));
 
 	private DatastoreTemplate datastoreTemplate;
 
@@ -182,11 +186,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(444)
 					.setLimit(444)
@@ -217,11 +217,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setLimit(333)
 					.setOrderBy(OrderBy.desc("__key__")).build();
@@ -251,11 +247,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__"), OrderBy.asc("price")).build();
 
@@ -284,11 +276,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).build();
 
@@ -343,11 +331,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(444)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(444).build();
@@ -375,7 +359,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		preparePageResults(2, 2, null);
+		preparePageResults(2, 2, null, Arrays.asList(3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -405,7 +389,7 @@ public class PartTreeDatastoreQueryTests {
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33,
 				DatastorePageable.from(pageRequest, cursor, 99L) };
 
-		preparePageResults(2, 2, cursor);
+		preparePageResults(2, 2, cursor, Arrays.asList(3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -419,8 +403,7 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
-	@Ignore
-	public void pageableQueryNoPageableParam() throws NoSuchMethodException {
+	public void pageableQueryMissingPageableParamReturnsAllResults() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class));
@@ -429,7 +412,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		preparePageResults(0, null, null);
+		preparePageResults(0, null, null, Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -519,39 +502,30 @@ public class PartTreeDatastoreQueryTests {
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
-	private void preparePageResults(int offset, Integer limit, Cursor cursor) {
+	private void preparePageResults(int offset, Integer limit, Cursor cursor,
+			List<Integer> pageResults, List<Integer> fullResults) {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setStartCursor(cursor)
 					.setOffset(cursor != null ? 0 : offset)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(limit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			List<Integer> results = Arrays.asList(3, 4);
-			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("abc".getBytes()));
+			return new DatastoreResultsIterable(pageResults.iterator(), Cursor.copyFrom("abc".getBytes()));
 		});
 
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
 			KeyQuery statement = invocation.getArgument(0);
 			KeyQuery expected = StructuredQuery.newKeyQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
-			List<Integer> results = Arrays.asList(1, 2, 3, 4);
-			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("def".getBytes()));
+			return new DatastoreResultsIterable(fullResults.iterator(), Cursor.copyFrom("def".getBytes()));
 		});
 	}
 
@@ -561,11 +535,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(offset)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
@@ -577,11 +547,7 @@ public class PartTreeDatastoreQueryTests {
 				.thenAnswer(invocation -> {
 					EntityQuery statement = invocation.getArgument(0);
 					EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-							.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-									PropertyFilter.eq("ticker", "abcd"),
-									PropertyFilter.lt("price", 8.88),
-									PropertyFilter.ge("price", 3.33),
-									PropertyFilter.isNull("__key__")))
+							.setFilter(FILTER)
 							.setKind("trades")
 							.setStartCursor(cursor)
 							.setOrderBy(OrderBy.desc("__key__")).setLimit(1).build();
