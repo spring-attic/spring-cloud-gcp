@@ -62,14 +62,12 @@ public class SampleAppIntegrationTest {
 
 		// Run Source app
 		SpringApplicationBuilder sourceBuilder = new SpringApplicationBuilder(FunctionalSourceApplication.class)
-				.properties("spring.cloud.function.definition=generateUserMessages")
 				.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-source"));
 		sourceBuilder.run();
 
 
 		//Run Sink app
 		SpringApplicationBuilder sinkBuilder = new SpringApplicationBuilder(FunctionalSinkApplication.class)
-				.properties("spring.cloud.function.definition=logUserMessage")
 			.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink"));
 		sinkBuilder.run();
 
