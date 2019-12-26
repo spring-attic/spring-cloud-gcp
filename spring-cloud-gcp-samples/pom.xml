@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.1.BUILD-SNAPSHOT</version>
+		<version>2.3.0.BUILD-SNAPSHOT</version>
 		<relativePath/>
 	</parent>
 
@@ -50,7 +50,8 @@
 		<module>spring-cloud-gcp-data-firestore-sample</module>
 		<module>spring-cloud-gcp-bigquery-sample</module>
 		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
-	</modules>
+    <module>storage-test-real</module>
+  </modules>
 
 	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
 	<profiles>
