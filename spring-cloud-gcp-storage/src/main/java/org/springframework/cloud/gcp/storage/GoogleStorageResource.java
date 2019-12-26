@@ -195,6 +195,7 @@ public class GoogleStorageResource implements WritableResource {
 	/**
 	 * Creates the blob that this {@link GoogleStorageResource} represents in Google Cloud
 	 * Storage and fills it with provided content.
+	 * @param contents the initial file contents to write
 	 * @return the created blob object
 	 * @throws StorageException if any errors during blob creation arise,
 	 * such as if the blob already exists
