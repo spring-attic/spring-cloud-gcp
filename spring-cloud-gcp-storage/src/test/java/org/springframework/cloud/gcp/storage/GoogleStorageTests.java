@@ -273,6 +273,20 @@ public class GoogleStorageTests {
 	}
 
 	@Test
+	public void testCreateBlobWithContents() {
+		Storage mockStorage = mock(Storage.class);
+		String location = "gs://test-bucket/filename";
+		byte[] contentBytes = "test contents".getBytes();
+
+		GoogleStorageResource resource = new GoogleStorageResource(mockStorage, location);
+		resource.createBlob(contentBytes);
+
+		verify(mockStorage).create(
+				BlobInfo.newBuilder("test-bucket", "filename").build(),
+				contentBytes);
+	}
+
+	@Test
 	public void testGetInputStreamOnNullBlob() throws Exception {
 		this.expectedEx.expect(FileNotFoundException.class);
 		this.expectedEx.expectMessage("The blob was not found: gs://test-spring/test");

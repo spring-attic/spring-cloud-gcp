@@ -48,6 +48,7 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author João André Martins
  * @author Daniel Zou
+ * @author Elena Felder
  */
 public class GoogleStorageResource implements WritableResource {
 
@@ -189,6 +190,19 @@ public class GoogleStorageResource implements WritableResource {
 	 */
 	public Blob createBlob() throws StorageException {
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
+	}
+
+	/**
+	 * Creates the blob that this {@link GoogleStorageResource} represents in Google Cloud
+	 * Storage and fills it with provided content.
+	 * @return the created blob object
+	 * @throws StorageException if any errors during blob creation arise,
+	 * such as if the blob already exists
+	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
+	 * @since 1.3
+	 */
+	public Blob createBlob(byte[] contents) throws StorageException {
+		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build(), contents);
 	}
 
 	/**
