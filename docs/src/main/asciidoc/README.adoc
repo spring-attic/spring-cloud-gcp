@@ -55,7 +55,7 @@ This will allow you to omit versions for any of the Maven dependencies and inste
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.2.0.RELEASE</version>
+            <version>1.2.1.RELEASE</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -98,7 +98,7 @@ We offer `BUILD-SNAPSHOT` versions that always reflect the latest code changes t
 </repositories>
 ----
 
-For example, the `1.2.1.BUILD-SNAPSHOT` is available from this repository.
+For example, the `1.2.2.BUILD-SNAPSHOT` is available from this repository.
 
 == Spring Boot Starters
 
