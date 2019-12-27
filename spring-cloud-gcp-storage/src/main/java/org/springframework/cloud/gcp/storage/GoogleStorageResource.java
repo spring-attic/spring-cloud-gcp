@@ -48,6 +48,7 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author João André Martins
  * @author Daniel Zou
+ * @author Elena Felder
  */
 public class GoogleStorageResource implements WritableResource {
 
@@ -192,6 +193,20 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	/**
+	 * Creates the blob that this {@link GoogleStorageResource} represents in Google Cloud
+	 * Storage and fills it with provided content.
+	 * @param contents the initial file contents to write
+	 * @return the created blob object
+	 * @throws StorageException if any errors during blob creation arise,
+	 * such as if the blob already exists
+	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
+	 * @since 1.3
+	 */
+	public Blob createBlob(byte[] contents) throws StorageException {
+		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build(), contents);
+	}
+
+	/**
 	 * Creates the bucket that this resource references in Google Cloud Storage.
 	 * @return the {@link Bucket} object for the bucket
 	 * @throws StorageException if any errors during bucket creation arise,
@@ -295,19 +310,15 @@ public class GoogleStorageResource implements WritableResource {
 			throw new IllegalStateException(
 					"Cannot open an output stream to a bucket: '" + getURI() + "'");
 		}
-		else {
-			Blob blob = getBlob();
 
-			if (blob == null || !blob.exists()) {
-				if (!this.autoCreateFiles) {
-					throw new FileNotFoundException("The blob was not found: " + getURI());
-				}
+		Blob blob = getBlob();
 
-				blob = createBlob();
-			}
-
-			return Channels.newOutputStream(blob.writer());
+		if ((blob == null || !blob.exists()) && !this.autoCreateFiles) {
+			throw new FileNotFoundException("The blob was not found: " + getURI());
 		}
+
+		return Channels.newOutputStream(this.storage.writer(BlobInfo.newBuilder(getBlobId()).build()));
+
 	}
 
 	/**
