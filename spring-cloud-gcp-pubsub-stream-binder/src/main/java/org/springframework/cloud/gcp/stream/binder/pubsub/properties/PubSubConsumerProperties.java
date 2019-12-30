@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import org.springframework.cloud.gcp.pubsub.integration.AckMode;
+
 /**
  * Consumer properties for Pub/Sub.
  *
@@ -26,4 +28,13 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
  */
 public class PubSubConsumerProperties extends PubSubCommonProperties {
 
+  private AckMode ackMode = AckMode.AUTO;
+
+  public AckMode getAckMode() {
+    return ackMode;
+  }
+
+  public void setAckMode(AckMode ackMode) {
+    this.ackMode = ackMode;
+  }
 }

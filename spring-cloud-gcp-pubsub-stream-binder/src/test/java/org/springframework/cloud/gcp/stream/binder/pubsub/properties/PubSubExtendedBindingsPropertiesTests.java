@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.Subscription;
@@ -23,13 +28,13 @@ import com.google.pubsub.v1.Topic;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
+import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
@@ -47,11 +52,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 /**
  * Tests for extended binding properties.
  *
@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
 				BindingServiceConfiguration.class
 		},
 		properties = {
+				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.ack-mode=AUTO_ACK",
 				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
 				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
 		})
@@ -80,6 +81,11 @@ public class PubSubExtendedBindingsPropertiesTests {
 
 		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
 		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
+
+		assertThat(binder.getExtendedConsumerProperties("custom-in").getAckMode())
+				.isEqualTo(AckMode.AUTO);
+		assertThat(binder.getExtendedConsumerProperties("input").getAckMode())
+				.isEqualTo(AckMode.AUTO_ACK);
 	}
 
 	/**
