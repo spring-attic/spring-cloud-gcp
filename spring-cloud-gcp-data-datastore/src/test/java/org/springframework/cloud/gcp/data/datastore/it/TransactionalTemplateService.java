@@ -75,4 +75,16 @@ public class TransactionalTemplateService {
 	public TestEntity findByIdInReadOnly(long id) {
 		return this.datastoreTemplate.findById(id, TestEntity.class);
 	}
+
+	@Transactional(readOnly = true)
+	public ReferenceEntry findByIdLazy(long id) {
+		return this.datastoreTemplate.findById(id, ReferenceEntry.class);
+	}
+
+	@Transactional(readOnly = true)
+	public ReferenceEntry findByIdLazyLoad(long id) {
+		ReferenceEntry entry = this.datastoreTemplate.findById(id, ReferenceEntry.class);
+		entry.childeren.size();
+		return entry;
+	}
 }

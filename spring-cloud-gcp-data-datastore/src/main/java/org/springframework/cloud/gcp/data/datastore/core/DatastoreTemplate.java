@@ -66,6 +66,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSave
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
+import org.springframework.cloud.gcp.data.datastore.core.util.LazyUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.context.ApplicationEvent;
@@ -463,12 +464,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			}
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
-				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
-				entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
-				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
-						.map((o) -> KeyValue.of(this.getKey(o, false)))
-						.collect(Collectors.toList());
-				value = ListValue.of(keyValues);
+				if (LazyUtil.hasUsableKeys(val)) {
+					value = ListValue.of(LazyUtil.getKeys(val));
+				}
+				else {
+					Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
+					entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
+					List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
+							.map((o) -> KeyValue.of(this.getKey(o, false)))
+							.collect(Collectors.toList());
+					value = ListValue.of(keyValues);
+				}
 			}
 			else {
 				entitiesToSave.addAll(getEntitiesForSave(Collections.singletonList(val), persistedEntities));
@@ -593,14 +599,31 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			BaseEntity entity, T convertedObject, ReadContext context) {
 		datastorePersistentEntity.doWithAssociations(
 				(AssociationHandler) (association) -> {
-					DatastorePersistentProperty referencePersistentProperty = (DatastorePersistentProperty) association
+					DatastorePersistentProperty referenceProperty = (DatastorePersistentProperty) association
 							.getInverse();
-					Object referenced = findReferenced(entity, referencePersistentProperty, context);
-					if (referenced != null) {
-						datastorePersistentEntity.getPropertyAccessor(convertedObject)
-								.setProperty(referencePersistentProperty, referenced);
+					String fieldName = referenceProperty.getFieldName();
+					if (entity.contains(fieldName) && !entity.isNull(fieldName)) {
+						Class type = referenceProperty.getType();
+						Object referenced;
+						if (referenceProperty.isLazyLoaded() && referenceProperty.isCollectionLike()) {
+							List keyList = entity.getList(fieldName);
+							DatastoreReaderWriter originalTx = getDatastoreReadWriter();
+							referenced = LazyUtil.wrapSimpleLazyProxy(() -> {
+								if (getDatastoreReadWriter() != originalTx) {
+									throw new DatastoreDataException("Lazy load should be invoked within the same transaction");
+								}
+								return fetchReferenced(referenceProperty, context,
+										valuesToKeys(keyList));
+							}, type, keyList);
+						}
+						else {
+							referenced = findReferenced(entity, referenceProperty, context);
+						}
+						if (referenced != null) {
+							datastorePersistentEntity.getPropertyAccessor(convertedObject)
+									.setProperty(referenceProperty, referenced);
+						}
 					}
-
 				});
 	}
 
@@ -609,19 +632,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		String fieldName = referencePersistentProperty.getFieldName();
 		try {
 			Object referenced;
-			if (!entity.contains(fieldName)) {
-				referenced = null;
-			}
-			else if (referencePersistentProperty.isCollectionLike()) {
-				Class referencedType = referencePersistentProperty.getComponentType();
-				List<Value<Key>> keyValues = entity.getList(fieldName);
-				referenced = this.datastoreEntityConverter.getConversions()
-						.convertOnRead(
-								findAllById(
-										keyValues.stream().map(Value::get).collect(Collectors.toSet()),
-										referencedType, context),
-								referencePersistentProperty.getType(),
-								referencedType);
+			if (referencePersistentProperty.isCollectionLike()) {
+				referenced = fetchReferenced(referencePersistentProperty, context, valuesToKeys(entity.getList(fieldName)));
 			}
 			else {
 				List referencedList = findAllById(Collections.singleton(entity.getKey(fieldName)),
@@ -636,6 +648,21 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 							+ "Reference properties must be stored as Keys or lists of Keys"
 							+ " in Cloud Datastore for singular or multiple references, respectively.");
 			}
+	}
+
+	private Object fetchReferenced(DatastorePersistentProperty referencePersistentProperty, ReadContext context, Set<Key> keys) {
+		Class referencedType = referencePersistentProperty.getComponentType();
+		return this.datastoreEntityConverter.getConversions()
+				.convertOnRead(
+						findAllById(
+								keys,
+								referencedType, context),
+						referencePersistentProperty.getType(),
+						referencedType);
+	}
+
+	private Set<Key> valuesToKeys(List<Value<Key>> keyValues) {
+		return keyValues.stream().map(Value::get).collect(Collectors.toSet());
 	}
 
 	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,

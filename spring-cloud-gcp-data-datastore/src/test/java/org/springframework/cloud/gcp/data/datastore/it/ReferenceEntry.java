@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.ReferenceCollection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 
@@ -29,7 +30,7 @@ import org.springframework.data.annotation.Reference;
  *
  * @author Dmitry Solomakha
  */
-class ReferenceEntry {
+public class ReferenceEntry {
 	@Id
 	Long id;
 
@@ -38,7 +39,7 @@ class ReferenceEntry {
 	@Reference
 	ReferenceEntry sibling;
 
-	@Reference
+	@ReferenceCollection(lazy = true)
 	List<ReferenceEntry> childeren;
 
 	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> childeren) {

@@ -539,6 +539,24 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParentAfterUpdate).isEqualTo(parent);
+
+		//Saving an entity with not loaded lazy field
+		parent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+
+		this.datastoreTemplate.save(parent);
+
+		loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+		assertThat(loadedParent).isEqualTo(parent);
+
+		//Exception should be produced if a lazy loaded property accessed outside of the initial transaction
+		ReferenceEntry finalLoadedParent = this.transactionalTemplateService.findByIdLazy(parent.id);
+		assertThatThrownBy(() -> finalLoadedParent.childeren.size()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Lazy load should be invoked within the same transaction");
+
+		//No exception should be produced if a lazy loaded property accessed within the initial transaction
+		ReferenceEntry finalLoadedParentLazyLoaded = this.transactionalTemplateService.findByIdLazyLoad(parent.id);
+		assertThat(finalLoadedParentLazyLoaded).isEqualTo(parent);
+
 	}
 
 	@Test
@@ -715,7 +733,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void readOnlyCountTest() {
-		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(this.testEntityA);
 	}
 
 	@Test
@@ -936,10 +954,10 @@ class Employee {
 	@Override
 	public String toString() {
 		return "Employee{" +
-				"id=" + id.getNameOrId() +
+				"id=" + this.id.getNameOrId() +
 				", subordinates="
-				+ (subordinates != null
-				? subordinates.stream()
+				+ (this.subordinates != null
+				? this.subordinates.stream()
 				.map(employee -> employee.id.getNameOrId())
 				.collect(Collectors.toList())
 				: null)
