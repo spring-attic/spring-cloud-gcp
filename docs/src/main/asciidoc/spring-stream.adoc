@@ -56,7 +56,8 @@ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=tr
 ==== Consumer Destination Configuration
 
 A `PubSubInboundChannelAdapter` will be configured for your consumer endpoint.
-You may adjust the `ACK_MODE` of the consumer endpoint which controls how messages will be acknowledged when they are successfully received through the `ack-mode` property.
+You may adjust the ack mode of the consumer endpoint using the `ack-mode` property.
+The ack mode controls how messages will be acknowledged when they are successfully received.
 The three possible options are: `AUTO` (default), `AUTO_ACK`, and `MANUAL`.
 These options are described in detail in the <<inbound-channel-adapter-using-pubsub-streaming-pull, Pub/Sub channel adapter documentation>>.
 
