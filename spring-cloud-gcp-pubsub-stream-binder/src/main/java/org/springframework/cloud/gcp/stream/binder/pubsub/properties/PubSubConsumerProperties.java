@@ -28,13 +28,13 @@ import org.springframework.cloud.gcp.pubsub.integration.AckMode;
  */
 public class PubSubConsumerProperties extends PubSubCommonProperties {
 
-  private AckMode ackMode = AckMode.AUTO;
+	private AckMode ackMode = AckMode.AUTO;
 
-  public AckMode getAckMode() {
-    return ackMode;
-  }
+	public AckMode getAckMode() {
+		return ackMode;
+	}
 
-  public void setAckMode(AckMode ackMode) {
-    this.ackMode = ackMode;
-  }
+	public void setAckMode(AckMode ackMode) {
+		this.ackMode = ackMode;
+	}
 }
