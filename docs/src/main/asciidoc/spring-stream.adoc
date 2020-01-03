@@ -55,6 +55,19 @@ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=tr
 
 ==== Consumer Destination Configuration
 
+A `PubSubInboundChannelAdapter` will be configured for your consumer endpoint.
+You may adjust the ack mode of the consumer endpoint using the `ack-mode` property.
+The ack mode controls how messages will be acknowledged when they are successfully received.
+The three possible options are: `AUTO` (default), `AUTO_ACK`, and `MANUAL`.
+These options are described in detail in the <<inbound-channel-adapter-using-pubsub-streaming-pull, Pub/Sub channel adapter documentation>>.
+
+.application.properties
+[source]
+----
+# How to set the ACK mode of the consumer endpoint.
+spring.cloud.stream.gcp.pubsub.bindings.{CONSUMER_NAME}.consumer.ack-mode=AUTO_ACK
+----
+
 If automatic resource creation is turned ON and the subscription and/or the topic do not exist for a consumer, a subscription and potentially a topic will be created.
 The topic name will be the same as the destination name, and the subscription name will be the destination name followed by the consumer group name.
 
