@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 import org.springframework.data.annotation.Reference;
 
 /**
- * Annotation for a class that indicates it is an entity stored in a Datastore Entity.
+ * Annotation for a class that indicates that a property is a collection of lazy loaded Datastore entities.
  *
  * @author Dmitry Solomakha
  *
@@ -35,13 +35,5 @@ import org.springframework.data.annotation.Reference;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Reference
-public @interface ReferenceCollection {
-
-	/**
-	 * Controls whether the referenced entity should be loaded lazily. This defaults to
-	 * {@literal false}.
-	 *
-	 * @return whether the interleaved property is retrieved lazily.
-	 */
-	boolean lazy() default false;
+public @interface LazyReferenceCollection {
 }

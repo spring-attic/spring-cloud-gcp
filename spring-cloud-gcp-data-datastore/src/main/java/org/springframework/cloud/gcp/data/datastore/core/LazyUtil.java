@@ -14,45 +14,58 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.util;
+package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
+
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.util.Assert;
 
 /**
+ * Utilities used to support lazy loaded properties.
+ *
  * @author Dmitry Solomakha
+ *
+ * @since 1.3
  */
-final public class LazyUtil {
+final class LazyUtil {
 
 	private LazyUtil() {
 	}
 
-	public static <T> T wrapSimpleLazyProxy(Supplier<T> supplierFunc, Class<T> type, List keys) {
+	public static <T> T wrapSimpleLazyProxy(Function<List<Value<Key>>, T> supplierFunc, Class<T> type, List keys) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type},
 				new SimpleLazyDynamicInvocationHandler<T>(supplierFunc, keys));
 	}
 
-	public static boolean hasUsableKeys(Object object) {
-		if (Proxy.isProxyClass(object.getClass())
-				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
-			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
-					.getInvocationHandler(object);
+	/**
+	 * Check if the object is a lazy loaded proxy that hasn't been evaluated.
+	 * @param object an object
+	 * @return true if the object is a proxy that was not evaluated
+	 */
+	public static boolean isLazyAndNotLoaded(Object object) {
+		SimpleLazyDynamicInvocationHandler handler = getProxy(object);
+		if (handler != null) {
 			return !handler.isEvaluated() && handler.getKeys() != null;
 		}
 		return false;
 	}
 
+	/**
+	 * Extract keys from a proxy object.
+	 * @param object a proxy object
+	 * @return list of keys if the object is a proxy, null otherwise
+	 */
 	public static List getKeys(Object object) {
-		if (Proxy.isProxyClass(object.getClass())
-				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
-			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
-					.getInvocationHandler(object);
+		SimpleLazyDynamicInvocationHandler handler = getProxy(object);
+		if (handler != null) {
 			if (!handler.isEvaluated()) {
 				return handler.getKeys();
 			}
@@ -60,17 +73,29 @@ final public class LazyUtil {
 		return null;
 	}
 
+	private static SimpleLazyDynamicInvocationHandler getProxy(Object object) {
+		if (Proxy.isProxyClass(object.getClass())
+				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
+			return (SimpleLazyDynamicInvocationHandler) Proxy
+					.getInvocationHandler(object);
+		}
+		return null;
+	}
+
+	/**
+	 * Proxy class used for lazy loading.
+	 */
 	public static final class SimpleLazyDynamicInvocationHandler<T> implements InvocationHandler {
 
-		private final Supplier<T> supplierFunc;
+		private final Function<List<Value<Key>>, T> supplierFunc;
 
-		private final List keys;
+		private final List<Value<Key>> keys;
 
 		private boolean isEvaluated = false;
 
 		private T value;
 
-		private SimpleLazyDynamicInvocationHandler(Supplier<T> supplierFunc, List keys) {
+		private SimpleLazyDynamicInvocationHandler(Function<List<Value<Key>>, T> supplierFunc, List<Value<Key>> keys) {
 			Assert.notNull(supplierFunc, "A non-null supplier function is required for a lazy proxy.");
 			this.supplierFunc = supplierFunc;
 			this.keys = keys;
@@ -87,7 +112,7 @@ final public class LazyUtil {
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if (!this.isEvaluated) {
-				T value = this.supplierFunc.get();
+				T value = this.supplierFunc.apply(this.keys);
 				if (value == null) {
 					throw new DatastoreDataException("Can't load referenced entity");
 				}
@@ -98,5 +123,4 @@ final public class LazyUtil {
 			return method.invoke(this.value, args);
 		}
 	}
-
 }

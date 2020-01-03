@@ -69,14 +69,13 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.ReferenceCollection;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReferenceCollection;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterFindByKeyEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSaveEvent;
-import org.springframework.cloud.gcp.data.datastore.core.util.LazyUtil;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.annotation.Id;
@@ -502,6 +501,17 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void nonCollectionLazyException() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Only collection-like properties can be lazy-loaded");
+
+		when(this.objectToKeyFactory.allocateKeyForObject(any(), any(), any())).thenReturn(createFakeKey("fakeKey"));
+		BadLazyReferenceTestEntity entity = new BadLazyReferenceTestEntity();
+		entity.lazyChild = new ReferenceTestEntity();
+		this.datastoreTemplate.save(entity);
+	}
+
+	@Test
 	public void saveReferenceLoopTest() {
 		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
 		referenceTestEntity.id = 1L;
@@ -530,7 +540,7 @@ public class DatastoreTemplateTests {
 	@Test
 	public void saveTestLazy() {
 		this.ob1.lazyMultipleReference = LazyUtil.wrapSimpleLazyProxy(
-				() -> Collections.singletonList(this.childEntity7), List.class,
+				(keys) -> Collections.singletonList(this.childEntity7), List.class,
 				Collections.singletonList(KeyValue.of(this.childKey7)));
 		saveTestCommon(this.ob1, true);
 	}
@@ -1181,7 +1191,7 @@ public class DatastoreTemplateTests {
 		@Reference
 		LinkedList<ChildEntity> multipleReference;
 
-		@ReferenceCollection(lazy = true)
+		@LazyReferenceCollection
 		List<ChildEntity> lazyMultipleReference;
 
 
@@ -1255,8 +1265,16 @@ public class DatastoreTemplateTests {
 		@Reference
 		ReferenceTestEntity sibling;
 
-		@ReferenceCollection(lazy = true)
+		@LazyReferenceCollection
 		List<ReferenceTestEntity> lazyChildren;
+	}
+
+	class BadLazyReferenceTestEntity {
+		@Id
+		Long id;
+
+		@LazyReferenceCollection
+		ReferenceTestEntity lazyChild;
 	}
 
 }

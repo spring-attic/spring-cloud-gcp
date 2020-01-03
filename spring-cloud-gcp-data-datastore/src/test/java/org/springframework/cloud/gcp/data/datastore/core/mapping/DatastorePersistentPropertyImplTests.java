@@ -155,7 +155,7 @@ public class DatastorePersistentPropertyImplTests {
 		@Descendants
 		List<TestSubEntity> linkedEntity;
 
-		@ReferenceCollection
+		@Reference
 		TestSubEntity linkedEntityRef;
 	}
 
@@ -182,7 +182,7 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class FieldReferencedAnnotatedEntity {
 		@Field(name = "name")
-		@ReferenceCollection
+		@LazyReferenceCollection
 		TestSubEntity[] subEntity;
 	}
 
