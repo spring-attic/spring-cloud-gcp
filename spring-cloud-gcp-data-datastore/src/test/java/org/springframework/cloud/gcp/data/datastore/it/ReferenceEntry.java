@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReference;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 
@@ -29,7 +30,7 @@ import org.springframework.data.annotation.Reference;
  *
  * @author Dmitry Solomakha
  */
-class ReferenceEntry {
+public class ReferenceEntry {
 	@Id
 	Long id;
 
@@ -38,13 +39,13 @@ class ReferenceEntry {
 	@Reference
 	ReferenceEntry sibling;
 
-	@Reference
-	List<ReferenceEntry> childeren;
+	@LazyReference
+	List<ReferenceEntry> children;
 
-	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> childeren) {
+	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> children) {
 		this.name = name;
 		this.sibling = sibling;
-		this.childeren = childeren;
+		this.children = children;
 	}
 
 	@Override
@@ -59,14 +60,14 @@ class ReferenceEntry {
 		return Objects.equals(this.id, that.id) &&
 				Objects.equals(this.name, that.name) &&
 				Objects.equals(this.sibling, that.sibling) &&
-				new HashSet<>((this.childeren != null) ? this.childeren : Collections.emptyList())
-						.equals(new HashSet<>((that.childeren != null) ? that.childeren : Collections.emptyList()));
+				new HashSet<>((this.children != null) ? this.children : Collections.emptyList())
+						.equals(new HashSet<>((that.children != null) ? that.children : Collections.emptyList()));
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(this.id, this.name, this.sibling, this.childeren);
+		return Objects.hash(this.id, this.name, this.sibling, this.children);
 	}
 
 	@Override
@@ -75,7 +76,7 @@ class ReferenceEntry {
 				"id=" + this.id +
 				", name='" + this.name + '\'' +
 				", sibling=" + this.sibling +
-				", childeren=" + this.childeren +
+				", childeren=" + this.children +
 				'}';
 	}
 }

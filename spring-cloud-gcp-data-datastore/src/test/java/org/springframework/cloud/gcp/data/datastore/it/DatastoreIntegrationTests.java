@@ -516,19 +516,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void referenceTest() {
-		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
-		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
-		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
-		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
-
-		this.datastoreTemplate.save(parent);
-		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		ReferenceEntry parent = saveEntitiesGraph();
 
 		ReferenceEntry loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParent).isEqualTo(parent);
 
 		parent.name = "parent updated";
-		parent.childeren.forEach((child) -> child.name = child.name + " updated");
+		parent.children.forEach((child) -> child.name = child.name + " updated");
 		parent.sibling.name = "sibling updated";
 
 		this.datastoreTemplate.save(parent);
@@ -539,6 +533,43 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParentAfterUpdate).isEqualTo(parent);
+	}
+
+	@Test
+	public void lazyReferenceTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		//Saving an entity with not loaded lazy field
+		ReferenceEntry lazyParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+
+		this.datastoreTemplate.save(lazyParent);
+
+		ReferenceEntry loadedParent = this.datastoreTemplate.findById(lazyParent.id, ReferenceEntry.class);
+		assertThat(loadedParent.children).containsExactlyInAnyOrder(parent.children.toArray(new ReferenceEntry[0]));
+	}
+
+	@Test
+	public void lazyReferenceTransactionTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		//Exception should be produced if a lazy loaded property accessed outside of the initial transaction
+		ReferenceEntry finalLoadedParent = this.transactionalTemplateService.findByIdLazy(parent.id);
+		assertThatThrownBy(() -> finalLoadedParent.children.size()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Lazy load should be invoked within the same transaction");
+
+		//No exception should be produced if a lazy loaded property accessed within the initial transaction
+		ReferenceEntry finalLoadedParentLazyLoaded = this.transactionalTemplateService.findByIdLazyAndLoad(parent.id);
+		assertThat(finalLoadedParentLazyLoaded).isEqualTo(parent);
+	}
+
+	private ReferenceEntry saveEntitiesGraph() {
+		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
+		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
+		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
+		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
+		this.datastoreTemplate.save(parent);
+		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		return parent;
 	}
 
 	@Test
@@ -715,7 +746,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void readOnlyCountTest() {
-		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(this.testEntityA);
 	}
 
 	@Test
@@ -936,10 +967,10 @@ class Employee {
 	@Override
 	public String toString() {
 		return "Employee{" +
-				"id=" + id.getNameOrId() +
+				"id=" + this.id.getNameOrId() +
 				", subordinates="
-				+ (subordinates != null
-				? subordinates.stream()
+				+ (this.subordinates != null
+				? this.subordinates.stream()
 				.map(employee -> employee.id.getNameOrId())
 				.collect(Collectors.toList())
 				: null)
