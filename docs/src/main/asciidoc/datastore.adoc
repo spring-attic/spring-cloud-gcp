@@ -425,7 +425,7 @@ There are three ways to represent relationships between entities that are descri
 * Embedded entities stored directly in the field of the containing entity
 * `@Descendant` annotated properties for one-to-many relationships
 * `@Reference` annotated properties for general relationships without hierarchy
-* `@LazyReferenceCollection` similar to `@Reference`, but the entities are lazy loaded when the property is accessed (note that the children keys retrieved when the parent entity is loaded)
+* `@LazyReferenceCollection` similar to `@Reference`, but the entities are lazy-loaded when the property is accessed. (Note that the keys of the children are retrieved when the parent entity is loaded.)
 
 ==== Embedded Entities
 
