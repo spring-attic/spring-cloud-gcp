@@ -147,6 +147,6 @@ public class DatastorePersistentPropertyImpl
 
 	@Override
 	public boolean isLazyLoaded() {
-		return findAnnotation(LazyReferenceCollection.class) != null;
+		return findAnnotation(LazyReference.class) != null;
 	}
 }

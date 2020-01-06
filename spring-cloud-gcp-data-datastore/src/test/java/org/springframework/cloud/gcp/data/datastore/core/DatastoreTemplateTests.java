@@ -69,7 +69,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReferenceCollection;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReference;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterFindByKeyEvent;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.event.AfterQueryEvent;
@@ -1191,7 +1191,7 @@ public class DatastoreTemplateTests {
 		@Reference
 		LinkedList<ChildEntity> multipleReference;
 
-		@LazyReferenceCollection
+		@LazyReference
 		List<ChildEntity> lazyMultipleReference;
 
 
@@ -1265,7 +1265,7 @@ public class DatastoreTemplateTests {
 		@Reference
 		ReferenceTestEntity sibling;
 
-		@LazyReferenceCollection
+		@LazyReference
 		List<ReferenceTestEntity> lazyChildren;
 	}
 
@@ -1273,7 +1273,7 @@ public class DatastoreTemplateTests {
 		@Id
 		Long id;
 
-		@LazyReferenceCollection
+		@LazyReference
 		ReferenceTestEntity lazyChild;
 	}
 

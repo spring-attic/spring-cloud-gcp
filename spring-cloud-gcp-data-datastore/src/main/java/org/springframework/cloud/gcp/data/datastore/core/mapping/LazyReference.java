@@ -35,5 +35,5 @@ import org.springframework.data.annotation.Reference;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 @Reference
-public @interface LazyReferenceCollection {
+public @interface LazyReference {
 }

@@ -182,7 +182,7 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class FieldReferencedAnnotatedEntity {
 		@Field(name = "name")
-		@LazyReferenceCollection
+		@LazyReference
 		TestSubEntity[] subEntity;
 	}
 

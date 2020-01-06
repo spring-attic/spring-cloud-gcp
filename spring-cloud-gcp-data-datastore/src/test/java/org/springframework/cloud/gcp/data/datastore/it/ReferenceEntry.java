@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReferenceCollection;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReference;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 
@@ -39,7 +39,7 @@ public class ReferenceEntry {
 	@Reference
 	ReferenceEntry sibling;
 
-	@LazyReferenceCollection
+	@LazyReference
 	List<ReferenceEntry> children;
 
 	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> children) {
