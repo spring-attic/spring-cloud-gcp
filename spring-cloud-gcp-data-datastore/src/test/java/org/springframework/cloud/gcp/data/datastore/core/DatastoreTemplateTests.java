@@ -501,17 +501,6 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void nonCollectionLazyException() {
-		this.expectedEx.expect(DatastoreDataException.class);
-		this.expectedEx.expectMessage("Only collection-like properties can be lazy-loaded");
-
-		when(this.objectToKeyFactory.allocateKeyForObject(any(), any(), any())).thenReturn(createFakeKey("fakeKey"));
-		BadLazyReferenceTestEntity entity = new BadLazyReferenceTestEntity();
-		entity.lazyChild = new ReferenceTestEntity();
-		this.datastoreTemplate.save(entity);
-	}
-
-	@Test
 	public void saveReferenceLoopTest() {
 		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
 		referenceTestEntity.id = 1L;
@@ -540,8 +529,8 @@ public class DatastoreTemplateTests {
 	@Test
 	public void saveTestLazy() {
 		this.ob1.lazyMultipleReference = LazyUtil.wrapSimpleLazyProxy(
-				(keys) -> Collections.singletonList(this.childEntity7), List.class,
-				Collections.singletonList(KeyValue.of(this.childKey7)));
+				() -> Collections.singletonList(this.childEntity7), List.class,
+				ListValue.of(KeyValue.of(this.childKey7)));
 		saveTestCommon(this.ob1, true);
 	}
 
@@ -1267,14 +1256,6 @@ public class DatastoreTemplateTests {
 
 		@LazyReference
 		List<ReferenceTestEntity> lazyChildren;
-	}
-
-	class BadLazyReferenceTestEntity {
-		@Id
-		Long id;
-
-		@LazyReference
-		ReferenceTestEntity lazyChild;
 	}
 
 }

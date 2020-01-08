@@ -61,6 +61,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionSystemException;
 
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
@@ -141,6 +142,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.datastoreTemplate.deleteAll(Event.class);
+		this.datastoreTemplate.deleteAll(LazyEntity.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -447,7 +449,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		Thread.sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+		sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
@@ -536,16 +538,41 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void lazyReferenceTest() {
+	public void lazyReferenceCollectionTest() {
 		ReferenceEntry parent = saveEntitiesGraph();
 
-		//Saving an entity with not loaded lazy field
 		ReferenceEntry lazyParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 
+		//Saving an entity with not loaded lazy field
 		this.datastoreTemplate.save(lazyParent);
 
 		ReferenceEntry loadedParent = this.datastoreTemplate.findById(lazyParent.id, ReferenceEntry.class);
 		assertThat(loadedParent.children).containsExactlyInAnyOrder(parent.children.toArray(new ReferenceEntry[0]));
+	}
+
+
+	@Test
+	public void lazyReferenceTest() throws InterruptedException {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+
+		//Saving an entity with not loaded lazy field
+		this.datastoreTemplate.save(loadedParent);
+
+		loadedParent = this.datastoreTemplate.findById(loadedParent.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
+	}
+
+
+	@Test
+	public void singularLazyPropertyTest() {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
 	}
 
 	@Test
