@@ -58,7 +58,6 @@ final class LazyUtil {
 	}
 
 	private static Class<?> getEnhancedTypeFor(Class<?> type) {
-
 		Enhancer enhancer = new Enhancer();
 		enhancer.setSuperclass(type);
 		enhancer.setCallbackType(org.springframework.cglib.proxy.MethodInterceptor.class);
