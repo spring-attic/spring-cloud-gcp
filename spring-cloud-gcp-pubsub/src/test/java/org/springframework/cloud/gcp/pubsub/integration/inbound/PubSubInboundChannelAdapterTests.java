@@ -128,6 +128,8 @@ public class PubSubInboundChannelAdapterTests {
 			this.adapter.start();
 		}).hasMessageContaining(EXCEPTION_MESSAGE);
 
+		// When exception thrown, verify that neither ack() nor nack() is called.
+		verify(mockAcknowledgeableMessage, times(0)).ack();
 		verify(mockAcknowledgeableMessage, times(0)).nack();
 	}
 

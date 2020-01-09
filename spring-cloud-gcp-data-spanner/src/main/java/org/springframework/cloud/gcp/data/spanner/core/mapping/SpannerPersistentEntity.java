@@ -71,11 +71,11 @@ public interface SpannerPersistentEntity<T> extends
 	SpannerMappingContext getSpannerMappingContext();
 
 	/**
-	 * Gets a SpannerEntityWriter that can be used to create Cloud Spanner keys from one or
+	 * Gets a SpannerEntityProcessor that can be used to create Cloud Spanner keys from one or
 	 * more persistent properties.
-	 * @return a SpannerEntityWriter.
+	 * @return a SpannerEntityProcessor.
 	 */
-	SpannerEntityWriter getSpannerEntityWriter();
+	SpannerEntityWriter getSpannerEntityProcessor();
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();
@@ -98,4 +98,11 @@ public interface SpannerPersistentEntity<T> extends
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithColumnBackedProperties(PropertyHandler<SpannerPersistentProperty> handler);
+
+	/**
+	 * Returns true if the entity has a muti-field key.
+	 *
+	 * @return true if the entity has a muti-field key
+	 */
+	boolean hasMultiFieldKey();
 }

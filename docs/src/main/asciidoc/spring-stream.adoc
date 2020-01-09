@@ -55,6 +55,19 @@ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=tr
 
 ==== Consumer Destination Configuration
 
+A `PubSubInboundChannelAdapter` will be configured for your consumer endpoint.
+You may adjust the ack mode of the consumer endpoint using the `ack-mode` property.
+The ack mode controls how messages will be acknowledged when they are successfully received.
+The three possible options are: `AUTO` (default), `AUTO_ACK`, and `MANUAL`.
+These options are described in detail in the <<inbound-channel-adapter-using-pubsub-streaming-pull, Pub/Sub channel adapter documentation>>.
+
+.application.properties
+[source]
+----
+# How to set the ACK mode of the consumer endpoint.
+spring.cloud.stream.gcp.pubsub.bindings.{CONSUMER_NAME}.consumer.ack-mode=AUTO_ACK
+----
+
 If automatic resource creation is turned ON and the subscription and/or the topic do not exist for a consumer, a subscription and potentially a topic will be created.
 The topic name will be the same as the destination name, and the subscription name will be the destination name followed by the consumer group name.
 
@@ -75,6 +88,67 @@ spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=tr
 # specify consumer group, and avoid anonymous consumer group generation
 spring.cloud.stream.bindings.events.group=consumerGroup1
 ----
+
+=== Binding with Functions
+
+Since version 3.0, Spring Cloud Stream supports a functional programming model natively.
+This means that the only requirement for turning your application into a sink is presence of a `java.util.function.Consumer` bean in the application context.
+
+```
+@Bean
+public Consumer<UserMessage> logUserMessage() {
+  return userMessage -> {
+    // process message
+  }
+};
+```
+
+A source application is one where a `Supplier` bean is present.
+It can return an object, in which case Spring Cloud Stream will invoke the supplier repeatedly.
+Alternatively, the function can return a reactive stream, which will be used as is.
+
+```
+@Bean
+Supplier<Flux<UserMessage>> generateUserMessages() {
+  return () -> /* flux creation logic */;
+}
+```
+
+A processor application works similarly to a source application, except it is triggered by presence of a `Function` bean.
+
+
+=== Binding with Annotations
+
+NOTE: As of version 3.0, annotation binding is considered legacy.
+
+To set up a sink application in this style, you would associate a class with a binding interface, such as the built-in `Sink` interface.
+
+```
+@EnableBinding(Sink.class)
+public class SinkExample {
+
+	@StreamListener(Sink.INPUT)
+	public void handleMessage(UserMessage userMessage) {
+		// process message
+	}
+}
+```
+
+To set up a source application, you would similarly associate a class with a built-in `Source` interface, and inject an instance of it provided by Spring Cloud Stream.
+
+```
+@EnableBinding(Source.class)
+public class SourceExample {
+
+	@Autowired
+	private Source source;
+
+	public void sendMessage() {
+		this.source.output().send(new GenericMessage<>(/* your object here */));
+	}
+}
+```
+
 
 === Streaming vs. Polled Input
 
@@ -117,5 +191,6 @@ public class SinkExample {
 
 Sample applications are available:
 
-* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input, annotation-based].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-binder-functional-sample[streaming input, functional style].
 * For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample[polled input].

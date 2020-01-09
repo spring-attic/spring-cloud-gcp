@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Doug Hoard
  * @author Mike Eltsufin
+ * @author SateeshKumar Kota
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
@@ -199,6 +200,15 @@ public class PubSubTemplateTests {
 		assertThatThrownBy(() -> future.get())
 				.isInstanceOf(ExecutionException.class)
 				.hasMessageContaining("future failed.");
+	}
+
+	@Test
+	public void testPublish_onFailureWithPayload() {
+		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
+		this.settableApiFuture.setException(new Exception("Publish failed"));
+		assertThatThrownBy(() -> future.get()).isInstanceOf(ExecutionException.class).hasCauseInstanceOf(PubSubDeliveryException.class)
+				.hasMessageContaining("Publish failed");
+
 	}
 
 	@Test

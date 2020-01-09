@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubDeliveryException;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
@@ -41,6 +42,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author SateeshKumar Kota
  *
  * @since 1.1
  */
@@ -102,8 +104,10 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 
 			@Override
 			public void onFailure(Throwable throwable) {
-				LOGGER.warn("Publishing to " + topic + " topic failed.", throwable);
-				settableFuture.setException(throwable);
+				String errorMessage = "Publishing to " + topic + " topic failed.";
+				LOGGER.warn(errorMessage, throwable);
+				PubSubDeliveryException pubSubDeliveryException = new PubSubDeliveryException(pubsubMessage, errorMessage, throwable);
+				settableFuture.setException(pubSubDeliveryException);
 			}
 
 			@Override

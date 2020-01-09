@@ -80,12 +80,12 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				keyParts.add(value);
 			}
 			else {
-				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
+				keyParts.add(this.spannerPersistentEntity.getSpannerEntityProcessor().getSpannerWriteConverter()
 						.convert(value, SpannerTypeMapper
 								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
 			}
 		}
-		return this.spannerPersistentEntity.getSpannerEntityWriter().convertToKey(keyParts);
+		return this.spannerPersistentEntity.getSpannerEntityProcessor().convertToKey(keyParts);
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
 	@Override
 	public Class<?> getType() {
-		return Key.class;
+		return this.primaryKeyColumns.length == 1 ? this.primaryKeyColumns[0].getActualType() : Key.class;
 	}
 
 	@Override

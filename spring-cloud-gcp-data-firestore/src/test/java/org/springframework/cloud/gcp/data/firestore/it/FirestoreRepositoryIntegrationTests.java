@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.firestore.it;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -25,16 +27,24 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = FirestoreIntegrationTestsConfiguration.class)
@@ -43,6 +53,19 @@ public class FirestoreRepositoryIntegrationTests {
 	@Autowired
 	UserRepository userRepository;
 	//end::autowire[]
+
+	//tag::autowire_tx_manager[]
+	@Autowired
+	ReactiveFirestoreTransactionManager txManager;
+	//end::autowire_tx_manager[]
+
+	//tag::autowire_user_service[]
+	@Autowired
+	UserService userService;
+	//end::autowire_user_service[]
+
+	@Autowired
+	ReactiveFirestoreTransactionManager transactionManager;
 
 	@BeforeClass
 	public static void checkToRun() throws IOException {
@@ -54,6 +77,7 @@ public class FirestoreRepositoryIntegrationTests {
 	@Before
 	public void cleanTestEnvironment() {
 		this.userRepository.deleteAll().block();
+		reset(this.transactionManager);
 	}
 
 	@Test
@@ -83,11 +107,40 @@ public class FirestoreRepositoryIntegrationTests {
 	//end::repository_built_in[]
 
 	@Test
+	public void transactionalOperatorTest() {
+		//tag::repository_transactional_operator[]
+		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+		transactionDefinition.setReadOnly(false);
+		TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);
+		//end::repository_transactional_operator[]
+
+		//tag::repository_operations_in_a_transaction[]
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice)
+				.then(this.userRepository.save(bob))
+				.as(operator::transactional)
+				.block();
+
+		this.userRepository.findAll()
+				.flatMap(a -> {
+					a.setAge(a.getAge() - 1);
+					return this.userRepository.save(a);
+				})
+				.as(operator::transactional).collectList().block();
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
+		//end::repository_operations_in_a_transaction[]
+	}
+
+	@Test
 	//tag::repository_part_tree[]
 	public void partTreeRepositoryMethodTest() {
 		User u1 = new User("Cloud", 22);
 		User u2 = new User("Squall", 17);
-		Flux<User> users = Flux.fromArray(new User[] { u1, u2 });
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
 
 		this.userRepository.saveAll(users).blockLast();
 
@@ -113,5 +166,115 @@ public class FirestoreRepositoryIntegrationTests {
 				.block();
 
 		assertThat(pagedUsers).containsExactlyInAnyOrder("blah-person5", "blah-person6");
+	}
+
+	@Test
+	public void inFilterQueryTest() {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
+
+		this.userRepository.saveAll(users).blockLast();
+
+		List<String> pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(22, 23, 24))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud");
+
+		pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(17, 22))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud", "Squall");
+
+		pagedUsers = this.userRepository.findByAgeIn(Arrays.asList(18, 23))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).isEmpty();
+	}
+
+	@Test
+	public void containsFilterQueryTest() {
+		User u1 = new User("Cloud", 22, Arrays.asList("cat", "dog"));
+		User u2 = new User("Squall", 17, Collections.singletonList("pony"));
+		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
+
+		this.userRepository.saveAll(users).blockLast();
+
+		List<String> pagedUsers = this.userRepository.findByPetsContains(Arrays.asList("cat", "dog"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud");
+
+		pagedUsers = this.userRepository.findByPetsContains(Arrays.asList("cat", "pony"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud", "Squall");
+
+		pagedUsers = this.userRepository.findByAgeAndPetsContains(17, Arrays.asList("cat", "pony"))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Squall");
+
+		pagedUsers = this.userRepository.findByPetsContainsAndAgeIn("cat", Arrays.asList(22, 23))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud");
+	}
+
+	@Test
+	public void declarativeTransactionRollbackTest() {
+		this.userService.deleteUsers().onErrorResume(throwable -> Mono.empty()).block();
+
+		verify(this.transactionManager, times(0)).commit(any());
+		verify(this.transactionManager, times(1)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+	}
+
+	@Test
+	public void declarativeTransactionCommitTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
+
+		this.userService.updateUsers().block();
+
+		verify(this.transactionManager, times(1)).commit(any());
+		verify(this.transactionManager, times(0)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
+	}
+
+	@Test
+	public void transactionPropagationTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
+
+		this.userService.updateUsersTransactionPropagation().block();
+
+		verify(this.transactionManager, times(1)).commit(any());
+		verify(this.transactionManager, times(0)).rollback(any());
+		verify(this.transactionManager, times(1)).getReactiveTransaction(any());
+
+		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+				.containsExactlyInAnyOrder(28, 59);
 	}
 }

@@ -102,6 +102,20 @@ public class GoogleStorageIntegrationTests {
 
 		String message = "test message";
 
+		thisResource().createBlob(message.getBytes());
+
+		assertThat(this.resource.exists()).isTrue();
+
+		try (InputStream is = this.resource.getInputStream()) {
+			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
+		}
+	}
+
+	@Test
+	public void createWithContent() throws IOException {
+
+		String message = "test message";
+
 		try (OutputStream os = thisResource().getOutputStream()) {
 			os.write(message.getBytes());
 		}
@@ -126,6 +140,7 @@ public class GoogleStorageIntegrationTests {
 			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
 		}
 	}
+
 
 	/**
 	 * Spring config for the tests.

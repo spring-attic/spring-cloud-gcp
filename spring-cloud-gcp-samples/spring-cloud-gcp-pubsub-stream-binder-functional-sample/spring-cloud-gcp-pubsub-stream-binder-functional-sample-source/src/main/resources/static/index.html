@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spring Cloud GCP Pub/Sub Functional Stream Binder Code Sample</title>
+
+    <style>
+        span.label {
+            display:inline-block;
+            width: 10em;
+            padding-bottom: 0.5em;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>New message:</h2>
+
+    <form action="postMessage" method="POST">
+        <div class="field">
+            <span class="label">Message body:</span>
+            <input name="messageBody" />
+        </div>
+
+        <div class="field">
+            <span class="label">Username:</span>
+            <input  name="username" />
+        </div>
+
+        <input type="submit" value="Post it!" />
+    </form>
+</body>
+</html>

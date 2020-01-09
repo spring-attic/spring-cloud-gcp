@@ -24,14 +24,20 @@ import io.grpc.CallCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.repository.config.EnableReactiveFirestoreRepositories;
+import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Spring config for the integration tests.
@@ -39,26 +45,52 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @PropertySource("application-test.properties")
 @EnableReactiveFirestoreRepositories
+@EnableTransactionManagement
 public class FirestoreIntegrationTestsConfiguration {
 	@Value("projects/${test.integration.firestore.project-id}/databases/(default)/documents")
 	String defaultParent;
 
 	@Bean
-	public FirestoreTemplate firestoreTemplate() throws IOException {
+	FirestoreGrpc.FirestoreStub firestoreStub()  throws IOException {
 		GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
 		CallCredentials callCredentials = MoreCallCredentials.from(credentials);
 
 		// Create a channel
 		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("firestore.googleapis.com", 443)
+				.forTarget("dns:///firestore.googleapis.com:443")
 				.build();
+		return FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials);
+	}
 
-		return new FirestoreTemplate(FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials),
-				defaultParent);
+	@Bean
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+			FirestoreClassMapper classMapper) {
+		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper);
 	}
 
 	@Bean
 	public FirestoreMappingContext firestoreMappingContext() {
 		return new FirestoreMappingContext();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ReactiveFirestoreTransactionManager firestoreTransactionManager(
+			FirestoreGrpc.FirestoreStub firestoreStub) {
+		return Mockito.spy(new ReactiveFirestoreTransactionManager(firestoreStub, this.defaultParent));
+	}
+
+	//tag::user_service_bean[]
+	@Bean
+	public UserService userService() {
+		return new UserService();
+	}
+	//end::user_service_bean[]
+
+
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreClassMapper getClassMapper() {
+		return new FirestoreDefaultClassMapper();
 	}
 }

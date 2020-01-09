@@ -80,6 +80,10 @@ public class DatastorePersistentPropertyImpl
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
 		}
+		if (isLazyLoaded() && !isCollectionLike()) {
+			throw new DatastoreDataException(
+					"Only collection-like properties can be lazy-loaded");
+		}
 	}
 
 	@Override
@@ -139,5 +143,10 @@ public class DatastorePersistentPropertyImpl
 				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
 				.filter((typeInfo) -> typeInfo.getType().isAnnotationPresent(Entity.class))
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean isLazyLoaded() {
+		return findAnnotation(LazyReference.class) != null;
 	}
 }

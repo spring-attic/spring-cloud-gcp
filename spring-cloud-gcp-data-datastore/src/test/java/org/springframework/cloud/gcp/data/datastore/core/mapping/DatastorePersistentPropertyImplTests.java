@@ -122,6 +122,15 @@ public class DatastorePersistentPropertyImplTests {
 				.getPersistentEntity(FieldReferenceAnnotatedEntity.class);
 	}
 
+	@Test
+	public void fieldReferencedAnnotatedTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Property cannot be annotated as @Field if it is " +
+				"annotated @Descendants or @Reference: name");
+		this.datastoreMappingContext
+				.getPersistentEntity(FieldReferencedAnnotatedEntity.class);
+	}
+
 	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
 		@Id
@@ -170,6 +179,13 @@ public class DatastorePersistentPropertyImplTests {
 		@Reference
 		TestSubEntity[] subEntity;
 	}
+
+	private static class FieldReferencedAnnotatedEntity {
+		@Field(name = "name")
+		@LazyReference
+		TestSubEntity[] subEntity;
+	}
+
 
 	private static class DescendantFieldAnnotatedEntity {
 		@Descendants

@@ -152,19 +152,49 @@ public class SpannerPersistentEntityImplTests {
 
 	@Test
 	public void testSetIdProperty() {
-		this.thrown.expect(SpannerDataException.class);
-		this.thrown.expectMessage(
-				"Setting the primary key directly via the Key ID property is not supported. " +
-						"Please set the underlying column properties.");
-
 		SpannerPersistentEntity entity = new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class);
+				.getPersistentEntity(MultiIdsEntity.class);
 
 		PersistentProperty idProperty = entity.getIdProperty();
 
-		TestEntity t = new TestEntity();
-		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
+		MultiIdsEntity t = new MultiIdsEntity();
+		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah", 123L, 123.45D));
+
+		assertThat(t.id).isEqualTo("blah");
+		assertThat(t.id2).isEqualTo(123L);
+		assertThat(t.id3).isEqualTo(123.45D);
 	}
+
+	@Test
+	public void testSetIdPropertyLongerKey() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"The number of key parts is not equal to the number of primary key properties");
+
+		SpannerPersistentEntity entity = new SpannerMappingContext()
+				.getPersistentEntity(MultiIdsEntity.class);
+
+		PersistentProperty idProperty = entity.getIdProperty();
+
+		MultiIdsEntity t = new MultiIdsEntity();
+		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah", 123L, 123.45D, "abc"));
+	}
+
+	@Test
+	public void testSetIdPropertyNullKey() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"The number of key parts is not equal to the number of primary key properties");
+
+		SpannerPersistentEntity entity = new SpannerMappingContext()
+				.getPersistentEntity(MultiIdsEntity.class);
+
+		PersistentProperty idProperty = entity.getIdProperty();
+
+		MultiIdsEntity t = new MultiIdsEntity();
+		entity.getPropertyAccessor(t).setProperty(idProperty, null);
+	}
+
 
 	@Test
 	public void testIgnoredProperty() {
@@ -460,5 +490,16 @@ public class SpannerPersistentEntityImplTests {
 
 	private static class EntityWithNoId {
 		String id;
+	}
+
+	private static class MultiIdsEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		Long id2;
+
+		@PrimaryKey(keyOrder = 3)
+		Double id3;
 	}
 }

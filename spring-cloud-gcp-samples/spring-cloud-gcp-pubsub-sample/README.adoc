@@ -59,6 +59,7 @@ You should see the following message logged:
 Message received from exampleSubscription subscription: Hello world!
 ----
 
-5. Delete topic `exampleTopic`.
+5. Delete subscription `exampleSubscription`.
 
-6. Delete topic `exampleSubscription`.
+6. Delete topic `exampleTopic`.
+

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
@@ -34,9 +35,17 @@ public class User {
 	private Integer age;
 	//end::class_definition[]
 
+	private List<String> pets;
+
 	public User(String name, Integer age) {
 		this.name = name;
 		this.age = age;
+	}
+
+	public User(String name, Integer age, List<String> pets) {
+		this.name = name;
+		this.age = age;
+		this.pets = pets;
 	}
 
 	public User() {
@@ -56,6 +65,14 @@ public class User {
 
 	public void setAge(Integer age) {
 		this.age = age;
+	}
+
+	public List<String> getPets() {
+		return this.pets;
+	}
+
+	public void setPets(List<String> pets) {
+		this.pets = pets;
 	}
 
 	@Override
