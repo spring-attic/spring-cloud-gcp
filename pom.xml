@@ -221,9 +221,15 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<!-- Exclude samples and classes in the Firestore Google Client library packages -->
-					<excludePackageNames>com.example,com.google.cloud.firestore</excludePackageNames>
+					<excludePackageNames>
+						com.example,
+						com.example.*,
+						<!-- Exclude samples and classes in the Firestore Google Client library packages -->
+						com.google.cloud.firestore
+					</excludePackageNames>
 					<links>
+						<link>https://googleapis.dev/java/google-cloud-vision/latest/</link>
+						<link>https://googleapis.dev/java/google-cloud-spanner/latest/</link>
 						<link>https://googleapis.dev/java/google-cloud-clients/latest/</link>
 					</links>
 				</configuration>
