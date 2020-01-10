@@ -80,10 +80,6 @@ public class DatastorePersistentPropertyImpl
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
 		}
-		if (isLazyLoaded() && !isCollectionLike()) {
-			throw new DatastoreDataException(
-					"Only collection-like properties can be lazy-loaded");
-		}
 	}
 
 	@Override

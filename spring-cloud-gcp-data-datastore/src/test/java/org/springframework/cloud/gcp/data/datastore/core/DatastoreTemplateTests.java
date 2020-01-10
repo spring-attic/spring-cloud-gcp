@@ -463,23 +463,30 @@ public class DatastoreTemplateTests {
 		Entity referenceTestDatastoreEntity = Entity.newBuilder(this.key1)
 				.set("sibling", this.key1)
 				.set("lazyChildren", ListValue.of(this.key2))
+				.set("lazyChild", this.childKey2)
 				.build();
 
 		Entity child = Entity.newBuilder(this.key1).build();
+		Entity child2 = Entity.newBuilder(this.childKey2).build();
 
 		when(this.datastore.fetch(eq(this.key1)))
 				.thenReturn(Collections.singletonList(referenceTestDatastoreEntity));
 		when(this.datastore.fetch(eq(this.key2)))
 				.thenReturn(Collections.singletonList(child));
+		when(this.datastore.fetch(eq(this.childKey2)))
+				.thenReturn(Collections.singletonList(child2));
 
 		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
 		ReferenceTestEntity childEntity = new ReferenceTestEntity();
+		ReferenceTestEntity childEntity2 = new ReferenceTestEntity();
 
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(referenceTestDatastoreEntity)))
 				.thenAnswer(invocationOnMock -> referenceTestEntity);
 
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(child)))
 				.thenAnswer(invocationOnMock -> childEntity);
+		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(child2)))
+				.thenAnswer(invocationOnMock -> childEntity2);
 
 		verifyBeforeAndAfterEvents(null,
 				new AfterFindByKeyEvent(Collections.singletonList(referenceTestEntity),
@@ -496,19 +503,11 @@ public class DatastoreTemplateTests {
 					verify(this.datastore, times(1)).fetch(eq(this.key1));
 					verify(this.datastore, times(1)).fetch(eq(this.key2));
 
+					assertThat(readReferenceTestEntity.lazyChild.toString()).isNotNull();
+					verify(this.datastore, times(3)).fetch(any());
+					verify(this.datastore, times(1)).fetch(eq(this.childKey2));
 				}, x -> {
 				});
-	}
-
-	@Test
-	public void nonCollectionLazyException() {
-		this.expectedEx.expect(DatastoreDataException.class);
-		this.expectedEx.expectMessage("Only collection-like properties can be lazy-loaded");
-
-		when(this.objectToKeyFactory.allocateKeyForObject(any(), any(), any())).thenReturn(createFakeKey("fakeKey"));
-		BadLazyReferenceTestEntity entity = new BadLazyReferenceTestEntity();
-		entity.lazyChild = new ReferenceTestEntity();
-		this.datastoreTemplate.save(entity);
 	}
 
 	@Test
@@ -538,10 +537,20 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void saveTestLazy() {
+	public void saveTestCollectionLazy() {
 		this.ob1.lazyMultipleReference = LazyUtil.wrapSimpleLazyProxy(
-				(keys) -> Collections.singletonList(this.childEntity7), List.class,
-				Collections.singletonList(KeyValue.of(this.childKey7)));
+				() -> Collections.singletonList(this.childEntity7), List.class,
+				ListValue.of(KeyValue.of(this.childKey7)));
+		saveTestCommon(this.ob1, true);
+	}
+
+	@Test
+	public void saveTestNotInterfaceLazy() {
+		ArrayList<ChildEntity> arrayList = new ArrayList();
+		arrayList.add(this.childEntity7);
+		this.ob1.lazyMultipleReference = LazyUtil.wrapSimpleLazyProxy(
+				() -> arrayList, ArrayList.class,
+				ListValue.of(KeyValue.of(this.childKey7)));
 		saveTestCommon(this.ob1, true);
 	}
 
@@ -1267,14 +1276,19 @@ public class DatastoreTemplateTests {
 
 		@LazyReference
 		List<ReferenceTestEntity> lazyChildren;
-	}
-
-	class BadLazyReferenceTestEntity {
-		@Id
-		Long id;
 
 		@LazyReference
 		ReferenceTestEntity lazyChild;
+
+		@Override
+		public String toString() {
+			return "ReferenceTestEntity{" +
+					"id=" + this.id +
+					", sibling=" + this.sibling +
+					", lazyChildren=" + this.lazyChildren +
+					", lazyChild=" + this.lazyChild +
+					'}';
+		}
 	}
 
 }

@@ -19,13 +19,17 @@ package org.springframework.cloud.gcp.data.datastore.core;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.List;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
-import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Value;
 
+import org.springframework.cglib.proxy.Callback;
+import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.Factory;
+import org.springframework.cglib.proxy.MethodInterceptor;
+import org.springframework.cglib.proxy.MethodProxy;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.objenesis.ObjenesisStd;
 import org.springframework.util.Assert;
 
 /**
@@ -37,12 +41,39 @@ import org.springframework.util.Assert;
  */
 final class LazyUtil {
 
+	static private final ObjenesisStd objenesis = new ObjenesisStd();
+
 	private LazyUtil() {
 	}
 
-	public static <T> T wrapSimpleLazyProxy(Function<List<Value<Key>>, T> supplierFunc, Class<T> type, List keys) {
-		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type},
+	/**
+	 * Returns a proxy that lazily loads the value provided by a supplier. The proxy also
+	 * stores the key(s) that can be used in case the value was not loaded. If the type of the
+	 * value is interface, {@link java.lang.reflect.Proxy} is used, otherwise cglib proxy is
+	 * used (creates a sub-class of the original type; the original class can't be final and
+	 * can't have final methods).
+	 * @param supplierFunc a function that provides the value
+	 * @param type the type of the value
+	 * @param keys Datastore key(s) that can be used when the parent entity is saved
+	 * @return true if the object is a proxy that was not evaluated
+	 */
+	static <T> T wrapSimpleLazyProxy(Supplier<T> supplierFunc, Class<T> type, Value keys) {
+		if (type.isInterface()) {
+			return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type},
 				new SimpleLazyDynamicInvocationHandler<T>(supplierFunc, keys));
+		}
+		Factory factory = (Factory) objenesis.newInstance(getEnhancedTypeFor(type));
+		factory.setCallbacks(new Callback[] { new SimpleLazyDynamicInvocationHandler<T>(supplierFunc, keys) });
+
+		return (T) factory;
+	}
+
+	private static Class<?> getEnhancedTypeFor(Class<?> type) {
+		Enhancer enhancer = new Enhancer();
+		enhancer.setSuperclass(type);
+		enhancer.setCallbackType(org.springframework.cglib.proxy.MethodInterceptor.class);
+
+		return enhancer.createClass();
 	}
 
 	/**
@@ -63,7 +94,7 @@ final class LazyUtil {
 	 * @param object a proxy object
 	 * @return list of keys if the object is a proxy, null otherwise
 	 */
-	public static List getKeys(Object object) {
+	public static Value getKeys(Object object) {
 		SimpleLazyDynamicInvocationHandler handler = getProxy(object);
 		if (handler != null) {
 			if (!handler.isEvaluated()) {
@@ -79,23 +110,30 @@ final class LazyUtil {
 			return (SimpleLazyDynamicInvocationHandler) Proxy
 					.getInvocationHandler(object);
 		}
+		else if (object instanceof Factory) {
+			Callback[] callbacks = ((Factory) object).getCallbacks();
+			if (callbacks != null && callbacks.length == 1
+					&& callbacks[0] instanceof SimpleLazyDynamicInvocationHandler) {
+				return (SimpleLazyDynamicInvocationHandler) callbacks[0];
+			}
+		}
 		return null;
 	}
 
 	/**
 	 * Proxy class used for lazy loading.
 	 */
-	public static final class SimpleLazyDynamicInvocationHandler<T> implements InvocationHandler {
+	public static final class SimpleLazyDynamicInvocationHandler<T> implements InvocationHandler, MethodInterceptor {
 
-		private final Function<List<Value<Key>>, T> supplierFunc;
+		private final Supplier<T> supplierFunc;
 
-		private final List<Value<Key>> keys;
+		private final Value keys;
 
 		private boolean isEvaluated = false;
 
 		private T value;
 
-		private SimpleLazyDynamicInvocationHandler(Function<List<Value<Key>>, T> supplierFunc, List<Value<Key>> keys) {
+		private SimpleLazyDynamicInvocationHandler(Supplier<T> supplierFunc, Value keys) {
 			Assert.notNull(supplierFunc, "A non-null supplier function is required for a lazy proxy.");
 			this.supplierFunc = supplierFunc;
 			this.keys = keys;
@@ -105,14 +143,14 @@ final class LazyUtil {
 			return this.isEvaluated;
 		}
 
-		public List getKeys() {
+		public Value getKeys() {
 			return this.keys;
 		}
 
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if (!this.isEvaluated) {
-				T value = this.supplierFunc.apply(this.keys);
+				T value = this.supplierFunc.get();
 				if (value == null) {
 					throw new DatastoreDataException("Can't load referenced entity");
 				}
@@ -121,6 +159,11 @@ final class LazyUtil {
 				this.isEvaluated = true;
 			}
 			return method.invoke(this.value, args);
+		}
+
+		@Override
+		public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+			return invoke(o, method, objects);
 		}
 	}
 }

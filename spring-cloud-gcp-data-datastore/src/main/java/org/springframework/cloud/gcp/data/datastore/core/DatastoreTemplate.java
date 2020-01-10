@@ -462,18 +462,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				return;
 			}
 			Value<?> value;
-			if (persistentProperty.isCollectionLike() || persistentProperty.getType() == Optional.class) {
-				if (LazyUtil.isLazyAndNotLoaded(val)) {
-					value = ListValue.of(LazyUtil.getKeys(val));
-				}
-				else {
-					Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
-					entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
-					List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
-							.map((o) -> KeyValue.of(this.getKey(o, false)))
-							.collect(Collectors.toList());
-					value = ListValue.of(keyValues);
-				}
+			if (LazyUtil.isLazyAndNotLoaded(val)) {
+				value = LazyUtil.getKeys(val);
+			}
+			else if (persistentProperty.isCollectionLike()) {
+				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
+				entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
+				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
+						.map((o) -> KeyValue.of(this.getKey(o, false)))
+						.collect(Collectors.toList());
+				value = ListValue.of(keyValues);
+
 			}
 			else {
 				entitiesToSave.addAll(getEntitiesForSave(Collections.singletonList(val), persistedEntities));
@@ -615,15 +614,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private <T> T computeReferencedField(BaseEntity entity, ReadContext context,
 			DatastorePersistentProperty referenceProperty, String fieldName, Class<T> type) {
 		T referenced;
-		if (referenceProperty.isLazyLoaded() && referenceProperty.isCollectionLike()) {
-			List<Value<Key>> keyList = entity.getList(fieldName);
+		if (referenceProperty.isLazyLoaded()) {
 			DatastoreReaderWriter originalTx = getDatastoreReadWriter();
-			referenced = LazyUtil.wrapSimpleLazyProxy((List<Value<Key>> storedKeys) -> {
+			referenced = LazyUtil.wrapSimpleLazyProxy(() -> {
 				if (getDatastoreReadWriter() != originalTx) {
 					throw new DatastoreDataException("Lazy load should be invoked within the same transaction");
 				}
-				return (T) fetchReferenced(referenceProperty, context, valuesToKeys(storedKeys));
-			}, type, keyList);
+				return (T) findReferenced(entity, referenceProperty, context);
+			}, type, entity.getValue(fieldName));
 		}
 		else {
 			referenced = (T) findReferenced(entity, referenceProperty, context);
