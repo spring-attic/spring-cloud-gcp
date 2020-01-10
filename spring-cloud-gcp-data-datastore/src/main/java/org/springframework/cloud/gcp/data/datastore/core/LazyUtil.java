@@ -47,8 +47,11 @@ final class LazyUtil {
 	}
 
 	/**
-	 * Returns a proxy that lazily loads the value provided by a supplier.
-	 * The proxy also stores the key(s) that can be used in case the value was not loaded.
+	 * Returns a proxy that lazily loads the value provided by a supplier. The proxy also
+	 * stores the key(s) that can be used in case the value was not loaded. If the type of the
+	 * value is interface, {@link java.lang.reflect.Proxy} is used, otherwise cglib proxy is
+	 * used (creates a sub-class of the original type; the original class can't be final and
+	 * can't have final methods).
 	 * @param supplierFunc a function that provides the value
 	 * @param type the type of the value
 	 * @param keys Datastore key(s) that can be used when the parent entity is saved
