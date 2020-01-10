@@ -46,6 +46,14 @@ final class LazyUtil {
 	private LazyUtil() {
 	}
 
+	/**
+	 * Returns a proxy that lazily loads the value provided by a supplier.
+	 * The proxy also stores the key(s) that can be used in case the value was not loaded.
+	 * @param supplierFunc a function that provides the value
+	 * @param type the type of the value
+	 * @param keys Datastore key(s) that can be used when the parent entity is saved
+	 * @return true if the object is a proxy that was not evaluated
+	 */
 	static <T> T wrapSimpleLazyProxy(Supplier<T> supplierFunc, Class<T> type, Value keys) {
 		if (type.isInterface()) {
 			return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {type},
