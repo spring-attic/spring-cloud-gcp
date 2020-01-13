@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage.integration.inbound;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,11 +36,16 @@ import org.springframework.integration.metadata.SimpleMetadataStore;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Lukas Gemela
  */
 public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 
 	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
-		super(template, null);
+		this(template, null);
+	}
+
+	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template, Comparator<BlobInfo> comparator) {
+		super(template, comparator);
 		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsStreamingMessageSource"));
 	}
 
