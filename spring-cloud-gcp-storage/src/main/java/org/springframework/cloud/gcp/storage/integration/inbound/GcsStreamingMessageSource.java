@@ -40,13 +40,13 @@ import org.springframework.integration.metadata.SimpleMetadataStore;
  */
 public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 
+	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
+		this(template, null);
+	}
+
 	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template, Comparator<BlobInfo> comparator) {
 		super(template, comparator);
 		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsStreamingMessageSource"));
-	}
-
-	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
-		this(template, null);
 	}
 
 	@Override
