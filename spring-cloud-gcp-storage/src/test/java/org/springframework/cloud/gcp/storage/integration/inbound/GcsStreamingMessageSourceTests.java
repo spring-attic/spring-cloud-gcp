@@ -106,6 +106,13 @@ public class GcsStreamingMessageSourceTests {
 		assertThat(message).isNull();
 	}
 
+	private static Blob createBlob(String bucket, String name) {
+		Blob blob = mock(Blob.class);
+		willAnswer((invocationOnMock) -> bucket).given(blob).getBucket();
+		willAnswer((invocationOnMock) -> name).given(blob).getName();
+		return blob;
+	}
+
 	/**
 	 * Spring config for the tests.
 	 */
@@ -170,12 +177,5 @@ public class GcsStreamingMessageSourceTests {
 		public PollableChannel sortedChannel() {
 			return new QueueChannel();
 		}
-	}
-
-	private static Blob createBlob(String bucket, String name) {
-		Blob blob = mock(Blob.class);
-		willAnswer((invocationOnMock) -> bucket).given(blob).getBucket();
-		willAnswer((invocationOnMock) -> name).given(blob).getName();
-		return blob;
 	}
 }
