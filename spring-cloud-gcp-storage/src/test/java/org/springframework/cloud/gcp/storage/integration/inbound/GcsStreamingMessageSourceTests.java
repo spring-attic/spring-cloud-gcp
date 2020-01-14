@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage.integration.inbound;
 
 import java.io.InputStream;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,22 +61,56 @@ import static org.mockito.Mockito.mock;
 public class GcsStreamingMessageSourceTests {
 
 	@Autowired
-	private PollableChannel gcsChannel;
+	private PollableChannel unsortedChannel;
+
+	@Autowired
+	private PollableChannel sortedChannel;
 
 	@Test
 	public void testInboundStreamingChannelAdapter() {
-		Message<?> message = this.gcsChannel.receive(5000);
-
+		Message<?> message = this.unsortedChannel.receive(5000);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
-		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("folder1/gcsfilename");
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("gamma");
 
-		message = this.gcsChannel.receive(5000);
-		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("secondfilename");
+		message = this.unsortedChannel.receive(5000);
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("beta");
 		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
 
-		message = this.gcsChannel.receive(10);
+		message = this.unsortedChannel.receive(5000);
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("alpha/alpha");
+		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
+
+		message = this.unsortedChannel.receive(10);
 		assertThat(message).isNull();
+	}
+
+	@Test
+	public void testSortedInboundChannelAdapter() {
+		// This uses the channel adapter with a custom comparator.
+		// Files will be processed in ascending order by name: alpha/alpha, beta, gamma
+		Message<?> message = this.sortedChannel.receive(5000);
+		assertThat(message).isNotNull();
+		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("alpha/alpha");
+
+		message = this.sortedChannel.receive(5000);
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("beta");
+		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
+
+		message = this.sortedChannel.receive(5000);
+		assertThat(message.getHeaders().get(FileHeaders.REMOTE_FILE)).isEqualTo("gamma");
+		assertThat(message.getPayload()).isInstanceOf(InputStream.class);
+
+		message = this.sortedChannel.receive(10);
+		assertThat(message).isNull();
+	}
+
+	private static Blob createBlob(String bucket, String name) {
+		Blob blob = mock(Blob.class);
+		willAnswer((invocationOnMock) -> bucket).given(blob).getBucket();
+		willAnswer((invocationOnMock) -> name).given(blob).getName();
+		return blob;
 	}
 
 	/**
@@ -87,35 +122,30 @@ public class GcsStreamingMessageSourceTests {
 
 		@Bean
 		public Storage gcsClient() {
-			Blob blob1 = mock(Blob.class);
-			Blob blob2 = mock(Blob.class);
-
-			willAnswer((invocationOnMock) -> "gcsbucket").given(blob1).getBucket();
-			willAnswer((invocationOnMock) -> "folder1/gcsfilename").given(blob1).getName();
-			willAnswer((invocationOnMock) -> "gcsbucket").given(blob2).getBucket();
-			willAnswer((invocationOnMock) -> "secondfilename").given(blob2).getName();
-
 			Storage gcs = mock(Storage.class);
 
 			willAnswer((invocationOnMock) ->
 				new PageImpl<>(null, null,
-						Stream.of(blob1, blob2)
+						Stream.of(
+								createBlob("gcsbucket", "gamma"),
+								createBlob("gcsbucket", "beta"),
+								createBlob("gcsbucket", "alpha/alpha"))
 								.collect(Collectors.toList())))
 					.given(gcs).list(eq("gcsbucket"));
 
-			ReadChannel channel1 = mock(ReadChannel.class);
-			ReadChannel channel2 = mock(ReadChannel.class);
-			willAnswer((invocationOnMock) -> channel1)
-					.given(gcs).reader(eq("gcsbucket"), eq("folder1/gcsfilename"));
-			willAnswer((invocationOnMock) -> channel2)
-					.given(gcs).reader(eq("gcsbucket"), eq("secondfilename"));
+			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+					.given(gcs).reader(eq("gcsbucket"), eq("alpha/alpha"));
+			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+					.given(gcs).reader(eq("gcsbucket"), eq("beta"));
+			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+					.given(gcs).reader(eq("gcsbucket"), eq("gamma"));
 
 			return gcs;
 		}
 
 		@Bean
-		@InboundChannelAdapter(value = "gcsChannel", poller = @Poller(fixedDelay = "100"))
-		public MessageSource<InputStream> adapter(Storage gcs) {
+		@InboundChannelAdapter(value = "unsortedChannel", poller = @Poller(fixedDelay = "100"))
+		public MessageSource<InputStream> unsortedChannelAdapter(Storage gcs) {
 			GcsStreamingMessageSource adapter =
 					new GcsStreamingMessageSource(new RemoteFileTemplate<>(new GcsSessionFactory(gcs)));
 			adapter.setRemoteDirectory("gcsbucket");
@@ -125,7 +155,26 @@ public class GcsStreamingMessageSourceTests {
 		}
 
 		@Bean
-		public PollableChannel gcsChannel() {
+		@InboundChannelAdapter(value = "sortedChannel", poller = @Poller(fixedDelay = "100"))
+		public MessageSource<InputStream> sortedChannelAdapter(Storage gcs) {
+			GcsStreamingMessageSource adapter =
+					new GcsStreamingMessageSource(
+							new RemoteFileTemplate<>(new GcsSessionFactory(gcs)),
+							Comparator.comparing(blob -> blob.getName()));
+
+			adapter.setRemoteDirectory("gcsbucket");
+			adapter.setFilter(new AcceptOnceFileListFilter<>());
+
+			return adapter;
+		}
+
+		@Bean
+		public PollableChannel unsortedChannel() {
+			return new QueueChannel();
+		}
+
+		@Bean
+		public PollableChannel sortedChannel() {
 			return new QueueChannel();
 		}
 	}
