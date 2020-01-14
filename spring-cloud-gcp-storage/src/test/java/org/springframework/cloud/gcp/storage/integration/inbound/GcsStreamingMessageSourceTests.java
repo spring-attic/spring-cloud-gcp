@@ -87,7 +87,7 @@ public class GcsStreamingMessageSourceTests {
 
 	@Test
 	public void testSortedInboundChannelAdapter() {
-	  // This uses the channel adapter with a custom comparator.
+		// This uses the channel adapter with a custom comparator.
 		// Files will be processed in ascending order by name: alpha/alpha, beta, gamma
 		Message<?> message = this.sortedChannel.receive(5000);
 		assertThat(message).isNotNull();
