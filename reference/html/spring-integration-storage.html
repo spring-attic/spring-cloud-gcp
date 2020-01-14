@@ -187,6 +187,9 @@ public MessageSource&lt;InputStream&gt; streamingAdapter(Storage gcs) {
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>If you would like to process the files in your bucket in a specific order, you may pass in a <code>Comparator&lt;BlobInfo&gt;</code> to the constructor <code>GcsStreamingMessageSource</code> to sort the files being processed.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_outbound_channel_adapter"><a class="link" href="#_outbound_channel_adapter">Outbound channel adapter</a></h4>
