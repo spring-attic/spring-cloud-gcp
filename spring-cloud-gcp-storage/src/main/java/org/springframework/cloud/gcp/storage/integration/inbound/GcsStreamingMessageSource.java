@@ -44,6 +44,14 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 		this(template, null);
 	}
 
+	/**
+	 * Creates a {@link GcsStreamingMessageSource} with a {@code comparator} which controls the order
+	 * that files are processed in.
+	 * @param template template making remote file calls to Google Cloud Storage
+	 * @param comparator defines the order that files should be processed based on {@link BlobInfo}.
+   *
+	 * @since 1.2
+	 */
 	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template, Comparator<BlobInfo> comparator) {
 		super(template, comparator);
 		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsStreamingMessageSource"));
