@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Framework on Google Cloud Platform</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Spring Framework on Google Cloud Platform</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_spring_initializr">Spring Initializr</a></li>
+<li><a href="#_spring_cloud_gcp_bill_of_materials_bom">Spring Cloud GCP Bill of Materials (BOM)</a></li>
+<li><a href="#_spring_milestones_maven_repository">Spring Milestones Maven Repository</a></li>
+<li><a href="#_spring_snapshots_maven_repository">Spring Snapshots Maven Repository</a></li>
+<li><a href="#_spring_boot_starters">Spring Boot Starters</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This project makes it easy for Spring users to run their applications on Google Cloud Platform.
+You can check our project website <a href="https://cloud.spring.io/spring-cloud-gcp">here</a>.</p>
+</div>
+<div class="paragraph">
+<p>For a deep dive into the project, refer to the <a href="https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.0.RELEASE/reference/html/">Spring Cloud GCP 1.2 Reference Document</a>.</p>
+</div>
+<div class="paragraph">
+<p>If you prefer to learn by doing, try <a href="https://codelabs.developers.google.com/spring">Spring on GCP codelabs</a>.</p>
+</div>
+<div class="paragraph">
+<p>Currently, this repository provides support for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="spring-cloud-gcp-pubsub">Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-pubsub-stream-binder">Spring Cloud GCP Pub/Sub Stream Binder</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-storage">Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-data-spanner">Spring Data Cloud Spanner</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-data-datastore">Spring Data Cloud Datastore</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-vision">Google Cloud Vision API Template</a></p>
+</li>
+<li>
+<p>Spring Boot starters</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter">GCP Support</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-config">Google Cloud Config</a> (Beta)</p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner">Google Cloud Spanner</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore">Google Cloud Datastore</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging">Google Cloud Logging</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub">Google Cloud Pub/Sub</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql">Google Cloud SQL MySQL</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql">Google Cloud SQL PostgreSQL</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage">Google Cloud Storage</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace">Stackdriver Trace with Spring Cloud Sleuth</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap">Google Cloud IAP Authentication</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-vision">Google Cloud Vision API</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you have any other ideas, suggestions or bug reports, please use our <a href="https://github.com/spring-cloud/spring-cloud-gcp/issues">GitHub issue tracker</a> and let us know!
+We would love to hear from you.</p>
+</div>
+<div class="paragraph">
+<p>If you want to collaborate in the project, we would also love to get your Pull Requests.
+Before you start working on one, please take a look at our <a href="CONTRIBUTING.adoc">collaboration manual</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_initializr"><a class="link" href="#_spring_initializr">Spring Initializr</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Spring Initializr contains Spring Cloud GCP auto-configuration support through the <code>GCP Support</code> entry.</p>
+</div>
+<div class="paragraph">
+<p><code>GCP Messaging</code> contains the Spring Cloud GCP messaging support with Google Cloud Pub/Sub working out of the box.</p>
+</div>
+<div class="paragraph">
+<p>Similarly to <code>GCP Messaging</code>, <code>GCP Storage</code> contains the Google Cloud Storage support with no other dependencies needed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_cloud_gcp_bill_of_materials_bom"><a class="link" href="#_spring_cloud_gcp_bill_of_materials_bom">Spring Cloud GCP Bill of Materials (BOM)</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you&#8217;re a Maven Central user, add our BOM to your pom.xml <code>&lt;dependencyManagement&gt;</code> section.
+This will allow you to omit versions for any of the Maven dependencies and instead delegate versioning to the BOM.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-cloud-gcp-dependencies&lt;/artifactId&gt;
+            &lt;version&gt;1.2.1.RELEASE&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_milestones_maven_repository"><a class="link" href="#_spring_milestones_maven_repository">Spring Milestones Maven Repository</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The latest non-GA Maven artifacts for the project are available in the Spring Milestones repository instead of Maven Central.
+They are named like <code>1.2.0.M1</code> or <code>1.2.0.M2</code> and are released more frequently than GA <code>RELEASE</code> versions.
+You will want to make sure that the repository is added to your <code>pom.xml</code> file or globally in your <a href="https://maven.apache.org/settings.html"><code>settings.xml</code></a> file.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;spring-milestones&lt;/id&gt;
+        &lt;name&gt;Spring Milestones&lt;/name&gt;
+        &lt;url&gt;https://repo.spring.io/milestone&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_snapshots_maven_repository"><a class="link" href="#_spring_snapshots_maven_repository">Spring Snapshots Maven Repository</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We offer <code>BUILD-SNAPSHOT</code> versions that always reflect the latest code changes to the underlying GitHub repository for Spring Cloud GCP via the Spring Snapshots Repository:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;spring-snapshots&lt;/id&gt;
+        &lt;name&gt;Spring SnapShots&lt;/name&gt;
+        &lt;url&gt;https://repo.spring.io/libs-snapshot&lt;/url&gt;
+        &lt;snapshots&gt;
+            &lt;enabled&gt;true&lt;/enabled&gt;
+        &lt;/snapshots&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, the <code>1.2.2.BUILD-SNAPSHOT</code> is available from this repository.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_spring_boot_starters"><a class="link" href="#_spring_boot_starters">Spring Boot Starters</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Spring Boot greatly simplifies the Spring Cloud GCP experience.
+Our starters handle the object instantiation and configuration logic so you don&#8217;t have to.</p>
+</div>
+<div class="paragraph">
+<p>Every starter depends on the GCP starter to provide critical bits of configuration, like the GCP project ID or OAuth2 credentials location.
+You can configure these as properties in, for example, a properties file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These properties are optional and, if not specified, Spring Boot will attempt to automatically find them for you.
+For details on how Spring Boot finds these properties, refer to the <a href="https://cloud.spring.io/spring-cloud-gcp">documentation</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the <code>spring.cloud.gcp.credentials.location</code> property and, instead, let the Spring Cloud GCP Core Starter find the correct credentials for those environments.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>

@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Data Reactive Repositories for Cloud Firestore</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_spring_data_reactive_repositories_for_cloud_firestore">Spring Data Reactive Repositories for Cloud Firestore</a>
+<ul class="sectlevel2">
+<li><a href="#_configuration">Configuration</a></li>
+<li><a href="#_object_mapping">Object Mapping</a></li>
+<li><a href="#_reactive_repositories">Reactive Repositories</a></li>
+<li><a href="#_query_methods_by_convention">Query methods by convention</a></li>
+<li><a href="#_transactions">Transactions</a></li>
+<li><a href="#_reactive_repository_sample">Reactive Repository Sample</a></li>
+<li><a href="#_cloud_firestore_spring_boot_starter">Cloud Firestore Spring Boot Starter</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_spring_data_reactive_repositories_for_cloud_firestore"><a class="link" href="#_spring_data_reactive_repositories_for_cloud_firestore">Spring Data Reactive Repositories for Cloud Firestore</a></h2>
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Currently some features are not supported: transactions, sorting, query by example, projections, auditing.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><a href="https://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode, providing reactive template and repositories support.
+To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code> artifact to your project.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates for this module only, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-data-firestore&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-firestore'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We provide a Spring Boot Starter for Spring Data Firestore, with which you can use our recommended auto-configuration setup. To use the starter, see the coordinates below.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-starter-data-firestore&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-firestore'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
+<div class="sect3">
+<h4 id="_properties"><a class="link" href="#_properties">Properties</a></h4>
+<div class="paragraph">
+<p>The Spring Boot starter for Google Cloud Firestore provides the following configuration options:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP Cloud Firestore credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/datastore" class="bare">https://www.googleapis.com/auth/datastore</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_reactive_repository_settings"><a class="link" href="#_reactive_repository_settings">Reactive Repository settings</a></h4>
+<div class="paragraph">
+<p>Spring Data Repositories can be configured via the <code>@EnableReactiveFirestoreRepositories</code> annotation on your main <code>@Configuration</code> class.
+With our Spring Boot Starter for Spring Data Cloud Firestore, <code>@EnableReactiveFirestoreRepositories</code> is automatically added.
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by <a href="https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-firestore/src/main/java/org/springframework/cloud/gcp/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java"><code>@EnableReactiveFirestoreRepositories</code></a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_autoconfiguration"><a class="link" href="#_autoconfiguration">Autoconfiguration</a></h4>
+<div class="paragraph">
+<p>Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>an instance of <code>FirestoreTemplate</code></p>
+</li>
+<li>
+<p>instances of all user defined repositories extending <code>FirestoreReactiveRepository</code> (an extension of <code>ReactiveCrudRepository</code> with additional Cloud Firestore features) when repositories are enabled</p>
+</li>
+<li>
+<p>an instance of <a href="https://developers.google.com/resources/api-libraries/documentation/firestore/v1/java/latest/"><code>Firestore</code></a> from the Google Cloud Java Client for Firestore, for convenience and lower level API access</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_object_mapping"><a class="link" href="#_object_mapping">Object Mapping</a></h3>
+<div class="paragraph">
+<p>Spring Data Cloud Firestore allows you to map domain POJOs to <a href="https://firebase.google.com/docs/firestore/data-model#collections">Cloud Firestore collections</a> and documents via annotations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.firestore.Document;
+
+@Document(collectionName = "usersCollection")
+public class User {
+	@DocumentId
+	private String name;
+
+	private Integer age;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>@Document(collectionName = "usersCollection")</code> annotation configures the collection name for the documents of this type.
+This annotation is optional, by default the collection name is derived from the class name.</p>
+</div>
+<div class="paragraph">
+<p><code>@DocumentId</code> annotation marks a field to be used as document id. This annotation is required.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Internally we use Firestore client library object mapping. See <a href="https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary">the documentation</a> for supported annotations.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reactive_repositories"><a class="link" href="#_reactive_repositories">Reactive Repositories</a></h3>
+<div class="paragraph">
+<p><a href="https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/reactive/ReactiveCrudRepository.html">Spring Data Repositories</a> is an abstraction that can reduce boilerplate code.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserRepository extends FirestoreReactiveRepository&lt;User&gt; {
+	Flux&lt;User&gt; findByAge(Integer age);
+
+	Flux&lt;User&gt; findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Pageable pageable);
+
+	Mono&lt;Long&gt; countByAgeIsGreaterThan(Integer age);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Spring Data generates a working implementation of the specified interface, which can be autowired into an application.</p>
+</div>
+<div class="paragraph">
+<p>The <code>User</code> type parameter to <code>FirestoreReactiveRepository</code> refers to the underlying domain type.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+
+	@Autowired
+	UserRepository userRepository;
+
+	public void writeReadDeleteTest() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+
+		this.userRepository.save(alice).block();
+		this.userRepository.save(bob).block();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
+				.containsExactlyInAnyOrder("Alice", "Bob");
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Repositories allow you to define custom Query Methods (detailed in the following sections) for retrieving and counting based on filtering and paging parameters.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Custom queries with <code>@Query</code> annotation are not supported since there is no query language in Cloud Firestore
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_query_methods_by_convention"><a class="link" href="#_query_methods_by_convention">Query methods by convention</a></h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+	public void partTreeRepositoryMethodTest() {
+		User u1 = new User("Cloud", 22);
+		User u2 = new User("Squall", 17);
+		Flux&lt;User&gt; users = Flux.fromArray(new User[] {u1, u2});
+
+		this.userRepository.saveAll(users).blockLast();
+
+		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
+				.containsExactly(u1);
+		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
+				u2);
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the example above the query method implementations in <code>UserRepository</code> are generated based on the name of the methods using the <a href="https://docs.spring.io/spring-data/data-commons/docs/current/reference/html#repositories.query-methods.query-creation">Spring Data Query creation naming convention</a>.</p>
+</div>
+<div class="paragraph">
+<p>Cloud Firestore only supports filter components joined by AND, and the following operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>equals</code></p>
+</li>
+<li>
+<p><code>greater than or equals</code></p>
+</li>
+<li>
+<p><code>greater than</code></p>
+</li>
+<li>
+<p><code>less than or equals</code></p>
+</li>
+<li>
+<p><code>less than</code></p>
+</li>
+<li>
+<p><code>is null</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_transactions"><a class="link" href="#_transactions">Transactions</a></h3>
+<div class="paragraph">
+<p>Read-only and read-write transactions are provided by <code>TransactionalOperator</code> (see this <a href="https://spring.io/blog/2019/05/16/reactive-transactions-with-spring">blog post</a> on reactive transactions for details).
+In order to use it, you would need to autowire <code>ReactiveFirestoreTransactionManager</code> like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+	@Autowired
+	ReactiveFirestoreTransactionManager txManager;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that you will be able to use it to create an instance of <code>TransactionalOperator</code>.
+Note that you can switch between read-only and read-write transactions using <code>TransactionDefinition</code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
+transactionDefinition.setReadOnly(false);
+TransactionalOperator operator = TransactionalOperator.create(this.txManager, transactionDefinition);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When you have an instance of  <code>TransactionalOperator</code>, you can execute a sequence of Firestore operations in a transaction using <code>operator::transactional</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">User alice = new User("Alice", 29);
+User bob = new User("Bob", 60);
+
+this.userRepository.save(alice)
+		.then(this.userRepository.save(bob))
+		.as(operator::transactional)
+		.block();
+
+this.userRepository.findAll()
+		.flatMap(a -&gt; {
+			a.setAge(a.getAge() - 1);
+			return this.userRepository.save(a);
+		})
+		.as(operator::transactional).collectList().block();
+
+assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
+		.containsExactlyInAnyOrder(28, 59);</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Read operations in a transaction can only happen before write operations.
+All write operations are applied atomically.
+Read documents are locked until the transaction finishes with a commit or a rollback, which are handled by Spring Data.
+If an <code>Exception</code> is thrown within a transaction, the rollback operation is executed.
+Otherwise, the commit operation is executed.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_declarative_transactions_with_transactional_annotation"><a class="link" href="#_declarative_transactions_with_transactional_annotation">Declarative Transactions with @Transactional Annotation</a></h5>
+<div class="paragraph">
+<p>This feature requires a bean of <code>SpannerTransactionManager</code>, which is provided when using <code>spring-cloud-gcp-starter-data-firestore</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>FirestoreTemplate</code> and <code>FirestoreReactiveRepository</code> support running methods with the <code>@Transactional</code> <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative">annotation</a> as transactions.
+If a method annotated with <code>@Transactional</code> calls another method also annotated, then both methods will work within the same transaction.</p>
+</div>
+<div class="paragraph">
+<p>One way to use this feature is illustrated here. You would need to do the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Annotate your configuration class with the <code>@EnableTransactionManagement</code> annotation.</p>
+</li>
+<li>
+<p>Create a service class that has methods annotated with <code>@Transactional</code>:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">class UserService {
+	@Autowired
+	private UserRepository userRepository;
+
+	@Transactional
+	public Mono&lt;Void&gt; updateUsers() {
+		return this.userRepository.findAll()
+				.flatMap(a -&gt; {
+					a.setAge(a.getAge() - 1);
+					return this.userRepository.save(a);
+				})
+				.then();
+	}
+}</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic" start="3">
+<li>
+<p>Make a Spring Bean provider that creates an instance of that class:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public UserService userService() {
+	return new UserService();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that, you can autowire your service like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
+	@Autowired
+	UserService userService;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now when you call the methods annotated with <code>@Transactional</code> on your service object, a transaction will be automatically started.
+If an error occurs during the execution of a method annotated with <code>@Transactional</code>, the transaction will be rolled back.
+If no error occurs, the transaction will be committed.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reactive_repository_sample"><a class="link" href="#_reactive_repository_sample">Reactive Repository Sample</a></h3>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample">sample application</a> is available.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cloud_firestore_spring_boot_starter"><a class="link" href="#_cloud_firestore_spring_boot_starter">Cloud Firestore Spring Boot Starter</a></h3>
+<div class="paragraph">
+<p>If you prefer using Firestore client only, Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode.</p>
+</div>
+<div class="paragraph">
+<p>See <a href="https://cloud.google.com/firestore/docs/">documentation</a> to learn more about Cloud Firestore.</p>
+</div>
+<div class="paragraph">
+<p>To begin using this library, add the <code>spring-cloud-gcp-starter-firestore</code> artifact to your project.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-firestore&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_cloud_firestore"><a class="link" href="#_using_cloud_firestore">Using Cloud Firestore</a></h4>
+<div class="paragraph">
+<p>The starter automatically configures and registers a <code>Firestore</code> bean in the Spring application context. To start using it, simply use the <code>@Autowired</code> annotation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Autowired
+Firestore firestore;
+
+void writeDocumentFromObject() throws ExecutionException, InterruptedException {
+	// Add document data with id "joe" using a custom User class
+	User data = new User("Joe",
+			Arrays.asList(
+					new Phone(12345, PhoneType.CELL),
+					new Phone(54321, PhoneType.WORK)));
+
+	// .get() blocks on response
+	WriteResult writeResult = this.firestore.document("users/joe").set(data).get();
+
+	LOGGER.info("Update time: " + writeResult.getUpdateTime());
+}
+
+User readDocumentToObject() throws ExecutionException, InterruptedException {
+		ApiFuture&lt;DocumentSnapshot&gt; documentFuture =
+				this.firestore.document("users/joe").get();
+
+		User user = documentFuture.get().toObject(User.class);
+
+		LOGGER.info("read: " + user);
+
+		return user;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_sample"><a class="link" href="#_sample">Sample</a></h4>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">sample application</a> is available.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>

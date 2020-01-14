@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Cloud Bus</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_spring_cloud_bus">Spring Cloud Bus</a>
+<ul class="sectlevel2">
+<li><a href="#_configuration_management_with_spring_cloud_config_and_spring_cloud_bus">Configuration Management with Spring Cloud Config and Spring Cloud Bus</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_spring_cloud_bus"><a class="link" href="#_spring_cloud_bus">Spring Cloud Bus</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Using <a href="https://cloud.google.com/pubsub/">Cloud Pub/Sub</a> as the <a href="https://spring.io/projects/spring-cloud-bus">Spring Cloud Bus</a> implementation is as simple as importing the <code>spring-cloud-gcp-starter-bus-pubsub</code> starter.</p>
+</div>
+<div class="paragraph">
+<p>This starter brings in the <a href="spring-stream.html#_spring_cloud_stream">Spring Cloud Stream binder for Cloud Pub/Sub</a>, which is used to both publish and subscribe to the bus.
+If the bus topic (named <code>springCloudBus</code> by default) does not exist, the binder automatically creates it.
+The binder also creates anonymous subscriptions for each project using the <code>spring-cloud-gcp-starter-bus-pubsub</code> starter.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+  &lt;artifactId&gt;spring-cloud-gcp-starter-bus-pubsub&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-bus-pubsub'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_management_with_spring_cloud_config_and_spring_cloud_bus"><a class="link" href="#_configuration_management_with_spring_cloud_config_and_spring_cloud_bus">Configuration Management with Spring Cloud Config and Spring Cloud Bus</a></h3>
+<div class="paragraph">
+<p>Spring Cloud Bus can be used to push configuration changes from a Spring Cloud Config server to the clients listening on the same bus.</p>
+</div>
+<div class="paragraph">
+<p>To use GCP Pub/Sub as the bus implementation, both the configuration server and the configuration client need the <code>spring-cloud-gcp-starter-bus-pubsub</code> dependency.</p>
+</div>
+<div class="paragraph">
+<p>All other configuration is standard to <a href="https://spring.io/projects/spring-cloud-config">Spring Cloud Config</a>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/spring_cloud_bus_over_pubsub.png" alt="spring cloud bus over pubsub">
+</div>
+</div>
+<div class="paragraph">
+<p>Spring Cloud Config Server typically runs on port <code>8888</code>, and can read configuration from a <a href="https://cloud.spring.io/spring-cloud-config/spring-cloud-config.html#_environment_repository">variety of source control systems</a> such as GitHub, and even from the local filesystem.
+When the server is notified that new configuration is available, it fetches the updated configuration and sends a notification (<code>RefreshRemoteApplicationEvent</code>) out via Spring Cloud Bus.</p>
+</div>
+<div class="paragraph">
+<p>When configuration is stored locally, config server polls the parent directory for changes.
+With configuration stored in source control repository, such as GitHub, the config server needs to be notified that a new version of configuration is available.
+In a deployed server, this would be done automatically through a GitHub webhook, but in a local testing scenario, the <code>/monitor</code> HTTP endpoint needs to be invoked manually.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>curl -X POST http://localhost:8888/monitor -H "X-Github-Event: push" -H "Content-Type: application/json" -d '{"commits": [{"modified": ["application.properties"]}]}'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By adding the <code>spring-cloud-gcp-starter-bus-pubsub</code> dependency, you instruct Spring Cloud Bus to use Cloud Pub/Sub to broadcast configuration changes.
+Spring Cloud Bus will then create a topic named <code>springCloudBus</code>, as well as a subscription for each configuration client.</p>
+</div>
+<div class="paragraph">
+<p>The configuration server happens to also be a configuration client, subscribing to the configuration changes that it sends out.
+Thus, in a scenario with one configuration server and one configuration client, two anonymous subscriptions to the <code>springCloudBus</code> topic are created.
+However, a config server disables configuration refresh by default (see <a href="https://static.javadoc.io/org.springframework.cloud/spring-cloud-config-server/2.1.0.RELEASE/index.html">ConfigServerBootstrapApplicationListener</a> for more details).</p>
+</div>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample">demo application</a> showing configuration management and distribution over a Cloud Pub/Sub-powered bus is available.
+The sample contains two examples of configuration management with Spring Cloud Bus: one monitoring a local file system, and the other retrieving configuration from a GitHub repository.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>

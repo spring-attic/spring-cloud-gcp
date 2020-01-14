@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Cloud Sleuth</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_spring_cloud_sleuth">Spring Cloud Sleuth</a>
+<ul class="sectlevel2">
+<li><a href="#_tracing">Tracing</a></li>
+<li><a href="#_spring_boot_starter_for_stackdriver_trace">Spring Boot Starter for Stackdriver Trace</a></li>
+<li><a href="#_overriding_the_auto_configuration">Overriding the auto-configuration</a></li>
+<li><a href="#_customizing_spans">Customizing spans</a></li>
+<li><a href="#_integration_with_logging">Integration with Logging</a></li>
+<li><a href="#_sample">Sample</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_spring_cloud_sleuth"><a class="link" href="#_spring_cloud_sleuth">Spring Cloud Sleuth</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="https://cloud.spring.io/spring-cloud-sleuth/">Spring Cloud Sleuth</a> is an instrumentation framework for Spring Boot applications.
+It captures trace information and can forward traces to services like Zipkin for storage and analysis.</p>
+</div>
+<div class="paragraph">
+<p>Google Cloud Platform provides its own managed distributed tracing service called <a href="https://cloud.google.com/trace/">Stackdriver Trace</a>.
+Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.</p>
+</div>
+<div class="paragraph">
+<p>This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-trace&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
+Navigate to the <a href="https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview">Stackdriver Trace API</a> for your project and make sure it’s enabled.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you can also use a <a href="https://cloud.google.com/trace/docs/zipkin">Stackdriver Zipkin proxy</a> to forward those traces to Stackdriver Trace without modifying existing applications.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_tracing"><a class="link" href="#_tracing">Tracing</a></h3>
+<div class="paragraph">
+<p>Spring Cloud Sleuth uses the <a href="https://github.com/openzipkin/brave">Brave tracer</a> to generate traces.
+This integration enables Brave to use the <a href="https://github.com/openzipkin/zipkin-gcp/tree/master/propagation-stackdriver"><code>StackdriverTracePropagation</code></a> propagation.</p>
+</div>
+<div class="paragraph">
+<p>A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and injecting trace context into an entity.
+A canonical example of the propagation usage is a web server that receives an HTTP request, which triggers other HTTP requests from the server before returning an HTTP response to the original caller.
+In the case of <code>StackdriverTracePropagation</code>, first it looks for trace context in the <code>x-cloud-trace-context</code> key (e.g., an HTTP request header).
+The value of the <code>x-cloud-trace-context</code> key can be formatted in three different ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>x-cloud-trace-context: TRACE_ID</code></p>
+</li>
+<li>
+<p><code>x-cloud-trace-context: TRACE_ID/SPAN_ID</code></p>
+</li>
+<li>
+<p><code>x-cloud-trace-context: TRACE_ID/SPAN_ID;o=TRACE_TRUE</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>TRACE_ID</code> is a 32-character hexadecimal value that encodes a 128-bit number.</p>
+</div>
+<div class="paragraph">
+<p><code>SPAN_ID</code> is an unsigned long.
+Since Stackdriver Trace doesn&#8217;t support span joins, a new span ID is always generated, regardless of the one specified in <code>x-cloud-trace-context</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>TRACE_TRUE</code> can either be <code>0</code> if the entity should be untraced, or <code>1</code> if it should be traced.
+This field forces the decision of whether or not to trace the request; if omitted then the decision is deferred to the sampler.</p>
+</div>
+<div class="paragraph">
+<p>If a <code>x-cloud-trace-context</code> key isn&#8217;t found, <code>StackdriverTracePropagation</code> falls back to tracing with the <a href="https://github.com/openzipkin/b3-propagation">X-B3 headers</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_boot_starter_for_stackdriver_trace"><a class="link" href="#_spring_boot_starter_for_stackdriver_trace">Spring Boot Starter for Stackdriver Trace</a></h3>
+<div class="paragraph">
+<p>Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a <a href="https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java">StackdriverSender</a> that sends the Sleuth’s trace information to Stackdriver Trace.</p>
+</div>
+<div class="paragraph">
+<p>All configurations are optional:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the project ID from the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the credentials location from the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the credentials encoded key from the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the credentials scopes from the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.num-executor-threads</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by the Trace executor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.authority</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HTTP/2 authority the channel claims to be connecting to.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.compression</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name of the compression to use in Trace calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.deadline-ms</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Call deadline in milliseconds</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.max-inbound-size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum size for inbound messages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.max-outbound-size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum size for outbound messages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.wait-for-ready</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://github.com/grpc/grpc/blob/master/doc/wait-for-ready.md">Waits for the channel to be ready</a> in case of a transient failure</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.trace.messageTimeout</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace. (previously <code>spring.zipkin.messageTimeout</code>)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
+Read <a href="https://cloud.spring.io/spring-cloud-sleuth/">Sleuth documentation</a> for more information on Sleuth configurations.</p>
+</div>
+<div class="paragraph">
+<p>For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
+spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
+spring.sleuth.scheduled.enabled=false                   # disable executor 'async' traces</code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which causes many traces with the name <code>async</code> to appear in Stackdriver Trace. This is especially a problem because our starter comes with an executor. To avoid this noise, please disable automatic instrumentation of executors via <code>spring.sleuth.scheduled.enabled=false</code> in your application configuration.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Spring Cloud GCP Trace does override some Sleuth configurations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Always uses 128-bit Trace IDs.
+This is required by Stackdriver Trace.</p>
+</li>
+<li>
+<p>Does not use Span joins.
+Span joins will share the span ID between the client and server Spans.
+Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.</p>
+</li>
+<li>
+<p>Uses <code>StackdriverHttpClientParser</code> and <code>StackdriverHttpServerParser</code> by default to populate Stackdriver related fields.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_overriding_the_auto_configuration"><a class="link" href="#_overriding_the_auto_configuration">Overriding the auto-configuration</a></h3>
+<div class="paragraph">
+<p>Spring Cloud Sleuth supports sending traces to multiple tracing systems as of version 2.1.0.
+In order to get this to work, every tracing system needs to have a <code>Reporter&lt;Span&gt;</code> and <code>Sender</code>.
+If you want to override the provided beans you need to give them a specific name.
+To do this you can use respectively <code>StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME</code> and <code>StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_customizing_spans"><a class="link" href="#_customizing_spans">Customizing spans</a></h3>
+<div class="paragraph">
+<p>You can add additional tags and annotations to spans by using the <code>brave.SpanCustomizer</code>, which is available in the application context.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s an example that uses <code>WebMvcConfigurer</code> to configure an MVC interceptor that adds two extra tags to all web controller spans.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@SpringBootApplication
+public class Application implements WebMvcConfigurer {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+
+	@Autowired
+	private SpanCustomizer spanCustomizer;
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new HandlerInterceptor() {
+			@Override
+			public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+				spanCustomizer.tag("session-id", request.getSession().getId());
+				spanCustomizer.tag("environment", "QA");
+
+				return true;
+			}
+		});
+	}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can then search and filter traces based on these additional tags in the Stackdriver Trace service.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_logging"><a class="link" href="#_integration_with_logging">Integration with Logging</a></h3>
+<div class="paragraph">
+<p>Integration with Stackdriver Logging is available through the <a href="logging.adoc">Stackdriver Logging Support</a>.
+If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
+The trace logs can be viewed by going to the <a href="https://console.cloud.google.com/traces/traces">Google Cloud Console Trace List</a>, selecting a trace and pressing the <code>Logs &#8594; View</code> link in the <code>Details</code> section.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_sample"><a class="link" href="#_sample">Sample</a></h3>
+<div class="paragraph">
+<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample">sample application</a> and a <a href="https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html">codelab</a> are available.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.8">
+<title>Spring Cloud GCP Core</title>
+<link rel="stylesheet" href="css/spring.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+.hidden {
+	display: none;
+}
+
+.switch {
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+	display: inline-block;
+}
+
+.switch--item {
+	padding: 10px;
+	background-color: #ffffff;
+	color: #7a2518;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.switch--item:not(:first-child) {
+	border-width: 0 0 0 1px;
+	border-style: solid;
+	border-color: #7a2518;
+}
+
+.switch--item.selected {
+	background-color: #7a2519;
+	color: #ffffff;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+	$('.primary').each(function() {
+		primary = $(this);
+		createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+		primary.children('.title').remove();
+	});
+	$('.secondary').each(function(idx, node) {
+		secondary = $(node);
+		primary = findPrimary(secondary);
+		switchItem = createSwitchItem(secondary, primary.children('.switch'));
+		switchItem.content.addClass('hidden');
+		findPrimary(secondary).append(switchItem.content);
+		secondary.remove();
+	});
+}
+
+function createBlockSwitch(primary) {
+	blockSwitch = $('<div class="switch"></div>');
+	primary.prepend(blockSwitch);
+	return blockSwitch;
+}
+
+function findPrimary(secondary) {
+	candidate = secondary.prev();
+	while (!candidate.is('.primary')) {
+		candidate = candidate.prev();
+	}
+	return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+	blockName = block.children('.title').text();
+	content = block.children('.content').first().append(block.next('.colist'));
+	item = $('<div class="switch--item">' + blockName + '</div>');
+	item.on('click', '', content, function(e) {
+		$(this).addClass('selected');
+		$(this).siblings().removeClass('selected');
+		e.data.siblings('.content').addClass('hidden');
+		e.data.removeClass('hidden');
+	});
+	blockSwitch.append(item);
+	return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#spring-cloud-gcp-core">Spring Cloud GCP Core</a>
+<ul class="sectlevel2">
+<li><a href="#_project_id">Project ID</a></li>
+<li><a href="#_credentials">Credentials</a></li>
+<li><a href="#_environment">Environment</a></li>
+<li><a href="#_spring_initializr">Spring Initializr</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="spring-cloud-gcp-core"><a class="link" href="#spring-cloud-gcp-core">Spring Cloud GCP Core</a></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Each Spring Cloud GCP module uses <code>GcpProjectIdProvider</code> and <code>CredentialsProvider</code> to get the GCP project ID and access credentials.</p>
+</div>
+<div class="paragraph">
+<p>Spring Cloud GCP provides a Spring Boot starter to auto-configure the core components.</p>
+</div>
+<div class="paragraph">
+<p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_project_id"><a class="link" href="#_project_id">Project ID</a></h3>
+<div class="paragraph">
+<p><code>GcpProjectIdProvider</code> is a functional interface that returns a GCP project ID string.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface GcpProjectIdProvider {
+	String getProjectId();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Spring Cloud GCP starter auto-configures a <code>GcpProjectIdProvider</code>.
+If a <code>spring.cloud.gcp.project-id</code> property is specified, the provided <code>GcpProjectIdProvider</code> returns that property value.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">spring.cloud.gcp.project-id=my-gcp-project-id</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Otherwise, the project ID is discovered based on an
+<a href="https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--">ordered list of rules</a>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The project ID specified by the <code>GOOGLE_CLOUD_PROJECT</code> environment variable</p>
+</li>
+<li>
+<p>The Google App Engine project ID</p>
+</li>
+<li>
+<p>The project ID specified in the JSON credentials file pointed by the <code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable</p>
+</li>
+<li>
+<p>The Google Cloud SDK project ID</p>
+</li>
+<li>
+<p>The Google Compute Engine project ID, from the Google Compute Engine Metadata Server</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_credentials"><a class="link" href="#_credentials">Credentials</a></h3>
+<div class="paragraph">
+<p><code>CredentialsProvider</code> is a functional interface that returns the credentials to authenticate and authorize calls to Google Cloud Client Libraries.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface CredentialsProvider {
+  Credentials getCredentials() throws IOException;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The Spring Cloud GCP starter auto-configures a <code>CredentialsProvider</code>.
+It uses the <code>spring.cloud.gcp.credentials.location</code> property to locate the OAuth2 private key of a Google service account.
+Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a number of <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations">different locations</a> such as the file system, classpath, URL, etc.
+The next example specifies the credentials location property in the file system.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>spring.cloud.gcp.credentials.location=file:/usr/local/key.json</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can set the credentials by directly specifying the <code>spring.cloud.gcp.credentials.encoded-key</code> property.
+The value should be the base64-encoded account private key in JSON format.</p>
+</div>
+<div class="paragraph">
+<p>If that credentials aren&#8217;t specified through properties, the starter tries to discover credentials from a <a href="https://github.com/GoogleCloudPlatform/google-cloud-java#authentication">number of places</a>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Credentials file pointed to by the <code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable</p>
+</li>
+<li>
+<p>Credentials provided by the Google Cloud SDK <code>gcloud auth application-default login</code> command</p>
+</li>
+<li>
+<p>Google App Engine built-in credentials</p>
+</li>
+<li>
+<p>Google Cloud Shell built-in credentials</p>
+</li>
+<li>
+<p>Google Compute Engine built-in credentials</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the <code>spring.cloud.gcp.credentials.location</code> property and, instead, let the Spring Cloud GCP Starter get the correct credentials for those environments.
+On App Engine Standard, the <a href="https://cloud.google.com/appengine/docs/standard/java/appidentity/">App Identity service account credentials</a> are used, on App Engine Flexible, the <a href="https://cloud.google.com/appengine/docs/flexible/java/service-account">Flexible service account credential</a> are used and on Google Compute Engine, the <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account">Compute Engine Default Service Account</a> is used.</p>
+</div>
+<div class="sect3">
+<h4 id="_scopes"><a class="link" href="#_scopes">Scopes</a></h4>
+<div class="paragraph">
+<p>By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every service supported by Spring Cloud GCP.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scope</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Spanner</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/spanner.admin" class="bare">https://www.googleapis.com/auth/spanner.admin</a>, <a href="https://www.googleapis.com/auth/spanner.data" class="bare">https://www.googleapis.com/auth/spanner.data</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Datastore</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/datastore" class="bare">https://www.googleapis.com/auth/datastore</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pub/Sub</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/pubsub" class="bare">https://www.googleapis.com/auth/pubsub</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Storage (Read Only)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/devstorage.read_only" class="bare">https://www.googleapis.com/auth/devstorage.read_only</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Storage (Write/Write)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/devstorage.read_write" class="bare">https://www.googleapis.com/auth/devstorage.read_write</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Runtime Config</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/cloudruntimeconfig" class="bare">https://www.googleapis.com/auth/cloudruntimeconfig</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Trace (Append)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/trace.append" class="bare">https://www.googleapis.com/auth/trace.append</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cloud Platform</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/cloud-platform" class="bare">https://www.googleapis.com/auth/cloud-platform</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vision</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/cloud-vision" class="bare">https://www.googleapis.com/auth/cloud-vision</a></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The Spring Cloud GCP starter allows you to configure a custom scope list for the provided credentials.
+To do that, specify a comma-delimited list of <a href="https://developers.google.com/identity/protocols/googlescopes">Google OAuth2 scopes</a> in the <code>spring.cloud.gcp.credentials.scopes</code> property.</p>
+</div>
+<div class="paragraph">
+<p><code>spring.cloud.gcp.credentials.scopes</code> is a comma-delimited list of <a href="https://developers.google.com/identity/protocols/googlescopes">Google OAuth2 scopes</a> for Google Cloud Platform services that the credentials returned by the provided <code>CredentialsProvider</code> support.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>spring.cloud.gcp.credentials.scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/sqlservice.admin</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can also use <code>DEFAULT_SCOPES</code> placeholder as a scope to represent the starters default scopes, and append the additional scopes you need to add.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code>spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,https://www.googleapis.com/auth/cloud-vision</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_environment"><a class="link" href="#_environment">Environment</a></h3>
+<div class="paragraph">
+<p><code>GcpEnvironmentProvider</code> is a functional interface, auto-configured by the Spring Cloud GCP starter, that returns a <code>GcpEnvironment</code> enum.
+The provider can help determine programmatically in which GCP environment (App Engine Flexible, App Engine Standard, Kubernetes Engine or Compute Engine) the application is deployed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface GcpEnvironmentProvider {
+	GcpEnvironment getCurrentEnvironment();
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_initializr"><a class="link" href="#_spring_initializr">Spring Initializr</a></h3>
+<div class="paragraph">
+<p>This starter is available from <a href="https://start.spring.io/">Spring Initializr</a> through the <code>GCP Support</code> entry.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
+<script type="text/javascript" src="js/toc.js"></script>
+<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<script src="js/highlight/highlight.min.js"></script>
+<script>hljs.initHighlighting()</script>
+</body>
+</html>
