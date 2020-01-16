@@ -263,6 +263,12 @@
             <artifactId>spring-security-oauth2-resource-server</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-security-firebase</artifactId>
+            <optional>true</optional>
+        </dependency>
 				
         <!-- Actuator -->
         <dependency>
@@ -291,6 +297,7 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
 
     </dependencies>
 </project>

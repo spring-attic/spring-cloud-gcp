@@ -42,7 +42,8 @@
 		<module>spring-cloud-gcp-logging</module>
 		<module>spring-cloud-gcp-data-firestore</module>
 		<module>spring-cloud-gcp-bigquery</module>
-	</modules>
+        <module>spring-cloud-gcp-security-firebase</module>
+    </modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
