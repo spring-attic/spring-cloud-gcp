@@ -53,9 +53,9 @@ public MessageChannel pubsubInputChannel() {
 @Bean
 public PubSubInboundChannelAdapter messageChannelAdapter(
     @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
-    SubscriberFactory subscriberFactory) {
+    PubSubSubscriberOperations subscriberOperations) {
     PubSubInboundChannelAdapter adapter =
-        new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
+        new PubSubInboundChannelAdapter(subscriberOperations, "subscriptionName");
     adapter.setOutputChannel(inputChannel);
     adapter.setAckMode(AckMode.MANUAL);
 
