@@ -99,6 +99,11 @@
 				<artifactId>spring-cloud-gcp-bigquery</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-security-firebase</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!--Starters-->
 			<dependency>
