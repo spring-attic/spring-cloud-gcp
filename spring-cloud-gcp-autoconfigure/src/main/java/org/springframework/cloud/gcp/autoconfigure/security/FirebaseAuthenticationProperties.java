@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Copyright 2020-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.cloud.gcp.autoconfigure.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Firebase Authentication application properties
+ * Firebase Authentication application properties.
  *
  * @author Vinicius Carvalho
  * @since 1.3
@@ -26,17 +27,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.security.firebase")
 public class FirebaseAuthenticationProperties {
 
-    /**
-     * Link to Google's public endpoint containing firebase public keys
-     */
-    private String publicKeysEndpoint = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
+	/**
+	 * Link to Google's public endpoint containing firebase public keys.
+	 */
+	private String publicKeysEndpoint = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
 
 
-    public String getPublicKeysEndpoint() {
-        return publicKeysEndpoint;
-    }
+	public String getPublicKeysEndpoint() {
+		return publicKeysEndpoint;
+	}
 
-    public void setPublicKeysEndpoint(String publicKeysEndpoint) {
-        this.publicKeysEndpoint = publicKeysEndpoint;
-    }
+	public void setPublicKeysEndpoint(String publicKeysEndpoint) {
+		this.publicKeysEndpoint = publicKeysEndpoint;
+	}
 }
