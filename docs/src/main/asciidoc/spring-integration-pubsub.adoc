@@ -69,7 +69,7 @@ Depending on your use case, you might want to use a `MessageChannel` other than 
 
 Then, we declare a `PubSubInboundChannelAdapter` bean.
 It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber` objects from the Google Cloud Java Client for Pub/Sub.
-The Spring Boot starter for GCP Pub/Sub provides a configured `SubscriberFactory`.
+The Spring Boot starter for GCP Pub/Sub provides a configured `PubSubSubscriberOperations` object.
 
 The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value;
 
