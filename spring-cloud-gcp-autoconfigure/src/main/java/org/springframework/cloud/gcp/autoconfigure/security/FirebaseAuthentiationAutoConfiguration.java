@@ -20,10 +20,6 @@ package org.springframework.cloud.gcp.autoconfigure.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.cloud.resourcemanager.Project;
-import com.google.cloud.resourcemanager.ResourceManager;
-import com.google.cloud.resourcemanager.ResourceManagerOptions;
-
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -62,8 +58,7 @@ public class FirebaseAuthentiationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "firebaseJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator,
-																			  GcpProjectIdProvider gcpProjectIdProvider) {
+	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator, GcpProjectIdProvider gcpProjectIdProvider) {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(jwtIssuerValidator);
@@ -81,16 +76,8 @@ public class FirebaseAuthentiationAutoConfiguration {
 	}
 
 	@Bean
-	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider,
-												 ResourceManager resourceManager) {
-		Project project = resourceManager.get(gcpProjectIdProvider.getProjectId());
-		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, project.getProjectId()));
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public ResourceManager resourceManager() {
-		return ResourceManagerOptions.getDefaultInstance().getService();
+	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider) {
+		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, gcpProjectIdProvider.getProjectId()));
 	}
 
 	private RestOperations restOperations() {

@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.Assert;
 
 /**
  * Validates Firebase JWT tokens using the rules presented here at https://firebase.google.com/docs/auth/admin/verify-id-tokens.
@@ -58,6 +59,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 	}
 
 	public FirebaseTokenValidator(String projectId, Duration clockSkew) {
+		Assert.notNull(projectId, "ProjectId can't be null");
 		this.projectId = projectId;
 		this.clockSkew = clockSkew;
 	}

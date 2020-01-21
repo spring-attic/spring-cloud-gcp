@@ -18,21 +18,18 @@ package org.springframework.cloud.gcp.autoconfigure.security;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.resourcemanager.Project;
-import com.google.cloud.resourcemanager.ResourceManager;
 import org.junit.Test;
+
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.security.firebase.FirebaseJwtTokenDecoder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 /**
@@ -49,7 +46,6 @@ public class FirebaseAuthenticationAutoConfigurationTests {
 	public void testAutoConfigurationLoaded() throws Exception {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.firebase.enabled=true")
-				.withUserConfiguration(ResourceManagerConfig.class)
 				.run(context -> {
 					FirebaseJwtTokenDecoder decoder = context.getBean(FirebaseJwtTokenDecoder.class);
 					assertThat(decoder).isNotNull();
@@ -60,12 +56,13 @@ public class FirebaseAuthenticationAutoConfigurationTests {
 	public void testAutoConfigurationNotLoaded() throws Exception {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.firebase.enabled=false")
-				.withUserConfiguration(ResourceManagerConfig.class)
 				.run(context -> {
-					FirebaseJwtTokenDecoder decoder = context.getBean(FirebaseJwtTokenDecoder.class);
-					assertThat(decoder).isNull();
+					assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+							.isThrownBy(() -> context.getBean(FirebaseJwtTokenDecoder.class));
 				});
 	}
+
+
 
 	static class TestConfig {
 
@@ -79,21 +76,6 @@ public class FirebaseAuthenticationAutoConfigurationTests {
 			return () -> mock(Credentials.class);
 		}
 
-
-	}
-
-	@Configuration
-	@AutoConfigureBefore(FirebaseAuthentiationAutoConfiguration.class)
-	static class ResourceManagerConfig {
-
-		@Bean
-		public ResourceManager resourceManager() {
-			ResourceManager resourceManager = mock(ResourceManager.class);
-			Project project = mock(Project.class);
-			when(project.getProjectId()).thenReturn("123456");
-			when(resourceManager.get(anyString())).thenReturn(project);
-			return resourceManager;
-		}
 	}
 
 }
