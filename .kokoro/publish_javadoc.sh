@@ -12,15 +12,15 @@ PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceSt
 python3.6 -m pip install --user gcp-docuploader
 
 # Build the javadocs
-./mvnw clean javadoc:aggregate
+# ./mvnw clean javadoc:aggregate
 
 # Move into generated docs directory
-pushd target/site/apidocs/
+# pushd target/site/apidocs/
 
-python3 -m docuploader create-metadata \
+python3.6 -m docuploader create-metadata \
     --name spring-cloud-gcp \
     --version ${PROJECT_VERSION} \
     --language java
 
-popd
+# popd
 popd
