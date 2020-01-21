@@ -1,15 +1,14 @@
 #!/bin/bash
 set -eo pipefail
 
-pwd
-
+# Get into the spring-cloud-gcp repo directory
 dir=$(dirname "$0")
-
 pushd $dir/../
-pwd
-popd
-
-pwd
 
 # install docuploader package
-python3 -m pip install gcp-docuploader
+python3 -m pip install --user gcp-docuploader
+
+
+
+popd
+
