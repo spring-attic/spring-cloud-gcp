@@ -191,7 +191,7 @@ Depending on your use case, you might want to use a <code>MessageChannel</code> 
 <div class="paragraph">
 <p>Then, we declare a <code>PubSubInboundChannelAdapter</code> bean.
 It requires the channel we just created and a <code>SubscriberFactory</code>, which creates <code>Subscriber</code> objects from the Google Cloud Java Client for Pub/Sub.
-The Spring Boot starter for GCP Pub/Sub provides a configured <code>SubscriberFactory</code>.</p>
+The Spring Boot starter for GCP Pub/Sub provides a configured <code>PubSubSubscriberOperations</code> object.</p>
 </div>
 <div class="paragraph">
 <p>The <code>PubSubInboundChannelAdapter</code> supports three acknowledgement modes, with <code>AckMode.AUTO</code> being the default value;</p>
