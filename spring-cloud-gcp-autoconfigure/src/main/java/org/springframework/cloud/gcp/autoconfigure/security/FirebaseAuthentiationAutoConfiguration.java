@@ -33,8 +33,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.security.firebase.FirebaseJwtTokenDecoder;
+import org.springframework.cloud.gcp.security.firebase.FirebaseTokenValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -50,7 +52,7 @@ import org.springframework.web.client.RestTemplate;
  * @since 1.3
  */
 @Configuration
-@ConditionalOnProperty(value = "spring.cloud.gcp.security.iap.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "spring.cloud.gcp.security.firebase.enabled", matchIfMissing = true)
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(FirebaseAuthenticationProperties.class)
@@ -60,10 +62,12 @@ public class FirebaseAuthentiationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "firebaseJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator) {
+	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator,
+																			  GcpProjectIdProvider gcpProjectIdProvider) {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(jwtIssuerValidator);
+		validators.add(new FirebaseTokenValidator(gcpProjectIdProvider.getProjectId()));
 		return new DelegatingOAuth2TokenValidator<>(validators);
 	}
 
@@ -71,23 +75,29 @@ public class FirebaseAuthentiationAutoConfiguration {
 	@ConditionalOnMissingBean
 	public JwtDecoder firebaseAuthenticationJwtDecoder(
 			DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator,
-			RestOperations restOperations,
 			FirebaseAuthenticationProperties properties) {
-		return new FirebaseJwtTokenDecoder(restOperations, properties.getPublicKeysEndpoint(),
+		return new FirebaseJwtTokenDecoder(restOperations(), properties.getPublicKeysEndpoint(),
 				firebaseJwtDelegatingValidator);
 	}
 
 	@Bean
-	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider) {
-		ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
+	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider,
+												 ResourceManager resourceManager) {
 		Project project = resourceManager.get(gcpProjectIdProvider.getProjectId());
 		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, project.getProjectId()));
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public RestOperations restOperations() {
-		return new RestTemplate();
+	public ResourceManager resourceManager() {
+		return ResourceManagerOptions.getDefaultInstance().getService();
+	}
+
+	private RestOperations restOperations() {
+		SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+		clientHttpRequestFactory.setConnectTimeout(5_000);
+		clientHttpRequestFactory.setReadTimeout(2_000);
+		return new RestTemplate(clientHttpRequestFactory);
 	}
 
 }
