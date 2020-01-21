@@ -30,7 +30,14 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
- * Validates Firebase tokens using the guidelines presented here: https://firebase.google.com/docs/auth/admin/verify-id-tokens.
+ * Validates Firebase JWT tokens using the rules presented here at https://firebase.google.com/docs/auth/admin/verify-id-tokens.
+ *
+ * This validator will check the following claims:
+ *
+ *  - iat : Must be in the past
+ *  - aud : Must be the firebase project id
+ *  - auth_time : Must be in the past
+ *  - sub : Must not be empty
  *
  * @author Vinicius Carvalho
  * @since 1.3
@@ -60,19 +67,39 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 		List<OAuth2Error> errors = new LinkedList<>();
 		validateAudience(errors, token);
 		validateIssuedAt(errors, token);
+		validateSubject(errors, token);
+		validateAuthTime(errors, token);
 		return OAuth2TokenValidatorResult.failure(errors);
 	}
 
 
 	private void validateIssuedAt(List<OAuth2Error> errors, Jwt token) {
 		Instant issuedAt = token.getIssuedAt();
-		if (issuedAt != null) {
-			if (Instant.now(this.clock).plus(clockSkew).isBefore(issuedAt)) {
-				errors.add(new OAuth2Error(
-						OAuth2ErrorCodes.INVALID_REQUEST,
-						String.format("iat claim header must be in the past"),
-						"https://tools.ietf.org/html/rfc6750#section-3.1"));
-			}
+		if (issuedAt == null || Instant.now(this.clock).plus(clockSkew).isBefore(issuedAt)) {
+			errors.add(new OAuth2Error(
+					OAuth2ErrorCodes.INVALID_REQUEST,
+					String.format("iat claim header must be in the past"),
+					"https://tools.ietf.org/html/rfc6750#section-3.1"));
+		}
+	}
+
+	private void validateSubject(List<OAuth2Error> errors, Jwt token) {
+		String subject = token.getSubject();
+		if (subject == null || subject.length() == 0) {
+			errors.add(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST,
+					"sub claim can not be empty",
+					"https://tools.ietf.org/html/rfc6750#section-3.1"
+					));
+		}
+	}
+
+	private void validateAuthTime(List<OAuth2Error> errors, Jwt token) {
+		Instant authTime = token.getClaimAsInstant("auth_time");
+		if (authTime == null || Instant.now(this.clock).plus(clockSkew).isBefore(authTime)) {
+			errors.add(new OAuth2Error(
+					OAuth2ErrorCodes.INVALID_REQUEST,
+					String.format("auth_time claim header must be in the past"),
+					"https://tools.ietf.org/html/rfc6750#section-3.1"));
 		}
 	}
 

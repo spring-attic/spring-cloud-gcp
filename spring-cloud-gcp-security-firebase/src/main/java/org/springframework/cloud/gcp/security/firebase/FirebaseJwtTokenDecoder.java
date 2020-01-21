@@ -49,6 +49,16 @@ import org.springframework.web.client.RestOperations;
 
 
 /**
+ * Decodes a Firebase token into a {@link Jwt} token.
+ * This decoder downloads public keys from https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com.
+ * Keys are rotated often, and expiration date is returned as part of a Cache-Control max-age header.
+ * The keys are cached locally and only refreshed when the expiration time is past.
+ * Besides using the RSA keys to validate the token signature, this decoder also uses a pre=configured {@link org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator}
+ * to validate all the claims.
+ * The following validators are used by this class:
+ * {@link org.springframework.security.oauth2.jwt.JwtTimestampValidator} - Validates the expiration date of the Token
+ * {@link org.springframework.security.oauth2.jwt.JwtIssuerValidator} - Validates the iss claim header
+ * {@link FirebaseTokenValidator} - Validates all other headers according to definition at https://firebase.google.com/docs/auth/admin/verify-id-tokens
  * @author Vinicius Carvalho
  * @since 1.3
  */

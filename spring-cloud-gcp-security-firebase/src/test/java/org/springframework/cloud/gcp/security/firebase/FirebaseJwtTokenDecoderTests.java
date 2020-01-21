@@ -30,9 +30,7 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.BeforeClass;
@@ -54,6 +52,7 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
@@ -185,13 +184,16 @@ public class FirebaseJwtTokenDecoderTests {
 		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
 				.subject("test-subject")
-				.expirationTime(Date.from(Instant.now().plusSeconds(3600)))
-				.issuer("https://securetoken.google.com/123456")
+				.audience("123456")
+				.expirationTime(Date.from(Instant.now().plusSeconds(36000)))
+				.issuer("https://spring.local/123456")
+				.issueTime(Date.from(Instant.now().minusSeconds(3600)))
+				.claim("auth_time", Instant.now().minusSeconds(3600).getEpochSecond())
 				.build();
 		SignedJWT signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
-		validators.add(new JwtIssuerValidator("https://securetoken.google.com/123"));
+		validators.add(new JwtIssuerValidator("https://securetoken.google.com/123456"));
 		DelegatingOAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<Jwt>(validators);
 		RestOperations operations = mockRestOperations();
 		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
@@ -201,18 +203,44 @@ public class FirebaseJwtTokenDecoderTests {
 	}
 
 	@Test
-	public void invalidAudienceTests() throws Exception {
+	public void validTokenTests() throws Exception {
 		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
 				.subject("test-subject")
-				.expirationTime(Date.from(Instant.now().plusSeconds(3600)))
+				.audience("123456")
+				.expirationTime(Date.from(Instant.now().plusSeconds(36000)))
 				.issuer("https://securetoken.google.com/123456")
+				.issueTime(Date.from(Instant.now().minusSeconds(3600)))
+				.claim("auth_time", Instant.now().minusSeconds(3600).getEpochSecond())
 				.build();
 		SignedJWT signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator("https://securetoken.google.com/123456"));
-		validators.add(new FirebaseTokenValidator("123"));
+		validators.add(new FirebaseTokenValidator("123456"));
+		DelegatingOAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<Jwt>(validators);
+		RestOperations operations = mockRestOperations();
+		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
+		Jwt jwt = decoder.decode(signedJWT.serialize());
+		assertThat(jwt.getClaims()).isNotEmpty();
+	}
+
+	@Test
+	public void invalidAudienceTests() throws Exception {
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.subject("test-subject")
+				.audience("123")
+				.expirationTime(Date.from(Instant.now().plusSeconds(36000)))
+				.issuer("https://securetoken.google.com/123456")
+				.issueTime(Date.from(Instant.now().minusSeconds(3600)))
+				.claim("auth_time", Instant.now().minusSeconds(3600).getEpochSecond())
+				.build();
+		SignedJWT signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
+		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
+		validators.add(new JwtTimestampValidator());
+		validators.add(new JwtIssuerValidator("https://securetoken.google.com/123456"));
+		validators.add(new FirebaseTokenValidator("123456"));
 		DelegatingOAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<Jwt>(validators);
 		RestOperations operations = mockRestOperations();
 		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
@@ -225,7 +253,6 @@ public class FirebaseJwtTokenDecoderTests {
 	public void invalidIssuedAt() throws Exception {
 		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
 		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-
 				.subject("test-subject")
 				.audience("123456")
 				.expirationTime(Date.from(Instant.now().plusSeconds(36000)))
@@ -233,7 +260,6 @@ public class FirebaseJwtTokenDecoderTests {
 				.issueTime(Date.from(Instant.now().plusSeconds(3600)))
 				.claim("auth_time", Instant.now().minusSeconds(3600).getEpochSecond())
 				.build();
-
 		SignedJWT signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
@@ -247,6 +273,28 @@ public class FirebaseJwtTokenDecoderTests {
 				.withMessageStartingWith("An error occurred while attempting to decode the Jwt: iat claim header must be in the past");
 	}
 
+	@Test
+	public void invalidSubject() throws Exception {
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.audience("123456")
+				.expirationTime(Date.from(Instant.now().plusSeconds(36000)))
+				.issuer("https://securetoken.google.com/123456")
+				.issueTime(Date.from(Instant.now().minusSeconds(3600)))
+				.claim("auth_time", Instant.now().minusSeconds(3600).getEpochSecond())
+				.build();
+		SignedJWT signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
+		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
+		validators.add(new JwtTimestampValidator());
+		validators.add(new JwtIssuerValidator("https://securetoken.google.com/123456"));
+		validators.add(new FirebaseTokenValidator("123456"));
+		DelegatingOAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<Jwt>(validators);
+		RestOperations operations = mockRestOperations();
+		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
+		assertThatExceptionOfType(JwtException.class)
+				.isThrownBy(() -> decoder.decode(signedJWT.serialize()))
+				.withMessageStartingWith("An error occurred while attempting to decode the Jwt: sub claim can not be empty");
+	}
 
 	private RestOperations mockRestOperations() throws Exception {
 		Map<String, String> payload = new HashMap<>();
@@ -278,10 +326,4 @@ public class FirebaseJwtTokenDecoderTests {
 		return signedJWT;
 	}
 
-	@Test
-	public void testDecode() throws Exception {
-		String token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUxNDAyYjNkMDQyYjI5NzY5NDNmMDVmZTJlZDQyOWI3MzY0M2Y2NTEiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVmluw61jaXVzIENhcnZhbGhvIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3Zpbm55Yy1maXJlYmFzZS1jbG91ZC1kZW1vIiwiYXVkIjoidmlubnljLWZpcmViYXNlLWNsb3VkLWRlbW8iLCJhdXRoX3RpbWUiOjE1Nzg2OTMwNzYsInVzZXJfaWQiOiJESFlNMDg3SEVRWnZNc3pSTk1pclRHZVo2bEEyIiwic3ViIjoiREhZTTA4N0hFUVp2TXN6Uk5NaXJUR2VaNmxBMiIsImlhdCI6MTU3ODc4ODQyMywiZXhwIjoxNTc4NzkyMDIzLCJlbWFpbCI6InZAaWd4LmlvIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInZAaWd4LmlvIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.iZmK9ayPxQm8qUJ2aXM6QEz6Y82DHOUyZ3CDyKqPR6RhTpG15E0gZMl_qbx3aOidHrYHU-UYkroKpxbpdEZrKHEzIDlvdyncF-LaPfvlUWULE13pArfNEMCVbhAbfUfaK3qXvPNQYmODcTUFYKriYfFGXYWUkGUW4MCvKmKFRyZF2pXWkzJUDJl_iuQdrnUbKGF85W_6LyMO1ezv6rBSsceYK9q0a9pFsI_nvGpN_bTZwUN4sv8gK0a74pDq1-Nt7xka1cZfD24Y1dv8kiBIVkZIV9rGtNYk-CmZp8s4IWS01QDVYzvisuJcelRvxmP7x6Sl3ujzQ6gEO-Ob3mwv0w";
-		JWT jwt = JWTParser.parse(token);
-		System.out.println(jwt.getJWTClaimsSet());
-	}
 }
