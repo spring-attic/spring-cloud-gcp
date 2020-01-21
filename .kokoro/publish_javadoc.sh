@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
+# Set the version of python to 3.6
+pyenv global 3.6.1
+
 # Get into the spring-cloud-gcp repo directory
 dir=$(dirname "$0")
 pushd $dir/../
@@ -9,7 +12,7 @@ pushd $dir/../
 PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
 
 # install docuploader package
-python3.6 -m pip install --user gcp-docuploader
+python3 -m pip install --user gcp-docuploader
 
 # Build the javadocs
 # ./mvnw clean javadoc:aggregate
@@ -17,7 +20,7 @@ python3.6 -m pip install --user gcp-docuploader
 # Move into generated docs directory
 # pushd target/site/apidocs/
 
-python3.6 -m docuploader create-metadata \
+python3 -m docuploader create-metadata \
     --name spring-cloud-gcp \
     --version ${PROJECT_VERSION} \
     --language java
