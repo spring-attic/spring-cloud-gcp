@@ -46,7 +46,7 @@ public class GcpPubSubEmulatorAutoConfiguration {
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
 				.forTarget("dns:///" + gcpPubSubProperties.getEmulatorHost())
-				.usePlaintext(true)
+				.usePlaintext()
 				.build();
 		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
 	}
