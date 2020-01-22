@@ -50,6 +50,7 @@
 		<module>spring-cloud-gcp-data-firestore-sample</module>
 		<module>spring-cloud-gcp-bigquery-sample</module>
 		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
+		<module>spring-cloud-gcp-security-firebase-sample</module>
 	</modules>
 
 	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->

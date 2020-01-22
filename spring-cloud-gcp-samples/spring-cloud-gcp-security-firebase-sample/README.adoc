@@ -1,0 +1,9 @@
+= Spring Cloud GCP Firebase Authentication Sample application
+
+This sample application demonstrate how to use link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-firebase[Spring Cloud GCP Firebase Authentication Starter] to extract user identity from a signed https://firebase.google.com/[Firebase] JWT token.
+
+The application provides a secured controller that can only be reached if a valid JWT token is sent as an HTTP Header.
+
+There's also a simple HTML login page to allow you to login to firebase and fetch the token to test the secured controller.
+
+== Pre requisites

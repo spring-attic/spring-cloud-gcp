@@ -179,7 +179,7 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 		}
 		String[] headers = cacheControlHeaders.get(0).split(",");
 		for (String header : headers) {
-			Matcher matcher = maxAgePattern.matcher(header);
+			Matcher matcher = maxAgePattern.matcher(header.trim());
 			if (matcher.matches()) {
 				return Long.valueOf(matcher.group(1));
 			}
