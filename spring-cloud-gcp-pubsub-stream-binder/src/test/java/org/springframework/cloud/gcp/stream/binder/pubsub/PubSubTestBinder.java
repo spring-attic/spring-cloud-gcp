@@ -59,7 +59,7 @@ public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBin
 		// Transport channel provider so that test binder talks to emulator.
 		ManagedChannel channel = ManagedChannelBuilder
 				.forTarget(host)
-				.usePlaintext(true)
+				.usePlaintext()
 				.build();
 		TransportChannelProvider transportChannelProvider =
 				FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));

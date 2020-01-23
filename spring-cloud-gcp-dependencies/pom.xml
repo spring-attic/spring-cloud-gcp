@@ -16,8 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.119.0-alpha</google-cloud-bom.version>
-		<google-auth-library-oauth2-http.version>0.18.0</google-auth-library-oauth2-http.version>
+		<gcp-libraries-bom.version>3.4.0</gcp-libraries-bom.version>
 		<cloud-sql-socket-factory.version>1.0.15</cloud-sql-socket-factory.version>
 		<java-cfenv.version>1.1.1.RELEASE</java-cfenv.version>
 	</properties>
@@ -200,26 +199,13 @@
 				<version>${cloud-sql-socket-factory.version}</version>
 			</dependency>
 
-			<!--google-cloud-java BOM-->
+			<!--Google Cloud Platform Libraries BOM -->
 			<dependency>
 				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud-bom</artifactId>
-				<version>${google-cloud-bom.version}</version>
+				<artifactId>libraries-bom</artifactId>
+				<version>${gcp-libraries-bom.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-
-			<!-- spring-cloud-gcp-starter -->
-			<dependency>
-				<groupId>com.google.auth</groupId>
-				<artifactId>google-auth-library-oauth2-http</artifactId>
-				<version>${google-auth-library-oauth2-http.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<dependency>
