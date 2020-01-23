@@ -427,6 +427,20 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void readAllTestEager() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		spyTemplate.readAll(ParentEntity.class);
+		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
+				"ARRAY (SELECT AS STRUCT id3, id, id_2 FROM child_test_table " +
+				"WHERE child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) as childEntities " +
+				"FROM parent_test_table")
+				.build();
+		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
