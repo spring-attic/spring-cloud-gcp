@@ -1,3 +1,19 @@
-<div>
-
+<div layout="column" style="padding-left: 85px; padding-top: 85px" ng-controller="home">
+    <div layout="row" >
+        <div flex="70"><span class="question">What is the answer to the Ultimate Question of Life, the Universe, and Everything?</span></div>
+        <div flex="20">
+            <md-button class="md-raised md-hue-2" aria-label="Ask" ng-click="ask()">
+                Ask
+            </md-button>
+        </div>
+        <div flex="10"></div>
+    </div>
+    <div>
+        <span ng-class="{error: status >= 400, success: status <= 201}">{{answer}}</span>
+    </div>
+    <div layout="row" style="padding-top: 25px">
+        <div class="cli" flex="75">
+            curl -H "Authorization: Bearer " http://localhost:8080/answer
+        </div>
+    </div>
 </div>

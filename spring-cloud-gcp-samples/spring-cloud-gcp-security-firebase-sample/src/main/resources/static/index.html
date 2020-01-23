@@ -26,7 +26,7 @@
     <md-toolbar class="md-hue-2" ng-controller="MainController">
         <div class="md-toolbar-tools">
             <h2 flex md-truncate>Spring Cloud GCP Firebase Authentication Demo</h2>
-            <md-button class="md-raised md-hue-2" aria-label="Login" href="login">
+            <md-button class="md-raised md-hue-2" aria-label="Login" href="#!/login" ng-if="!logged">
                 Login
             </md-button>
         </div>
@@ -40,5 +40,6 @@
 
 <script src="/templates/js/app" type="application/javascript"></script>
 <script src="/js/home.js"></script>
+<script src="/js/login.js"></script>
 </body>
 </html>

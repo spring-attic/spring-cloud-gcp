@@ -1,3 +1,8 @@
-<div>
-    Login
+<div ng-controller="login">
+    <md-button class="md-raised md-hue-2" aria-label="Login" ng-click="login()" ng-if="!logged">
+        Login
+    </md-button>
+    <md-button class="md-raised md-hue-2" aria-label="Logout"  ng-if="logged">
+        Logout
+    </md-button>
 </div>

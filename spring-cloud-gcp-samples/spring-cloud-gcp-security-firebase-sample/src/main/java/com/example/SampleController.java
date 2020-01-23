@@ -8,12 +8,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
-@RequestMapping("/hello")
+@RequestMapping("/answer")
 public class SampleController {
-	@GetMapping
-	public ResponseEntity<String> hello() {
+	@GetMapping(produces = "application/json")
+	public ResponseEntity<Map<String, String>> hello() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		return new ResponseEntity("Hello", HttpStatus.OK);
+		Map<String, String> response = new HashMap<>();
+		response.put("answer", "42");
+		return new ResponseEntity(response, HttpStatus.OK);
 	}
 }
