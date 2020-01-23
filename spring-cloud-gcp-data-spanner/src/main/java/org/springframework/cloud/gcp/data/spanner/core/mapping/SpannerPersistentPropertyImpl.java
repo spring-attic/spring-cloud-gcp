@@ -97,11 +97,6 @@ public class SpannerPersistentPropertyImpl
 	 */
 	@Override
 	public String getColumnName() {
-		if (isInterleaved()) {
-			throw new SpannerDataException(
-					"This property is a one-to-many child collection and "
-							+ "does not correspond to a column: " + getName());
-		}
 		if (StringUtils.hasText(getAnnotatedColumnName())) {
 			return getAnnotatedColumnName();
 		}

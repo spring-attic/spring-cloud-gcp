@@ -109,7 +109,7 @@ public class SpannerStatementQueryTests {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedQuery =
-							"SELECT DISTINCT shares , trader_id , ticker , price , action , id "
+							"SELECT DISTINCT shares, trader_id, ticker, price, action, id "
 									+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
@@ -172,7 +172,7 @@ public class SpannerStatementQueryTests {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedSql = "SELECT EXISTS"
-							+ "(SELECT DISTINCT shares , trader_id , ticker , price , action , id "
+							+ "(SELECT DISTINCT shares, trader_id, ticker, price, action, id "
 							+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 							+ "AND ticker=@tag1 ) OR "
 							+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "

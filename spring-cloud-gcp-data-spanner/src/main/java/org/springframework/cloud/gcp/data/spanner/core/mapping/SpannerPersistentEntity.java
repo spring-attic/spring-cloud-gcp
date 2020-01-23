@@ -105,4 +105,6 @@ public interface SpannerPersistentEntity<T> extends
 	 * @return true if the entity has a muti-field key
 	 */
 	boolean hasMultiFieldKey();
+
+	boolean hasEagerlyLoadedProperties();
 }

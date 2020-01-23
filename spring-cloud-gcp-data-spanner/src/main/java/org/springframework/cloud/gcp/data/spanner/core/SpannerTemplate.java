@@ -181,12 +181,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> read(Class<T> entityClass, KeySet keys,
 			SpannerReadOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+		SpannerPersistentEntity<T> persistentEntity = (SpannerPersistentEntity<T>) this.mappingContext
 				.getPersistentEntity(entityClass);
-		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
-				options != null && options.isAllowPartialRead());
+		List<T> entities;
+
+		if (options == null &&
+				persistentEntity.hasEagerlyLoadedProperties() && !keys.getRanges().iterator().hasNext()) {
+			entities = executeReadQueryAndResolveChildren(keys, persistentEntity);
+		}
+		else {
+			entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
+					persistentEntity.columns(), options), entityClass,
+					(options != null) ? options.getIncludeProperties() : null,
+					options != null && options.isAllowPartialRead());
+		}
 		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
 	}
@@ -228,7 +236,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity) + " FROM " + persistentEntity.tableName();
+				persistentEntity, this.mappingContext) + " FROM " + persistentEntity.tableName();
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
@@ -445,6 +453,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return resultSet;
 	}
 
+	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity) {
+		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(keys, persistentEntity,
+				this.spannerEntityProcessor.getWriteConverter(),
+				this.mappingContext);
+
+		return resolveChildEntities(query(persistentEntity.getType(), statement, null), null);
+	}
+
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
@@ -547,6 +563,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 							.contains(spannerPersistentEntity.getName())) {
 						return;
 					}
+					Object propertyValue = accessor.getProperty(spannerPersistentProperty);
+					if (propertyValue != null) {
+						resolveChildEntities((List) propertyValue, null);
+						return;
+					}
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
@@ -554,7 +575,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter()),
+									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter(),
+									this.mappingContext),
 							null);
 
 					accessor.setProperty(spannerPersistentProperty,
