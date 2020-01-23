@@ -1,19 +1,21 @@
 var firebaseDemo = angular.module('firebaseDemo');
 
-firebaseDemo.controller('login', function($scope, $http, $window, userService){
+firebaseDemo.controller('login', function($scope, $http, $window, $location, userService){
     $scope.firebase = $window.firebase;
-    $scope.logged = userService.isLoggedIn();
-    $scope.firebase.auth().onAuthStateChanged(function(user) {
-        if(user) {
 
-        }}, function(error) {
-        console.log(error);
-    });
-    $scope.login = function(){
-        console.log(userService.getUser());
-        userService.setUser({"name" : "John Doe"});
-    }
+    $scope.logged = userService.isLoggedIn();
+    // $window.firebase.auth().onAuthStateChanged(function(user) {
+    //     if(user) {
+    //         userService.setUser(user);
+    //         $location.path("/");
+    //     }}, function(error) {
+    //     console.log(error);
+    // });
+
     $scope.$on('user:updated', function(event, data){
         $scope.logged = userService.isLoggedIn();
     });
+
+    $window.ui.start('#firebaseui-auth-container', $window.uiConfig);
+
 });

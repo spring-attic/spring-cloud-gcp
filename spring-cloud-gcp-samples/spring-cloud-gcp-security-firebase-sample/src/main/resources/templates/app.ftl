@@ -7,7 +7,34 @@ var firebaseConfig = {
     appId: "${firebaseConfig.appId}"
 };
 
+var firebaseUser;
+
 firebase.initializeApp(firebaseConfig);
+var uiConfig = {
+                signInSuccessUrl: "http://"+window.location.hostname+":"+window.location.port+"/",
+                signInOptions: [
+                    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                    firebase.auth.EmailAuthProvider.PROVIDER_ID
+                ],
+                tosUrl: 'http://localhost:8080/',
+
+                privacyPolicyUrl: function() {
+                    window.location.assign("http://"+window.location.hostname+":"+window.location.port+"/");
+                    }
+                };
+
+firebase.auth().onAuthStateChanged(function(user) {
+            if(user) {
+                if(firebaseUser == null){
+                    firebaseUser = user;
+                    //window.location.assign("http://"+window.location.hostname+":"+window.location.port+"/#!/");
+                }
+
+            }}, function(error) {
+            console.log(error);
+        });
+
+var ui = new firebaseui.auth.AuthUI(firebase.auth());
 
 var firebaseDemo = angular.module('firebaseDemo', ['ngRoute', 'ngMaterial', 'ngMessages']);
 

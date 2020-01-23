@@ -1,8 +1,5 @@
-<div ng-controller="login">
-    <md-button class="md-raised md-hue-2" aria-label="Login" ng-click="login()" ng-if="!logged">
-        Login
-    </md-button>
-    <md-button class="md-raised md-hue-2" aria-label="Logout"  ng-if="logged">
-        Logout
-    </md-button>
+<div ng-controller="login" layout="row" style="padding-top: 75px">
+    <div flex="40"></div>
+    <div flex="20" id="firebaseui-auth-container"></div>
+    <div flex="40"></div>
 </div>

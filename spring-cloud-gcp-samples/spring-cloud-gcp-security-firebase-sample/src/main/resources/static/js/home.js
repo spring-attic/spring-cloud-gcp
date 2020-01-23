@@ -1,14 +1,18 @@
 var firebaseDemo = angular.module('firebaseDemo');
 
-firebaseDemo.controller('home', function($scope, $http, userService){
+firebaseDemo.controller('home', function($scope, $http, $window, userService){
     $scope.answer = '';
     $scope.status = 0;
+    $scope.token = '';
+    if($window.firebaseUser != null){
+        userService.setUser($window.firebaseUser);
+    }
     $scope.ask = function () {
         var req = {
             method: 'GET',
             url : '/answer',
             headers : {
-                'Authorization' : 'Bearer ' + userToken()
+                'Authorization' : 'Bearer ' + $scope.token
             }
         };
         $http(req).then(function success(response){
@@ -20,11 +24,9 @@ firebaseDemo.controller('home', function($scope, $http, userService){
             $scope.status = response.status;
         });
     }
-    function userToken() {
-        if(userService.user == null){
-            return '';
-        }else{
-            return userService.user.token;
-        }
-    }
+    $scope.$on('user:updated', function(event, data){
+        userService.getUser().getIdToken().then( function(accessToken){
+            $scope.token = accessToken;
+        } , null, ' ');
+    });
 });
