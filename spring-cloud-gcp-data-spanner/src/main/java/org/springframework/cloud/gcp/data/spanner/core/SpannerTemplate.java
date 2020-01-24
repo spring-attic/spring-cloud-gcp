@@ -399,6 +399,18 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		});
 	}
 
+	@Override
+	public boolean existsById(Class entityClass, Key key) {
+		final SpannerPersistentEntity<?> entity = mappingContext.getPersistentEntity(entityClass);
+		final Statement statement = SpannerStatementQueryExecutor.getExistsByIdStatement(
+				key, entity, getSpannerEntityProcessor().getWriteConverter());
+		try (ResultSet resultSet = executeQuery(statement, null)) {
+			resultSet.next();
+			return resultSet.getBoolean(0);
+		}
+	}
+
+
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 
 		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
@@ -422,10 +434,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		String message;
 		StringBuilder logSb = new StringBuilder("Executing query");
 		if (options.getTimestampBound() != null) {
-			logSb.append(" at timestamp" + options.getTimestampBound());
+			logSb.append(" at timestamp ").append(options.getTimestampBound());
 		}
-		for (QueryOption queryOption : (QueryOption[]) options.getOptions()) {
-			logSb.append(" with option: " + queryOption);
+		for (QueryOption queryOption : options.getOptions()) {
+			logSb.append(" with option: ").append(queryOption);
 		}
 		logSb.append(" : ").append(statement);
 		message = logSb.toString();
@@ -440,7 +452,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		else {
 			resultSet = ((options.getTimestampBound() != null)
 					? getReadContext(options.getTimestampBound())
-					: getReadContext()).executeQuery(statement, (QueryOption[]) options.getOptions());
+					: getReadContext()).executeQuery(statement, options.getOptions());
 		}
 		return resultSet;
 	}
@@ -483,22 +495,22 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			return;
 		}
 		if (options.getTimestampBound() != null) {
-			logs.append(" at timestamp " + options.getTimestampBound());
+			logs.append(" at timestamp ").append(options.getTimestampBound());
 		}
 		for (ReadOption readOption : options.getOptions()) {
-			logs.append(" with option: " + readOption);
+			logs.append(" with option: ").append(readOption);
 		}
 		if (options.getIndex() != null) {
-			logs.append(" secondary index: " + options.getIndex());
+			logs.append(" secondary index: ").append(options.getIndex());
 		}
 	}
 
 	private StringBuilder logColumns(String tableName, KeySet keys,
 			Iterable<String> columns) {
-		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
-				+ " with keys: " + keys + " and columns: ");
+		StringBuilder logSb = new StringBuilder();
+		logSb.append("Executing read on table ").append(tableName).append(" with keys: ").append(keys).append(" and columns: ");
 		StringJoiner sj = new StringJoiner(",");
-		columns.forEach((col) -> sj.add(col));
+		columns.forEach(sj::add);
 		logSb.append(sj.toString());
 		return logSb;
 	}

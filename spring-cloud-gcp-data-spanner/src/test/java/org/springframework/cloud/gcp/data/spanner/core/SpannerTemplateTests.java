@@ -676,6 +676,22 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void existsByIdTest() {
+		ResultSet results = mock(ResultSet.class);
+		when(this.readContext.executeQuery(any()))
+				.thenAnswer((invocation) -> {
+					Statement st = invocation.getArgument(0);
+					assertThat(st.getSql())
+							.isEqualTo("SELECT EXISTS (SELECT 1 FROM custom_test_table WHERE id = @tag0 AND id2 = @tag1)");
+					return results;
+				});
+		this.spannerTemplate.existsById(TestEntity.class, Key.of("1", 2));
+		verify(results, times(1)).next();
+		verify(results, times(1)).getBoolean(eq(0));
+		verify(results, times(1)).close();
+	}
+
+	@Test
 	public void findAllPageableTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		Sort sort = mock(Sort.class);

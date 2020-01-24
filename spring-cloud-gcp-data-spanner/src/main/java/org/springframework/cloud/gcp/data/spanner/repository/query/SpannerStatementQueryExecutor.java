@@ -20,10 +20,11 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -161,8 +162,8 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Gets a query that returns the rows associated with a parent entity. This function is
-	 * intended to be used with parent-child interleaved tables, so that the retrieval of all
+	 * Gets a {@link Statement} that returns the rows associated with a parent entity. This function is
+	 * intended to be used with parent-child lazy-loaded interleaved tables, so that the retrieval of all
 	 * child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
@@ -173,26 +174,51 @@ public final class SpannerStatementQueryExecutor {
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
 			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter) {
-		StringBuilder sb = new StringBuilder(
-				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
-						+ childPersistentEntity.tableName() + " WHERE ");
-		StringJoiner sj = new StringJoiner(" and ");
+		final KeyQueryParams keys = prepareKeys(parentKey, childPersistentEntity);
+		return buildStatementFromSqlWithArgs(
+				String.format("SELECT %s FROM %s WHERE %s",
+						getColumnsStringForSelect(childPersistentEntity), childPersistentEntity.tableName(), keys.getSqlWhere()),
+				keys.getTags(), null, writeConverter, keys.getParams(), null);
+	}
+
+	/**
+	 * Gets a {@link Statement} that returns a row with single boolean value when entity by the pointed key exists.
+	 * @param key the entity's key to check.
+	 * @param entity the persistent entity to check.
+	 * @param writeConverter a converter to convert key values as needed to bind to the query
+	 *     statement.
+	 * @param <T> the type of the persistent entity
+	 * @return the Spanner statement to perform the check.
+	 */
+	public static <T> Statement getExistsByIdStatement(Key key,
+			SpannerPersistentEntity<T> entity, SpannerCustomConverter writeConverter) {
+		final KeyQueryParams keys = prepareKeys(key, entity);
+		return buildStatementFromSqlWithArgs(
+				String.format("SELECT EXISTS (SELECT 1 FROM %s WHERE %s)",
+						entity.tableName(), keys.getSqlWhere()),
+				keys.getTags(), null, writeConverter, keys.getParams(), null);
+	}
+
+	public static <T> KeyQueryParams prepareKeys(Key key,
+			SpannerPersistentEntity<T> entity) {
+		return prepareKeys(key, entity, Optional.empty(), new AtomicInteger());
+	}
+
+	public static <T> KeyQueryParams prepareKeys(Key key,
+			SpannerPersistentEntity<T> entity, Optional<String> alias, AtomicInteger tagCount) {
+		StringJoiner sqlWhere = new StringJoiner(" AND ");
 		List<String> tags = new ArrayList<>();
-		List keyParts = new ArrayList();
-		int tagNum = 0;
-		List<SpannerPersistentProperty> childKeyProperties = childPersistentEntity
-				.getFlattenedPrimaryKeyProperties();
-		Iterator parentKeyParts = parentKey.getParts().iterator();
-		while (parentKeyParts.hasNext()) {
-			SpannerPersistentProperty keyProp = childKeyProperties.get(tagNum);
+		List<Object> keyParts = new ArrayList<>();
+		List<SpannerPersistentProperty> properties = entity.getFlattenedPrimaryKeyProperties();
+		for (Object o : key.getParts()) {
+			int tagNum = tagCount.getAndIncrement();
+			SpannerPersistentProperty keyProp = properties.get(tagNum);
 			String tagName = "tag" + tagNum;
-			sj.add(keyProp.getColumnName() + " = @" + tagName);
+			sqlWhere.add(alias.map(a -> a + '.').orElse("") + keyProp.getColumnName() + " = @" + tagName);
 			tags.add(tagName);
-			keyParts.add(parentKeyParts.next());
-			tagNum++;
+			keyParts.add(o);
 		}
-		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, writeConverter,
-				keyParts.toArray(), null);
+		return new KeyQueryParams(sqlWhere.toString(), tags, keyParts.toArray());
 	}
 
 	/**
@@ -211,7 +237,6 @@ public final class SpannerStatementQueryExecutor {
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 *     params, or if a param of an unsupported type is given.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object[] params, Map<String, Parameter> queryMethodParams) {
@@ -230,6 +255,7 @@ public final class SpannerStatementQueryExecutor {
 		return builder.build();
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object originalParam, Parameter paramMetadata) {
@@ -261,8 +287,8 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	public static String getColumnsStringForSelect(
-			SpannerPersistentEntity spannerPersistentEntity) {
-		return String.join(" , ", spannerPersistentEntity.columns());
+			SpannerPersistentEntity<?> spannerPersistentEntity) {
+		return String.join(", ", spannerPersistentEntity.columns());
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
@@ -293,17 +319,16 @@ public final class SpannerStatementQueryExecutor {
 		return Pair.of(finalSql, tags);
 	}
 
-	private static StringBuilder buildSelect(
-			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
+	private static void buildSelect(
+			SpannerPersistentEntity<?> spannerPersistentEntity, PartTree tree,
 			StringBuilder stringBuilder) {
-		stringBuilder.append("SELECT " + (tree.isDistinct() ? "DISTINCT " : "")
-				+ getColumnsStringForSelect(spannerPersistentEntity) + " ");
-		return stringBuilder;
+		stringBuilder.append("SELECT ").append(tree.isDistinct() ? "DISTINCT " : "")
+				.append(getColumnsStringForSelect(spannerPersistentEntity)).append(" ");
 	}
 
 	private static void buildFrom(SpannerPersistentEntity<?> persistentEntity,
 			StringBuilder stringBuilder) {
-		stringBuilder.append("FROM " + persistentEntity.tableName() + " ");
+		stringBuilder.append("FROM ").append(persistentEntity.tableName()).append(" ");
 	}
 
 	public static StringBuilder applySort(Sort sort, StringBuilder sql,
@@ -433,7 +458,54 @@ public final class SpannerStatementQueryExecutor {
 			stringBuilder.append(" LIMIT 1");
 		}
 		else if (tree.isLimiting()) {
-			stringBuilder.append(" LIMIT " + tree.getMaxResults());
+			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
 		}
 	}
+
+	public static class KeyQueryParams {
+		private final CharSequence sqlWhere;
+		private final List<String> tags;
+		private final Object[] params;
+
+		public KeyQueryParams(CharSequence sqlWhere, List<String> tags, Object[] params) {
+			this.sqlWhere = sqlWhere;
+			this.tags = tags;
+			this.params = params;
+		}
+
+		public CharSequence getSqlWhere() {
+			return sqlWhere;
+		}
+
+		public List<String> getTags() {
+			return tags;
+		}
+
+		public Object[] getParams() {
+			return params;
+		}
+
+		public static KeyQueryParams join(KeyQueryParams p1, KeyQueryParams p2) {
+			return new KeyQueryParams(wrapSql(p1) + " OR " + wrapSql(p2), unionTags(p1, p2), unionParams(p1, p2));
+		}
+
+		private static CharSequence wrapSql(KeyQueryParams p1) {
+			return p1.getTags().isEmpty() ? p1.getSqlWhere() : String.format("( %s )", p1.getSqlWhere());
+		}
+
+		private static List<String> unionTags(KeyQueryParams p1, KeyQueryParams p2) {
+			List<String> list = new ArrayList<>(p1.getTags());
+			list.addAll(p2.getTags());
+			return list;
+		}
+
+		private static Object[] unionParams(KeyQueryParams p1, KeyQueryParams p2) {
+			Object[] all = new Object[p1.getParams().length + p2.getParams().length];
+			System.arraycopy(p1.getParams(), 0, all, 0, p1.getParams().length);
+			System.arraycopy(p2.getParams(), 0, all, p1.getParams().length, p2.getParams().length);
+			return all;
+		}
+
+	}
+
 }

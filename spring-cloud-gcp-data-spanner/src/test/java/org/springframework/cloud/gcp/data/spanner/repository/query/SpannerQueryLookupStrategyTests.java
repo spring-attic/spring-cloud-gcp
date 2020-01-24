@@ -164,7 +164,7 @@ public class SpannerQueryLookupStrategyTests {
 				Key.newBuilder().append(t.id).append(t.id2).build(),
 				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter());
 		assertThat(statement.getSql())
-				.isEqualTo("SELECT id3 , id , id_2 FROM child_test_table WHERE id = @tag0 and id_2 = @tag1");
+				.isEqualTo("SELECT id3, id, id_2 FROM child_test_table WHERE id = @tag0 AND id_2 = @tag1");
 		assertThat(statement.getParameters()).hasSize(2);
 		assertThat(statement.getParameters().get("tag0").getString()).isEqualTo("key");
 		assertThat(statement.getParameters().get("tag1").getString()).isEqualTo("key2");

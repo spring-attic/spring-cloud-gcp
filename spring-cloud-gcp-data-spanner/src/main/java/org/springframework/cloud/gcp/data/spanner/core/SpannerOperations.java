@@ -162,7 +162,7 @@ public interface SpannerOperations {
 	 * Deletes objects from storage in a batch.
 	 * @param objects the objects to delete from storage.
 	 */
-	void deleteAll(Iterable objects);
+	void deleteAll(Iterable<?> objects);
 
 	/**
 	 * Deletes objects given a set of keys.
@@ -181,7 +181,7 @@ public interface SpannerOperations {
 	 * Insert objects into storage in batch.
 	 * @param objects the objects to insert.
 	 */
-	void insertAll(Iterable objects);
+	void insertAll(Iterable<?> objects);
 
 	/**
 	 * Update an object already in storage.
@@ -193,7 +193,7 @@ public interface SpannerOperations {
 	 * Update objects in batch.
 	 * @param objects the objects to update.
 	 */
-	void updateAll(Iterable objects);
+	void updateAll(Iterable<?> objects);
 
 	/**
 	 * Update an object in storage.
@@ -222,7 +222,7 @@ public interface SpannerOperations {
 	 * Update or insert objects into storage in batch.
 	 * @param objects the objects to update or insert.
 	 */
-	void upsertAll(Iterable objects);
+	void upsertAll(Iterable<?> objects);
 
 	/**
 	 * Update or insert an object into storage.
@@ -267,4 +267,13 @@ public interface SpannerOperations {
 	 */
 	<T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions);
+
+	/**
+	 * Returns whether an entity with the given key exists.
+	 * @param entityClass the type of the entity to check if exists.
+	 * @param key the key of the entity to check, must not be {@literal null}.
+	 * @return {@literal true} if an entity with the given key exists, {@literal false} otherwise.
+	 * @throws IllegalArgumentException if {@literal id} is {@literal null}.
+	 */
+	boolean existsById(Class entityClass, Key key);
 }

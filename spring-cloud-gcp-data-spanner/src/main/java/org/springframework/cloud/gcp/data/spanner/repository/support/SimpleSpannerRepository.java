@@ -105,7 +105,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public boolean existsById(ID key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		return findById(key).isPresent();
+		return doIfKey(key, (k) -> this.spannerTemplate.existsById(this.entityType, k));
 	}
 
 	@Override
