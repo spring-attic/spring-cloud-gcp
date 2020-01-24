@@ -183,9 +183,8 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void existsByIdTestFound() {
-		Object ret = new Object();
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
-		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
+		when(this.template.existsById(eq(Object.class), eq(A_KEY))).thenReturn(true);
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.existsById(A_KEY)).isTrue();
 	}
@@ -193,7 +192,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void existsByIdTestNotFound() {
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
-		when(this.template.read(eq(Object.class), (Key) any())).thenReturn(null);
+		when(this.template.existsById(eq(Object.class), eq(A_KEY))).thenReturn(false);
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).existsById(A_KEY)).isFalse();
 	}
 
