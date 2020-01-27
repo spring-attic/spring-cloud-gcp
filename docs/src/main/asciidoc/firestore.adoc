@@ -202,7 +202,7 @@ Read documents are locked until the transaction finishes with a commit or a roll
 If an `Exception` is thrown within a transaction, the rollback operation is executed.
 Otherwise, the commit operation is executed.
 
-===== Declarative Transactions with @Transactional Annotation
+==== Declarative Transactions with @Transactional Annotation
 
 This feature requires a bean of `SpannerTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-firestore`.
 
