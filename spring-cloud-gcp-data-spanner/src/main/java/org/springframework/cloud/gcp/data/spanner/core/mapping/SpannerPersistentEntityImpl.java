@@ -440,4 +440,12 @@ public class SpannerPersistentEntityImpl<T>
 			}
 		};
 	}
+
+	@Override
+	public String getPrimaryKeyColumnName() {
+		SpannerPersistentProperty primaryKeyProperty = getPrimaryKeyProperties()[0];
+		return primaryKeyProperty.isEmbedded()
+				? this.spannerMappingContext.getPersistentEntity(primaryKeyProperty.getType()).getPrimaryKeyColumnName()
+				: primaryKeyProperty.getColumnName();
+	}
 }

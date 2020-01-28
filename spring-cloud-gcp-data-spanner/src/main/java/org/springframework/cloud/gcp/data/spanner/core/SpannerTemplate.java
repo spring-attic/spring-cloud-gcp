@@ -172,19 +172,12 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		Assert.notNull(key, "A non-null key is required.");
 
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-		String columnName = getPrimaryKeyColumnName(persistentEntity);
 		KeySet keys = KeySet.singleKey(key);
 
-		ResultSet resultSet = executeRead(persistentEntity.tableName(), keys, Collections.singleton(columnName), null);
+		ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
+				Collections.singleton(persistentEntity.getPrimaryKeyColumnName()), null);
 		maybeEmitEvent(new AfterReadEvent(Collections.emptyList(), keys, null));
 		return resultSet.next();
-	}
-
-	private String getPrimaryKeyColumnName(SpannerPersistentEntity<?> persistentEntity) {
-		SpannerPersistentProperty primaryKeyProperty = persistentEntity.getPrimaryKeyProperties()[0];
-		return primaryKeyProperty.isEmbedded()
-				? getPrimaryKeyColumnName(this.mappingContext.getPersistentEntity(primaryKeyProperty.getType()))
-				: primaryKeyProperty.getColumnName();
 	}
 
 	@Override
