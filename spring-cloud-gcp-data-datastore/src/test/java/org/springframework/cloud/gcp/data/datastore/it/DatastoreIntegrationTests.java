@@ -796,12 +796,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSlicedEntityProjections() {
-		testEntityRepository.saveAll(this.allTestEntities);
-		testEntityRepository.save(new TestEntity(123L, "red", 1L, Shape.CIRCLE, null));
-		testEntityRepository.save(new TestEntity(456L, "blue", 2L, Shape.CIRCLE, null));
-
 		Slice<TestEntityProjection> testEntityProjectionSlice =
-				testEntityRepository.findBySize(1L, PageRequest.of(0, 1));
+				testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
 
 		List<TestEntityProjection> testEntityProjections =
 				testEntityProjectionSlice.get().collect(Collectors.toList());
@@ -809,6 +805,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(testEntityProjections).hasSize(1);
 		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
 		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+
+		// Verifies that the projection method call works.
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
 }
 
