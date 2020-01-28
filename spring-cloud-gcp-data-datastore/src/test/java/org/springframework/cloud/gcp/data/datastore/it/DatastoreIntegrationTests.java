@@ -793,6 +793,23 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(readCompany.leaders).hasSize(1);
 		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
 	}
+
+	@Test
+	public void testSlicedEntityProjections() {
+		testEntityRepository.saveAll(this.allTestEntities);
+		testEntityRepository.save(new TestEntity(123L, "red", 1L, Shape.CIRCLE, null));
+		testEntityRepository.save(new TestEntity(456L, "blue", 2L, Shape.CIRCLE, null));
+
+		Slice<TestEntityProjection> testEntityProjectionSlice =
+				testEntityRepository.findBySize(1L, PageRequest.of(0, 1));
+
+		List<TestEntityProjection> testEntityProjections =
+				testEntityProjectionSlice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+	}
 }
 
 /**
