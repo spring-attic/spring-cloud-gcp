@@ -174,10 +174,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
 		KeySet keys = KeySet.singleKey(key);
 
-		ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
-				Collections.singleton(persistentEntity.getPrimaryKeyColumnName()), null);
-		maybeEmitEvent(new AfterReadEvent(Collections.emptyList(), keys, null));
-		return resultSet.next();
+		try (ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
+				Collections.singleton(persistentEntity.getPrimaryKeyColumnName()), null)) {
+			maybeEmitEvent(new AfterReadEvent(Collections.emptyList(), keys, null));
+			return resultSet.next();
+		}
 	}
 
 	@Override
