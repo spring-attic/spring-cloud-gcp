@@ -168,6 +168,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
+	public <T> boolean existsById(Class<T> entityClass, Key key) {
+		Assert.notNull(key, "A non-null key is required.");
+
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
+		KeySet keys = KeySet.singleKey(key);
+
+		try (ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
+				Collections.singleton(persistentEntity.getPrimaryKeyColumnName()), null)) {
+			maybeEmitEvent(new AfterReadEvent(Collections.emptyList(), keys, null));
+			return resultSet.next();
+		}
+	}
+
+	@Override
 	public <T> T read(Class<T> entityClass, Key key, SpannerReadOptions options) {
 		List<T> items = read(entityClass, KeySet.singleKey(key), options);
 		return items.isEmpty() ? null : items.get(0);
@@ -181,8 +195,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> read(Class<T> entityClass, KeySet keys,
 			SpannerReadOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
 		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options), entityClass,
 				(options != null) ? options.getIncludeProperties() : null,

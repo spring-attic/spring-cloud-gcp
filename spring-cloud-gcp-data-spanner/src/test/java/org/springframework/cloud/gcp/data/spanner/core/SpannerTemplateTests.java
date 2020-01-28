@@ -53,6 +53,7 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -219,6 +220,40 @@ public class SpannerTemplateTests {
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
 		verify(transactionContext, times(1)).executeUpdate(eq(DML));
+	}
+
+	@Test
+	public void existsByIdTest() {
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenReturn(true);
+
+		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(any())).thenReturn(this.readContext);
+
+		Key key = Key.of("key");
+		KeySet keySet = KeySet.singleKey(key);
+		assertThat(this.spannerTemplate.existsById(TestEntity.class, key)).isTrue();
+
+		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.readContext, times(1))
+				.read(eq("custom_test_table"), eq(keySet), eq(Collections.singleton("id")));
+	}
+
+	@Test
+	public void existsByIdEmbeddedKeyTest() {
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenReturn(false);
+
+		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(any())).thenReturn(this.readContext);
+
+		Key key = Key.of("key");
+		KeySet keySet = KeySet.singleKey(key);
+		assertThat(this.spannerTemplate.existsById(TestEntityEmbeddedPK.class, key)).isFalse();
+
+		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.readContext, times(1))
+				.read(eq("test_table_embedded_pk"), eq(keySet), eq(Collections.singleton("stringId")));
 	}
 
 	@Test
@@ -826,6 +861,21 @@ public class SpannerTemplateTests {
 	private void verifyAfterEvents(
 			ApplicationEvent expectedAfter, Runnable operation, Consumer<InOrder> verifyOperation) {
 		verifyEvents(null, expectedAfter, operation, verifyOperation);
+	}
+
+	@Table(name = "test_table_embedded_pk")
+	private static class TestEntityEmbeddedPK {
+		@Embedded
+		@PrimaryKey
+		EmbeddedPK key;
+	}
+
+	private static class EmbeddedPK {
+		@PrimaryKey(keyOrder = 1)
+		String stringId;
+
+		@PrimaryKey(keyOrder = 2)
+		long id2;
 	}
 
 	@Table(name = "custom_test_table")

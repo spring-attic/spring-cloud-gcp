@@ -62,6 +62,17 @@ public interface SpannerOperations {
 	<T> T read(Class<T> entityClass, Key key);
 
 	/**
+	 * Returns whether an entity with the given id exists.
+	 *
+	 * @param entityClass the type of the entity
+	 * @param key the key of the object
+	 * @param <T> the type of the object to retrieve.
+	 * @return {@literal true} if an entity with the given key exists, {@literal false} otherwise.
+	 * @throws IllegalArgumentException if {@literal id} is {@literal null}.
+	 */
+	<T> boolean existsById(Class<T> entityClass, Key key);
+
+	/**
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.
