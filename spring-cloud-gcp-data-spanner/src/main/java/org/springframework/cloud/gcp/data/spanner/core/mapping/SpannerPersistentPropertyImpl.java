@@ -150,12 +150,6 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isEagerlyInterleaved() {
-		Interleaved annotation = findAnnotation(Interleaved.class);
-		return annotation != null && !annotation.lazy();
-	}
-
-	@Override
 	public OptionalLong getMaxColumnLength() {
 		Column annotation = findAnnotation(Column.class);
 		if (annotation == null || annotation.spannerTypeMaxLength() < 0) {
@@ -190,6 +184,12 @@ public class SpannerPersistentPropertyImpl
 	public boolean isLazyInterleaved() {
 		Interleaved annotation = findAnnotation(Interleaved.class);
 		return annotation != null && annotation.lazy();
+	}
+
+	@Override
+	public boolean isEagerInterleaved() {
+		Interleaved annotation = findAnnotation(Interleaved.class);
+		return annotation != null && !annotation.lazy();
 	}
 
 	@Override

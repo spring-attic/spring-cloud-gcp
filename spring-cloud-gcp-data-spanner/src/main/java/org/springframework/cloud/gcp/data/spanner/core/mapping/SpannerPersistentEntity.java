@@ -106,5 +106,13 @@ public interface SpannerPersistentEntity<T> extends
 	 */
 	boolean hasMultiFieldKey();
 
+	/**
+	 * Returns a primary key column name; if there are multiple primary key columns, returns first one.
+	 * In case of embedded keys it works recursively.
+	 *
+	 * @return a primary key column name
+	 */
+	String getPrimaryKeyColumnName();
+
 	boolean hasEagerlyLoadedProperties();
 }

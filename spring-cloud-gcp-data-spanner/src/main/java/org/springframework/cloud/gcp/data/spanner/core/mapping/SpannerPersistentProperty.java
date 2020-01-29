@@ -118,6 +118,6 @@ public interface SpannerPersistentProperty
 	 * Return whether this property is an eagerly-fetched interleaved property.
 	 * @return {@code true} if the property is eagerly-fetched. {@code false} otherwise.
 	 */
-	boolean isEagerlyInterleaved();
+	boolean isEagerInterleaved();
 
 }

@@ -94,18 +94,16 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Optional<T> findById(ID key) {
-		Assert.notNull(key, "A non-null ID is required.");
-		return doIfKey(key, (k) -> {
-			T result = this.spannerTemplate.read(this.entityType, k);
-			return Optional.<T>ofNullable(result);
-		});
+	public Optional<T> findById(ID id) {
+		Assert.notNull(id, "A non-null ID is required.");
+		T result = this.spannerTemplate.read(this.entityType, toKey(id));
+		return Optional.<T>ofNullable(result);
 	}
 
 	@Override
-	public boolean existsById(ID key) {
-		Assert.notNull(key, "A non-null ID is required.");
-		return findById(key).isPresent();
+	public boolean existsById(ID id) {
+		Assert.notNull(id, "A non-null ID is required.");
+		return this.spannerTemplate.existsById(this.entityType, toKey(id));
 	}
 
 	@Override
@@ -114,10 +112,10 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Iterable<T> findAllById(Iterable<ID> iterable) {
+	public Iterable<T> findAllById(Iterable<ID> ids) {
 		KeySet.Builder builder = KeySet.newBuilder();
-		for (Object id : iterable) {
-			doIfKey(id, builder::addKey);
+		for (Object id : ids) {
+			builder.addKey(toKey(id));
 		}
 		return this.spannerTemplate.read(this.entityType, builder.build());
 	}
@@ -128,12 +126,9 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public void deleteById(Object key) {
-		Assert.notNull(key, "A non-null ID is required.");
-		doIfKey(key, (k) -> {
-			this.spannerTemplate.delete(this.entityType, k);
-			return null;
-		});
+	public void deleteById(Object id) {
+		Assert.notNull(id, "A non-null ID is required.");
+		this.spannerTemplate.delete(this.entityType, toKey(id));
 	}
 
 	@Override
@@ -167,9 +162,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 				pageable, this.spannerTemplate.count(this.entityType));
 	}
 
-	private <A> A doIfKey(Object key, Function<Key, A> operation) {
-		Key k = this.spannerTemplate.getSpannerEntityProcessor().convertToKey(key);
-		return operation.apply(k);
+	private Key toKey(Object id) {
+		return this.spannerTemplate.getSpannerEntityProcessor().convertToKey(id);
 	}
-
 }

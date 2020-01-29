@@ -305,7 +305,7 @@ public final class SpannerStatementQueryExecutor {
 		StringJoiner joiner = new StringJoiner(", ");
 		spannerPersistentEntity.doWithInterleavedProperties(persistentProperty -> {
 			SpannerPersistentProperty spannerPersistentProperty = (SpannerPersistentProperty) persistentProperty;
-			if (spannerPersistentProperty.isEagerlyInterleaved()) {
+			if (spannerPersistentProperty.isEagerInterleaved()) {
 				Class childType = spannerPersistentProperty.getColumnInnerType();
 				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
 				joiner.add(getChildrenStructsQuery(childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
