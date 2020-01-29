@@ -191,7 +191,7 @@ public class SpannerQueryLookupStrategyTests {
 
 	@Test
 	public void getColumnsStringForSelectMultipleTest() {
-		Statement childrenRowsQuery = SpannerStatementQueryExecutor.getChildrenRowsQuery(
+		Statement childrenRowsQuery = SpannerStatementQueryExecutor.buildQuery(
 				KeySet.newBuilder().addKey(Key.of("k1.1", "k1.2")).addKey(Key.of("k2.1", "k2.2")).build(),
 				this.spannerMappingContext.getPersistentEntity(TestEntity.class), new SpannerWriteConverter(),
 				this.spannerMappingContext);

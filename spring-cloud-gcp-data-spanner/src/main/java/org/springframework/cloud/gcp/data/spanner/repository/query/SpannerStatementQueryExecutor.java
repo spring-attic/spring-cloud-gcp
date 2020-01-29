@@ -177,24 +177,32 @@ public final class SpannerStatementQueryExecutor {
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
 			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
-		return getChildrenRowsQuery(KeySet.singleKey(parentKey), childPersistentEntity, writeConverter, mappingContext);
+		return buildQuery(KeySet.singleKey(parentKey), childPersistentEntity, writeConverter, mappingContext);
 	}
 
-	public static <T> Statement getChildrenRowsQuery(KeySet keySet,
-			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter,
+	/**
+	 * Builds a query that returns the rows associated with a key set.
+	 * @param keySet the key set whose members to get.
+	 * @param persistentEntity the persistent entity of the table.
+	 * @param <T> the type of the persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query statement.
+	 * @param mappingContext mapping context
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static <T> Statement buildQuery(KeySet keySet,
+			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
 		StringJoiner orJoiner = new StringJoiner(" OR ");
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
 		int tagNum = 0;
-		List<SpannerPersistentProperty> childKeyProperties = childPersistentEntity
-				.getFlattenedPrimaryKeyProperties();
+		List<SpannerPersistentProperty> keyProperties = persistentEntity.getFlattenedPrimaryKeyProperties();
 
 		for (Key key : keySet.getKeys()) {
 			StringJoiner andJoiner = new StringJoiner(" AND ", "(", ")");
 			Iterator parentKeyParts = key.getParts().iterator();
 			while (parentKeyParts.hasNext()) {
-				SpannerPersistentProperty keyProp = childKeyProperties.get(tagNum % childKeyProperties.size());
+				SpannerPersistentProperty keyProp = keyProperties.get(tagNum % keyProperties.size());
 				String tagName = "tag" + tagNum;
 				andJoiner.add(keyProp.getColumnName() + " = @" + tagName);
 				tags.add(tagName);
@@ -204,8 +212,8 @@ public final class SpannerStatementQueryExecutor {
 			orJoiner.add(andJoiner.toString());
 		}
 		String cond = orJoiner.toString();
-		String sb = "SELECT " + getColumnsStringForSelect(childPersistentEntity, mappingContext) + " FROM "
-				+ childPersistentEntity.tableName() + (cond.isEmpty() ? "" : " WHERE " + cond);
+		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext) + " FROM "
+				+ persistentEntity.tableName() + (cond.isEmpty() ? "" : " WHERE " + cond);
 		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
 	}
@@ -297,7 +305,7 @@ public final class SpannerStatementQueryExecutor {
 		StringJoiner joiner = new StringJoiner(", ");
 		spannerPersistentEntity.doWithInterleavedProperties(persistentProperty -> {
 			SpannerPersistentProperty spannerPersistentProperty = (SpannerPersistentProperty) persistentProperty;
-			if (!spannerPersistentProperty.isLazyInterleaved()) {
+			if (spannerPersistentProperty.isEagerlyInterleaved()) {
 				Class childType = spannerPersistentProperty.getColumnInnerType();
 				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
 				joiner.add(getChildrenStructsQuery(childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));

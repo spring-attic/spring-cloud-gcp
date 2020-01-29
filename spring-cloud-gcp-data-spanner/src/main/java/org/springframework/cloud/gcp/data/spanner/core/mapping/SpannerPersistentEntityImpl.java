@@ -159,7 +159,7 @@ public class SpannerPersistentEntityImpl<T>
 		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
 		}
-		else if (property.isInterleaved() && !property.isLazyInterleaved()) {
+		else if (property.isEagerlyInterleaved()) {
 			this.hasEagerlyLoadedProperties = true;
 		}
 

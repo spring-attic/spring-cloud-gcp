@@ -185,8 +185,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				.getPersistentEntity(entityClass);
 		List<T> entities;
 
-		if (options == null &&
-				persistentEntity.hasEagerlyLoadedProperties() && !keys.getRanges().iterator().hasNext()) {
+		if (isEligibleForEagerFetch(keys, options, persistentEntity)) {
 			entities = executeReadQueryAndResolveChildren(keys, persistentEntity);
 		}
 		else {
@@ -197,6 +196,16 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		}
 		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
+	}
+
+	private <T> boolean isEligibleForEagerFetch(KeySet keys, SpannerReadOptions options,
+			SpannerPersistentEntity<T> persistentEntity) {
+		//an entity is eligible if all of the following true:
+		//1. entity has eager loaded properties
+		//2. there are no read options, as they can't be applied to a query
+		//3. key set does not have ranges, as they can't be used in a query
+		return persistentEntity.hasEagerlyLoadedProperties() &&
+				options == null && !keys.getRanges().iterator().hasNext();
 	}
 
 	@Override
@@ -454,7 +463,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity) {
-		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(keys, persistentEntity,
+		Statement statement = SpannerStatementQueryExecutor.buildQuery(keys, persistentEntity,
 				this.spannerEntityProcessor.getWriteConverter(),
 				this.mappingContext);
 
@@ -563,9 +572,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 							.contains(spannerPersistentEntity.getName())) {
 						return;
 					}
-					Object propertyValue = accessor.getProperty(spannerPersistentProperty);
+					//an interleaved property can only be List
+					List propertyValue = (List) accessor.getProperty(spannerPersistentProperty);
 					if (propertyValue != null) {
-						resolveChildEntities((List) propertyValue, null);
+						resolveChildEntities(propertyValue, null);
 						return;
 					}
 					Class childType = spannerPersistentProperty.getColumnInnerType();
