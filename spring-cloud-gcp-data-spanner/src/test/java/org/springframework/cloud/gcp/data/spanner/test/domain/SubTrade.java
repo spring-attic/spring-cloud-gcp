@@ -39,7 +39,7 @@ public class SubTrade {
 	@PrimaryKey(keyOrder = 2)
 	String subTradeId;
 
-	@Interleaved(lazy = true)
+	@Interleaved
 	List<SubTradeComponent> subTradeComponentList;
 
 	public SubTrade() {
