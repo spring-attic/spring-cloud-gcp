@@ -24,6 +24,12 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<!-- temporary solution for https://github.com/spring-cloud/spring-cloud-gcp/issues/2142 -->
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-core</artifactId>
+				<version>1.92.2</version>
+			</dependency>
+			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-core</artifactId>
 				<version>${project.version}</version>
