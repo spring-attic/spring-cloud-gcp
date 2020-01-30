@@ -24,6 +24,15 @@ dependencies {
 }
 ----
 
+=== Configuration
+
+The following options may be configured with Spring Cloud core.
+
+|===========================================================================
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.core.enabled` | Enables or disables GCP core auto configuration | No | `true`
+|===========================================================================
+
 === Project ID
 
 `GcpProjectIdProvider` is a functional interface that returns a GCP project ID string.
