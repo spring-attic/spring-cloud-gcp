@@ -71,6 +71,12 @@
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Vision components.",
       "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.core.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Core components.",
+      "defaultValue": true
     }
   ]
 }
