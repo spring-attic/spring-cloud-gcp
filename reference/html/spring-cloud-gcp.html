@@ -119,10 +119,11 @@ $(addBlockSwitches);
 </li>
 <li><a href="#spring-cloud-gcp-core">3. Spring Cloud GCP Core</a>
 <ul class="sectlevel2">
-<li><a href="#project-id">3.1. Project ID</a></li>
-<li><a href="#credentials">3.2. Credentials</a></li>
-<li><a href="#environment">3.3. Environment</a></li>
-<li><a href="#spring-initializr-2">3.4. Spring Initializr</a></li>
+<li><a href="#configuration">3.1. Configuration</a></li>
+<li><a href="#project-id">3.2. Project ID</a></li>
+<li><a href="#credentials">3.3. Credentials</a></li>
+<li><a href="#environment">3.4. Environment</a></li>
+<li><a href="#spring-initializr-2">3.5. Spring Initializr</a></li>
 </ul>
 </li>
 <li><a href="#google-cloud-pubsub">4. Google Cloud Pub/Sub</a>
@@ -137,7 +138,7 @@ $(addBlockSwitches);
 <li><a href="#spring-resources">5. Spring Resources</a>
 <ul class="sectlevel2">
 <li><a href="#google-cloud-storage">5.1. Google Cloud Storage</a></li>
-<li><a href="#configuration">5.2. Configuration</a></li>
+<li><a href="#configuration-2">5.2. Configuration</a></li>
 <li><a href="#sample-2">5.3. Sample</a></li>
 </ul>
 </li>
@@ -159,7 +160,7 @@ $(addBlockSwitches);
 <li><a href="#spring-cloud-stream">8. Spring Cloud Stream</a>
 <ul class="sectlevel2">
 <li><a href="#overview">8.1. Overview</a></li>
-<li><a href="#configuration-2">8.2. Configuration</a></li>
+<li><a href="#configuration-3">8.2. Configuration</a></li>
 <li><a href="#binding-with-functions">8.3. Binding with Functions</a></li>
 <li><a href="#binding-with-annotations">8.4. Binding with Annotations</a></li>
 <li><a href="#streaming-vs-polled-input">8.5. Streaming vs. Polled Input</a></li>
@@ -190,7 +191,7 @@ $(addBlockSwitches);
 </li>
 <li><a href="#spring-cloud-config">12. Spring Cloud Config</a>
 <ul class="sectlevel2">
-<li><a href="#configuration-3">12.1. Configuration</a></li>
+<li><a href="#configuration-4">12.1. Configuration</a></li>
 <li><a href="#quick-start">12.2. Quick start</a></li>
 <li><a href="#refreshing-the-configuration-at-runtime">12.3. Refreshing the configuration at runtime</a></li>
 <li><a href="#sample-8">12.4. Sample</a></li>
@@ -198,7 +199,7 @@ $(addBlockSwitches);
 </li>
 <li><a href="#spring-data-cloud-spanner">13. Spring Data Cloud Spanner</a>
 <ul class="sectlevel2">
-<li><a href="#configuration-4">13.1. Configuration</a></li>
+<li><a href="#configuration-5">13.1. Configuration</a></li>
 <li><a href="#object-mapping">13.2. Object Mapping</a></li>
 <li><a href="#spanner-operations-template">13.3. Spanner Operations &amp; Template</a></li>
 <li><a href="#repositories">13.4. Repositories</a></li>
@@ -212,7 +213,7 @@ $(addBlockSwitches);
 </li>
 <li><a href="#spring-data-cloud-datastore">14. Spring Data Cloud Datastore</a>
 <ul class="sectlevel2">
-<li><a href="#configuration-5">14.1. Configuration</a></li>
+<li><a href="#configuration-6">14.1. Configuration</a></li>
 <li><a href="#object-mapping-2">14.2. Object Mapping</a></li>
 <li><a href="#relationships-2">14.3. Relationships</a></li>
 <li><a href="#datastore-operations-template">14.4. Datastore Operations &amp; Template</a></li>
@@ -226,7 +227,7 @@ $(addBlockSwitches);
 </li>
 <li><a href="#spring-data-reactive-repositories-for-cloud-firestore">15. Spring Data Reactive Repositories for Cloud Firestore</a>
 <ul class="sectlevel2">
-<li><a href="#configuration-6">15.1. Configuration</a></li>
+<li><a href="#configuration-7">15.1. Configuration</a></li>
 <li><a href="#object-mapping-3">15.2. Object Mapping</a></li>
 <li><a href="#reactive-repositories">15.3. Reactive Repositories</a></li>
 <li><a href="#query-methods-by-convention-3">15.4. Query methods by convention</a></li>
@@ -242,7 +243,7 @@ $(addBlockSwitches);
 </li>
 <li><a href="#cloud-identity-aware-proxy-iap-authentication">17. Cloud Identity-Aware Proxy (IAP) Authentication</a>
 <ul class="sectlevel2">
-<li><a href="#configuration-7">17.1. Configuration</a></li>
+<li><a href="#configuration-8">17.1. Configuration</a></li>
 <li><a href="#sample-12">17.2. Sample</a></li>
 </ul>
 </li>
@@ -251,7 +252,7 @@ $(addBlockSwitches);
 <li><a href="#dependency-setup">18.1. Dependency Setup</a></li>
 <li><a href="#image-analysis">18.2. Image Analysis</a></li>
 <li><a href="#document-ocr-template">18.3. Document OCR Template</a></li>
-<li><a href="#configuration-8">18.4. Configuration</a></li>
+<li><a href="#configuration-9">18.4. Configuration</a></li>
 <li><a href="#sample-13">18.5. Sample</a></li>
 </ul>
 </li>
@@ -259,7 +260,7 @@ $(addBlockSwitches);
 <ul class="sectlevel2">
 <li><a href="#bigquery-autoconfiguration">19.1. BigQuery Autoconfiguration</a></li>
 <li><a href="#spring-integration-2">19.2. Spring Integration</a></li>
-<li><a href="#configuration-9">19.3. Configuration</a></li>
+<li><a href="#configuration-10">19.3. Configuration</a></li>
 </ul>
 </li>
 <li><a href="#cloud-foundry">20. Cloud Foundry</a></li>
@@ -625,7 +626,35 @@ These guides provide step-by-step instructions for building an application using
 </div>
 </div>
 <div class="sect2">
-<h3 id="project-id"><a class="anchor" href="#project-id"></a><a class="link" href="#project-id">3.1. Project ID</a></h3>
+<h3 id="configuration"><a class="anchor" href="#configuration"></a><a class="link" href="#configuration">3.1. Configuration</a></h3>
+<div class="paragraph">
+<p>The following options may be configured with Spring Cloud core.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.core.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables GCP core auto configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="project-id"><a class="anchor" href="#project-id"></a><a class="link" href="#project-id">3.2. Project ID</a></h3>
 <div class="paragraph">
 <p><code>GcpProjectIdProvider</code> is a functional interface that returns a GCP project ID string.</p>
 </div>
@@ -670,7 +699,7 @@ If a <code>spring.cloud.gcp.project-id</code> property is specified, the provide
 </div>
 </div>
 <div class="sect2">
-<h3 id="credentials"><a class="anchor" href="#credentials"></a><a class="link" href="#credentials">3.2. Credentials</a></h3>
+<h3 id="credentials"><a class="anchor" href="#credentials"></a><a class="link" href="#credentials">3.3. Credentials</a></h3>
 <div class="paragraph">
 <p><code>CredentialsProvider</code> is a functional interface that returns the credentials to authenticate and authorize calls to Google Cloud Client Libraries.</p>
 </div>
@@ -723,7 +752,7 @@ The value should be the base64-encoded account private key in JSON format.</p>
 On App Engine Standard, the <a href="https://cloud.google.com/appengine/docs/standard/java/appidentity/">App Identity service account credentials</a> are used, on App Engine Flexible, the <a href="https://cloud.google.com/appengine/docs/flexible/java/service-account">Flexible service account credential</a> are used and on Google Compute Engine, the <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account">Compute Engine Default Service Account</a> is used.</p>
 </div>
 <div class="sect3">
-<h4 id="scopes"><a class="anchor" href="#scopes"></a><a class="link" href="#scopes">3.2.1. Scopes</a></h4>
+<h4 id="scopes"><a class="anchor" href="#scopes"></a><a class="link" href="#scopes">3.3.1. Scopes</a></h4>
 <div class="paragraph">
 <p>By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every service supported by Spring Cloud GCP.</p>
 </div>
@@ -798,7 +827,7 @@ To do that, specify a comma-delimited list of <a href="https://developers.google
 </div>
 </div>
 <div class="sect2">
-<h3 id="environment"><a class="anchor" href="#environment"></a><a class="link" href="#environment">3.3. Environment</a></h3>
+<h3 id="environment"><a class="anchor" href="#environment"></a><a class="link" href="#environment">3.4. Environment</a></h3>
 <div class="paragraph">
 <p><code>GcpEnvironmentProvider</code> is a functional interface, auto-configured by the Spring Cloud GCP starter, that returns a <code>GcpEnvironment</code> enum.
 The provider can help determine programmatically in which GCP environment (App Engine Flexible, App Engine Standard, Kubernetes Engine or Compute Engine) the application is deployed.</p>
@@ -812,7 +841,7 @@ The provider can help determine programmatically in which GCP environment (App E
 </div>
 </div>
 <div class="sect2">
-<h3 id="spring-initializr-2"><a class="anchor" href="#spring-initializr-2"></a><a class="link" href="#spring-initializr-2">3.4. Spring Initializr</a></h3>
+<h3 id="spring-initializr-2"><a class="anchor" href="#spring-initializr-2"></a><a class="link" href="#spring-initializr-2">3.5. Spring Initializr</a></h3>
 <div class="paragraph">
 <p>This starter is available from <a href="https://start.spring.io/">Spring Initializr</a> through the <code>GCP Support</code> entry.</p>
 </div>
@@ -1639,7 +1668,7 @@ However, creating signed URLs requires that the resource was created using servi
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration"><a class="anchor" href="#configuration"></a><a class="link" href="#configuration">5.2. Configuration</a></h3>
+<h3 id="configuration-2"><a class="anchor" href="#configuration-2"></a><a class="link" href="#configuration-2">5.2. Configuration</a></h3>
 <div class="paragraph">
 <p>The Spring Boot Starter for Google Cloud Storage provides the following configuration options:</p>
 </div>
@@ -2422,7 +2451,7 @@ Partitioning is currently not supported by this binder.
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-2"><a class="anchor" href="#configuration-2"></a><a class="link" href="#configuration-2">8.2. Configuration</a></h3>
+<h3 id="configuration-3"><a class="anchor" href="#configuration-3"></a><a class="link" href="#configuration-3">8.2. Configuration</a></h3>
 <div class="paragraph">
 <p>You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub topics and subscriptions for producers and consumers.
 For that, you can use the <code>spring.cloud.stream.gcp.pubsub.bindings.&lt;channelName&gt;.&lt;consumer|producer&gt;.auto-create-resources</code> property, which is turned ON by default.</p>
@@ -3399,7 +3428,7 @@ The Google Cloud Runtime Configuration service is in <strong>Beta</strong> statu
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-3"><a class="anchor" href="#configuration-3"></a><a class="link" href="#configuration-3">12.1. Configuration</a></h3>
+<h3 id="configuration-4"><a class="anchor" href="#configuration-4"></a><a class="link" href="#configuration-4">12.1. Configuration</a></h3>
 <div class="paragraph">
 <p>The following parameters are configurable in Spring Cloud GCP Config:</p>
 </div>
@@ -3671,7 +3700,7 @@ To use the starter, see the coordinates see below.</p>
 <p>This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries as well.</p>
 </div>
 <div class="sect2">
-<h3 id="configuration-4"><a class="anchor" href="#configuration-4"></a><a class="link" href="#configuration-4">13.1. Configuration</a></h3>
+<h3 id="configuration-5"><a class="anchor" href="#configuration-5"></a><a class="link" href="#configuration-5">13.1. Configuration</a></h3>
 <div class="paragraph">
 <p>To setup Spring Data Cloud Spanner, you have to configure the following:</p>
 </div>
@@ -5639,7 +5668,7 @@ To use the starter, see the coordinates below.</p>
 <p>This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries as well.</p>
 </div>
 <div class="sect2">
-<h3 id="configuration-5"><a class="anchor" href="#configuration-5"></a><a class="link" href="#configuration-5">14.1. Configuration</a></h3>
+<h3 id="configuration-6"><a class="anchor" href="#configuration-6"></a><a class="link" href="#configuration-6">14.1. Configuration</a></h3>
 <div class="paragraph">
 <p>To setup Spring Data Cloud Datastore, you have to configure the following:</p>
 </div>
@@ -7493,7 +7522,7 @@ To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-6"><a class="anchor" href="#configuration-6"></a><a class="link" href="#configuration-6">15.1. Configuration</a></h3>
+<h3 id="configuration-7"><a class="anchor" href="#configuration-7"></a><a class="link" href="#configuration-7">15.1. Configuration</a></h3>
 <div class="sect3">
 <h4 id="properties"><a class="anchor" href="#properties"></a><a class="link" href="#properties">15.1.1. Properties</a></h4>
 <div class="paragraph">
@@ -8184,7 +8213,7 @@ If you create a custom <a href="https://docs.spring.io/spring-security/site/docs
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-7"><a class="anchor" href="#configuration-7"></a><a class="link" href="#configuration-7">17.1. Configuration</a></h3>
+<h3 id="configuration-8"><a class="anchor" href="#configuration-8"></a><a class="link" href="#configuration-8">17.1. Configuration</a></h3>
 <div class="paragraph">
 <p>The following properties are available.</p>
 </div>
@@ -8533,7 +8562,7 @@ public void parseSingleOutputFile() {
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-8"><a class="anchor" href="#configuration-8"></a><a class="link" href="#configuration-8">18.4. Configuration</a></h3>
+<h3 id="configuration-9"><a class="anchor" href="#configuration-9"></a><a class="link" href="#configuration-9">18.4. Configuration</a></h3>
 <div class="paragraph">
 <p>The following options may be configured with Spring Cloud GCP Vision libraries.</p>
 </div>
@@ -8793,7 +8822,7 @@ This is needed to indicate that you wish to reply on the built-in async support 
 </div>
 </div>
 <div class="sect2">
-<h3 id="configuration-9"><a class="anchor" href="#configuration-9"></a><a class="link" href="#configuration-9">19.3. Configuration</a></h3>
+<h3 id="configuration-10"><a class="anchor" href="#configuration-10"></a><a class="link" href="#configuration-10">19.3. Configuration</a></h3>
 <div class="paragraph">
 <p>The following application properties may be configured with Spring Cloud GCP BigQuery libraries.</p>
 </div>
