@@ -150,7 +150,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
 			List resultsList = found == null ? Collections.emptyList()
 					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-							.convertOnRead(found, List.class, returnedItemType);
+							.convertOnRead(applyProjection(found), List.class, returnedItemType);
 
 			if (isPageQuery()) {
 				result = buildPage(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
