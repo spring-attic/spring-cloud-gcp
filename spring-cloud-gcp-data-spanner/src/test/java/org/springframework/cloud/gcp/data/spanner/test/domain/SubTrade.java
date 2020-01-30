@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
@@ -38,7 +39,7 @@ public class SubTrade {
 	@PrimaryKey(keyOrder = 2)
 	String subTradeId;
 
-	@Interleaved(lazy = true)
+	@Interleaved
 	List<SubTradeComponent> subTradeComponentList;
 
 	public SubTrade() {
@@ -67,5 +68,36 @@ public class SubTrade {
 
 	public void setSubTradeComponentList(List<SubTradeComponent> subTradeComponentList) {
 		this.subTradeComponentList = subTradeComponentList;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		SubTrade subTrade = (SubTrade) o;
+		return Objects.equals(this.tradeIdentifier, subTrade.tradeIdentifier) &&
+				Objects.equals(getSubTradeId(), subTrade.getSubTradeId()) &&
+				(Objects.equals(getSubTradeComponentList(), subTrade.getSubTradeComponentList()) ||
+						(getSubTradeComponentList() == null && subTrade.getSubTradeComponentList().size() == 0) ||
+						(subTrade.getSubTradeComponentList() == null && getSubTradeComponentList().size() == 0)
+				);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.tradeIdentifier, getSubTradeId(), getSubTradeComponentList());
+	}
+
+	@Override
+	public String toString() {
+		return "SubTrade{" +
+				"tradeIdentifier=" + this.tradeIdentifier +
+				", subTradeId='" + this.subTradeId + '\'' +
+				", subTradeComponentList=" + this.subTradeComponentList +
+				'}';
 	}
 }

@@ -90,6 +90,8 @@ public class SpannerPersistentEntityImpl<T>
 
 	private String tableName;
 
+	private boolean hasEagerlyLoadedProperties = false;
+
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}.
 	 * @param information type information about the underlying entity type.
@@ -156,6 +158,9 @@ public class SpannerPersistentEntityImpl<T>
 		}
 		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
+		}
+		else if (property.isEagerInterleaved()) {
+			this.hasEagerlyLoadedProperties = true;
 		}
 
 		if (property.getPrimaryKeyOrder() != null
@@ -366,6 +371,11 @@ public class SpannerPersistentEntityImpl<T>
 					+ "allowed in table names: " + name);
 		}
 		return name;
+	}
+
+	@Override
+	public boolean hasEagerlyLoadedProperties() {
+		return this.hasEagerlyLoadedProperties;
 	}
 
 	@Override

@@ -113,4 +113,6 @@ public interface SpannerPersistentEntity<T> extends
 	 * @return a primary key column name
 	 */
 	String getPrimaryKeyColumnName();
+
+	boolean hasEagerlyLoadedProperties();
 }

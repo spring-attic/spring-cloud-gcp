@@ -311,12 +311,11 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("SELL")).size()).isEqualTo(5L);
 	}
 
-	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
+	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade();
+			Trade t = Trade.aTrade(traderId, false);
 			t.setAction(action);
-			t.setTraderId(traderId1);
 			t.setSymbol("ABCD");
 			trades.add(t);
 			this.spannerOperations.insert(t);

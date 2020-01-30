@@ -195,13 +195,30 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> read(Class<T> entityClass, KeySet keys,
 			SpannerReadOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
-				options != null && options.isAllowPartialRead());
+		SpannerPersistentEntity<T> persistentEntity = (SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
+		List<T> entities;
+
+		if (isEligibleForEagerFetch(keys, options, persistentEntity)) {
+			entities = executeReadQueryAndResolveChildren(keys, persistentEntity);
+		}
+		else {
+			entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
+					persistentEntity.columns(), options), entityClass,
+					(options != null) ? options.getIncludeProperties() : null,
+					options != null && options.isAllowPartialRead());
+		}
 		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
+	}
+
+	private <T> boolean isEligibleForEagerFetch(KeySet keys, SpannerReadOptions options,
+			SpannerPersistentEntity<T> persistentEntity) {
+		//an entity is eligible if all of the following true:
+		//1. entity has eager loaded properties
+		//2. there are no read options, as they can't be applied to a query
+		//3. key set does not have ranges, as they can't be used in a query
+		return persistentEntity.hasEagerlyLoadedProperties() &&
+				options == null && !keys.getRanges().iterator().hasNext();
 	}
 
 	@Override
@@ -241,7 +258,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity) + " FROM " + persistentEntity.tableName();
+				persistentEntity, this.mappingContext) + " FROM " + persistentEntity.tableName();
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
@@ -458,6 +475,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return resultSet;
 	}
 
+	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity) {
+		Statement statement = SpannerStatementQueryExecutor.buildQuery(keys, persistentEntity,
+				this.spannerEntityProcessor.getWriteConverter(),
+				this.mappingContext);
+
+		return resolveChildEntities(query(persistentEntity.getType(), statement, null), null);
+	}
+
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
@@ -560,6 +585,12 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 							.contains(spannerPersistentEntity.getName())) {
 						return;
 					}
+					//an interleaved property can only be List
+					List propertyValue = (List) accessor.getProperty(spannerPersistentProperty);
+					if (propertyValue != null) {
+						resolveChildEntities(propertyValue, null);
+						return;
+					}
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
@@ -567,7 +598,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter()),
+									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter(),
+									this.mappingContext),
 							null);
 
 					accessor.setProperty(spannerPersistentProperty,

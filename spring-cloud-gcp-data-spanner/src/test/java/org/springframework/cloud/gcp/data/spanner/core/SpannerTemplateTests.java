@@ -435,6 +435,47 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void findKeySetTestEagerOptions() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
+				.build();
+		SpannerReadOptions options = new SpannerReadOptions();
+		spyTemplate.read(ParentEntity.class, keys, options);
+		verify(spyTemplate, times(1)).read(eq(ParentEntity.class), same(keys), eq(options));
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
+	public void findKeySetTestEager() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
+				.build();
+		spyTemplate.read(ParentEntity.class, keys);
+		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
+				"ARRAY (SELECT AS STRUCT id3, id, id_2 FROM child_test_table " +
+				"WHERE child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) as childEntities " +
+				"FROM parent_test_table WHERE (id = @tag0) OR (id_2 = @tag1)")
+				.bind("tag0").to("key1").bind("tag1").to("key2").build();
+		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
+	public void readAllTestEager() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		spyTemplate.readAll(ParentEntity.class);
+		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
+				"ARRAY (SELECT AS STRUCT id3, id, id_2 FROM child_test_table " +
+				"WHERE child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) as childEntities " +
+				"FROM parent_test_table")
+				.build();
+		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
