@@ -359,7 +359,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 
-		this.testEntityRepository.saveAll(this.allTestEntities);
+		//test saveAll for iterable
+		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
+		this.testEntityRepository.saveAll(testEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));

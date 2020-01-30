@@ -150,7 +150,15 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
-		saveEntities((List<T>) entities, ancestors);
+		List<T> instances;
+		if (entities instanceof List) {
+			instances = (List<T>) entities;
+		}
+		else {
+			instances = new ArrayList<>();
+			entities.forEach(instances::add);
+		}
+		saveEntities(instances, ancestors);
 		return entities;
 	}
 
