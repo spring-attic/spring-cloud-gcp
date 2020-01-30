@@ -812,7 +812,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testPageableGqlEntityProjections() {
-	  Page<TestEntityProjection> page =
+		Page<TestEntityProjection> page =
 				testEntityRepository.getBySize(2L, PageRequest.of(0, 3));
 
 		List<TestEntityProjection> testEntityProjections =
