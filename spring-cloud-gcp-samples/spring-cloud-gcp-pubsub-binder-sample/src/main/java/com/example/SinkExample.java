@@ -46,7 +46,7 @@ public class SinkExample {
 				" at " + userMessage.getCreatedAt());
 	}
 
-	// Note that the error `inputChannel` is formatted as [Pub/Sub subscription name].errors 
+	// Note that the error `inputChannel` is formatted as [Pub/Sub subscription name].errors
 	// or the equivalent of [Pub/Sub topic name].[group name].errors. If you change the topic name in
 	// `application.properties`, you will also have to change the `inputChannel` below.
 	@ServiceActivator(inputChannel = "my-topic.my-group.errors")
