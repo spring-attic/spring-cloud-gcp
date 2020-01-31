@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>2.1.10.BUILD-SNAPSHOT</version>
+		<version>2.1.10.RELEASE</version>
 		<relativePath/><!-- lookup parent from repository -->
 	</parent>
 
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>1.1.5.BUILD-SNAPSHOT</version>
+	<version>1.1.5.RELEASE</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
@@ -43,9 +43,9 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-commons.version>2.1.5.BUILD-SNAPSHOT</spring-cloud-commons.version>
-		<spring-cloud-sleuth.version>2.1.7.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
-		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
+		<spring-cloud-commons.version>2.1.5.RELEASE</spring-cloud-commons.version>
+		<spring-cloud-sleuth.version>2.1.7.RELEASE</spring-cloud-sleuth.version>
+		<spring-cloud-stream.version>Fishtown.SR4</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.9.0</zipkin-gcp.version>
 		<!-- this is a temporary workaround until we upgrade to the latest zipkin-sender-stackdriver -->
 		<brave.version>5.9.2</brave.version>
