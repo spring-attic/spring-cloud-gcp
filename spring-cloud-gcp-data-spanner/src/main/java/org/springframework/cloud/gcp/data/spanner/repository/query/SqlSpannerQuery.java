@@ -245,8 +245,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						resolveEntityClassNames(queryTagValue.sql),
-						this.spannerMappingContext);
+						queryTagValue.sql, this.spannerMappingContext);
 
 		Class simpleItemType = getReturnedSimpleConvertableItemType();
 

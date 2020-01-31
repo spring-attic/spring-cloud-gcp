@@ -66,7 +66,7 @@ public interface SpannerOperations {
 	 *
 	 * @param entityClass the type of the entity
 	 * @param key the key of the object
-	 * @param <T> the type of the object to retrieve.
+	 * @param <T> the type of the object to check.
 	 * @return {@literal true} if an entity with the given key exists, {@literal false} otherwise.
 	 * @throws IllegalArgumentException if {@literal id} is {@literal null}.
 	 */
@@ -160,8 +160,9 @@ public interface SpannerOperations {
 	 * Deletes an object based on a key.
 	 * @param entityClass the type of the object to delete.
 	 * @param key the key of the object to delete from storage.
+	 * @param <T> the type of the object to delete.
 	 */
-	void delete(Class entityClass, Key key);
+	<T> void delete(Class<T> entityClass, Key key);
 
 	/**
 	 * Deletes an object from storage.
@@ -173,14 +174,15 @@ public interface SpannerOperations {
 	 * Deletes objects from storage in a batch.
 	 * @param objects the objects to delete from storage.
 	 */
-	void deleteAll(Iterable objects);
+	void deleteAll(Iterable<?> objects);
 
 	/**
 	 * Deletes objects given a set of keys.
 	 * @param entityClass the type of object to delete.
 	 * @param keys the keys of the objects to delete.
+	 * @param <T> the type of the object to delete.
 	 */
-	void delete(Class entityClass, KeySet keys);
+	<T> void delete(Class<T> entityClass, KeySet keys);
 
 	/**
 	 * Insert an object into storage.
@@ -192,7 +194,7 @@ public interface SpannerOperations {
 	 * Insert objects into storage in batch.
 	 * @param objects the objects to insert.
 	 */
-	void insertAll(Iterable objects);
+	void insertAll(Iterable<?> objects);
 
 	/**
 	 * Update an object already in storage.
@@ -204,7 +206,7 @@ public interface SpannerOperations {
 	 * Update objects in batch.
 	 * @param objects the objects to update.
 	 */
-	void updateAll(Iterable objects);
+	void updateAll(Iterable<?> objects);
 
 	/**
 	 * Update an object in storage.
@@ -233,7 +235,7 @@ public interface SpannerOperations {
 	 * Update or insert objects into storage in batch.
 	 * @param objects the objects to update or insert.
 	 */
-	void upsertAll(Iterable objects);
+	void upsertAll(Iterable<?> objects);
 
 	/**
 	 * Update or insert an object into storage.
@@ -255,9 +257,10 @@ public interface SpannerOperations {
 	/**
 	 * Count how many objects are stored of the given type.
 	 * @param entityClass the type of object to count.
+	 * @param <T> the type of the object to count.
 	 * @return the number of stored objects.
 	 */
-	long count(Class entityClass);
+	<T> long count(Class<T> entityClass);
 
 	/**
 	 * Performs multiple read and write operations in a single transaction.

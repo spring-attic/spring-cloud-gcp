@@ -163,7 +163,7 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Gets a query that returns the rows associated with a parent entity. This function is
+	 * Gets a {@link Statement} that returns the rows associated with a parent entity. This function is
 	 * intended to be used with parent-child interleaved tables, so that the retrieval of all
 	 * child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
@@ -252,7 +252,6 @@ public final class SpannerStatementQueryExecutor {
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 *     params, or if a param of an unsupported type is given.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object[] params, Map<String, Parameter> queryMethodParams) {
@@ -271,6 +270,7 @@ public final class SpannerStatementQueryExecutor {
 		return builder.build();
 	}
 
+	@SuppressWarnings("unchecked")
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object originalParam, Parameter paramMetadata) {
@@ -301,14 +301,15 @@ public final class SpannerStatementQueryExecutor {
 		}
 	}
 
-	public static String getColumnsStringForSelect(SpannerPersistentEntity spannerPersistentEntity, SpannerMappingContext mappingContext) {
+	public static String getColumnsStringForSelect(
+			SpannerPersistentEntity<?> spannerPersistentEntity, SpannerMappingContext mappingContext) {
 		StringJoiner joiner = new StringJoiner(", ");
-		spannerPersistentEntity.doWithInterleavedProperties(persistentProperty -> {
-			SpannerPersistentProperty spannerPersistentProperty = (SpannerPersistentProperty) persistentProperty;
+		spannerPersistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
 			if (spannerPersistentProperty.isEagerInterleaved()) {
 				Class childType = spannerPersistentProperty.getColumnInnerType();
 				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
-				joiner.add(getChildrenStructsQuery(childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
+				joiner.add(getChildrenStructsQuery(
+					childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
 			}
 		});
 		String childrenSubquery = joiner.toString();
@@ -344,17 +345,16 @@ public final class SpannerStatementQueryExecutor {
 		return Pair.of(finalSql, tags);
 	}
 
-	private static StringBuilder buildSelect(
-			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
+	private static void buildSelect(
+			SpannerPersistentEntity<?> spannerPersistentEntity, PartTree tree,
 			StringBuilder stringBuilder, SpannerMappingContext mappingContext) {
-		stringBuilder.append("SELECT " + (tree.isDistinct() ? "DISTINCT " : "")
-				+ getColumnsStringForSelect(spannerPersistentEntity, mappingContext) + " ");
-		return stringBuilder;
+		stringBuilder.append("SELECT ").append(tree.isDistinct() ? "DISTINCT " : "")
+				.append(getColumnsStringForSelect(spannerPersistentEntity, mappingContext)).append(" ");
 	}
 
 	private static void buildFrom(SpannerPersistentEntity<?> persistentEntity,
 			StringBuilder stringBuilder) {
-		stringBuilder.append("FROM " + persistentEntity.tableName() + " ");
+		stringBuilder.append("FROM ").append(persistentEntity.tableName()).append(" ");
 	}
 
 	public static StringBuilder applySort(Sort sort, StringBuilder sql,
@@ -484,7 +484,7 @@ public final class SpannerStatementQueryExecutor {
 			stringBuilder.append(" LIMIT 1");
 		}
 		else if (tree.isLimiting()) {
-			stringBuilder.append(" LIMIT " + tree.getMaxResults());
+			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
 		}
 	}
 }
