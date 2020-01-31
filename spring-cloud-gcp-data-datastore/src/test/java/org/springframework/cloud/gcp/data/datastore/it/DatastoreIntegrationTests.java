@@ -811,6 +811,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		// Verifies that the projection method call works.
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
+
+	@Test
+	public void testPageableGqlEntityProjections() {
+		Page<TestEntityProjection> page =
+				testEntityRepository.getBySize(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections =
+				page.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
 }
 
 /**
