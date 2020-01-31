@@ -218,7 +218,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		}
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
-				params.toArray(), this.sql, this.spannerMappingContext);
+				params.toArray(), resolveEntityClassNames(this.sql, this.spannerMappingContext));
 
 		resolveSpELTags(queryTagValue);
 
@@ -301,11 +301,10 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		String sql;
 
-		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params, String sql,
-				SpannerMappingContext spannerMappingContext) {
+		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params, String sql) {
 			this.tags = tags;
 			this.intialParams = params;
-			this.sql = resolveEntityClassNames(sql, spannerMappingContext);
+			this.sql = sql;
 			this.initialTags = new HashSet<>(tags);
 			this.params = new ArrayList<>(Arrays.asList(params));
 			this.rawParams = rawParams;
