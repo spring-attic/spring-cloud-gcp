@@ -34,7 +34,6 @@
     border: 3px solid #ffffff;
     padding: 20px;
     border-radius: 25px;
-    height: 75px;
-
+    word-break:break-all;
 
 }

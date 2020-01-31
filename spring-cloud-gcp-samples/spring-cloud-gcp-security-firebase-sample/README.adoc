@@ -4,6 +4,47 @@ This sample application demonstrate how to use link:../../spring-cloud-gcp-start
 
 The application provides a secured controller that can only be reached if a valid JWT token is sent as an HTTP Header.
 
-There's also a simple HTML login page to allow you to login to firebase and fetch the token to test the secured controller.
+This sample app provides simple login page using https://github.com/firebase/firebaseui-web[firebase-ui] to fetch the JWT token.
 
 == Pre requisites
+
+1. Create a new firebase project as instructed https://firebase.google.com/docs/web/setup[here]
+2. Once you finish the process make sure you configure the following environment variables before running the app:
+    a. FIREBASE_CONFIG_API_KEY: Should be your "apiKey" value
+    b. FIREBASE_CONFIG_APP_ID: Should be your "appId" value
+3. Make sure that you are authenticated with `gcloud` and you have set the correct `projectId` to be the same project as your firebase project. This
+app uses default login and will rely on that to extract the `projectId` using the `GcpProjectIdProvider`
+4. Go to your firebase project, select the web application you have created and enable two providers: `Google` and `email`
+5. (Optional) : You can add a few users to try this out if you rather not use the Google Provider authentication
+
+== Running
+
+`Make sure you executed steps 2 & 3 from pre requisites section`
+
+----
+$ ./mvnw clean spring-boot:run
+----
+
+Open your browser at http://localhost:8080
+
+There's single page app with an `ask` button, if you try to click it you should get an error message.
+
+Also try to access the secure endpoint via curl:
+
+----
+curl http://localhost:8080/answer
+----
+
+You should get a 403 error.
+
+Now login using the button at the top right corner. You can choose between using a valid Google credential, or a user you have added via the
+firebase authentication users menu.
+
+Once you are logged, you should see a panel with the `curl` command.
+
+Try clicking the button again.
+
+You can also copy the curl command and execute it now on your console and you should be able to access the endpoint.
+
+
+
