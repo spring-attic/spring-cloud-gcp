@@ -140,7 +140,7 @@ public class PartTreeFirestoreQueryTests {
 	public void testPartTreeQueryOrException() {
 		assertThatThrownBy(() -> createPartTreeQuery("findByAgeOrName"))
 				.isInstanceOf(FirestoreDataException.class)
-				.hasMessage("Cloud Firestore only supports multiple filters combined with AND (findByAgeOrName)");
+				.hasMessage("Cloud Firestore doesn't support 'OR' (findByAgeOrName)");
 	}
 
 	private PartTreeFirestoreQuery createPartTreeQuery(String methodName) {

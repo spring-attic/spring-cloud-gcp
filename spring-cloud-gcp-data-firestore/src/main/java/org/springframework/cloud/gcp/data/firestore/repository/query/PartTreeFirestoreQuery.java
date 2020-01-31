@@ -95,7 +95,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 1 && parts.get(0) instanceof PartTree.OrPart) {
 				throw new FirestoreDataException(
-						"Cloud Firestore only supports multiple filters combined with AND (" + this.getQueryMethod().getName() + ")");
+						"Cloud Firestore doesn't support 'OR' (" + this.getQueryMethod().getName() + ")");
 		}
 		List<String> unsupportedParts = this.tree.getParts().stream()
 				.filter(part -> !isSupportedPart(part.getType())).map(part -> part.getType().toString())
