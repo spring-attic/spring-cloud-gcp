@@ -21,4 +21,5 @@ org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManage
 org.springframework.cloud.gcp.autoconfigure.firestore.FirestoreRepositoriesAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration
+org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration
