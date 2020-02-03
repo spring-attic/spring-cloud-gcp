@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.spanner.Key;
@@ -27,6 +29,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -74,15 +77,31 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 
-		Trade trade = Trade.aTrade();
+		Trade trade = Trade.aTrade(null, true);
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
+
+		List<Trade> trades = this.spannerOperations.queryAll(Trade.class, new SpannerPageableQueryOptions());
+
+		assertThat(trades).containsExactly(trade);
 
 		Trade retrievedTrade = this.spannerOperations.read(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));
 		assertThat(retrievedTrade).isEqualTo(trade);
 
-		this.spannerOperations.delete(trade);
+		trades = this.spannerOperations.readAll(Trade.class);
+
+		assertThat(trades).containsExactly(trade);
+
+		Trade trade2 = Trade.aTrade(null, true);
+		this.spannerOperations.insert(trade2);
+
+		trades = this.spannerOperations.read(Trade.class, KeySet.newBuilder().addKey(Key.of(trade.getId(), trade.getTraderId()))
+				.addKey(Key.of(trade2.getId(), trade2.getTraderId())).build());
+
+		assertThat(trades).containsExactlyInAnyOrder(trade, trade2);
+
+		this.spannerOperations.deleteAll(Arrays.asList(trade, trade2));
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 	}
 

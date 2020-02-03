@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicator;
+import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 
@@ -40,8 +42,8 @@ public class GcpPubSubAutoConfigurationTests {
 	@Test
 	public void keepAliveValue_default() {
 		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
-			.withUserConfiguration(TestConfig.class);
+				.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(TestConfig.class);
 
 		contextRunner.run(ctx -> {
 			GcpPubSubProperties props = ctx.getBean(GcpPubSubProperties.class);
@@ -49,16 +51,16 @@ public class GcpPubSubAutoConfigurationTests {
 
 			TransportChannelProvider tcp = ctx.getBean(TransportChannelProvider.class);
 			assertThat(((InstantiatingGrpcChannelProvider) tcp).getKeepAliveTime().toMinutes())
-				.isEqualTo(5);
+					.isEqualTo(5);
 		});
 	}
 
 	@Test
 	public void keepAliveValue_custom() {
 		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
-			.withUserConfiguration(TestConfig.class)
-			.withPropertyValues("spring.cloud.gcp.pubsub.keepAliveIntervalMinutes=2");
+				.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(TestConfig.class)
+				.withPropertyValues("spring.cloud.gcp.pubsub.keepAliveIntervalMinutes=2");
 
 		contextRunner.run(ctx -> {
 			GcpPubSubProperties props = ctx.getBean(GcpPubSubProperties.class);
@@ -66,7 +68,21 @@ public class GcpPubSubAutoConfigurationTests {
 
 			TransportChannelProvider tcp = ctx.getBean(TransportChannelProvider.class);
 			assertThat(((InstantiatingGrpcChannelProvider) tcp).getKeepAliveTime().toMinutes())
-				.isEqualTo(2);
+					.isEqualTo(2);
+		});
+	}
+
+	@Test
+	public void healthIndicatorPresent() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(PubSubHealthIndicatorAutoConfiguration.class,
+						GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(TestConfig.class)
+				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+						"management.health.pubsub.enabled=true");
+		contextRunner.run(ctx -> {
+			PubSubHealthIndicator healthIndicator = ctx.getBean(PubSubHealthIndicator.class);
+			assertThat(healthIndicator).isNotNull();
 		});
 	}
 
@@ -81,7 +97,6 @@ public class GcpPubSubAutoConfigurationTests {
 		public CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
-
 
 	}
 }

@@ -17,7 +17,10 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
 
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
@@ -101,6 +104,8 @@ public class StackdriverTraceAutoConfiguration {
 
 	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
 
+	private ThreadPoolTaskScheduler defaultTraceSenderThreadPool;
+
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpTraceProperties gcpTraceProperties) throws IOException {
@@ -122,18 +127,20 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "traceSenderThreadPool")
-	public ThreadPoolTaskScheduler traceSenderThreadPool(GcpTraceProperties traceProperties) {
-		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-		scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
-		scheduler.setThreadNamePrefix("gcp-trace-sender");
-		scheduler.setDaemon(true);
-		return scheduler;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(name = "traceExecutorProvider")
-	public ExecutorProvider traceExecutorProvider(@Qualifier("traceSenderThreadPool") ThreadPoolTaskScheduler scheduler) {
+	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties, @Qualifier("traceSenderThreadPool") Optional<ThreadPoolTaskScheduler> userProvidedScheduler) {
+		ThreadPoolTaskScheduler scheduler;
+		if (userProvidedScheduler.isPresent()) {
+			scheduler = userProvidedScheduler.get();
+		}
+		else {
+			this.defaultTraceSenderThreadPool = new ThreadPoolTaskScheduler();
+			scheduler = this.defaultTraceSenderThreadPool;
+			scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
+			scheduler.setThreadNamePrefix("gcp-trace-sender");
+			scheduler.setDaemon(true);
+			scheduler.initialize();
+		}
 		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
@@ -218,6 +225,13 @@ public class StackdriverTraceAutoConfiguration {
 		return StackdriverTracePropagation.FACTORY;
 	}
 
+	@PreDestroy
+	public void closeScheduler() {
+		if (this.defaultTraceSenderThreadPool != null) {
+			this.defaultTraceSenderThreadPool.shutdown();
+		}
+	}
+
 	/**
 	 * Configuration for Sleuth.
 	 */
@@ -242,4 +256,5 @@ public class StackdriverTraceAutoConfiguration {
 			return new StackdriverHttpServerParser();
 		}
 	}
+
 }

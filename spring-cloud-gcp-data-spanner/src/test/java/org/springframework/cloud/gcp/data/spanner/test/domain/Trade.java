@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public class Trade {
 	private List<Instant> executionTimes;
 
 	@Interleaved
-	private List<SubTrade> subTrades;
+	private List<SubTrade> subTrades = Collections.emptyList();
 
 	/**
 	 * Partial constructor. Intentionally tests a field that is left null sometimes.
@@ -80,9 +81,13 @@ public class Trade {
 	}
 
 	public static Trade aTrade() {
+		return aTrade(null, false);
+	}
+
+	public static Trade aTrade(String customTraderId, boolean addSubtrade) {
 		Trade t = new Trade("ABCD", new ArrayList<>());
 		String tradeId = UUID.randomUUID().toString();
-		String traderId = UUID.randomUUID().toString();
+		String traderId = customTraderId == null ? UUID.randomUUID().toString() : customTraderId;
 
 		t.tradeDetail = new TradeDetail();
 
@@ -94,7 +99,9 @@ public class Trade {
 		t.tradeDate = Date.from(t.tradeTime);
 		t.tradeLocalDate = LocalDate.of(2015, 1, 1);
 		t.tradeLocalDateTime = LocalDateTime.of(2015, 1, 1, 2, 3, 4, 5);
-		t.subTrades = new ArrayList<>();
+		if (addSubtrade) {
+			t.subTrades = Collections.singletonList(new SubTrade(t.getTradeDetail().getId(), t.getTraderId(), "subTrade"));
+		}
 		t.tradeDetail.price = 100.0;
 		t.tradeDetail.shares = 12345.6;
 		for (int i = 1; i <= 5; i++) {

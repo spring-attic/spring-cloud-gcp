@@ -128,20 +128,19 @@ public class PartTreeFirestoreQueryTests {
 
 	@Test
 	public void testPartTreeQueryFilterException() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery =
-				createPartTreeQuery("findByAgeBetween");
-		assertThatThrownBy(() -> partTreeFirestoreQuery.execute(new Object[]{0, 100}))
+		assertThatThrownBy(() -> createPartTreeQuery("findByAgeBetweenAndNameRegex"))
 				.isInstanceOf(FirestoreDataException.class)
-				.hasMessage("Unsupported predicate keyword: BETWEEN (2): [IsBetween, Between]");
+				.hasMessage("Unsupported predicate keywords: " +
+						"[BETWEEN (2): [IsBetween, Between], " +
+						"REGEX (1): [MatchesRegex, Matches, Regex]] " +
+						"in findByAgeBetweenAndNameRegex");
 	}
 
 	@Test
 	public void testPartTreeQueryOrException() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery =
-				createPartTreeQuery("findByAgeOrName");
-		assertThatThrownBy(() -> partTreeFirestoreQuery.execute(new Object[]{0, "Abc"}))
+		assertThatThrownBy(() -> createPartTreeQuery("findByAgeOrName"))
 				.isInstanceOf(FirestoreDataException.class)
-				.hasMessage("Cloud Firestore only supports multiple filters combined with AND.");
+				.hasMessage("Cloud Firestore doesn't support 'OR' (method name: findByAgeOrName)");
 	}
 
 	private PartTreeFirestoreQuery createPartTreeQuery(String methodName) {

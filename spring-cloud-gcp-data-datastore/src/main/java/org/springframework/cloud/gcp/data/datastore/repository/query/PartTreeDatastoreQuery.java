@@ -244,8 +244,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
 		List datastoreResultsList = this.datastoreTemplate.query(queryNext, x -> x);
 
-		return new SliceImpl(StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList()),
-				pageable, !datastoreResultsList.isEmpty());
+		List<Object> result =
+				StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
+
+		return (Slice) this.processRawObjectForProjection(
+				new SliceImpl(result, pageable, !datastoreResultsList.isEmpty()));
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {

@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.cloud.spanner.Struct;
 
@@ -108,28 +108,22 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		return (value != null) ? convertOrRead((Class<T>) spannerPersistentProperty.getType(), value) : null;
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T> Iterable<T> readIterableWithConversion(
+			SpannerPersistentProperty spannerPersistentProperty) {
+		String colName = spannerPersistentProperty.getColumnName();
+		List<?> listValue = this.structAccessor.getListValue(colName);
+		return listValue.stream()
+				.map(item -> convertOrRead((Class<T>) spannerPersistentProperty.getColumnInnerType(), item))
+				.collect(Collectors.toList());
+	}
+
 	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
 		Class<?> sourceClass = sourceValue.getClass();
 		return (Struct.class.isAssignableFrom(sourceClass)
 				&& !this.readConverter.canConvert(sourceClass, targetType))
 						? this.entityReader.read(targetType, (Struct) sourceValue, null,
 								this.allowMissingColumns)
-				: this.readConverter.convert(sourceValue, targetType);
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> Iterable<T> readIterableWithConversion(
-			SpannerPersistentProperty spannerPersistentProperty) {
-		String colName = spannerPersistentProperty.getColumnName();
-		List<?> listValue = this.structAccessor.getListValue(colName);
-		return convertOrReadIterable(listValue,
-				(Class<T>) spannerPersistentProperty.getColumnInnerType());
-	}
-
-	private <T> Iterable<T> convertOrReadIterable(Iterable<?> source,
-			Class<T> targetType) {
-		List<T> result = new ArrayList<>();
-		source.forEach((item) -> result.add(convertOrRead(targetType, item)));
-		return result;
+						: this.readConverter.convert(sourceValue, targetType);
 	}
 }

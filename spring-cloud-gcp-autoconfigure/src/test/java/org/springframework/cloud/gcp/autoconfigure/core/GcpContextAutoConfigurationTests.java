@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.springframework.cloud.gcp.autoconfigure.core;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.ContextConsumer;
 import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
@@ -32,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Serhat Soydan
  */
 public class GcpContextAutoConfigurationTests {
 
@@ -65,5 +68,28 @@ public class GcpContextAutoConfigurationTests {
 					assertThat(environmentProvider).isNotNull();
 					assertThat(environmentProvider).isInstanceOf(DefaultGcpEnvironmentProvider.class);
 				});
+	}
+
+	@Test
+	public void testGetProjectIdProviderBeanExistence_withGcpCoreEnabled() {
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.core.enabled=true")
+				.run(checkNumberOfBeansOfTypeGcpProjectIdProvider(1));
+	}
+
+	@Test
+	public void testGetProjectIdProviderBeanExistence_withGcpCoreMissing() {
+		this.contextRunner.run(checkNumberOfBeansOfTypeGcpProjectIdProvider(1));
+	}
+
+	@Test
+	public void testGetProjectIdProviderBeanExistence_withGcpCoreDisabled() {
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.core.enabled=false")
+				.run(checkNumberOfBeansOfTypeGcpProjectIdProvider(0));
+	}
+
+	private ContextConsumer<AssertableApplicationContext> checkNumberOfBeansOfTypeGcpProjectIdProvider(int count) {
+		return context -> assertThat(context
+				.getBeansOfType(GcpProjectIdProvider.class).size())
+						.isEqualTo(count);
 	}
 }

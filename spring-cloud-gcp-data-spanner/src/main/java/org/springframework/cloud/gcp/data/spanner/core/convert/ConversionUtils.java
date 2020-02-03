@@ -61,6 +61,7 @@ public final class ConversionUtils {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> T wrapSimpleLazyProxy(Supplier<T> supplierFunc, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type },
 				new SimpleLazyDynamicInvocationHandler<>(supplierFunc));
@@ -69,7 +70,7 @@ public final class ConversionUtils {
 	public static boolean ignoreForWriteLazyProxy(Object object) {
 		if (Proxy.isProxyClass(object.getClass())
 				&& (Proxy.getInvocationHandler(object) instanceof SimpleLazyDynamicInvocationHandler)) {
-			SimpleLazyDynamicInvocationHandler handler = (SimpleLazyDynamicInvocationHandler) Proxy
+			SimpleLazyDynamicInvocationHandler<?> handler = (SimpleLazyDynamicInvocationHandler<?>) Proxy
 					.getInvocationHandler(object);
 			return !handler.isEvaluated();
 		}

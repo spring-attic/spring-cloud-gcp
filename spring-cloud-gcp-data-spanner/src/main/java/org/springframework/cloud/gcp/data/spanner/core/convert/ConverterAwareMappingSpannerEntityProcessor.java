@@ -75,13 +75,17 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			Set<String> includeColumns, boolean allowMissingColumns) {
 		ArrayList<T> result = new ArrayList<>();
-		while (resultSet.next()) {
-			result.add(this.entityReader.read(entityClass,
-					resultSet.getCurrentRowAsStruct(),
-					includeColumns,
-					allowMissingColumns));
+		try {
+			while (resultSet.next()) {
+				result.add(this.entityReader.read(entityClass,
+						resultSet.getCurrentRowAsStruct(),
+						includeColumns,
+						allowMissingColumns));
+			}
 		}
-		resultSet.close();
+		finally {
+			resultSet.close();
+		}
 		return result;
 	}
 

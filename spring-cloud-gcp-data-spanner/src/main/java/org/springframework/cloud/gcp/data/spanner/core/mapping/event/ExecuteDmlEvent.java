@@ -29,7 +29,7 @@ public class ExecuteDmlEvent extends ApplicationEvent {
 
 	/**
 	 * Constructor.
-	 * @param statement @param statement the DML statement which is (never {@code null})
+	 * @param statement the DML statement which is (never {@code null})
 	 */
 	public ExecuteDmlEvent(Statement statement) {
 		super(statement);

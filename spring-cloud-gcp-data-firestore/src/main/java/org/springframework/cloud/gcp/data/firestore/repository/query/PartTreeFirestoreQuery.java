@@ -88,18 +88,32 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		this.tree = new PartTree(queryMethod.getName(), returnedType.getDomainType());
 		this.persistentEntity = mappingContext.getPersistentEntity(returnedType.getDomainType());
 		this.classMapper = classMapper;
+		validate();
+	}
+
+	private void validate() {
+		List parts = this.tree.get().collect(Collectors.toList());
+		if (parts.size() > 1 && parts.get(0) instanceof PartTree.OrPart) {
+				throw new FirestoreDataException(
+						"Cloud Firestore doesn't support 'OR' (method name: " + this.getQueryMethod().getName() + ")");
+		}
+		List<String> unsupportedParts = this.tree.getParts().stream()
+				.filter(part -> !isSupportedPart(part.getType()))
+				.map(part -> part.getType().toString())
+				.collect(Collectors.toList());
+		if (!unsupportedParts.isEmpty()) {
+			throw new FirestoreDataException("Unsupported predicate keywords: " + unsupportedParts
+					+ " in " + this.getQueryMethod().getName());
+		}
+	}
+
+	private boolean isSupportedPart(Part.Type partType) {
+		return PART_TO_FILTER_OP.containsKey(partType) || partType == Part.Type.IS_NULL;
 	}
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List parts = this.tree.get().collect(Collectors.toList());
-		if (parts.size() > 1 && parts.get(0) instanceof PartTree.OrPart) {
-				throw new FirestoreDataException(
-						"Cloud Firestore only supports multiple filters combined with AND.");
-		}
-
 		StructuredQuery.Builder builder = createBuilderWithFilter(parameters);
-
 
 		// Handle Pageable parameters.
 		if (!getQueryMethod().getParameters().isEmpty()) {
@@ -164,9 +178,6 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 	private StructuredQuery.FieldFilter.Operator getOperator(Part part, Object value) {
 		OperatorSelector operatorSelector = PART_TO_FILTER_OP.get(part.getType());
-		if (operatorSelector == null) {
-			throw new FirestoreDataException("Unsupported predicate keyword: " + part.getType());
-		}
 		return operatorSelector.getOperator(value);
 	}
 

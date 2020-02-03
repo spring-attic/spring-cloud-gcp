@@ -90,6 +90,8 @@ public class SpannerPersistentEntityImpl<T>
 
 	private String tableName;
 
+	private boolean hasEagerlyLoadedProperties = false;
+
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}.
 	 * @param information type information about the underlying entity type.
@@ -156,6 +158,9 @@ public class SpannerPersistentEntityImpl<T>
 		}
 		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
+		}
+		else if (property.isEagerInterleaved()) {
+			this.hasEagerlyLoadedProperties = true;
 		}
 
 		if (property.getPrimaryKeyOrder() != null
@@ -369,6 +374,11 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
+	public boolean hasEagerlyLoadedProperties() {
+		return this.hasEagerlyLoadedProperties;
+	}
+
+	@Override
 	public Set<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
 	}
@@ -439,5 +449,13 @@ public class SpannerPersistentEntityImpl<T>
 				return delegatedAccessor.getBean();
 			}
 		};
+	}
+
+	@Override
+	public String getPrimaryKeyColumnName() {
+		SpannerPersistentProperty primaryKeyProperty = getPrimaryKeyProperties()[0];
+		return primaryKeyProperty.isEmbedded()
+				? this.spannerMappingContext.getPersistentEntity(primaryKeyProperty.getType()).getPrimaryKeyColumnName()
+				: primaryKeyProperty.getColumnName();
 	}
 }

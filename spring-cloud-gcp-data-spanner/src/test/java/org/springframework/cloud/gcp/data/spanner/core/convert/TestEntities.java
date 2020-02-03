@@ -97,7 +97,7 @@ public class TestEntities {
 
 		ByteArray bytes;
 
-		@Interleaved
+		@Interleaved(lazy = true)
 		List<ChildTestEntity> childTestEntities;
 
 		/**

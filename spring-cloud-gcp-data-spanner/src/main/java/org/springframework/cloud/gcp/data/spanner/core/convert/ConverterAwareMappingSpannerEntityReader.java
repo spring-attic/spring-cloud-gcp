@@ -28,6 +28,7 @@ import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 
@@ -92,8 +93,8 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 
-		persistentEntity.doWithColumnBackedProperties(
-				(spannerPersistentProperty) -> {
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						accessor.setProperty(spannerPersistentProperty,
 								read(spannerPersistentProperty.getType(), source,
@@ -123,7 +124,9 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		String columnName = spannerPersistentProperty.getColumnName();
 		boolean notRequiredByPartialRead = !readAllColumns && !includeColumns.contains(columnName);
 
-		return notRequiredByPartialRead
+
+		return spannerPersistentProperty.isLazyInterleaved() ||
+				notRequiredByPartialRead
 				|| isMissingColumn(struct, allowMissingColumns, columnName)
 				|| struct.isNull(columnName)
 				|| persistenceConstructor.isConstructorParameter(spannerPersistentProperty);

@@ -359,7 +359,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 
-		this.testEntityRepository.saveAll(this.allTestEntities);
+		//test saveAll for iterable
+		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
+		this.testEntityRepository.saveAll(testEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
@@ -792,6 +794,36 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(readCompany.leaders).hasSize(1);
 		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
+	}
+
+	@Test
+	public void testSlicedEntityProjections() {
+		Slice<TestEntityProjection> testEntityProjectionSlice =
+				testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
+
+		List<TestEntityProjection> testEntityProjections =
+				testEntityProjectionSlice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+
+		// Verifies that the projection method call works.
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test
+	public void testPageableGqlEntityProjections() {
+		Page<TestEntityProjection> page =
+				testEntityRepository.getBySize(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections =
+				page.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
 }
 

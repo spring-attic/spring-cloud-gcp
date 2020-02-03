@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Struct;
 import org.assertj.core.util.Sets;
 import org.junit.After;
@@ -30,6 +31,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponent;
@@ -42,6 +45,8 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +72,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Autowired
 	TradeRepositoryTransactionalService tradeRepositoryTransactionalService;
+
+	@Autowired
+	SpannerMappingContext spannerMappingContext;
 
 	@Before
 	@After
@@ -266,6 +274,19 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	}
 
 	@Test
+	public void existsTest() {
+		Trade trade = Trade.aTrade();
+		this.tradeRepository.save(trade);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext.getPersistentEntity(Trade.class);
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(trade);
+		PersistentProperty idProperty = persistentEntity.getIdProperty();
+		Key key = (Key) accessor.getProperty(idProperty);
+		assertThat(this.tradeRepository.existsById(key)).isTrue();
+		this.tradeRepository.delete(trade);
+		assertThat(this.tradeRepository.existsById(key)).isFalse();
+	}
+
+	@Test
 	public void testTransactionRolledBack() {
 		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 		try {
@@ -290,12 +311,11 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("SELL")).size()).isEqualTo(5L);
 	}
 
-	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
+	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade();
+			Trade t = Trade.aTrade(traderId, false);
 			t.setAction(action);
-			t.setTraderId(traderId1);
 			t.setSymbol("ABCD");
 			trades.add(t);
 			this.spannerOperations.insert(t);
