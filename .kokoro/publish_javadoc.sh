@@ -5,11 +5,6 @@ if [[ -z "${CREDENTIALS}" ]]; then
   CREDENTIALS=${KOKORO_KEYSTORE_DIR}/73713_docuploader_service_account
 fi
 
-#if [[ -z "${STAGING_BUCKET}" ]]; then
-#  echo "Need to set STAGING_BUCKET environment variable"
-#  exit 1
-#fi
-
 # Set the version of python to 3.6
 pyenv global 3.6.1
 
