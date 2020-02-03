@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
@@ -42,6 +43,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Chengyuan Zhao
  */
 @Configuration
+@ConditionalOnProperty(value = "spring.cloud.gcp.core.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
