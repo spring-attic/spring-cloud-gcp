@@ -21,12 +21,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import brave.Tracing;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.auth.Credentials;
 import com.google.auth.RequestMetadataCallback;
 import com.google.devtools.cloudtrace.v2.BatchWriteSpansRequest;
@@ -57,6 +59,7 @@ import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -161,6 +164,29 @@ public class StackdriverTraceAutoConfigurationTests {
 					Reporter<Span> asyncReporter = context.getBean(Reporter.class);
 					assertThat(asyncReporter).isNotNull();
 					verify(senderMock, times(1)).check();
+				});
+	}
+
+	@Test
+	public void defaultSchedulerUsedWhenNoneProvided() {
+		this.contextRunner
+				.run(context -> {
+					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
+					assertThat(executorProvider.getExecutor()).isNotNull();
+				});
+	}
+
+	@Test
+	public void customSchedulerUsedWhenAvailable() {
+		ThreadPoolTaskScheduler threadPoolTaskSchedulerMock = mock(ThreadPoolTaskScheduler.class);
+		ScheduledExecutorService scheduledExecutorServiceMock = mock(ScheduledExecutorService.class);
+		when(threadPoolTaskSchedulerMock.getScheduledExecutor()).thenReturn(scheduledExecutorServiceMock);
+
+		this.contextRunner
+				.withBean("traceSenderThreadPool", ThreadPoolTaskScheduler.class, () -> threadPoolTaskSchedulerMock)
+				.run(context -> {
+					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
+					assertThat(executorProvider.getExecutor()).isEqualTo(scheduledExecutorServiceMock);
 				});
 	}
 
