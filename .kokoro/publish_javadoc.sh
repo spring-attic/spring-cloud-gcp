@@ -36,7 +36,7 @@ python3 -m docuploader create-metadata \
 
 python3 -m docuploader upload . \
     --credentials ${CREDENTIALS} \
-    --staging-bucket docs-staging
+    --staging-bucket test-docs-staging
 
 popd
 popd
