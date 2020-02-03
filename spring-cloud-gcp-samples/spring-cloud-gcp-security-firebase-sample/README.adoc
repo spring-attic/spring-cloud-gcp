@@ -40,11 +40,11 @@ You should get a 403 error.
 Now login using the button at the top right corner. You can choose between using a valid Google credential, or a user you have added via the
 firebase authentication users menu.
 
-Once you are logged, you should see a panel with the `curl` command.
+Once you are logged in, you should see a panel with the `curl` command.
 
 Try clicking the button again.
 
-You can also copy the curl command and execute it now on your console and you should be able to access the endpoint.
+You can also copy the `curl` command and execute it now on your console and you should be able to access the endpoint.
 
 
 

@@ -52,7 +52,7 @@ import org.springframework.web.client.RestTemplate;
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(FirebaseAuthenticationProperties.class)
-public class FirebaseAuthentiationAutoConfiguration {
+public class FirebaseAuthenticationAutoConfiguration {
 
 	private static final String ISSUER_TEMPLATE = "https://securetoken.google.com/%s";
 

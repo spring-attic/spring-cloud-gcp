@@ -269,7 +269,7 @@
             <artifactId>spring-cloud-gcp-security-firebase</artifactId>
             <optional>true</optional>
         </dependency>
-				
+
         <!-- Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -297,7 +297,6 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
-
 
     </dependencies>
 </project>

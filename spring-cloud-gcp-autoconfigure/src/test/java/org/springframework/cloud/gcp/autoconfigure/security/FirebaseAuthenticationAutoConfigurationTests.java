@@ -40,7 +40,7 @@ public class FirebaseAuthenticationAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(
-					AutoConfigurations.of(FirebaseAuthentiationAutoConfiguration.class, TestConfig.class));
+					AutoConfigurations.of(FirebaseAuthenticationAutoConfiguration.class, TestConfig.class));
 
 	@Test
 	public void testAutoConfigurationLoaded() throws Exception {
