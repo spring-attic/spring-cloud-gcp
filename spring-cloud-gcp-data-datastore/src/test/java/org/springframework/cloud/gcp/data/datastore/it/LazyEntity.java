@@ -16,36 +16,33 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.LazyReference;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 
-/**
- * A test class that holds references as relationships.
- *
- * @author Dmitry Solomakha
- */
-public class ReferenceEntry {
+@Entity
+public class LazyEntity {
 	@Id
 	Long id;
 
-	String name;
-
-	@Reference
-	ReferenceEntry sibling;
-
 	@LazyReference
-	List<ReferenceEntry> children;
+	LazyEntity lazyChild;
 
-	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> children) {
-		this.name = name;
-		this.sibling = sibling;
-		this.children = children;
+	public LazyEntity() {
+	}
+
+	public LazyEntity(LazyEntity child) {
+		this.lazyChild = child;
+	}
+
+	Long getId() {
+		return this.id;
+	}
+
+	LazyEntity getLazyChild() {
+		return this.lazyChild;
 	}
 
 	@Override
@@ -56,27 +53,21 @@ public class ReferenceEntry {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		ReferenceEntry that = (ReferenceEntry) o;
-		return Objects.equals(this.id, that.id) &&
-				Objects.equals(this.name, that.name) &&
-				Objects.equals(this.sibling, that.sibling) &&
-				new HashSet<>((this.children != null) ? this.children : Collections.emptyList())
-						.equals(new HashSet<>((that.children != null) ? that.children : Collections.emptyList()));
+		LazyEntity that = (LazyEntity) o;
+		return Objects.equals(getId(), that.getId()) &&
+				Objects.equals(getLazyChild(), that.getLazyChild());
 	}
 
 	@Override
 	public int hashCode() {
-
-		return Objects.hash(this.id, this.name, this.sibling, this.children);
+		return Objects.hash(getId(), getLazyChild());
 	}
 
 	@Override
 	public String toString() {
-		return "ReferenceEntry{" +
+		return "LazyEntity{" +
 				"id=" + this.id +
-				", name='" + this.name + '\'' +
-				", sibling=" + this.sibling +
-				", childeren=" + this.children +
+				", lazyChild=" + this.lazyChild +
 				'}';
 	}
 }

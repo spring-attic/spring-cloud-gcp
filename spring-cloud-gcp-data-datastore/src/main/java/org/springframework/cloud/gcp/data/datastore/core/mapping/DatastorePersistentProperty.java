@@ -60,4 +60,10 @@ public interface DatastorePersistentProperty
 	 * @return true if the property is stored within Datastore entity
 	 */
 	boolean isColumnBacked();
+
+	/**
+	 * Return whether this property is a lazily-fetched one.
+	 * @return {@code true} if the property is lazily-fetched. {@code false} otherwise.
+	 */
+	boolean isLazyLoaded();
 }

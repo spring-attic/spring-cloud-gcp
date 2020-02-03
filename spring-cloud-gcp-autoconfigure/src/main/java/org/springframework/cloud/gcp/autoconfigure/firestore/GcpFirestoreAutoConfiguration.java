@@ -154,7 +154,7 @@ public class GcpFirestoreAutoConfiguration {
 		@ConditionalOnMissingBean
 		public ManagedChannel firestoreManagedChannel() {
 			return ManagedChannelBuilder
-					.forTarget(GcpFirestoreAutoConfiguration.this.hostPort)
+					.forTarget("dns:///" + GcpFirestoreAutoConfiguration.this.hostPort)
 					.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
 					.build();
 		}

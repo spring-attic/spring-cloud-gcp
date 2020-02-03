@@ -113,4 +113,11 @@ public interface SpannerPersistentProperty
 	 * @return {@code true} if the property is lazily-fetched. {@code false} otherwise.
 	 */
 	boolean isLazyInterleaved();
+
+	/**
+	 * Return whether this property is an eagerly-fetched interleaved property.
+	 * @return {@code true} if the property is eagerly-fetched. {@code false} otherwise.
+	 */
+	boolean isEagerInterleaved();
+
 }

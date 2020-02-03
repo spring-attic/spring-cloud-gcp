@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package com.example;
+package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.springframework.data.annotation.Reference;
 
 /**
- * A sample repository.
+ * Annotation for a class that indicates that a property is a collection of lazy loaded Datastore entities.
  *
- * @author Ray Tsang
- * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
+ *
+ * @since 1.3
  */
-@RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
-public interface TraderRepository extends SpannerRepository<Trader, String> {
-
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Reference
+public @interface LazyReference {
 }

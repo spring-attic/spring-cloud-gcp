@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
+import java.util.Objects;
+
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -36,4 +38,22 @@ public class SubTradeIdentifier {
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "subTradeId")
 	String sub_trade_id;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		SubTradeIdentifier that = (SubTradeIdentifier) o;
+		return Objects.equals(this.tradeIdentifier, that.tradeIdentifier) &&
+				Objects.equals(this.sub_trade_id, that.sub_trade_id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.tradeIdentifier, this.sub_trade_id);
+	}
 }

@@ -26,8 +26,10 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
@@ -169,31 +171,70 @@ public final class SpannerStatementQueryExecutor {
 	 * @param <T> the type of the child persistent entity
 	 * @param writeConverter a converter to convert key values as needed to bind to the query
 	 *     statement.
+	 * @param mappingContext mapping context
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
-			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter) {
-		StringBuilder sb = new StringBuilder(
-				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
-						+ childPersistentEntity.tableName() + " WHERE ");
-		StringJoiner sj = new StringJoiner(" and ");
+			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter,
+			SpannerMappingContext mappingContext) {
+		return buildQuery(KeySet.singleKey(parentKey), childPersistentEntity, writeConverter, mappingContext);
+	}
+
+	/**
+	 * Builds a query that returns the rows associated with a key set.
+	 * @param keySet the key set whose members to get.
+	 * @param persistentEntity the persistent entity of the table.
+	 * @param <T> the type of the persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query statement.
+	 * @param mappingContext mapping context
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static <T> Statement buildQuery(KeySet keySet,
+			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
+			SpannerMappingContext mappingContext) {
+		StringJoiner orJoiner = new StringJoiner(" OR ");
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
 		int tagNum = 0;
-		List<SpannerPersistentProperty> childKeyProperties = childPersistentEntity
-				.getFlattenedPrimaryKeyProperties();
-		Iterator parentKeyParts = parentKey.getParts().iterator();
-		while (parentKeyParts.hasNext()) {
-			SpannerPersistentProperty keyProp = childKeyProperties.get(tagNum);
-			String tagName = "tag" + tagNum;
-			sj.add(keyProp.getColumnName() + " = @" + tagName);
-			tags.add(tagName);
-			keyParts.add(parentKeyParts.next());
-			tagNum++;
+		List<SpannerPersistentProperty> keyProperties = persistentEntity.getFlattenedPrimaryKeyProperties();
+
+		for (Key key : keySet.getKeys()) {
+			StringJoiner andJoiner = new StringJoiner(" AND ", "(", ")");
+			Iterator parentKeyParts = key.getParts().iterator();
+			while (parentKeyParts.hasNext()) {
+				SpannerPersistentProperty keyProp = keyProperties.get(tagNum % keyProperties.size());
+				String tagName = "tag" + tagNum;
+				andJoiner.add(keyProp.getColumnName() + " = @" + tagName);
+				tags.add(tagName);
+				keyParts.add(parentKeyParts.next());
+				tagNum++;
+			}
+			orJoiner.add(andJoiner.toString());
 		}
-		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null, writeConverter,
+		String cond = orJoiner.toString();
+		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext) + " FROM "
+				+ persistentEntity.tableName() + (cond.isEmpty() ? "" : " WHERE " + cond);
+		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
 	}
+
+	private static <C, P> String getChildrenStructsQuery(
+			SpannerPersistentEntity<C> childPersistentEntity,
+			SpannerPersistentEntity<P> parentPersistentEntity, SpannerMappingContext mappingContext,
+			String columnName) {
+		String tableName = childPersistentEntity.tableName();
+		List<SpannerPersistentProperty> parentKeyProperties = parentPersistentEntity
+				.getFlattenedPrimaryKeyProperties();
+		String condition = parentKeyProperties.stream()
+				.map(keyProp -> tableName + "." + keyProp.getColumnName()
+						+ " = "
+						+ parentPersistentEntity.tableName() + "." + keyProp.getColumnName())
+				.collect(Collectors.joining(" AND "));
+
+		return "ARRAY (SELECT AS STRUCT " + getColumnsStringForSelect(childPersistentEntity, mappingContext) + " FROM "
+				+ tableName + " WHERE " + condition + ") as " + columnName;
+	}
+
 
 	/**
 	 * Creates a Cloud Spanner statement.
@@ -260,9 +301,19 @@ public final class SpannerStatementQueryExecutor {
 		}
 	}
 
-	public static String getColumnsStringForSelect(
-			SpannerPersistentEntity spannerPersistentEntity) {
-		return String.join(" , ", spannerPersistentEntity.columns());
+	public static String getColumnsStringForSelect(SpannerPersistentEntity spannerPersistentEntity, SpannerMappingContext mappingContext) {
+		StringJoiner joiner = new StringJoiner(", ");
+		spannerPersistentEntity.doWithInterleavedProperties(persistentProperty -> {
+			SpannerPersistentProperty spannerPersistentProperty = (SpannerPersistentProperty) persistentProperty;
+			if (spannerPersistentProperty.isEagerInterleaved()) {
+				Class childType = spannerPersistentProperty.getColumnInnerType();
+				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
+				joiner.add(getChildrenStructsQuery(childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
+			}
+		});
+		String childrenSubquery = joiner.toString();
+		return String.join(", ", spannerPersistentEntity.columns())
+				+ (childrenSubquery.isEmpty() ? "" : ", " + childrenSubquery);
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
@@ -273,7 +324,7 @@ public final class SpannerStatementQueryExecutor {
 		List<String> tags = new ArrayList<>();
 		StringBuilder stringBuilder = new StringBuilder();
 
-		buildSelect(persistentEntity, tree, stringBuilder);
+		buildSelect(persistentEntity, tree, stringBuilder, spannerMappingContext);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
 		applySort(tree.getSort(), stringBuilder, (o) -> persistentEntity
@@ -295,9 +346,9 @@ public final class SpannerStatementQueryExecutor {
 
 	private static StringBuilder buildSelect(
 			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
-			StringBuilder stringBuilder) {
+			StringBuilder stringBuilder, SpannerMappingContext mappingContext) {
 		stringBuilder.append("SELECT " + (tree.isDistinct() ? "DISTINCT " : "")
-				+ getColumnsStringForSelect(spannerPersistentEntity) + " ");
+				+ getColumnsStringForSelect(spannerPersistentEntity, mappingContext) + " ");
 		return stringBuilder;
 	}
 

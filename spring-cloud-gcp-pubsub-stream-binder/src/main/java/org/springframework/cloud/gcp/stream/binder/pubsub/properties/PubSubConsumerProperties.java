@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import org.springframework.cloud.gcp.pubsub.integration.AckMode;
+
 /**
  * Consumer properties for Pub/Sub.
  *
@@ -26,4 +28,13 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
  */
 public class PubSubConsumerProperties extends PubSubCommonProperties {
 
+	private AckMode ackMode = AckMode.AUTO;
+
+	public AckMode getAckMode() {
+		return ackMode;
+	}
+
+	public void setAckMode(AckMode ackMode) {
+		this.ackMode = ackMode;
+	}
 }

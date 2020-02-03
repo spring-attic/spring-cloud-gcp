@@ -17,13 +17,14 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
@@ -48,6 +49,10 @@ public class Trade {
 
 	private Date tradeDate;
 
+	private LocalDate tradeLocalDate;
+
+	private LocalDateTime tradeLocalDateTime;
+
 	private String action;
 
 	private String symbol;
@@ -63,7 +68,7 @@ public class Trade {
 	private List<Instant> executionTimes;
 
 	@Interleaved
-	private List<SubTrade> subTrades;
+	private List<SubTrade> subTrades = Collections.emptyList();
 
 	/**
 	 * Partial constructor. Intentionally tests a field that is left null sometimes.
@@ -76,9 +81,13 @@ public class Trade {
 	}
 
 	public static Trade aTrade() {
+		return aTrade(null, false);
+	}
+
+	public static Trade aTrade(String customTraderId, boolean addSubtrade) {
 		Trade t = new Trade("ABCD", new ArrayList<>());
 		String tradeId = UUID.randomUUID().toString();
-		String traderId = UUID.randomUUID().toString();
+		String traderId = customTraderId == null ? UUID.randomUUID().toString() : customTraderId;
 
 		t.tradeDetail = new TradeDetail();
 
@@ -88,6 +97,11 @@ public class Trade {
 		t.traderId = traderId;
 		t.tradeTime = Instant.ofEpochSecond(333);
 		t.tradeDate = Date.from(t.tradeTime);
+		t.tradeLocalDate = LocalDate.of(2015, 1, 1);
+		t.tradeLocalDateTime = LocalDateTime.of(2015, 1, 1, 2, 3, 4, 5);
+		if (addSubtrade) {
+			t.subTrades = Collections.singletonList(new SubTrade(t.getTradeDetail().getId(), t.getTraderId(), "subTrade"));
+		}
 		t.tradeDetail.price = 100.0;
 		t.tradeDetail.shares = 12345.6;
 		for (int i = 1; i <= 5; i++) {
@@ -105,26 +119,23 @@ public class Trade {
 			return false;
 		}
 		Trade trade = (Trade) o;
-		return Objects.equals(this.tradeDetail.id, trade.tradeDetail.id)
-				&& Objects.equals(this.age, trade.age)
-				&& Objects.equals(this.action, trade.action)
-				&& Objects.equals(this.tradeDetail.price, trade.tradeDetail.price)
-				&& Objects.equals(this.tradeDetail.shares, trade.tradeDetail.shares)
-				&& Objects.equals(this.symbol, trade.symbol)
-				&& Objects.equals(this.tradeTime, trade.tradeTime)
-				&& Objects.equals(this.traderId, trade.traderId)
-				// java Date contains the time of day, but Cloud Spanner Date is only specific
-				// to the day.
-				&& Objects.equals(DateUtil.truncateTime(this.tradeDate),
-						DateUtil.truncateTime(trade.tradeDate));
+		return getAge() == trade.getAge() &&
+				Objects.equals(getTradeTime(), trade.getTradeTime()) &&
+				Objects.equals(getTradeDate(), trade.getTradeDate()) &&
+				Objects.equals(this.tradeLocalDate, trade.tradeLocalDate) &&
+				Objects.equals(this.tradeLocalDateTime, trade.tradeLocalDateTime) &&
+				Objects.equals(getAction(), trade.getAction()) &&
+				Objects.equals(getSymbol(), trade.getSymbol()) &&
+				Objects.equals(getTradeDetail(), trade.getTradeDetail()) &&
+				Objects.equals(getTraderId(), trade.getTraderId()) &&
+				Objects.equals(getExecutionTimes(), trade.getExecutionTimes()) &&
+				Objects.equals(getSubTrades(), trade.getSubTrades());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.tradeDetail.id, this.age, this.action,
-				this.tradeDetail.price, this.tradeDetail.shares, this.symbol,
-				this.tradeTime, DateUtil.truncateTime(this.tradeDate),
-				this.traderId, this.executionTimes);
+		return Objects.hash(getAge(), getTradeTime(), getTradeDate(), this.tradeLocalDate, this.tradeLocalDateTime,
+				getAction(), getSymbol(), getTradeDetail(), getTraderId(), getExecutionTimes(), getSubTrades());
 	}
 
 	public String getId() {
@@ -209,12 +220,19 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "Trade{" + "id='" + this.tradeDetail.id + '\'' + ", action='" + this.action
-				+ '\'' + ", age=" + this.age + ", price=" + this.tradeDetail.price
-				+ ", shares=" + this.tradeDetail.shares + ", symbol='"
-				+ this.symbol + ", tradeTime="
-				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
-				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
+		return "Trade{" +
+				"age=" + this.age +
+				", tradeTime=" + this.tradeTime +
+				", tradeDate=" + this.tradeDate +
+				", tradeLocalDate=" + this.tradeLocalDate +
+				", tradeLocalDateTime=" + this.tradeLocalDateTime +
+				", action='" + this.action + '\'' +
+				", symbol='" + this.symbol + '\'' +
+				", tradeDetail=" + this.tradeDetail +
+				", traderId='" + this.traderId + '\'' +
+				", executionTimes=" + this.executionTimes +
+				", subTrades=" + this.subTrades +
+				'}';
 	}
 
 	public Date getTradeDate() {

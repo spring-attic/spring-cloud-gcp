@@ -9,6 +9,7 @@ Project features include:
 * Spring Cloud GCP Pub/Sub Support (Spring Integration and Spring Cloud Stream Binder)
 * Spring Data Cloud Spanner
 * Spring Data Cloud Datastore
+* Spring Data Reactive Repositories for Cloud Firestore
 * Spring Data Cloud SQL
 * Google Cloud Stackdriver Logging & Tracing
 * Google Cloud Storage (Spring Resource and Spring Integration)
@@ -57,6 +58,10 @@ A sample of these artifacts are provided below.
 | Cloud Datastore
 | Provides integrations with Google Cloud Datastore
 | `org.springframework.cloud:spring-cloud-gcp-starter-data-datastore`
+
+| Cloud Firestore
+| Provides Spring Data Reactive Repositories support for Cloud Firestore
+| `org.springframework.cloud:spring-cloud-gcp-starter-data-firestore`
 
 | Cloud Pub/Sub
 | Provides integrations with Google Cloud Pub/Sub
@@ -107,8 +112,11 @@ The table below highlights several samples of the most commonly used integration
 | Cloud Spanner
 | https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[spring-cloud-gcp-data-spanner-sample]
 
-| Datastore
+| Cloud Datastore
 | https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[spring-cloud-gcp-data-datastore-sample]
+
+| Cloud Firestore
+| https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[spring-cloud-gcp-data-firestore-sample]
 
 | Cloud SQL (w/ MySQL)
 | https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[spring-cloud-gcp-sql-mysql-sample]

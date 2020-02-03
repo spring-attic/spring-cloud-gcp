@@ -140,4 +140,9 @@ public class DatastorePersistentPropertyImpl
 				.filter((typeInfo) -> typeInfo.getType().isAnnotationPresent(Entity.class))
 				.collect(Collectors.toList());
 	}
+
+	@Override
+	public boolean isLazyLoaded() {
+		return findAnnotation(LazyReference.class) != null;
+	}
 }

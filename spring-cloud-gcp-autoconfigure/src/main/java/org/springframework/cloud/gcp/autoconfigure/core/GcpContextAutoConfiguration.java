@@ -41,9 +41,10 @@ import org.springframework.context.annotation.Configuration;
  * @author Mike Eltsufin
  * @author Elena Felder
  * @author Chengyuan Zhao
+ * @author Serhat Soydan
  */
 @Configuration
-@ConditionalOnProperty(value = "spring.cloud.gcp.core.enabled", matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.cloud.gcp.core.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);

@@ -61,6 +61,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionSystemException;
 
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
@@ -141,6 +142,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.datastoreTemplate.deleteAll(Event.class);
+		this.datastoreTemplate.deleteAll(LazyEntity.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -357,7 +359,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 
-		this.testEntityRepository.saveAll(this.allTestEntities);
+		//test saveAll for iterable
+		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
+		this.testEntityRepository.saveAll(testEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
@@ -447,7 +451,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		Thread.sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+		sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
@@ -516,19 +520,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void referenceTest() {
-		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
-		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
-		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
-		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
-
-		this.datastoreTemplate.save(parent);
-		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		ReferenceEntry parent = saveEntitiesGraph();
 
 		ReferenceEntry loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParent).isEqualTo(parent);
 
 		parent.name = "parent updated";
-		parent.childeren.forEach((child) -> child.name = child.name + " updated");
+		parent.children.forEach((child) -> child.name = child.name + " updated");
 		parent.sibling.name = "sibling updated";
 
 		this.datastoreTemplate.save(parent);
@@ -539,6 +537,68 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParentAfterUpdate).isEqualTo(parent);
+	}
+
+	@Test
+	public void lazyReferenceCollectionTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		ReferenceEntry lazyParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+
+		//Saving an entity with not loaded lazy field
+		this.datastoreTemplate.save(lazyParent);
+
+		ReferenceEntry loadedParent = this.datastoreTemplate.findById(lazyParent.id, ReferenceEntry.class);
+		assertThat(loadedParent.children).containsExactlyInAnyOrder(parent.children.toArray(new ReferenceEntry[0]));
+	}
+
+
+	@Test
+	public void lazyReferenceTest() throws InterruptedException {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+
+		//Saving an entity with not loaded lazy field
+		this.datastoreTemplate.save(loadedParent);
+
+		loadedParent = this.datastoreTemplate.findById(loadedParent.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
+	}
+
+
+	@Test
+	public void singularLazyPropertyTest() {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
+	}
+
+	@Test
+	public void lazyReferenceTransactionTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		//Exception should be produced if a lazy loaded property accessed outside of the initial transaction
+		ReferenceEntry finalLoadedParent = this.transactionalTemplateService.findByIdLazy(parent.id);
+		assertThatThrownBy(() -> finalLoadedParent.children.size()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Lazy load should be invoked within the same transaction");
+
+		//No exception should be produced if a lazy loaded property accessed within the initial transaction
+		ReferenceEntry finalLoadedParentLazyLoaded = this.transactionalTemplateService.findByIdLazyAndLoad(parent.id);
+		assertThat(finalLoadedParentLazyLoaded).isEqualTo(parent);
+	}
+
+	private ReferenceEntry saveEntitiesGraph() {
+		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
+		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
+		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
+		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
+		this.datastoreTemplate.save(parent);
+		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		return parent;
 	}
 
 	@Test
@@ -715,7 +775,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void readOnlyCountTest() {
-		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(this.testEntityA);
 	}
 
 	@Test
@@ -734,6 +794,36 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(readCompany.leaders).hasSize(1);
 		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
+	}
+
+	@Test
+	public void testSlicedEntityProjections() {
+		Slice<TestEntityProjection> testEntityProjectionSlice =
+				testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
+
+		List<TestEntityProjection> testEntityProjections =
+				testEntityProjectionSlice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+
+		// Verifies that the projection method call works.
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test
+	public void testPageableGqlEntityProjections() {
+		Page<TestEntityProjection> page =
+				testEntityRepository.getBySize(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections =
+				page.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
 }
 
@@ -936,10 +1026,10 @@ class Employee {
 	@Override
 	public String toString() {
 		return "Employee{" +
-				"id=" + id.getNameOrId() +
+				"id=" + this.id.getNameOrId() +
 				", subordinates="
-				+ (subordinates != null
-				? subordinates.stream()
+				+ (this.subordinates != null
+				? this.subordinates.stream()
 				.map(employee -> employee.id.getNameOrId())
 				.collect(Collectors.toList())
 				: null)

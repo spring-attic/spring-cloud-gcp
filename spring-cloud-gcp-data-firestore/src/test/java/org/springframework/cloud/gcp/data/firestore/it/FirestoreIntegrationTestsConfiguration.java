@@ -57,7 +57,7 @@ public class FirestoreIntegrationTestsConfiguration {
 
 		// Create a channel
 		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("firestore.googleapis.com", 443)
+				.forTarget("dns:///firestore.googleapis.com:443")
 				.build();
 		return FirestoreGrpc.newStub(channel).withCallCredentials(callCredentials);
 	}

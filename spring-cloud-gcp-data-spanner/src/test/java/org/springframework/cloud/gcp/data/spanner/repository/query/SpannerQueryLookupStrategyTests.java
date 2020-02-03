@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 import org.junit.Before;
 import org.junit.Test;
@@ -162,12 +163,46 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter());
+				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter(),
+				this.spannerMappingContext);
 		assertThat(statement.getSql())
-				.isEqualTo("SELECT id3 , id , id_2 FROM child_test_table WHERE id = @tag0 and id_2 = @tag1");
+				.isEqualTo("SELECT id3, id, id_2 FROM child_test_table WHERE (id = @tag0 AND id_2 = @tag1)");
 		assertThat(statement.getParameters()).hasSize(2);
 		assertThat(statement.getParameters().get("tag0").getString()).isEqualTo("key");
 		assertThat(statement.getParameters().get("tag1").getString()).isEqualTo("key2");
+	}
+
+	@Test
+	public void getColumnsStringForSelectTest() {
+		TestEntity t = new TestEntity();
+		t.id = "key";
+		t.id2 = "key2";
+		String columnsStringForSelect = SpannerStatementQueryExecutor.getColumnsStringForSelect(
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class),
+				this.spannerMappingContext);
+
+		assertThat(columnsStringForSelect)
+				.isEqualTo("other, id, custom_col, id_2, " +
+						"ARRAY (SELECT AS STRUCT id3, id, id_2 " +
+						"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
+						"AND child_test_table.id_2 = custom_test_table.id_2) as childEntities");
+	}
+
+
+	@Test
+	public void getColumnsStringForSelectMultipleTest() {
+		Statement childrenRowsQuery = SpannerStatementQueryExecutor.buildQuery(
+				KeySet.newBuilder().addKey(Key.of("k1.1", "k1.2")).addKey(Key.of("k2.1", "k2.2")).build(),
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class), new SpannerWriteConverter(),
+				this.spannerMappingContext);
+
+		assertThat(childrenRowsQuery.getSql())
+				.isEqualTo(
+						"SELECT other, id, custom_col, id_2, ARRAY (SELECT AS STRUCT id3, id, id_2 " +
+								"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
+								"AND child_test_table.id_2 = custom_test_table.id_2) as childEntities " +
+								"FROM custom_test_table WHERE (id = @tag0 AND id_2 = @tag1) " +
+								"OR (id = @tag2 AND id_2 = @tag3)");
 	}
 
 	@Table(name = "custom_test_table")
