@@ -95,10 +95,11 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 1 && parts.get(0) instanceof PartTree.OrPart) {
 				throw new FirestoreDataException(
-						"Cloud Firestore doesn't support 'OR' (" + this.getQueryMethod().getName() + ")");
+						"Cloud Firestore doesn't support 'OR' (method name: " + this.getQueryMethod().getName() + ")");
 		}
 		List<String> unsupportedParts = this.tree.getParts().stream()
-				.filter(part -> !isSupportedPart(part.getType())).map(part -> part.getType().toString())
+				.filter(part -> !isSupportedPart(part.getType()))
+				.map(part -> part.getType().toString())
 				.collect(Collectors.toList());
 		if (!unsupportedParts.isEmpty()) {
 			throw new FirestoreDataException("Unsupported predicate keywords: " + unsupportedParts
