@@ -260,7 +260,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
-								entityClass, options, sql, this.mappingContext),
+								entityClass, options, sql, this.mappingContext, false),
 						null, null, null, null, null),
 				options);
 	}

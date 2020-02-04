@@ -42,6 +42,7 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -120,10 +121,14 @@ public class SqlSpannerQueryTests {
 	}
 
 	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml) {
-		return new SqlSpannerQuery<Trade>(Trade.class, this.queryMethod,
+		return createQuery(sql, isDml, false);
+	}
+
+	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml, boolean fetchInterleaved) {
+		return new SqlSpannerQuery<>(Trade.class, this.queryMethod,
 				this.spannerTemplate,
 				sql, this.evaluationContextProvider, this.expressionParser,
-				new SpannerMappingContext(), isDml);
+				new SpannerMappingContext(), isDml, fetchInterleaved);
 	}
 
 	@Test
@@ -167,6 +172,51 @@ public class SqlSpannerQueryTests {
 
 		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
 	}
+
+	@Test
+	public void noPageableParamWrappedQueryTest() throws NoSuchMethodException {
+		String sql = "SELECT DISTINCT * FROM "
+				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
+
+		String entityResolvedSql = "SELECT *, " +
+				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children " +
+				"FROM (SELECT DISTINCT * FROM trades) trades";
+
+		Parameters parameters = mock(Parameters.class);
+
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
+
+		when(parameters.getNumberOfParameters()).thenReturn(0);
+
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+				.thenReturn(evaluationContext);
+
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false, true);
+
+		doAnswer((invocation) -> {
+			Statement statement = invocation.getArgument(0);
+			SpannerQueryOptions queryOptions = invocation.getArgument(1);
+			assertThat(queryOptions.isAllowPartialRead()).isTrue();
+
+			assertThat(statement.getSql()).isEqualTo(entityResolvedSql);
+
+			return null;
+		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+		// This dummy method was created so the metadata for the ARRAY param inner type is
+		// provided.
+		Method method = QueryHolder.class.getMethod("dummyMethod2");
+		when(this.queryMethod.getMethod()).thenReturn(method);
+
+		sqlSpannerQuery.execute(new Object[] {});
+
+		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
+	}
+
 
 	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
@@ -382,6 +432,21 @@ public class SqlSpannerQueryTests {
 
 		@Column(name = "trader_id")
 		String traderId;
+
+		@Interleaved
+		List<Child> children;
+	}
+
+
+	@Table(name = "children")
+	private static class Child {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String childId;
+
+		String value;
 	}
 
 	private static class QueryHolder {

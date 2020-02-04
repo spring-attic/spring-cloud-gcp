@@ -73,6 +73,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	private final String sql;
 
 	private final boolean isDml;
+	private final boolean fetchInterleaved;
 
 	private final Function<Object, Struct> paramStructConvertFunc = (param) -> {
 		Builder builder = Struct.newBuilder();
@@ -88,11 +89,13 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			SpannerTemplate spannerTemplate, String sql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
-			SpannerMappingContext spannerMappingContext, boolean isDml) {
+			SpannerMappingContext spannerMappingContext, boolean isDml,
+			boolean fetchInterleaved) {
 		super(type, queryMethod, spannerTemplate, spannerMappingContext);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
+		this.fetchInterleaved = fetchInterleaved;
 		this.isDml = isDml;
 	}
 
@@ -244,7 +247,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						queryTagValue.sql, this.spannerMappingContext);
+						queryTagValue.sql, this.spannerMappingContext, this.fetchInterleaved);
 
 		Class simpleItemType = getReturnedSimpleConvertableItemType();
 

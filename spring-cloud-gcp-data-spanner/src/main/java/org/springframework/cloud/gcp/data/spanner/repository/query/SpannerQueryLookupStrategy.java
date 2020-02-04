@@ -82,22 +82,22 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		boolean isDml = queryMethod.getQueryAnnotation() != null && queryMethod.getQueryAnnotation().dmlStatement();
 
 		if (queryMethod.hasAnnotatedQuery()) {
-			String sql = queryMethod.getQueryAnnotation().value();
-			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml);
+			Query query = queryMethod.getQueryAnnotation();
+			return createSqlSpannerQuery(entityType, queryMethod, query.value(), isDml, query.fetchInterleaved());
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml);
+			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml, false);
 		}
 
 		return createPartTreeSpannerQuery(entityType, queryMethod);
 	}
 
 	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
-			SpannerQueryMethod queryMethod, String sql, boolean isDml) {
+			SpannerQueryMethod queryMethod, String sql, boolean isDml, boolean fetchInterleaved) {
 		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerTemplate, sql,
 				this.evaluationContextProvider, this.expressionParser,
-				this.spannerMappingContext, isDml);
+				this.spannerMappingContext, isDml, fetchInterleaved);
 	}
 
 	<T> PartTreeSpannerQuery<T> createPartTreeSpannerQuery(Class<T> entityType,

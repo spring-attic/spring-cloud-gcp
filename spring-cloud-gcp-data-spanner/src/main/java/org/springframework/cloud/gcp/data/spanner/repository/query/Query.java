@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.data.annotation.QueryAnnotation;
 
 /**
@@ -51,4 +52,11 @@ public @interface Query {
 	 * query method is executed as a DML query.
 	 */
 	boolean dmlStatement() default false;
+
+	/**
+	 * When {@code false} then any {@link Interleaved} lists of the fetched entity will be lazy-loaded.
+	 * Otherwise an SQL will be wrapped to eager-load lists with {@link Interleaved#lazy()} equals fo "false".
+	 * @return {@code false} if {@link Interleaved} lists should be skipped.
+	 */
+	boolean fetchInterleaved() default false;
 }

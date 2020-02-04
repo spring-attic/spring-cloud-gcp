@@ -131,12 +131,14 @@ public final class SpannerStatementQueryExecutor {
 	 * @param sql the sql that will be wrapped with sorting and paging options.
 	 * @param mappingContext a mapping context to convert between Cloud Spanner column names
 	 *     and underlying property names.
+	 * @param fetchInterleaved when {@code true} additional subqueries will be added
+	 *     to fetch eager-Interleaved lists with a single query.   .
 	 * @param <T> the domain type.
 	 * @return the final SQL string with paging and sorting applied.
 	 */
 	public static <T> String applySortingPagingQueryOptions(Class<T> entityClass,
 			SpannerPageableQueryOptions options, String sql,
-			SpannerMappingContext mappingContext) {
+			SpannerMappingContext mappingContext, boolean fetchInterleaved) {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);
 
@@ -144,11 +146,14 @@ public final class SpannerStatementQueryExecutor {
 		// derived table
 		// in SELECT * FROM () if there is no overriding pageable param.
 		if ((options.getSort() == null || options.getSort().isUnsorted()) && options.getLimit() == null
-				&& options.getOffset() == null) {
+				&& options.getOffset() == null && !fetchInterleaved) {
 			return sql;
 		}
-		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
-				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
+		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
+		StringBuilder sb = applySort(options.getSort(),
+				new StringBuilder("SELECT *").append(subquery)
+						.append(" FROM (").append(sql).append(")")
+						.append(subquery.isEmpty() ? "" : " " + persistentEntity.tableName()), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
@@ -303,18 +308,23 @@ public final class SpannerStatementQueryExecutor {
 
 	public static String getColumnsStringForSelect(
 			SpannerPersistentEntity<?> spannerPersistentEntity, SpannerMappingContext mappingContext) {
+		return String.join(", ", spannerPersistentEntity.columns())
+				+ getChildrenSubquery(spannerPersistentEntity, mappingContext);
+	}
+
+	private static String getChildrenSubquery(
+			SpannerPersistentEntity<?> spannerPersistentEntity, SpannerMappingContext mappingContext) {
 		StringJoiner joiner = new StringJoiner(", ");
 		spannerPersistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
 			if (spannerPersistentProperty.isEagerInterleaved()) {
 				Class childType = spannerPersistentProperty.getColumnInnerType();
 				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
 				joiner.add(getChildrenStructsQuery(
-					childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
+						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
 			}
 		});
-		String childrenSubquery = joiner.toString();
-		return String.join(", ", spannerPersistentEntity.columns())
-				+ (childrenSubquery.isEmpty() ? "" : ", " + childrenSubquery);
+		String sql = joiner.toString();
+		return sql.isEmpty() ? "" : ", " + sql;
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,

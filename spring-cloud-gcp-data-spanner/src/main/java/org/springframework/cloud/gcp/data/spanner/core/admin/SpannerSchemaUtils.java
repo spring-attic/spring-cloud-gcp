@@ -114,8 +114,8 @@ public class SpannerSchemaUtils {
 				this.mappingContext
 				.getPersistentEntity(entityClass);
 
-		StringBuilder stringBuilder = new StringBuilder(
-				"CREATE TABLE " + spannerPersistentEntity.tableName() + " ( ");
+		StringBuilder stringBuilder = new StringBuilder()
+				.append("CREATE TABLE ").append(spannerPersistentEntity.tableName()).append(" ( ");
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
 
