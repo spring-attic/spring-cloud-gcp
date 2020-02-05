@@ -55,7 +55,7 @@ public @interface Query {
 
 	/**
 	 * When {@code false} then any {@link Interleaved} lists of the fetched entity will be lazy-loaded.
-	 * Otherwise an SQL will be wrapped to eager-load lists with {@link Interleaved#lazy()} equals fo "false".
+	 * Otherwise an SQL will be wrapped to eager-load lists with {@link Interleaved#lazy()} equals to {@code false} .
 	 * @return {@code false} if {@link Interleaved} lists should be skipped.
 	 */
 	boolean fetchInterleaved() default false;
