@@ -118,7 +118,7 @@ public class PartTreeDatastoreQueryTests {
 		this.datastoreMappingContext = new DatastoreMappingContext();
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
 		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null,
-				datastoreMappingContext);
+				this.datastoreMappingContext);
 		when(this.datastoreTemplate.getDatastoreEntityConverter())
 				.thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions())
@@ -562,6 +562,73 @@ public class PartTreeDatastoreQueryTests {
 					return list;
 				}
 		);
+	}
+
+	@Test
+	public void deleteTest() throws NoSuchMethodException {
+		queryWithMockResult("deleteByAction", null,
+				getClass().getMethod("countByAction", String.class));
+
+		this.partTreeDatastoreQuery = createQuery(false, false);
+
+		Object[] params = new Object[] { "BUY" };
+
+		prepareDeleteResults(false);
+
+		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class) int.class);
+
+		this.partTreeDatastoreQuery.execute(params);
+
+		verify(this.datastoreTemplate, times(0))
+				.query(any(), (Function) any());
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+
+		verify(this.datastoreTemplate, times(1))
+				.deleteAllById(eq(Arrays.asList(3, 4, 5)), any());
+	}
+
+	@Test
+	public void deleteReturnCollectionTest() throws NoSuchMethodException {
+		queryWithMockResult("deleteByAction", null,
+				getClass().getMethod("countByAction", String.class));
+
+		this.partTreeDatastoreQuery = createQuery(false, false);
+
+		Object[] params = new Object[] { "BUY" };
+
+		prepareDeleteResults(true);
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
+
+		List result = (List) this.partTreeDatastoreQuery.execute(params);
+		assertThat(result).containsExactly(3, 4, 5);
+
+		verify(this.datastoreTemplate, times(0))
+				.query(any(), (Function) any());
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+
+		verify(this.datastoreTemplate, times(1))
+				.deleteAll(eq(Arrays.asList(3, 4, 5)));
+	}
+	private void prepareDeleteResults(boolean isCollection) {
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			StructuredQuery<?> statement = invocation.getArgument(0);
+			StructuredQuery.Builder builder = isCollection ? StructuredQuery.newEntityQueryBuilder()
+					: StructuredQuery.newKeyQueryBuilder();
+			StructuredQuery<?> expected = builder
+					.setFilter(PropertyFilter.eq("action", "BUY"))
+					.setKind("trades")
+					.build();
+
+			assertThat(statement).isEqualTo(expected);
+			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+		});
 	}
 
 	@Test

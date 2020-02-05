@@ -66,6 +66,8 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	int deleteBySize(long size);
 
+	void deleteBySizeEquals(long size);
+
 	List<TestEntity> removeByColor(String color);
 
 	List<TestEntity> findByShape(Shape shape);

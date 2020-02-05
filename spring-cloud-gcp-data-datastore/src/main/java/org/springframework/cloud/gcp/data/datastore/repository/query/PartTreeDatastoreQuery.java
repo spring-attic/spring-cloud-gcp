@@ -206,7 +206,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
-		boolean singularResult = !isCountingQuery && collectionType == null;
+		boolean singularResult = (!isCountingQuery && collectionType == null) && !this.tree.isDelete();
 		DatastoreResultsIterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(
 						applyQueryBody(parameters, structredQueryBuilder, total, singularResult, null),
