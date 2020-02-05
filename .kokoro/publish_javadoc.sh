@@ -8,6 +8,9 @@ fi
 # Set the version of python to 3.6
 pyenv global 3.6.1
 
+gcloud auth activate-service-account --key-file=${CREDENTIALS}
+gsutil rm gs://docs-staging/java-spring-cloud-gcp-1.3.0.BUILD-SNAPSHOT.tar.gz
+
 # Get into the spring-cloud-gcp repo directory
 dir=$(dirname "$0")
 pushd $dir/../
