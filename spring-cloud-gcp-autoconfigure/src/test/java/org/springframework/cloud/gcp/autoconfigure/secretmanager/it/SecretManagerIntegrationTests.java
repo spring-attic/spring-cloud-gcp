@@ -87,10 +87,7 @@ public class SecretManagerIntegrationTests {
 				.isEqualTo("the secret data.");
 
 		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
-
-		// This byte array is the equivalent representation to "the secret data."
-		assertThat(byteArraySecret).isEqualTo(
-				new byte[] { 116, 104, 101, 32, 115, 101, 99, 114, 101, 116, 32, 100, 97, 116, 97, 46 });
+		assertThat(byteArraySecret).isEqualTo("the secret data.".getBytes());
 	}
 
 	@Test

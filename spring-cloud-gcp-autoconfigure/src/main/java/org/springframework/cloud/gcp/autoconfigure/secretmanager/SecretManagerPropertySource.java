@@ -52,7 +52,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 
 		super(propertySourceName, client);
 
-		Map<String, Object> propertiesMap = initializePropertiesMap(
+		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
 				client, projectIdProvider.getProjectId(), secretsNamespace);
 
 		this.properties = propertiesMap;
@@ -69,7 +69,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		return properties.get(name);
 	}
 
-	private static Map<String, Object> initializePropertiesMap(
+	private static Map<String, Object> createSecretsPropertiesMap(
 			SecretManagerServiceClient client, String projectId, String secretsNamespace) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
