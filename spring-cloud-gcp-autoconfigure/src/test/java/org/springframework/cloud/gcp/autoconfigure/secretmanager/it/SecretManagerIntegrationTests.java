@@ -66,7 +66,6 @@ public class SecretManagerIntegrationTests {
 		this.context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.enabled=true")
 				.run();
 
 		this.projectIdProvider = this.context.getBeanFactory().getBean(GcpProjectIdProvider.class);
@@ -84,11 +83,10 @@ public class SecretManagerIntegrationTests {
 
 	@Test
 	public void testConfiguration() {
-		assertThat(this.context.getEnvironment().getProperty("spring-cloud-gcp.secrets.my-secret"))
+		assertThat(this.context.getEnvironment().getProperty("my-secret"))
 				.isEqualTo("the secret data.");
 
-		byte[] byteArraySecret = this.context.getEnvironment().getProperty(
-				"spring-cloud-gcp.secrets.my-secret", byte[].class);
+		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
 
 		// This byte array is the equivalent representation to "the secret data."
 		assertThat(byteArraySecret).isEqualTo(
