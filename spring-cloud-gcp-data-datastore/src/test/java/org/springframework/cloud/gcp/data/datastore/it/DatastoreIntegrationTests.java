@@ -358,6 +358,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
+		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
+
+		this.testEntityRepository.saveAll(this.allTestEntities);
+
+		this.testEntityRepository.deleteBySizeEquals(1L);
+		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
 
 		//test saveAll for iterable
 		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
