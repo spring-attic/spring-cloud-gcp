@@ -56,23 +56,17 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	private final GcpProjectIdProvider gcpProjectIdProvider;
 
-	public GcpSecretManagerBootstrapConfiguration(GcpSecretManagerProperties properties)
-			throws IOException {
+	public GcpSecretManagerBootstrapConfiguration(
+			GcpSecretManagerProperties properties,
+			ConfigurableEnvironment configurableEnvironment) throws IOException {
 
 		this.properties = properties;
 		this.credentialsProvider = new DefaultCredentialsProvider(properties);
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId
 				: new DefaultGcpProjectIdProvider();
-	}
 
-	/**
-	 * Registers {@link ByteString} type converters to convert to String and byte[].
-	 */
-	@Bean
-	public ConfigurableEnvironment configurableEnvironment(
-			ConfigurableEnvironment configurableEnvironment) {
-
+		// Registers {@link ByteString} type converters to convert to String and byte[].
 		configurableEnvironment.getConversionService().addConverter(
 				new Converter<ByteString, String>() {
 					@Override
@@ -80,7 +74,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 						return source.toStringUtf8();
 					}
 				});
-		
+
 		configurableEnvironment.getConversionService().addConverter(
 				new Converter<ByteString, byte[]>() {
 					@Override
@@ -88,8 +82,6 @@ public class GcpSecretManagerBootstrapConfiguration {
 						return source.toByteArray();
 					}
 				});
-
-		return configurableEnvironment;
 	}
 
 	@Bean
