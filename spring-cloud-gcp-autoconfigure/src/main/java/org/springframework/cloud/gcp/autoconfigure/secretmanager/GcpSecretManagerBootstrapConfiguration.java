@@ -18,8 +18,6 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
 import java.io.IOException;
 
-import javax.annotation.PostConstruct;
-
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceSettings;
@@ -29,7 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
@@ -38,7 +35,7 @@ import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.ConverterRegistry;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * Bootstrap Autoconfiguration for GCP Secret Manager which enables loading secrets as
@@ -69,25 +66,30 @@ public class GcpSecretManagerBootstrapConfiguration {
 				: new DefaultGcpProjectIdProvider();
 	}
 
-	@PostConstruct
-	public void init() {
-		// In this method, we register the converters which convert SecretPayload objects to
-		// Strings and byte[].
-		ConverterRegistry converterRegistry = (ConverterRegistry) ApplicationConversionService.getSharedInstance();
+	/**
+	 * Registers {@link ByteString} type converters to convert to String and byte[].
+	 */
+	@Bean
+	public ConfigurableEnvironment configurableEnvironment(
+			ConfigurableEnvironment configurableEnvironment) {
 
-		converterRegistry.addConverter(new Converter<ByteString, String>() {
-			@Override
-			public String convert(ByteString source) {
-				return source.toStringUtf8();
-			}
-		});
+		configurableEnvironment.getConversionService().addConverter(
+				new Converter<ByteString, String>() {
+					@Override
+					public String convert(ByteString source) {
+						return source.toStringUtf8();
+					}
+				});
+		
+		configurableEnvironment.getConversionService().addConverter(
+				new Converter<ByteString, byte[]>() {
+					@Override
+					public byte[] convert(ByteString source) {
+						return source.toByteArray();
+					}
+				});
 
-		converterRegistry.addConverter(new Converter<ByteString, byte[]>() {
-			@Override
-			public byte[] convert(ByteString source) {
-				return source.toByteArray();
-			}
-		});
+		return configurableEnvironment;
 	}
 
 	@Bean
