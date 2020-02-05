@@ -18,13 +18,18 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceSettings;
+import com.google.protobuf.ByteString;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
@@ -32,10 +37,20 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.ConverterRegistry;
 
+/**
+ * Bootstrap Autoconfiguration for GCP Secret Manager which enables loading secrets as
+ * properties into the application {@link org.springframework.core.env.Environment}.
+ *
+ * @author Daniel Zou
+ * @since 1.3
+ */
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
-@ConditionalOnProperty("spring.cloud.gcp.secretmanager.enabled")
+@ConditionalOnClass(SecretManagerServiceClient.class)
+@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
 
 	private final GcpSecretManagerProperties properties;
@@ -54,6 +69,27 @@ public class GcpSecretManagerBootstrapConfiguration {
 				: new DefaultGcpProjectIdProvider();
 	}
 
+	@PostConstruct
+	public void init() {
+		// In this method, we register the converters which convert SecretPayload objects to
+		// Strings and byte[].
+		ConverterRegistry converterRegistry = (ConverterRegistry) ApplicationConversionService.getSharedInstance();
+
+		converterRegistry.addConverter(new Converter<ByteString, String>() {
+			@Override
+			public String convert(ByteString source) {
+				return source.toStringUtf8();
+			}
+		});
+
+		converterRegistry.addConverter(new Converter<ByteString, byte[]>() {
+			@Override
+			public byte[] convert(ByteString source) {
+				return source.toByteArray();
+			}
+		});
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public SecretManagerServiceClient secretManagerClient() throws IOException {
@@ -67,6 +103,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		return new SecretManagerPropertySourceLocator(client, this.gcpProjectIdProvider);
+		return new SecretManagerPropertySourceLocator(
+				client, this.gcpProjectIdProvider, this.properties.getSecretPropertyNamespace());
 	}
 }

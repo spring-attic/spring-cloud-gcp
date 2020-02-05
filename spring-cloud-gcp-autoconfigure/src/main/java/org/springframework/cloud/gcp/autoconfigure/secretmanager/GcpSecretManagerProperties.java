@@ -36,6 +36,12 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String projectId;
 
+	/**
+	 * Defines the namespace prefix that will be prepended to the environment property names
+	 * of secrets in the environment. Must end in a period if non-empty.
+	 */
+	private String secretPropertyNamespace = "spring-cloud-gcp.secrets.";
+
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -46,5 +52,13 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
+	}
+
+	public String getSecretPropertyNamespace() {
+		return secretPropertyNamespace;
+	}
+
+	public void setSecretPropertyNamespace(String secretPropertyNamespace) {
+		this.secretPropertyNamespace = secretPropertyNamespace;
 	}
 }
