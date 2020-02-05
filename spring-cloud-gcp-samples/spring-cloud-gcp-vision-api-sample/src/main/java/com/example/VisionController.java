@@ -56,7 +56,8 @@ public class VisionController {
 	 * @param imageUrl the URL of the image
 	 * @param map the model map to use
 	 * @return a string with the list of labels and percentage of certainty
-	 * @throws CloudVisionTemplate if the Vision API call produces an error
+	 * @throws org.springframework.cloud.gcp.vision.CloudVisionException if the Vision API call
+	 *    produces an error
 	 */
 	@GetMapping("/extractLabels")
 	public ModelAndView extractLabels(String imageUrl, ModelMap map) {
