@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class FirebaseAuthenticationProperties {
 
 	/**
-	 * Link to Google's public endpoint containing firebase public keys.
+	 * Link to Google's public endpoint containing Firebase public keys.
 	 */
 	private String publicKeysEndpoint = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
 

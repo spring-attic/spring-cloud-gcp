@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.nimbusds.jose.util.X509CertUtils;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
@@ -45,6 +46,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
 
 
@@ -118,7 +120,7 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 					nimbusJwtDecoder.setJwtValidator(tokenValidator);
 					delegates.put(key, nimbusJwtDecoder);
 				}
-				catch (CertificateException ce) {
+				catch (Exception ce) {
 					logger.error("Could not read certificate for key {}", key);
 				}
 			}
@@ -145,23 +147,9 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 		return System.currentTimeMillis() >= this.expires;
 	}
 
-	private X509Certificate convertToX509Cert(String certificateString) throws CertificateException {
-		X509Certificate certificate = null;
-		CertificateFactory cf = null;
-		try {
-			if (certificateString != null && !certificateString.trim().isEmpty()) {
-				certificateString = certificateString
-						.replace("\n", "")
-						.replace("-----BEGIN CERTIFICATE-----", "")
-						.replace("-----END CERTIFICATE-----", "");
-				byte[] certificateData = Base64.getDecoder().decode(certificateString);
-				cf = CertificateFactory.getInstance("X509");
-				certificate = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certificateData));
-			}
-		}
-		catch (CertificateException e) {
-			throw new CertificateException(e);
-		}
+	private X509Certificate convertToX509Cert(String certificateString) {
+		X509Certificate certificate = X509CertUtils.parse(certificateString);
+		Assert.notNull(certificate, "Could not parse certificate String");
 		return certificate;
 	}
 
