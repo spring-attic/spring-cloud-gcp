@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Spring Cloud GCP Firebase Authentication Sample Application</title>
+    <script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-auth.js"></script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" rel="stylesheet" type="text/css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="/templates/js/app"></script>
+    <link href="css/app.css" rel="stylesheet">
+    <script>
+        var firebaseUser;
+        var uiConfig = {
+            signInSuccessUrl: "http://" + window.location.hostname + ":" + window.location.port + "/",
+            signInOptions: [
+                // Leave the lines as is for the providers you want to offer your users.
+                firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+                firebase.auth.EmailAuthProvider.PROVIDER_ID
+            ],
+            // tosUrl and privacyPolicyUrl accept either url string or a callback
+            // function.
+            // Terms of service url/callback.
+            tosUrl: "http://" + window.location.hostname + ":" + window.location.port + "/",
+            // Privacy policy url/callback.
+            privacyPolicyUrl: function () {
+                window.location.assign("http://" + window.location.hostname + ":" + window.location.port + "/");
+
+            }
+        };
+        // Initialize the FirebaseUI Widget using Firebase.
+        var ui = new firebaseui.auth.AuthUI(firebase.auth());
+        ui.start('#firebaseui-auth-container', uiConfig);
+        // The start method will wait until the DOM is loaded.
+        $(document).ready(function () {
+
+            $("#logoutBtn").click(function () {
+                firebase.auth().signOut().then(function () {
+                    firebaseUser = null;
+                    $("#loginBtn").css("visibiliy", "visible");
+                    $("#logoutBtn").css("visibility", "hidden");
+                });
+            });
+            $("#loginBtn").click(function () {
+                $("#firebaseui-auth-container").css("visibility", "visible");
+
+            });
+            $("#askBtn").click(function () {
+                var headers = {};
+                if (firebaseUser) {
+                    headers["Authorization"] = "Bearer " + firebaseUser.accessToken;
+                }
+                $.ajax({
+                    method: "GET",
+                    url: "/answer",
+                    headers: headers,
+                    success: function (result) {
+                        $("#answer").text(result.answer);
+                        $("#answer").attr("class", "success");
+                    },
+                    error: function (result) {
+                        $("#answer").text("Ooops, it looks like you have not identified yourself yet, please be kind and login first.");
+                        $("#answer").attr("class", "error");
+                    }
+                });
+            });
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+                    user.getIdToken().then(function (accessToken) {
+                        firebaseUser = {
+                            displayName: user.displayName,
+                            email: user.email,
+                            emailVerified: user.emailVerified,
+                            phoneNumber: user.phoneNumber,
+                            photoURL: user.photoURL,
+                            uid: user.uid,
+                            accessToken: accessToken,
+                            providerData: user.providerData
+                        }
+                        $("#firebaseui-auth-container").css("visibility", "hidden");
+                        $("#loginBtn").css("visibility", "hidden");
+                        $("#logoutBtn").css("visibility", "visible");
+                        $("#cli").css("visibility", "visible");
+                        $("#curl").text("curl -H \"Authorization: Bearer " + firebaseUser.accessToken +"\" http://localhost:8080/answer");
+                    }, null, '  ');
+
+                }
+            }, function (error) {
+                console.log(error);
+            });
+
+        });
+    </script>
+</head>
+<body>
+<div class="navbar-fixed">
+    <nav>
+        <div class="nav-wrapper blue lighten-2">
+            <a class="brand-logo" href="#">Spring Cloud GCP Firebase Authentication Sample</a>
+            <ul class="right hide-on-med-and-down" id="nav-mobile">
+                <li><a class="waves-effect waves-light btn" id="loginBtn">Login</a></li>
+                <li><a class="waves-effect waves-light btn" id="logoutBtn" style="visibility: hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+<div class="container" id="firebaseui-auth-container" style="visibility: hidden"></div>
+<div class="container" style="padding-left: 85px; padding-top: 85px">
+    <div class="row">
+        <div class="col s10">
+            <span class="question">What is the answer to the Ultimate Question of Life, the Universe, and Everything?</span>
+        </div>
+        <div class="col s2"><a class="waves-effect waves-light btn" id="askBtn">Ask</a></div>
+
+    </div>
+    <div class="row">
+        <span id="answer"></span>
+    </div>
+    <div class="row" style="padding-top: 25px;">
+
+        <div class="cli" id="cli" style="visibility: hidden">
+            <div class="row"><span style="font-weight: bold; color: aqua">curl command:</span> </div>
+            <div class="row" id="curl" style="padding-top: 5px"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

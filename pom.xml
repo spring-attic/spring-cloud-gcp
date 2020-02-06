@@ -42,6 +42,7 @@
 		<module>spring-cloud-gcp-logging</module>
 		<module>spring-cloud-gcp-data-firestore</module>
 		<module>spring-cloud-gcp-bigquery</module>
+		<module>spring-cloud-gcp-security-firebase</module>
 	</modules>
 
 	<properties>

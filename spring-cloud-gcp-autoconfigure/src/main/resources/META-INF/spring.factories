@@ -14,6 +14,7 @@ org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfigurat
 org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreRepositoriesAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.security.FirebaseAuthenticationAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.vision.CloudVisionAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreEmulatorAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.bigquery.GcpBigQueryAutoConfiguration,\
