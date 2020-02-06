@@ -10,8 +10,9 @@ This sample app provides simple login page using https://github.com/firebase/fir
 
 1. Create a new firebase project as instructed https://firebase.google.com/docs/web/setup[here]
 2. Once you finish the process make sure you configure the following environment variables before running the app:
-    a. FIREBASE_CONFIG_API_KEY: Should be your "apiKey" value
-    b. FIREBASE_CONFIG_APP_ID: Should be your "appId" value
+    a. FIREBASE_CONFIG_API_KEY: Should be your "apiKey" value (you can find it in Firebase console project settings in "Web API Key" field)
+    b. FIREBASE_CONFIG_APP_ID: Should be your "appId" value for the application you set up in step 1.
+
 3. Make sure that you are authenticated with `gcloud` and you have set the correct `projectId` to be the same project as your Firebase project.
 This app uses default login and will rely on that to extract the `projectId` using the `GcpProjectIdProvider`
 4. Go to your Firebase project, select the web application you have created and enable two providers: `Google` and `email`
