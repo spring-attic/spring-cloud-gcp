@@ -150,10 +150,11 @@ public final class SpannerStatementQueryExecutor {
 			return sql;
 		}
 		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
+		final String alias = subquery.isEmpty() ? "" : " " + persistentEntity.tableName();
 		StringBuilder sb = applySort(options.getSort(),
 				new StringBuilder("SELECT *").append(subquery)
-						.append(" FROM (").append(sql).append(")")
-						.append(subquery.isEmpty() ? "" : " " + persistentEntity.tableName()), (o) -> {
+						.append(" FROM (").append(sql).append(")").append(alias),
+				(o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
