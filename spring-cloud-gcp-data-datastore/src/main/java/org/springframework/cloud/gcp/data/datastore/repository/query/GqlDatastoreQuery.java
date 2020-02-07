@@ -140,24 +140,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
 		DatastoreResultsIterable found = isNonEntityReturnType
-				? this.datastoreTemplate.queryIterable(query,
-						GqlDatastoreQuery::getNonEntityObjectFromRow)
+				? this.datastoreTemplate.queryIterable(query, GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
 		Object result;
 		if (isPageQuery() || isSliceQuery()) {
-			Pageable pageableParam =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
-			List resultsList = found == null ? Collections.emptyList()
-					: (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList());
-
-			if (isPageQuery()) {
-				result = processRawObjectForProjection(buildPage(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList));
-			}
-			else {
-				result = buildSlice(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
-			}
-			result = processRawObjectForProjection(result);
+			result = buildPageOrSlice(parameters, parsedQueryWithTagsAndValues, found);
 		}
 		else if (this.queryMethod.isCollectionQuery()) {
 			result = convertCollectionResult(returnedItemType, isNonEntityReturnType, found);
@@ -167,6 +155,19 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		return result;
+	}
+
+	private Object buildPageOrSlice(Object[] parameters, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+			DatastoreResultsIterable found) {
+		Pageable pageableParam =
+				new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
+		List resultsList = found == null ? Collections.emptyList()
+				: (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList());
+
+		Object result = isPageQuery()
+				? buildPage(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList)
+				: buildSlice(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
+		return processRawObjectForProjection(result);
 	}
 
 	private Object buildSlice(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
