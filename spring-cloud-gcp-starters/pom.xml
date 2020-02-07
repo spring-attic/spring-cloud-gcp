@@ -38,5 +38,6 @@
 		<module>spring-cloud-gcp-starter-data-firestore</module>
 		<module>spring-cloud-gcp-starter-bigquery</module>
 		<module>spring-cloud-gcp-starter-security-firebase</module>
-    </modules>
+		<module>spring-cloud-gcp-starter-secretmanager</module>
+	</modules>
 </project>
