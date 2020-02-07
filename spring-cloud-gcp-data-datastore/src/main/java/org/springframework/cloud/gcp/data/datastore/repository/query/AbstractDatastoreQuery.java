@@ -17,10 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Array;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -58,14 +56,6 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	@Override
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
-	}
-
-	protected List applyProjection(Iterable<T> rawResult) {
-		if (rawResult == null) {
-			return Collections.emptyList();
-		}
-		return StreamSupport.stream(rawResult.spliterator(), false).map(this::processRawObjectForProjection)
-				.collect(Collectors.toList());
 	}
 
 	/**

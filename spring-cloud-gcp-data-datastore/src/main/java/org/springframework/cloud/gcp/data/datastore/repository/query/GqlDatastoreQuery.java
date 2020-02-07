@@ -44,8 +44,10 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Parameter;
@@ -140,27 +142,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
 		DatastoreResultsIterable found = isNonEntityReturnType
-				? this.datastoreTemplate.queryIterable(query,
-						GqlDatastoreQuery::getNonEntityObjectFromRow)
+				? this.datastoreTemplate.queryIterable(query, GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
 		Object result;
 		if (isPageQuery() || isSliceQuery()) {
-			Pageable pageableParam =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
-			List resultsList = found == null ? Collections.emptyList()
-					: this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-							.convertOnRead(applyProjection(found), List.class, returnedItemType);
-
-			if (isPageQuery()) {
-				result = buildPage(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
-			}
-			else {
-				result = buildSlice(pageableParam, parsedQueryWithTagsAndValues, found.getCursor(), resultsList);
-			}
+			result = buildPageOrSlice(parameters, parsedQueryWithTagsAndValues, found);
 		}
 		else if (this.queryMethod.isCollectionQuery()) {
-			result = convertCollectionResult(returnedItemType, isNonEntityReturnType, found);
+			result = convertCollectionResult(returnedItemType, found);
 		}
 		else {
 			result = convertSingularResult(returnedItemType, isNonEntityReturnType, found);
@@ -169,7 +159,21 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return result;
 	}
 
-	private Object buildSlice(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+	private Object buildPageOrSlice(Object[] parameters, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+			DatastoreResultsIterable found) {
+		Pageable pageableParam =
+				new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters).getPageable();
+		List resultsList = found == null ? Collections.emptyList()
+				: (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList());
+
+		Cursor cursor = found != null ? found.getCursor() : null;
+		Slice result = isPageQuery()
+				? buildPage(pageableParam, parsedQueryWithTagsAndValues, cursor, resultsList)
+				: buildSlice(pageableParam, parsedQueryWithTagsAndValues, cursor, resultsList);
+		return processRawObjectForProjection(result);
+	}
+
+	private Slice buildSlice(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
 			Cursor cursor, List resultsList) {
 		GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQuery(cursor, 1);
 		DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery, this.entityType);
@@ -178,7 +182,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return new SliceImpl(resultsList, pageable, next.iterator().hasNext());
 	}
 
-	private Object buildPage(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
+	private Page buildPage(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
 			Cursor cursor, List resultsList) {
 		Long count = pageableParam instanceof DatastorePageable
 				? ((DatastorePageable) pageableParam).getTotalCount()
@@ -194,13 +198,11 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return new PageImpl(resultsList, pageable, count);
 	}
 
-	private Object convertCollectionResult(Class returnedItemType,
-			boolean isNonEntityReturnType, Iterable rawResult) {
+	private Object convertCollectionResult(Class returnedItemType, Iterable rawResult) {
 		Object result = this.datastoreTemplate.getDatastoreEntityConverter()
 				.getConversions().convertOnRead(
-						isNonEntityReturnType ? rawResult : applyProjection(rawResult),
-						this.queryMethod.getCollectionReturnType(), returnedItemType);
-		return result;
+						rawResult, this.queryMethod.getCollectionReturnType(), returnedItemType);
+		return processRawObjectForProjection(result);
 	}
 
 	private Object convertSingularResult(Class returnedItemType,
