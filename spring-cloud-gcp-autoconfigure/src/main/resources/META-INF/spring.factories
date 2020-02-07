@@ -23,4 +23,5 @@ org.springframework.cloud.gcp.autoconfigure.firestore.FirestoreRepositoriesAutoC
 org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration  
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration
+org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration
