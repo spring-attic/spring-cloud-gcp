@@ -47,11 +47,8 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	void deleteBySymbolAndAction(String symbol, String action);
 
-	@Query(value = "SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id", fetchInterleaved = true)
-	Optional<Trade> fetchByIdEagerly(@Param("id") String id);
-
-	@Query(value = "SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id", fetchInterleaved = false)
-	Optional<Trade> fetchByIdLazy(@Param("id") String id);
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id")
+	Optional<Trade> fetchById(@Param("id") String id);
 
 	@Query(dmlStatement = true, value = "UPDATE :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:" +
 			" set action = @action WHERE id = @id")

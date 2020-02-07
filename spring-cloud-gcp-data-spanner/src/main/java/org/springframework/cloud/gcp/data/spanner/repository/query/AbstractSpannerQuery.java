@@ -62,7 +62,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
-		Class simpleConvertedType = getReturnedSimpleConvertableItemType();
+		Class<?> simpleConvertedType = getReturnedSimpleConvertableItemType();
 		if (simpleConvertedType != null) {
 			return convertToSimpleReturnType(results, simpleConvertedType);
 		}
@@ -83,8 +83,8 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 						.convert(results.get(0), simpleConvertedType);
 	}
 
-	Class getReturnedSimpleConvertableItemType() {
-		Class itemType = this.queryMethod.isCollectionQuery()
+	Class<?> getReturnedSimpleConvertableItemType() {
+		Class<?> itemType = this.queryMethod.isCollectionQuery()
 				? this.queryMethod.getResultProcessor().getReturnedType()
 						.getReturnedType()
 				: this.queryMethod.getReturnedObjectType();

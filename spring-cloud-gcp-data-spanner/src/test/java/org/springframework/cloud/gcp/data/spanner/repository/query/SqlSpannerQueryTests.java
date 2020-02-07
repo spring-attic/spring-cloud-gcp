@@ -121,14 +121,10 @@ public class SqlSpannerQueryTests {
 	}
 
 	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml) {
-		return createQuery(sql, isDml, false);
-	}
-
-	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml, boolean fetchInterleaved) {
 		return new SqlSpannerQuery<>(Trade.class, this.queryMethod,
 				this.spannerTemplate,
 				sql, this.evaluationContextProvider, this.expressionParser,
-				new SpannerMappingContext(), isDml, fetchInterleaved);
+				new SpannerMappingContext(), isDml);
 	}
 
 	@Test
@@ -136,7 +132,9 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
-		String entityResolvedSql = "SELECT DISTINCT * FROM trades";
+		String entityResolvedSql = "SELECT DISTINCT *"
+				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
+				+ "FROM trades";
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -178,9 +176,9 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
-		String entityResolvedSql = "SELECT *, " +
-				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children " +
-				"FROM (SELECT DISTINCT * FROM trades) trades";
+		String entityResolvedSql = "SELECT DISTINCT *, " +
+				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children" +
+				" FROM trades";
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -195,7 +193,7 @@ public class SqlSpannerQueryTests {
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
 				.thenReturn(evaluationContext);
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false, true);
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
 		doAnswer((invocation) -> {
 			Statement statement = invocation.getArgument(0);
@@ -231,8 +229,10 @@ public class SqlSpannerQueryTests {
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
 				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
-				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
+		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT *"
+				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
+				+ "FROM trades@{index=fakeindex} "
+				+ "WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "

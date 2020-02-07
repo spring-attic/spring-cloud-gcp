@@ -95,11 +95,6 @@ public class SpannerQueryLookupStrategyTests {
 			public boolean dmlStatement() {
 				return false;
 			}
-
-			@Override
-			public boolean fetchInterleaved() {
-				return false;
-			}
 		});
 	}
 
@@ -132,7 +127,7 @@ public class SpannerQueryLookupStrategyTests {
 		this.spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
 		verify(this.spannerQueryLookupStrategy, times(1)).createSqlSpannerQuery(
-				eq(Object.class), same(this.queryMethod), eq(query), eq(false), eq(false));
+				eq(Object.class), same(this.queryMethod), eq(query), eq(false));
 	}
 
 	@Test
@@ -184,7 +179,7 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		String columnsStringForSelect = SpannerStatementQueryExecutor.getColumnsStringForSelect(
 				this.spannerMappingContext.getPersistentEntity(TestEntity.class),
-				this.spannerMappingContext);
+				this.spannerMappingContext, true);
 
 		assertThat(columnsStringForSelect)
 				.isEqualTo("other, id, custom_col, id_2, " +

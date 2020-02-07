@@ -83,21 +83,21 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 		if (queryMethod.hasAnnotatedQuery()) {
 			Query query = queryMethod.getQueryAnnotation();
-			return createSqlSpannerQuery(entityType, queryMethod, query.value(), isDml, query.fetchInterleaved());
+			return createSqlSpannerQuery(entityType, queryMethod, query.value(), isDml);
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml, false);
+			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml);
 		}
 
 		return createPartTreeSpannerQuery(entityType, queryMethod);
 	}
 
 	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
-			SpannerQueryMethod queryMethod, String sql, boolean isDml, boolean fetchInterleaved) {
+			SpannerQueryMethod queryMethod, String sql, boolean isDml) {
 		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerTemplate, sql,
 				this.evaluationContextProvider, this.expressionParser,
-				this.spannerMappingContext, isDml, fetchInterleaved);
+				this.spannerMappingContext, isDml);
 	}
 
 	<T> PartTreeSpannerQuery<T> createPartTreeSpannerQuery(Class<T> entityType,

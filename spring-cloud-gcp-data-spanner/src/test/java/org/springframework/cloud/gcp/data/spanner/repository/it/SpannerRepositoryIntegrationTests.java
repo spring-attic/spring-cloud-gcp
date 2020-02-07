@@ -259,25 +259,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		// test eager-fetch in @Query
 		Mockito.clearInvocations(spannerTemplate);
 		final Trade aTrade = someTrade;
-		assertThat(tradeRepository.fetchByIdEagerly(aTrade.getId()))
+		assertThat(tradeRepository.fetchById(aTrade.getId()))
 				.isNotEmpty()
 				.hasValueSatisfying(t -> assertThat(t.getId()).isEqualTo(aTrade.getId()))
 				.hasValueSatisfying(t -> assertThat(t.getTraderId()).isEqualTo(aTrade.getTraderId()))
 				.hasValueSatisfying(t -> assertThat(t.getSymbol()).isEqualTo(aTrade.getSymbol()))
 				.hasValueSatisfying(t -> assertThat(t.getSubTrades()).hasSize(aTrade.getSubTrades().size()));
 		Mockito.verify(spannerTemplate, Mockito.times(1))
-				.executeQuery(any(Statement.class), any());
-		Mockito.verify(spannerTemplate, Mockito.times(1))
-				.query(eq(Trade.class), any(Statement.class), any(SpannerQueryOptions.class));
-
-		Mockito.clearInvocations(spannerTemplate);
-		assertThat(tradeRepository.fetchByIdLazy(aTrade.getId()))
-				.isNotEmpty()
-				.hasValueSatisfying(t -> assertThat(t.getId()).isEqualTo(aTrade.getId()))
-				.hasValueSatisfying(t -> assertThat(t.getTraderId()).isEqualTo(aTrade.getTraderId()))
-				.hasValueSatisfying(t -> assertThat(t.getSymbol()).isEqualTo(aTrade.getSymbol()))
-				.hasValueSatisfying(t -> assertThat(t.getSubTrades()).hasSize(aTrade.getSubTrades().size()));
-		Mockito.verify(spannerTemplate, Mockito.times(2))
 				.executeQuery(any(Statement.class), any());
 		Mockito.verify(spannerTemplate, Mockito.times(1))
 				.query(eq(Trade.class), any(Statement.class), any(SpannerQueryOptions.class));
