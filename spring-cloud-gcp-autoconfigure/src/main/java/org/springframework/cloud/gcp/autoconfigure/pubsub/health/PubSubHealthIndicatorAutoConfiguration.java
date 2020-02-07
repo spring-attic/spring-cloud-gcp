@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.3
  */
 @Configuration
-@ConditionalOnClass(HealthIndicator.class)
+@ConditionalOnClass({HealthIndicator.class, PubSubTemplate.class})
 @ConditionalOnEnabledHealthIndicator("pubsub")
 @AutoConfigureBefore(HealthContributorAutoConfiguration.class)
 @AutoConfigureAfter(GcpPubSubAutoConfiguration.class)
