@@ -400,7 +400,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.findEntitiesWithCustomProjectionQuery(1L);
 
 		assertThat(this.testEntityRepository.countBySizeAndColor(2, "blue")).isEqualTo(1);
-		assertThat(this.testEntityRepository.getBySize(2L).getColor()).isEqualTo("blue");
+		assertThat(this.testEntityRepository.getBySizeSlice(2L).getColor()).isEqualTo("blue");
 		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
@@ -805,7 +805,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Test
 	public void testSlicedEntityProjections() {
 		Slice<TestEntityProjection> testEntityProjectionSlice =
-				testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
+				this.testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
 
 		List<TestEntityProjection> testEntityProjections =
 				testEntityProjectionSlice.get().collect(Collectors.toList());
@@ -819,17 +819,41 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void testPageableGqlEntityProjections() {
+	public void testPageableGqlEntityProjectionsPage() {
 		Page<TestEntityProjection> page =
-				testEntityRepository.getBySize(2L, PageRequest.of(0, 3));
+				this.testEntityRepository.getBySizePage(2L, PageRequest.of(0, 3));
 
-		List<TestEntityProjection> testEntityProjections =
-				page.get().collect(Collectors.toList());
+		List<TestEntityProjection> testEntityProjections = page.get().collect(Collectors.toList());
 
 		assertThat(testEntityProjections).hasSize(1);
 		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
 		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test
+	public void testPageableGqlEntityProjectionsSlice() {
+		Slice<TestEntityProjection> slice =
+				this.testEntityRepository.getBySizeSlice(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections = slice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test
+	public void testSliceString() {
+		Slice<String> slice =
+				this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+
+		List<String> testEntityProjections =
+				slice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isEqualTo("blue");
 	}
 }
 
