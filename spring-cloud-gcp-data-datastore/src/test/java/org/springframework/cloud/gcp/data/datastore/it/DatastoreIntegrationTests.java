@@ -33,6 +33,7 @@ import com.google.cloud.datastore.Key;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -844,6 +845,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
 
+	//An index containing both "color" and "size" is required
+	@Ignore
 	@Test
 	public void testSliceString() {
 		Slice<String> slice =
