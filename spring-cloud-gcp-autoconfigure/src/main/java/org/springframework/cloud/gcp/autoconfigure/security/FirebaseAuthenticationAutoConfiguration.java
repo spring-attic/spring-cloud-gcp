@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
@@ -48,6 +49,7 @@ import org.springframework.web.client.RestTemplate;
  * @since 1.3
  */
 @Configuration
+@ConditionalOnClass(JwtIssuerValidator.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.firebase.enabled", matchIfMissing = true)
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
@@ -67,7 +69,7 @@ public class FirebaseAuthenticationAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(name = "firebaseAuthenticationJwtDecoder")
 	public JwtDecoder firebaseAuthenticationJwtDecoder(
 			DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator,
 			FirebaseAuthenticationProperties properties) {
