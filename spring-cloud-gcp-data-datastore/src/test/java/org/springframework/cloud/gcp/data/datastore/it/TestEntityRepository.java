@@ -107,7 +107,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	LinkedList<TestEntity> findTop3BySizeAndColor(long size, String color);
 
 	@Query("select * from  test_entities_ci where size = @size")
-	TestEntityProjection getBySizeSlice(@Param("size") long size);
+	TestEntityProjection getBySize(@Param("size") long size);
 
 	@Query("select * from test_entities_ci where size = @size")
 	Slice<TestEntityProjection> getBySizeSlice(@Param("size") long size, Pageable pageable);

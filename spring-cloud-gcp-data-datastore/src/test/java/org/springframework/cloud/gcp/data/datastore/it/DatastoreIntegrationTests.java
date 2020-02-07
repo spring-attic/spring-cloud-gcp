@@ -400,7 +400,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.findEntitiesWithCustomProjectionQuery(1L);
 
 		assertThat(this.testEntityRepository.countBySizeAndColor(2, "blue")).isEqualTo(1);
-		assertThat(this.testEntityRepository.getBySizeSlice(2L).getColor()).isEqualTo("blue");
+		assertThat(this.testEntityRepository.getBySize(2L).getColor()).isEqualTo("blue");
 		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
