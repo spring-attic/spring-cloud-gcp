@@ -1,0 +1,6 @@
+indexes:
+
+- kind: test_entities_ci
+  properties:
+  - name: size
+  - name: color
