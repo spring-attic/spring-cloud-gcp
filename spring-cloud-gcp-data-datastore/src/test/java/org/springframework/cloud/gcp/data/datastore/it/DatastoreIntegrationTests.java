@@ -852,6 +852,17 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test(timeout = 10000L)
 	public void testSliceString() throws IOException, URISyntaxException, InterruptedException {
+		createIndexAndRun(() -> {
+			Slice<String> slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+
+			List<String> testEntityProjections = slice.get().collect(Collectors.toList());
+
+			assertThat(testEntityProjections).hasSize(1);
+			assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+		});
+	}
+
+	private void createIndexAndRun(Runnable runnable) throws URISyntaxException, IOException, InterruptedException {
 		URL resource = this.getClass().getResource("/index.yaml");
 		File file = Paths.get(resource.toURI()).toFile();
 
@@ -862,9 +873,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 			throw new RuntimeException("Error while creating index.");
 		}
 
-		Slice<String> slice;
 		try {
-			slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+			runnable.run();
 		}
 		catch (DatastoreException e) {
 			if (e.getMessage().contains("no matching index found")) {
@@ -876,11 +886,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 			}
 			throw e;
 		}
-
-		List<String> testEntityProjections = slice.get().collect(Collectors.toList());
-
-		assertThat(testEntityProjections).hasSize(1);
-		assertThat(testEntityProjections.get(0)).isEqualTo("blue");
 	}
 }
 
