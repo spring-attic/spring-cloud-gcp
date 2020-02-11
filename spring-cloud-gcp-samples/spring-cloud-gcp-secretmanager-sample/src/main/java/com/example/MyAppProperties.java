@@ -18,6 +18,7 @@ package com.example;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+// Note that the prefix is set to "secrets" because of the prefix setting in bootstrap.properties.
 @ConfigurationProperties("secrets")
 public class MyAppProperties {
 

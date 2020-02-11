@@ -1,17 +1,7 @@
 = Spring Cloud GCP Secret Manager Sample Application
 
 This code sample demonstrates how to use the Spring Cloud GCP Secret Manager integration.
-We define a `@ConfigurationProperties` in order to access and use the secret values.
-
-```
-@ConfigurationProperties
-public class MyAppProperties {
-
-	@Value("${application-secret}")
-	private String applicationSecret;
-	...
-}
-```
+The sample demonstrates how one can access Secret Manager secrets through a `@ConfigurationProperties` class and also through `@Value` annotations on fields.
 
 == Running the Sample
 

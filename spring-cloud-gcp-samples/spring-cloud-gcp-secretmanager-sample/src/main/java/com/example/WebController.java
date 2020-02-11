@@ -31,7 +31,9 @@ public class WebController {
 	@Autowired
 	private MyAppProperties properties;
 
-	// Application secrets can also be accessed using @Value and passing in the secret name.
+	// Application secrets can be accessed using @Value and passing in the secret name.
+	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
+	// bootstrap.properties.
 	@Value("${secrets.application-secret}")
 	private String applicationSecretValue;
 
