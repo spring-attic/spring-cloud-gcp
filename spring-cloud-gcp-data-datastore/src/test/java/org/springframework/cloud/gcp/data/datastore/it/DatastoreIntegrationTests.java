@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +33,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
 import org.junit.After;
@@ -844,16 +850,42 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 	}
 
-	@Test
-	public void testSliceString() {
-		Slice<String> slice =
-				this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+	@Test(timeout = 10000L)
+	public void testSliceString() throws IOException, URISyntaxException, InterruptedException {
+		createIndexAndRun(() -> {
+			Slice<String> slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
 
-		List<String> testEntityProjections =
-				slice.get().collect(Collectors.toList());
+			List<String> testEntityProjections = slice.get().collect(Collectors.toList());
 
-		assertThat(testEntityProjections).hasSize(1);
-		assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+			assertThat(testEntityProjections).hasSize(1);
+			assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+		});
+	}
+
+	private void createIndexAndRun(Runnable runnable) throws URISyntaxException, IOException, InterruptedException {
+		URL resource = this.getClass().getResource("/index.yaml");
+		File file = Paths.get(resource.toURI()).toFile();
+
+		Process process = new ProcessBuilder("gcloud", "datastore", "indexes", "create", file.getAbsolutePath(), "-q")
+				.start();
+
+		if (process.waitFor() != 0) {
+			throw new RuntimeException("Error while creating index.");
+		}
+
+		try {
+			runnable.run();
+		}
+		catch (DatastoreException e) {
+			if (e.getMessage().contains("no matching index found")) {
+				throw new RuntimeException(
+						"The required index is not found. "
+								+ "This test attempts to create it, but it might take a few minutes. "
+								+ "Retry this test later.",
+						e);
+			}
+			throw e;
+		}
 	}
 }
 
