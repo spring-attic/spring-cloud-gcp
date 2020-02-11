@@ -869,7 +869,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		Process process = new ProcessBuilder("gcloud", "datastore", "indexes", "create", file.getAbsolutePath(), "-q")
 				.start();
 
-		if (process.waitFor() != 0 ){
+		if (process.waitFor() != 0) {
 			throw new RuntimeException("Error while creating index.");
 		}
 
