@@ -17,6 +17,7 @@
 package com.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +31,15 @@ public class WebController {
 	@Autowired
 	private MyAppProperties properties;
 
+	// Application secrets can also be accessed using @Value and passing in the secret name.
+	@Value("${secrets.application-secret}")
+	private String applicationSecretValue;
+
 	@GetMapping("/")
 	public String getRoot() {
 		// In practice, you never want to print your secrets as plaintext.
-		return "Hello World. The secret property is: " + properties.getSecret();
+		return "<h1>Secret Manager Sample Application</h1>"
+				+ "The secret property is: " + properties.getApplicationSecret() + "<br/>"
+				+ "You can also access secrets using @Value: " + applicationSecretValue + "<br/>";
 	}
 }

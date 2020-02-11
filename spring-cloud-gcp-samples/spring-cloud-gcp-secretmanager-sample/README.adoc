@@ -1,19 +1,7 @@
 = Spring Cloud GCP Secret Manager Sample Application
 
 This code sample demonstrates how to use the Spring Cloud GCP Secret Manager integration.
-
-To begin using Secret Manager support, first add the `spring-cloud-gcp-starter-secretmanager` dependency to the project:
-
-```
-<dependency>
-	<groupId>org.springframework.cloud</groupId>
-	<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
-</dependency>
-```
-
-Adding the starter dependency will automatically cause your GCP Project's secrets to be injected into your application's environment at bootstrap time.
-
-This sample application defines a `@ConfigurationProperties` in order to access and use the secret values.
+We define a `@ConfigurationProperties` in order to access and use the secret values.
 
 ```
 @ConfigurationProperties
@@ -30,6 +18,11 @@ public class MyAppProperties {
 1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
 
 2. Enable the Secret Manager API from the "APIs & Services" menu of the Google Cloud Console.
+This can be done using the `gcloud` command line tool:
++
+```
+gcloud services enable secretmanager.googleapis.com
+```
 
 3. Authenticate in one of two ways:
 
@@ -45,10 +38,11 @@ Instructions for using the Secret Manager UI can be found in the https://cloud.g
 5. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
 
 6. Go to http://localhost:8080 in your browser.
-You should see your secret displayed.
+Your secret value is injected into your application through the `WebController` and you will see it displayed.
 +
 ```
-Hello World. The secret property is: {YOUR_SECRET_HERE}
+The secret property is: Hello world.
+You can also access secrets using @Value: Hello world.
 ```
 
 

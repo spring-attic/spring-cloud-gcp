@@ -40,8 +40,8 @@ public class SecretManagerSampleTests {
 	@BeforeClass
 	public static void prepare() {
 		assumeThat(
-				"Vision Sample integration tests are disabled. Please use '-Dit.vision=true' "
-						+ "to enable them.",
+				"Secret Manager integration tests are disabled. "
+						+ "Please use '-Dit.secretmanager=true' to enable them.",
 				System.getProperty("it.secretmanager"), is("true"));
 	}
 
@@ -49,6 +49,9 @@ public class SecretManagerSampleTests {
 	public void testApplicationStartup() {
 		ResponseEntity<String> response = this.testRestTemplate.getForEntity("/", String.class);
 		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-		assertThat(response.getBody()).isEqualTo("Hello World. The secret property is: Hello world.");
+		assertThat(response.getBody()).isEqualTo(
+				"<h1>Secret Manager Sample Application</h1>"
+						+ "The secret property is: Hello world.<br/>"
+						+ "You can also access secrets using @Value: Hello world.<br/>");
 	}
 }

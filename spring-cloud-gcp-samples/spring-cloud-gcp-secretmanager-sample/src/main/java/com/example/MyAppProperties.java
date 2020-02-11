@@ -19,17 +19,16 @@ package com.example;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties
+@ConfigurationProperties("secrets")
 public class MyAppProperties {
 
-	@Value("${application-secret}")
 	private String applicationSecret;
 
-	public String getSecret() {
+	public String getApplicationSecret() {
 		return applicationSecret;
 	}
 
-	public void setSecret(String secret) {
+	public void setApplicationSecret(String secret) {
 		this.applicationSecret = secret;
 	}
 }
