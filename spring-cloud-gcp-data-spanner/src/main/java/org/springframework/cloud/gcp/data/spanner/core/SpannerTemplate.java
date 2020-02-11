@@ -363,7 +363,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
 	}
 
-	private <T> void applyDeleteMutations(Class<T> entityClass, KeySet keys, List<Mutation> mutations) {
+	private void applyDeleteMutations(Class<?> entityClass, KeySet keys, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
