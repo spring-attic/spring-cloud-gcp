@@ -16,7 +16,6 @@
 
 package com.example;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("secrets")
