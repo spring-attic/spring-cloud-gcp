@@ -38,15 +38,15 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final GcpProjectIdProvider projectIdProvider;
 
-	private final String secretsNamespace;
+	private final String secretsPrefix;
 
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
-			String secretsNamespace) {
+			String secretsPrefix) {
 		this.client = client;
 		this.projectIdProvider = projectIdProvider;
-		this.secretsNamespace = secretsNamespace;
+		this.secretsPrefix = secretsPrefix;
 	}
 
 	@Override
@@ -55,6 +55,6 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 				SECRET_MANAGER_NAME,
 				this.client,
 				this.projectIdProvider,
-				this.secretsNamespace);
+				this.secretsPrefix);
 	}
 }

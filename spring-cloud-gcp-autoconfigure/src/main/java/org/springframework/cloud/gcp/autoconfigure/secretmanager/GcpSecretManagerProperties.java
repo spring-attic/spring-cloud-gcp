@@ -40,7 +40,7 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 * Defines a prefix String that will be prepended to the environment property names
 	 * of secrets in Secret Manager.
 	 */
-	private String secretPropertyNamespace = "";
+	private String secretNamePrefix = "";
 
 	public Credentials getCredentials() {
 		return credentials;
@@ -54,11 +54,11 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 		this.projectId = projectId;
 	}
 
-	public String getSecretPropertyNamespace() {
-		return secretPropertyNamespace;
+	public String getSecretNamePrefix() {
+		return secretNamePrefix;
 	}
 
-	public void setSecretPropertyNamespace(String secretPropertyNamespace) {
-		this.secretPropertyNamespace = secretPropertyNamespace;
+	public void setSecretNamePrefix(String secretNamePrefix) {
+		this.secretNamePrefix = secretNamePrefix;
 	}
 }

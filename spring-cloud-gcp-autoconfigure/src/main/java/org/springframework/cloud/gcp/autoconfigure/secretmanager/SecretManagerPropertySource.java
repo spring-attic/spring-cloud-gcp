@@ -48,12 +48,12 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			String propertySourceName,
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
-			String secretsNamespace) {
+			String secretsPrefix) {
 
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsNamespace);
+				client, projectIdProvider.getProjectId(), secretsPrefix);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -70,7 +70,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsNamespace) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 
@@ -78,7 +78,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
 			ByteString secretPayload = getSecretPayload(client, projectId, secretId);
-			secretsMap.put(secretsNamespace + secretId, secretPayload);
+			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
 		return secretsMap;
