@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
 import org.junit.After;
@@ -846,13 +847,22 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test(timeout = 10000L)
 	public void testSliceString() {
-		//this query requires an index to be created, see index.yaml in the resources directory
-		Slice<String> slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+		try {
+			Slice<String> slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
 
-		List<String> testEntityProjections = slice.get().collect(Collectors.toList());
+			List<String> testEntityProjections = slice.get().collect(Collectors.toList());
 
-		assertThat(testEntityProjections).hasSize(1);
-		assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+			assertThat(testEntityProjections).hasSize(1);
+			assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+		}
+		catch (DatastoreException e) {
+			if (e.getMessage().contains("no matching index found")) {
+				throw new RuntimeException("The required index is not found. " +
+						"The index could be created by running this command from 'resources' directory: " +
+						"'gcloud datastore indexes create index.yaml'");
+			}
+			throw e;
+		}
 	}
 }
 
