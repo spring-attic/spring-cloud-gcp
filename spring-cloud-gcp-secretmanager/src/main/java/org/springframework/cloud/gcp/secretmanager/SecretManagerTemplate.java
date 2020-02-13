@@ -54,13 +54,13 @@ public class SecretManagerTemplate {
 	}
 
 	/**
-	 * Creates a new secret using the provided {@code secretId} and creates a new secret
-	 * version with the provided {@code payload}.
+	 * Creates a new secret using the provided {@code secretId} and creates a new version of
+	 * the secret with the provided {@code payload}.
 	 *
 	 * <p>
 	 * If there is already a secret saved in SecretManager with the specified
-	 * {@code secretId}, then it simply creates a new version of the payload for the secret
-	 * under that {@code secretId}.
+	 * {@code secretId}, then it simply creates a new version under the secret with
+	 * the secret {@code payload}.
 	 *
 	 * @param secretId the secret ID of the secret to create.
 	 * @param payload the secret payload; supported payload types: (UTF-8 encoded) String and
