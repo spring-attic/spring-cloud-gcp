@@ -216,6 +216,23 @@
 				<artifactId>appengine-maven-plugin</artifactId>
 				<version>${app-engine-maven-plugin.version}</version>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<excludePackageNames>
+						com.example,
+						com.example.*,
+						<!-- Exclude samples and classes in the Firestore Google Client library packages -->
+						com.google.cloud.firestore
+					</excludePackageNames>
+					<links>
+						<link>https://googleapis.dev/java/google-cloud-vision/latest/</link>
+						<link>https://googleapis.dev/java/google-cloud-spanner/latest/</link>
+						<link>https://googleapis.dev/java/google-cloud-clients/latest/</link>
+					</links>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
