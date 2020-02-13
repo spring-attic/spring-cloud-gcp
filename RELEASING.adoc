@@ -26,6 +26,7 @@ For GA releases this should be configured under the `central` Maven profile.
 == Uploading Javadocs
 
 After releasing a new version of Spring Cloud GCP, you will need to upload the javadocs for the released version.
+By this point, we assume that a new release branch has been created for project (such as `1.1.x`, `1.2.x`, etc.).
 
 All javadocs are uploaded to the following URL:
 ```
