@@ -102,7 +102,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
-
 ----
 
 `@Document(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
@@ -111,6 +110,18 @@ This annotation is optional, by default the collection name is derived from the 
 `@DocumentId` annotation marks a field to be used as document id. This annotation is required.
 
 NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
+
+==== Embedded entities and lists
+Spring Data Cloud Firestore supports embedded properties of custom types and lists. 
+Given a custom POJO definition, you can have properties of this type or lists of this type in your entities.
+They are stored as embedded documents (or arrays, correspondingly) in the Cloud Firestore.
+
+Example: 
+
+[source,java,indent=0]
+----
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=embedded_class_collections]
+----
 
 === Reactive Repositories
 
