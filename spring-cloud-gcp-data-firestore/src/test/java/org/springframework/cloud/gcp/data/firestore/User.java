@@ -25,17 +25,25 @@ import com.google.cloud.firestore.annotation.DocumentId;
  * Sample entity for integration tests.
  *
  * @author Daniel Zou
+ * @author Dmitry Solomakha
  */
 //tag::class_definition[]
+//tag::embedded_class_collections[]
 @Document(collectionName = "usersCollection")
 public class User {
 	@DocumentId
 	private String name;
 
 	private Integer age;
-	//end::class_definition[]
 
+	//end::class_definition[]
 	private List<String> pets;
+
+	private List<Address> addresses;
+
+	private Address homeAddress;
+
+	//end::embedded_class_collections[]
 
 	public User(String name, Integer age) {
 		this.name = name;
@@ -48,6 +56,15 @@ public class User {
 		this.pets = pets;
 	}
 
+	public User(String name, Integer age, List<String> pets, List<Address> addresses, Address homeAddress) {
+		this.name = name;
+		this.age = age;
+		this.pets = pets;
+		this.addresses = addresses;
+		this.homeAddress = homeAddress;
+	}
+
+	//tag::class_definition[]
 	public User() {
 	}
 
@@ -66,7 +83,9 @@ public class User {
 	public void setAge(Integer age) {
 		this.age = age;
 	}
+	//end::class_definition[]
 
+	//tag::embedded_class_collections[]
 	public List<String> getPets() {
 		return this.pets;
 	}
@@ -75,11 +94,30 @@ public class User {
 		this.pets = pets;
 	}
 
+	public List<Address> getAddresses() {
+		return this.addresses;
+	}
+
+	public void setAddresses(List<Address> addresses) {
+		this.addresses = addresses;
+	}
+
+	public Address getHomeAddress() {
+		return this.homeAddress;
+	}
+
+	public void setHomeAddress(Address homeAddress) {
+		this.homeAddress = homeAddress;
+	}
+	//end::embedded_class_collections[]
 	@Override
 	public String toString() {
 		return "User{" +
-				"name='" + this.name + '\'' +
-				", age=" + this.age +
+				"name='" + name + '\'' +
+				", age=" + age +
+				", pets=" + pets +
+				", addresses=" + addresses +
+				", homeAddress=" + homeAddress +
 				'}';
 	}
 
@@ -93,13 +131,59 @@ public class User {
 		}
 		User user = (User) o;
 		return Objects.equals(getName(), user.getName()) &&
-				Objects.equals(getAge(), user.getAge());
+				Objects.equals(getAge(), user.getAge()) &&
+				Objects.equals(getPets(), user.getPets()) &&
+				Objects.equals(getAddresses(), user.getAddresses()) &&
+				Objects.equals(getHomeAddress(), user.getHomeAddress());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getName(), getAge());
+		return Objects.hash(getName(), getAge(), getPets(), getAddresses(), getHomeAddress());
+	}
+
+	//tag::embedded_class_collections[]
+
+	public static class Address {
+		String streetAddress;
+		String country;
+
+		public Address() {
+		}
+		//end::embedded_class_collections[]
+		public Address(String streetAddress, String country) {
+			this.streetAddress = streetAddress;
+			this.country = country;
+		}
+
+		public String getStreetAddress() {
+			return this.streetAddress;
+		}
+
+		public String getCountry() {
+			return this.country;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			Address address = (Address) o;
+			return Objects.equals(getStreetAddress(), address.getStreetAddress()) &&
+					Objects.equals(getCountry(), address.getCountry());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getStreetAddress(), getCountry());
+		}
+		//tag::embedded_class_collections[]
 	}
 	//tag::class_definition[]
 }
+//end::embedded_class_collections[]
 //end::class_definition[]

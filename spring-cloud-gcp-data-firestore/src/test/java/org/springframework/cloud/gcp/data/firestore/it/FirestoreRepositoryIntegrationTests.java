@@ -94,7 +94,10 @@ public class FirestoreRepositoryIntegrationTests {
 	@Test
 	//tag::repository_built_in[]
 	public void writeReadDeleteTest() {
-		User alice = new User("Alice", 29);
+		List<User.Address> addresses = Arrays.asList(new User.Address("123 Alice st", "US"),
+				new User.Address("1 Alice ave", "US"));
+		User.Address homeAddress = new User.Address("10 Alice blvd", "UK");
+		User alice = new User("Alice", 29, null, addresses, homeAddress);
 		User bob = new User("Bob", 60);
 
 		this.userRepository.save(alice).block();
@@ -103,6 +106,10 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
 				.containsExactlyInAnyOrder("Alice", "Bob");
+
+		User aliceLoaded = this.userRepository.findById("Alice").block();
+		assertThat(aliceLoaded.getAddresses()).isEqualTo(addresses);
+		assertThat(aliceLoaded.getHomeAddress()).isEqualTo(homeAddress);
 	}
 	//end::repository_built_in[]
 
