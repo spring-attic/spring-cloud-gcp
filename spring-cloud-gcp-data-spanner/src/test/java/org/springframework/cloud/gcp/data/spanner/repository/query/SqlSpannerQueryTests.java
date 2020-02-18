@@ -132,9 +132,9 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
-		String entityResolvedSql = "SELECT DISTINCT *"
+		String entityResolvedSql = "SELECT *"
 				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
-				+ "FROM trades";
+				+ "FROM (SELECT DISTINCT * FROM trades) trades";
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -176,9 +176,9 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
-		String entityResolvedSql = "SELECT DISTINCT *, " +
-				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children" +
-				" FROM trades";
+		String entityResolvedSql = "SELECT *, " +
+				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children " +
+				"FROM (SELECT DISTINCT * FROM trades) trades";
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -227,17 +227,16 @@ public class SqlSpannerQueryTests {
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3;";
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10)) ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT *"
-				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
-				+ "FROM trades@{index=fakeindex} "
-				+ "WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
+		String entityResolvedSql = "SELECT *, ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children FROM " +
+				"(SELECT DISTINCT * FROM trades@{index=fakeindex}"
+				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3) "
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10)) ORDER BY id DESC LIMIT 3) trades "
 				+ "ORDER BY COLA ASC , COLB DESC LIMIT 10 OFFSET 30";
 
 		Object[] params = new Object[] { "BUY", this.pageable, "abcd", "abc123", 8.88,

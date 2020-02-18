@@ -75,9 +75,11 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 			+ "where action = @action")
 	List<String> getFirstStringList(@Param("action") String action);
 
+	//The sort should be passed as a Pageable param - Spanner did not preserve the order
+	//of a wrapped query that we will have at fetching of eager-interleaved fields of the Trade entity
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " WHERE action=@action AND action=#{#action} ORDER BY id desc")
-	List<Trade> annotatedTradesByAction(@Param("action") String action);
+			+ " WHERE action=@action AND action=#{#action}")
+	List<Trade> annotatedTradesByAction(@Param("action") String action, Pageable pageable);
 
 	List<TradeProjection> findByActionIgnoreCase(String action);
 

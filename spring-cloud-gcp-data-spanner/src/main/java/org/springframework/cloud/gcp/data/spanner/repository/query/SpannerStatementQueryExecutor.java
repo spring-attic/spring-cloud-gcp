@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.cloud.spanner.Key;
@@ -63,8 +61,6 @@ import org.springframework.data.util.Pair;
  * @since 1.1
  */
 public final class SpannerStatementQueryExecutor {
-
-	private static Pattern SELECT_ALL_PATTERN = Pattern.compile("^select(\\s+?all|\\s+?distinct)*(?<star>\\s+?\\*)", Pattern.CASE_INSENSITIVE);
 
 	private SpannerStatementQueryExecutor() {
 	}
@@ -148,16 +144,20 @@ public final class SpannerStatementQueryExecutor {
 			SpannerMappingContext mappingContext, boolean fetchInterleaved) {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);
-		final String sqlWithInterleaved = fetchInterleaved(sql, persistentEntity, mappingContext, fetchInterleaved);
+
 		// Cloud Spanner does not preserve the order of derived tables so we must not wrap the
 		// derived table
 		// in SELECT * FROM () if there is no overriding pageable param.
 		if ((options.getSort() == null || options.getSort().isUnsorted()) && options.getLimit() == null
-				&& options.getOffset() == null) {
-			return sqlWithInterleaved;
+				&& options.getOffset() == null && !fetchInterleaved) {
+			return sql;
 		}
+		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
+		final String alias = subquery.isEmpty() ? "" : " " + persistentEntity.tableName();
 		StringBuilder sb = applySort(options.getSort(),
-				new StringBuilder("SELECT * FROM (").append(sqlWithInterleaved).append(")"), (o) -> {
+				new StringBuilder("SELECT *").append(subquery)
+						.append(" FROM (").append(sql).append(")").append(alias),
+				(o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
@@ -169,27 +169,6 @@ public final class SpannerStatementQueryExecutor {
 			sb.append(" OFFSET ").append(options.getOffset());
 		}
 		return sb.toString();
-	}
-
-	private static String fetchInterleaved(String sql,
-			SpannerPersistentEntity<?> persistentEntity, SpannerMappingContext mappingContext, boolean fetchInterleaved) {
-		if (!fetchInterleaved) {
-			return sql;
-		}
-
-		final String subquery = getChildrenSubquery(persistentEntity, mappingContext);
-		if (subquery.isEmpty()) {
-			return sql;
-		}
-
-		final Pair<String, String> parts = splitSelectAll(sql);
-		return parts.getSecond().isEmpty() ? sql : parts.getFirst() + subquery + parts.getSecond();
-	}
-
-	private static Pair<String, String> splitSelectAll(String sql) {
-		Matcher matcher = SELECT_ALL_PATTERN.matcher(sql);
-		return !matcher.find() ? Pair.of(sql, "")
-				: Pair.of(sql.substring(0, matcher.end("star")), sql.substring(matcher.end("star")));
 	}
 
 	/**

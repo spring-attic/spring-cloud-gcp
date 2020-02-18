@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.data.annotation.QueryAnnotation;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Annotation used in user-defined repositories to provide SQL for custom Query Methods.
@@ -40,6 +41,9 @@ public @interface Query {
 	/**
 	 * Takes a Cloud Spanner SQL string to define the actual query to be executed. This one will
 	 * take precedence over the method name then.
+	 * <p/>Please, pay attention that sorting conditions should be passed by a {@link Pageable} parameter
+	 * instead of the query part. Otherwise, with the current implementation, the sorting could be broken
+	 * by a logic that fetches eager-interleaved fields when they are in the query result.
 	 *
 	 * @return the SQL Cloud Spanner query string.
 	 */
