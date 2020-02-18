@@ -43,7 +43,7 @@ public @interface Query {
 	 * take precedence over the method name then.
 	 * <p/>Please note that sorting options should be passed by a {@link Pageable} parameter
 	 * instead of the query. Otherwise the sorting could be broken
-	 * by a logic that fetches eager-interleaved fields when they are in the query result.
+	 * by logic that fetches eager-interleaved fields.
 	 *
 	 * @return the SQL Cloud Spanner query string.
 	 */
