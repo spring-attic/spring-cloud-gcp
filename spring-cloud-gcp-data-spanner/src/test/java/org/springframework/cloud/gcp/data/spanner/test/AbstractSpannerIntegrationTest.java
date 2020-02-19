@@ -43,7 +43,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * <ul>
  * <li>initializes the Spring application context</li>
  * <li>sets up the database schema</li>
- * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
  *
  * <p>Prerequisites for running integration tests:
@@ -66,8 +65,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  */
 @ContextConfiguration(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
-
-	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	private static final Log LOGGER = LogFactory.getLog(AbstractSpannerIntegrationTest.class);
 
