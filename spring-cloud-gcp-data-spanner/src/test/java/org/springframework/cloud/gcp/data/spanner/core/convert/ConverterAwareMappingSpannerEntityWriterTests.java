@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +37,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.ChildTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
@@ -58,7 +58,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -298,7 +298,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void writeSomeColumnsTest() throws ClassNotFoundException {
+	public void writeSomeColumnsTest() {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
 		t.enumField = TestEntity.Color.BLACK;
@@ -322,7 +322,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
-		verifyZeroInteractions(booleanFieldBinder);
+		verifyNoInteractions(booleanFieldBinder);
 	}
 
 	@Test
@@ -330,7 +330,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		this.expectedEx.expect(SpannerDataException.class);
 		this.expectedEx.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
-		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
+		ft.listWithUnsupportedInnerType = new ArrayList<>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
 		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
@@ -354,7 +354,6 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	}
 
 	@Test
-	@Parameterized.Parameters
 	public void writeValidColumnToKey() {
 		Key key = this.spannerEntityWriter.convertToKey(true);
 		assertThat(key).isEqualTo(Key.of(true));
@@ -367,6 +366,22 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
+	}
+
+	@Test
+	public void testCommitTimestampsType() {
+		TestEntities.CommitTimestamps type = new TestEntities.CommitTimestamps();
+		type.cloudTimestamp = CommitTimestamp.of(com.google.cloud.Timestamp.class);
+		type.sqlTimestamp = CommitTimestamp.of(java.sql.Timestamp.class);
+		type.localDateTime = CommitTimestamp.of(LocalDateTime.class);
+		type.instant = CommitTimestamp.of(Instant.class);
+		type.sqlDate = CommitTimestamp.of(java.sql.Date.class);
+		type.utilDate = CommitTimestamp.of(java.util.Date.class);
+
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("commit_timestamps_table");
+		this.spannerEntityWriter.write(type, writeBuilder::set);
+		assertThat(writeBuilder.build().getValues())
+				.allMatch(Value::isCommitTimestamp);
 	}
 
 	/**

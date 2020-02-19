@@ -58,10 +58,24 @@ public class SpannerConvertersTest {
 	}
 
 	@Test
+	public void sqlSateConversionTest() {
+		Timestamp timestamp = Timestamp.now();
+		assertThat(SpannerConverters.SQL_DATE_TIMESTAMP_CONVERTER
+				.convert(SpannerConverters.TIMESTAMP_SQL_DATE_CONVERTER.convert(timestamp))).isEqualTo(timestamp);
+	}
+
+	@Test
 	public void dateConversionPreEpochTest() {
 		java.util.Date timestamp = java.util.Date.from(Instant.ofEpochSecond(-12345678, -123));
 		assertThat(SpannerConverters.TIMESTAMP_DATE_CONVERTER
 				.convert(SpannerConverters.DATE_TIMESTAMP_CONVERTER.convert(timestamp))).isEqualTo(timestamp);
+	}
+
+	@Test
+	public void sqlDateConversionPreEpochTest() {
+		java.sql.Date timestamp = new java.sql.Date(Instant.ofEpochSecond(-12345678, -123).toEpochMilli());
+		assertThat(SpannerConverters.TIMESTAMP_SQL_DATE_CONVERTER
+				.convert(SpannerConverters.SQL_DATE_TIMESTAMP_CONVERTER.convert(timestamp))).isEqualTo(timestamp);
 	}
 
 	@Test

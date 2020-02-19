@@ -27,6 +27,7 @@ import java.util.Collections;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Value;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
@@ -115,11 +116,13 @@ public final class SpannerConverters {
 	// @formatter:off
 	public static final Converter<LocalDateTime, Timestamp>
 			LOCAL_DATE_TIME_TIMESTAMP_CONVERTER = new Converter<LocalDateTime, Timestamp>() {
+		final LocalDateTime commitTimestamp = CommitTimestamp.of(LocalDateTime.class);
 		// @formatter:on
 		@Nullable
 		@Override
 		public Timestamp convert(LocalDateTime dateTime) {
-			return JAVA_TO_SPANNER_TIMESTAMP_CONVERTER.convert(java.sql.Timestamp.valueOf(dateTime));
+			return commitTimestamp == dateTime ? Value.COMMIT_TIMESTAMP
+					: JAVA_TO_SPANNER_TIMESTAMP_CONVERTER.convert(java.sql.Timestamp.valueOf(dateTime));
 		}
 	};
 
@@ -143,16 +146,43 @@ public final class SpannerConverters {
 	// @formatter:off
 	public static final Converter<java.util.Date, Timestamp>
 			DATE_TIMESTAMP_CONVERTER = new Converter<java.util.Date, Timestamp>() {
+		final java.util.Date commitTimestamp = CommitTimestamp.of(java.util.Date.class);
 		// @formatter:on
 		@Nullable
 		@Override
 		public Timestamp convert(java.util.Date date) {
-			long time = date.getTime();
-			long secs = Math.floorDiv(time, 1000L);
-			int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
-			return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
+			if (commitTimestamp == date) {
+				return Value.COMMIT_TIMESTAMP;
+			}
+			return toTimestamp(date);
 		}
 	};
+
+	/**
+	 * A converter from {@link java.util.Date} to the Spanner timestamp type.
+	 */
+	// @formatter:off
+	public static final Converter<java.sql.Date, Timestamp>
+			SQL_DATE_TIMESTAMP_CONVERTER = new Converter<java.sql.Date, Timestamp>() {
+		final java.sql.Date commitTimestamp = CommitTimestamp.of(java.sql.Date.class);
+		// @formatter:on
+		@Nullable
+		@Override
+		public Timestamp convert(java.sql.Date date) {
+			if (commitTimestamp == date) {
+				return Value.COMMIT_TIMESTAMP;
+			}
+			return toTimestamp(date);
+		}
+	};
+
+	private static Timestamp toTimestamp(java.util.Date date) {
+		long time = date.getTime();
+		long secs = Math.floorDiv(time, 1000L);
+		int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
+		return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
+	}
+
 
 	/**
 	 * A converter from the Spanner timestamp type to {@link java.util.Date}.
@@ -168,16 +198,31 @@ public final class SpannerConverters {
 				}
 			};
 	/**
+	 * A converter from the Spanner timestamp type to {@link java.util.Date}.
+	 */
+	// @formatter:off
+	public static final Converter<Timestamp, java.sql.Date> TIMESTAMP_SQL_DATE_CONVERTER =
+			new Converter<Timestamp, java.sql.Date>() {
+				// @formatter:on
+				@Nullable
+				@Override
+				public java.sql.Date convert(Timestamp timestamp) {
+					return new java.sql.Date(timestamp.toDate().getTime());
+				}
+			};
+	/**
 	 * A converter from {@link Instant} to the Spanner instantaneous time type.
 	 */
 	// @formatter:off
 	public static final Converter<Instant, Timestamp> INSTANT_TIMESTAMP_CONVERTER =
 					new Converter<Instant, Timestamp>() {
+						final Instant commitTimestamp = CommitTimestamp.of(Instant.class);
 						// @formatter:on
 						@Nullable
 						@Override
 						public Timestamp convert(Instant instant) {
-							return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
+							return commitTimestamp == instant ? Value.COMMIT_TIMESTAMP
+								: Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
 						}
 					};
 
@@ -201,10 +246,14 @@ public final class SpannerConverters {
 	// @formatter:off
 	public static final Converter<java.sql.Timestamp, Timestamp> JAVA_TO_SPANNER_TIMESTAMP_CONVERTER =
 					new Converter<java.sql.Timestamp, Timestamp>() {
+						final java.sql.Timestamp commitTimestamp = CommitTimestamp.of(java.sql.Timestamp.class);
 						// @formatter:on
 						@Nullable
 						@Override
 						public Timestamp convert(java.sql.Timestamp timestamp) {
+							if (commitTimestamp == timestamp) {
+								return Value.COMMIT_TIMESTAMP;
+							}
 							long secs = Math.floorDiv(timestamp.getTime(), 1000L);
 							return Timestamp.ofTimeSecondsAndNanos(secs, timestamp.getNanos());
 						}
@@ -256,6 +305,7 @@ public final class SpannerConverters {
 	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = Collections.unmodifiableCollection(
 			Arrays.asList(
 					DATE_TIMESTAMP_CONVERTER,
+					SQL_DATE_TIMESTAMP_CONVERTER,
 					INSTANT_TIMESTAMP_CONVERTER,
 					JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
 					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER,
@@ -267,6 +317,7 @@ public final class SpannerConverters {
 	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = Collections.unmodifiableCollection(
 			Arrays.asList(
 					TIMESTAMP_DATE_CONVERTER,
+					TIMESTAMP_SQL_DATE_CONVERTER,
 					TIMESTAMP_INSTANT_CONVERTER,
 					SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER,
