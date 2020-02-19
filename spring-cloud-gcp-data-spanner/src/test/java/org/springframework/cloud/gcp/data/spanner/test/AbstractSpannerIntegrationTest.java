@@ -26,15 +26,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -128,11 +125,6 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected void createDatabaseWithSchema() {
-		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory =
-				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
-		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
-
 		List<String> createStatements = createSchemaStatements();
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
@@ -160,7 +152,6 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@After
 	public void clean() {
-		try {
 			// this is to reduce duplicated errors reported by surefire plugin
 			if (setupFailed || initializeAttempts > 0) {
 				initializeAttempts--;
@@ -169,13 +160,5 @@ public abstract class AbstractSpannerIntegrationTest {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
 			LOGGER.debug("Integration database cleaned up!");
-		}
-		finally {
-			// we need to remove the extra bean created even if there is a failure at
-			// startup
-			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
-					.getAutowireCapableBeanFactory();
-			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
-		}
 	}
 }
