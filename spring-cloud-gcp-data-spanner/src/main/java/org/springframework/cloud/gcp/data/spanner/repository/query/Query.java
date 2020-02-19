@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.data.annotation.QueryAnnotation;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Annotation used in user-defined repositories to provide SQL for custom Query Methods.
@@ -40,6 +41,9 @@ public @interface Query {
 	/**
 	 * Takes a Cloud Spanner SQL string to define the actual query to be executed. This one will
 	 * take precedence over the method name then.
+	 * <p/>Please note that sorting options should be passed by a {@link Pageable} parameter
+	 * instead of the query. Otherwise the sorting could be broken
+	 * by logic that fetches eager-interleaved fields.
 	 *
 	 * @return the SQL Cloud Spanner query string.
 	 */
@@ -51,4 +55,5 @@ public @interface Query {
 	 * query method is executed as a DML query.
 	 */
 	boolean dmlStatement() default false;
+
 }

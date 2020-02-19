@@ -256,11 +256,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity, this.mappingContext) + " FROM " + persistentEntity.tableName();
+				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName();
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
-								entityClass, options, sql, this.mappingContext),
+								entityClass, options, sql, this.mappingContext, false),
 						null, null, null, null, null),
 				options);
 	}
@@ -352,25 +352,25 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public void delete(Class entityClass, Key key) {
+	public <T> void delete(Class<T> entityClass, Key key) {
 		applyDeleteMutations(entityClass, KeySet.newBuilder().addKey(key).build(),
 				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
 	}
 
 	@Override
-	public void delete(Class entityClass, KeySet keys) {
+	public <T> void delete(Class<T> entityClass, KeySet keys) {
 		applyDeleteMutations(entityClass, keys, Collections
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
 	}
 
-	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+	private void applyDeleteMutations(Class<?> entityClass, KeySet keys, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
-	public long count(Class entityClass) {
+	public <T> long count(Class<T> entityClass) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		Statement statement = Statement.of(
@@ -589,8 +589,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 						resolveChildEntities(propertyValue, null);
 						return;
 					}
-					Class childType = spannerPersistentProperty.getColumnInnerType();
-					SpannerPersistentEntity childPersistentEntity = this.mappingContext
+					Class<?> childType = spannerPersistentProperty.getColumnInnerType();
+					SpannerPersistentEntity<?> childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);
 
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,

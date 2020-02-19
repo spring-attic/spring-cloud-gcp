@@ -96,7 +96,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		this.isDml = isDml;
 	}
 
-	private boolean isPageableOrSort(Class type) {
+	private boolean isPageableOrSort(Class<?> type) {
 		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
@@ -133,8 +133,8 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			String matched = matcher.group();
 			String className = matched.substring(1, matched.length() - 1);
 			try {
-				Class entityClass = Class.forName(className);
-				SpannerPersistentEntity spannerPersistentEntity = spannerMappingContext
+				Class<?> entityClass = Class.forName(className);
+				SpannerPersistentEntity<?> spannerPersistentEntity = spannerMappingContext
 						.getPersistentEntity(entityClass);
 				if (spannerPersistentEntity == null) {
 					throw new SpannerDataException(
@@ -199,7 +199,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		Sort sort = null;
 
 		for (Object param : parameters) {
-			Class paramClass = param.getClass();
+			Class<?> paramClass = param.getClass();
 			if (isPageableOrSort(paramClass)) {
 				if (pageable != null || sort != null) {
 					throw new SpannerDataException(
@@ -242,11 +242,11 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
+		final Class<?> simpleItemType = getReturnedSimpleConvertableItemType();
+
 		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						queryTagValue.sql, this.spannerMappingContext);
-
-		Class simpleItemType = getReturnedSimpleConvertableItemType();
+						queryTagValue.sql, this.spannerMappingContext, simpleItemType == null);
 
 		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
 
