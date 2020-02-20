@@ -1087,14 +1087,14 @@ The SQL query for the method can be mapped to repository methods in one of two w
 
 The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
 
-Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of the specified custom query.
-
 Interleaved properties are loaded eagerly, unless they are annotated with `@Interleaved(lazy = true)`.
 
-The results are not guaranteed to be sorted by the `ORDER BY` clause from the SQL query, because the user provided query is used as a sub-query, and Spanner doesn't preserve order in subquery results.
-`ORDER BY` combined with `LIMIT` can be used to obtain the top records, according to specified order.
+Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of the specified custom query.
+It is the recommended way to control the sort order of the results because it is not guaranteed by the `ORDER BY` clause in the SQL query.
+This is due to the fact that the user-provided query is used as a sub-query, and Cloud Spanner doesn't preserve order in subquery results.
 
-In order for sorting to be performed, sort options have to be passed in by a `Pageable`.
+You might want to use `ORDER BY` with `LIMIT` to obtain the top records, according to a specified order.
+However, to ensure the correct sort order of the final result set, sort options have to be passed in with a `Pageable`.
 
 [source, java]
 ----
