@@ -28,16 +28,14 @@ public enum DatabaseType {
 	 */
 	MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-			+ "&cloudSqlInstance=%s"
-			+ "&useSSL=false"),
+			+ "&cloudSqlInstance=%s"),
 
 	/**
 	 * Postgresql constants.
 	 */
 	POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
-			+ "&cloudSqlInstance=%s"
-			+ "&useSSL=false");
+			+ "&cloudSqlInstance=%s");
 
 	private final String jdbcDriverName;
 
