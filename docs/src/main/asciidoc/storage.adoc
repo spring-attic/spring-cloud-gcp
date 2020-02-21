@@ -29,20 +29,20 @@ This starter is also available from https://start.spring.io/[Spring Initializr] 
 The starter automatically configures and registers a `Storage` bean in the Spring application context.
 The `Storage` bean (https://googleapis.dev/java/google-cloud-storage/latest/com/google/cloud/storage/Storage.html[Javadoc]) can be used to list/create/update/delete buckets (a group of objects with similar permissions and resiliency requirements) and objects.
 
-```
+[source,java]
+----
 @Autowired
 private Storage storage;
 
 public void createFile() {
-	Bucket bucket = storage.create(BucketInfo.of("my-app-storage-bucket"));
+    Bucket bucket = storage.create(BucketInfo.of("my-app-storage-bucket"));
 
-	storage.create(
-			BlobInfo.newBuilder("my-app-storage-bucket", "subdirectory/my-file").build(),
-			"file contents".getBytes()
-	);
+    storage.create(
+        BlobInfo.newBuilder("my-app-storage-bucket", "subdirectory/my-file").build(),
+            "file contents".getBytes()
+    );
 }
-
-```
+----
 
 === Cloud Storage Objects As Spring Resources
 
