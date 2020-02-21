@@ -98,7 +98,7 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 
 [source,java,indent=0]
 ----
-import org.springframework.data.annotation.Id;
+import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
