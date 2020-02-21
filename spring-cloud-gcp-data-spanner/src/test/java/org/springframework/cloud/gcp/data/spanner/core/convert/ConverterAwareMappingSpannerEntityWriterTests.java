@@ -17,12 +17,14 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -47,6 +49,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.test.domain.CommitTimestamps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +63,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.util.ReflectionUtils.doWithFields;
+import static org.springframework.util.ReflectionUtils.setField;
 
 /**
  * Tests for the conversion and mapping of entities for write.
@@ -370,18 +375,19 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 	@Test
 	public void testCommitTimestampsType() {
-		TestEntities.CommitTimestamps type = new TestEntities.CommitTimestamps();
-		type.cloudTimestamp = CommitTimestamp.of(com.google.cloud.Timestamp.class);
-		type.sqlTimestamp = CommitTimestamp.of(java.sql.Timestamp.class);
-		type.localDateTime = CommitTimestamp.of(LocalDateTime.class);
-		type.instant = CommitTimestamp.of(Instant.class);
-		type.sqlDate = CommitTimestamp.of(java.sql.Date.class);
-		type.utilDate = CommitTimestamp.of(java.util.Date.class);
+		CommitTimestamps entity = new CommitTimestamps();
+
+		doWithFields(CommitTimestamps.class,
+				f -> setField(f, entity, CommitTimestamp.of(f.getType())),
+				ff -> Objects.isNull(ff.getAnnotation(PrimaryKey.class)));
 
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("commit_timestamps_table");
-		this.spannerEntityWriter.write(type, writeBuilder::set);
-		assertThat(writeBuilder.build().getValues())
-				.allMatch(Value::isCommitTimestamp);
+		this.spannerEntityWriter.write(entity, writeBuilder::set);
+		Mutation mutation = writeBuilder.build();
+		assertThat(mutation.asMap().entrySet().stream()
+				.filter(e -> !"id".equals(e.getKey()))
+				.map(Map.Entry::getValue)
+				.collect(Collectors.toList())).allMatch(Value::isCommitTimestamp);
 	}
 
 	/**

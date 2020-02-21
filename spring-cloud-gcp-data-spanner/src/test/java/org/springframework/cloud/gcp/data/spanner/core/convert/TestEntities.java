@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import com.google.cloud.ByteArray;
@@ -292,19 +291,4 @@ public class TestEntities {
 		}
 	}
 
-	@Table(name = "commit_timestamps_table")
-	static class CommitTimestamps {
-
-		com.google.cloud.Timestamp cloudTimestamp;
-
-		java.sql.Timestamp sqlTimestamp;
-
-		LocalDateTime localDateTime;
-
-		Instant instant;
-
-		java.sql.Date sqlDate;
-
-		java.util.Date utilDate;
-	}
 }
