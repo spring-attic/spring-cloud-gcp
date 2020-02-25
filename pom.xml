@@ -15,6 +15,7 @@
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
+	<url>https://spring.io/projects/spring-cloud-gcp</url>
 
 	<scm>
 		<url>https://github.com/spring-cloud/spring-cloud-gcp</url>
