@@ -379,7 +379,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		doWithFields(CommitTimestamps.class,
 				f -> setField(f, entity, CommitTimestamp.of(f.getType())),
-				ff -> Objects.isNull(ff.getAnnotation(PrimaryKey.class)));
+				ff -> !ff.isSynthetic() && Objects.isNull(ff.getAnnotation(PrimaryKey.class)));
 
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("commit_timestamps_table");
 		this.spannerEntityWriter.write(entity, writeBuilder::set);

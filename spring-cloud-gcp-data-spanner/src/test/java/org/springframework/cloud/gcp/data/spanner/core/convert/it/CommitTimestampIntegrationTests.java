@@ -68,7 +68,7 @@ public class CommitTimestampIntegrationTests extends AbstractSpannerIntegrationT
 
 		doWithFields(CommitTimestamps.class,
 				f -> setField(f, entity, CommitTimestamp.of(f.getType())),
-				ff -> isNull(ff.getAnnotation(PrimaryKey.class)));
+				ff -> !ff.isSynthetic() && Objects.isNull(ff.getAnnotation(PrimaryKey.class)));
 
 		final Timestamp committedAt = databaseClient.write(mutationFactory.insert(entity));
 
@@ -77,7 +77,7 @@ public class CommitTimestampIntegrationTests extends AbstractSpannerIntegrationT
 				f -> assertThat(getField(f, fetched))
 						.describedAs("Test of the field %s has tailed", f)
 						.isEqualTo(getConverter(f).convert(committedAt)),
-				ff -> isNull(ff.getAnnotation(PrimaryKey.class)));
+				ff -> !ff.isSynthetic() && isNull(ff.getAnnotation(PrimaryKey.class)));
 	}
 
 	@SuppressWarnings("unchecked")
