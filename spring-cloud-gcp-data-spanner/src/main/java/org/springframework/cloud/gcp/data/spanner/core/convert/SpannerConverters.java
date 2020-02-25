@@ -264,7 +264,7 @@ public final class SpannerConverters {
 					TIMESTAMP_LOCAL_DATE_TIME_CONVERTER));
 
 	/**
-	 * An utility function to convert a {@link java.sql.Timestamp} value to the {@link Timestamp}.
+	 * A utility function to convert a {@link java.sql.Timestamp} value to the {@link Timestamp}.
 	 * @param timestamp the value to convert
 	 * @return the equivalent Timestamp value
 	 */
