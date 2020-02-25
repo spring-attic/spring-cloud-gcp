@@ -41,6 +41,7 @@ https://googleapis.dev/java/spring-cloud-gcp/latest/index.html
 2. Add a new Github SCM and fill out the following parameters:
 
     - SCM Name: Set this to `spring-cloud-gcp`
-    - Committish: Set this to the name of the new release branch that you want to publish javadocs for (like `1.2.x`).
+    - Committish: Set this to the name of the new release branch or tag that you want to publish javadocs for (like `1.2.x` or `v1.2.1.RELEASE`).
+      Note that you must already have the `.kokoro/` scripts in the branch that you wish to publish javadocs for.
 
 3. Run the job.
