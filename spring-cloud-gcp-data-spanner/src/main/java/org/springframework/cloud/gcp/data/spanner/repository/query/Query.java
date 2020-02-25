@@ -41,9 +41,11 @@ public @interface Query {
 	/**
 	 * Takes a Cloud Spanner SQL string to define the actual query to be executed. This one will
 	 * take precedence over the method name then.
-	 * <p/>Please note that sorting options should be passed by a {@link Pageable} parameter
+	 *
+	 * <p>Please note that sorting options should be passed by a {@link Pageable} parameter
 	 * instead of the query. Otherwise the sorting could be broken
 	 * by logic that fetches eager-interleaved fields.
+	 * </p>
 	 *
 	 * @return the SQL Cloud Spanner query string.
 	 */

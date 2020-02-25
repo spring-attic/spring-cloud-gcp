@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -30,6 +31,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.test.domain.CommitTimestamps;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -119,6 +121,8 @@ public abstract class AbstractSpannerIntegrationTest {
 	public void tableCreatedTest() {
 		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
 				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName())).isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
+				this.spannerMappingContext.getPersistentEntity(CommitTimestamps.class).tableName())).isTrue();
 	}
 
 	protected void createDatabaseWithSchema() {
@@ -138,13 +142,20 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return this.spannerSchemaUtils
-				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class);
+		List<String> list = new ArrayList<>(this.spannerSchemaUtils
+				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils
+				.getCreateTableDdlString(CommitTimestamps.class)
+				.replaceAll("TIMESTAMP", "TIMESTAMP OPTIONS (allow_commit_timestamp = true)"));
+		return list;
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return this.spannerSchemaUtils
-				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class);
+		List<String> list = new ArrayList<>(this.spannerSchemaUtils
+				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils
+				.getDropTableDdlString(CommitTimestamps.class));
+		return list;
 	}
 
 	@After
