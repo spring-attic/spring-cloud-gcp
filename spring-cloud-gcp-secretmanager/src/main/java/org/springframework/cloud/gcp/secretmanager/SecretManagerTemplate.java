@@ -59,19 +59,38 @@ public class SecretManagerTemplate {
 	 *
 	 * <p>
 	 * If there is already a secret saved in SecretManager with the specified
-	 * {@code secretId}, then it simply creates a new version under the secret with
-	 * the secret {@code payload}.
+	 * {@code secretId}, then it simply creates a new version under the secret with the secret
+	 * {@code payload}.
 	 *
 	 * @param secretId the secret ID of the secret to create.
-	 * @param payload the secret payload; supported payload types: (UTF-8 encoded) String and
-	 *     byte[].
+	 * @param payload the secret payload string.
 	 */
-	public void createSecret(String secretId, Object payload) {
+	public void createSecret(String secretId, String payload) {
 		if (!secretExists(secretId)) {
 			createSecret(secretId);
 		}
 
-		createNewSecretVersion(secretId, payload);
+		createNewSecretVersion(secretId, ByteString.copyFromUtf8(payload));
+	}
+
+	/**
+	 * Creates a new secret using the provided {@code secretId} and creates a new version of
+	 * the secret with the provided {@code payload}.
+	 *
+	 * <p>
+	 * If there is already a secret saved in SecretManager with the specified
+	 * {@code secretId}, then it simply creates a new version under the secret with the secret
+	 * {@code payload}.
+	 *
+	 * @param secretId the secret ID of the secret to create.
+	 * @param payload the secret payload as a byte array.
+	 */
+	public void createSecret(String secretId, byte[] payload) {
+		if (!secretExists(secretId)) {
+			createSecret(secretId);
+		}
+
+		createNewSecretVersion(secretId, ByteString.copyFrom(payload));
 	}
 
 	/**
@@ -84,7 +103,7 @@ public class SecretManagerTemplate {
 	 * @return The secret payload as String
 	 */
 	public String getSecretString(String secretId, String versionName) {
-		return getSecretVersion(secretId, versionName).toStringUtf8();
+		return getSecretByteString(secretId, versionName).toStringUtf8();
 	}
 
 	/**
@@ -96,11 +115,11 @@ public class SecretManagerTemplate {
 	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
 	 * @return The secret payload as byte[]
 	 */
-	public byte[] getSecretPayload(String secretId, String versionName) {
-		return getSecretVersion(secretId, versionName).toByteArray();
+	public byte[] getSecretBytes(String secretId, String versionName) {
+		return getSecretByteString(secretId, versionName).toByteArray();
 	}
 
-	private ByteString getSecretVersion(String secretId, String versionName) {
+	public ByteString getSecretByteString(String secretId, String versionName) {
 		SecretVersionName secretVersionName = SecretVersionName.of(
 				this.projectIdProvider.getProjectId(),
 				secretId,
@@ -112,28 +131,12 @@ public class SecretManagerTemplate {
 	}
 
 	/**
-	 * Returns the lower-level {@link SecretManagerServiceClient} client object for making API
-	 * calls to Secret Manager service.
-	 *
-	 * <p>
-	 * Useful for executing more advanced use-cases that are not covered by
-	 * {@link SecretManagerTemplate}.
-	 *
-	 * @return the {@link SecretManagerServiceClient} client object.
-	 */
-	public SecretManagerServiceClient getSecretManagerServiceClient() {
-		return this.secretManagerServiceClient;
-	}
-
-	/**
 	 * Create a new version of the secret with the specified payload under a {@link Secret}.
 	 */
-	private void createNewSecretVersion(String secretId, Object rawPayload) {
-		ByteString payload = convertToByteString(rawPayload);
-
+	private void createNewSecretVersion(String secretId, ByteString byteStringPayload) {
 		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
 		SecretPayload payloadObject = SecretPayload.newBuilder()
-				.setData(payload)
+				.setData(byteStringPayload)
 				.build();
 
 		AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
@@ -177,20 +180,5 @@ public class SecretManagerTemplate {
 
 		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
 				.anyMatch(secret -> secret.getName().contains(secretId));
-	}
-
-	private ByteString convertToByteString(Object rawPayload) {
-		ByteString payload;
-		if (rawPayload instanceof byte[]) {
-			payload = ByteString.copyFrom((byte[]) rawPayload);
-		}
-		else if (rawPayload instanceof String) {
-			payload = ByteString.copyFromUtf8((String) rawPayload);
-		}
-		else {
-			throw new IllegalArgumentException(
-					"No support for handling payloads of type: " + rawPayload.getClass().getCanonicalName());
-		}
-		return payload;
 	}
 }
