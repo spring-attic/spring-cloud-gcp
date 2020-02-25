@@ -30,6 +30,8 @@ Currently, this repository provides support for:
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Google Cloud SQL PostgreSQL]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Stackdriver Trace with Spring Cloud Sleuth]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-secretmanager[Google Secret Manager]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-firebase[Firebase Authentication]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-vision[Google Cloud Vision API]
 
