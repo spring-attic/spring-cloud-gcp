@@ -40,7 +40,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
  * @author Daniel Zou
  * @since 1.3
  */
-public class SecretManagerTemplate {
+public class SecretManagerTemplate implements SecretManagerOperations {
 
 	private final SecretManagerServiceClient secretManagerServiceClient;
 
@@ -53,18 +53,7 @@ public class SecretManagerTemplate {
 		this.projectIdProvider = projectIdProvider;
 	}
 
-	/**
-	 * Creates a new secret using the provided {@code secretId} and creates a new version of
-	 * the secret with the provided {@code payload}.
-	 *
-	 * <p>
-	 * If there is already a secret saved in SecretManager with the specified
-	 * {@code secretId}, then it simply creates a new version under the secret with the secret
-	 * {@code payload}.
-	 *
-	 * @param secretId the secret ID of the secret to create.
-	 * @param payload the secret payload string.
-	 */
+	@Override
 	public void createSecret(String secretId, String payload) {
 		if (!secretExists(secretId)) {
 			createSecret(secretId);
@@ -73,18 +62,7 @@ public class SecretManagerTemplate {
 		createNewSecretVersion(secretId, ByteString.copyFromUtf8(payload));
 	}
 
-	/**
-	 * Creates a new secret using the provided {@code secretId} and creates a new version of
-	 * the secret with the provided {@code payload}.
-	 *
-	 * <p>
-	 * If there is already a secret saved in SecretManager with the specified
-	 * {@code secretId}, then it simply creates a new version under the secret with the secret
-	 * {@code payload}.
-	 *
-	 * @param secretId the secret ID of the secret to create.
-	 * @param payload the secret payload as a byte array.
-	 */
+	@Override
 	public void createSecret(String secretId, byte[] payload) {
 		if (!secretExists(secretId)) {
 			createSecret(secretId);
@@ -93,32 +71,17 @@ public class SecretManagerTemplate {
 		createNewSecretVersion(secretId, ByteString.copyFrom(payload));
 	}
 
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @return The secret payload as String
-	 */
+	@Override
 	public String getSecretString(String secretId, String versionName) {
 		return getSecretByteString(secretId, versionName).toStringUtf8();
 	}
 
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @return The secret payload as byte[]
-	 */
+	@Override
 	public byte[] getSecretBytes(String secretId, String versionName) {
 		return getSecretByteString(secretId, versionName).toByteArray();
 	}
 
+	@Override
 	public ByteString getSecretByteString(String secretId, String versionName) {
 		SecretVersionName secretVersionName = SecretVersionName.of(
 				this.projectIdProvider.getProjectId(),
