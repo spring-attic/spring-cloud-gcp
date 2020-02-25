@@ -20,14 +20,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
-import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
+import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
@@ -49,8 +50,6 @@ public class SecretManagerTemplateTests {
 	@Before
 	public void setupMocks() {
 		this.client = mock(SecretManagerServiceClient.class);
-		ListSecretsPagedResponse response = createListSecretsResponse();
-		when(this.client.listSecrets(any(ProjectName.class))).thenReturn(response);
 		when(this.client.accessSecretVersion(any(SecretVersionName.class)))
 				.thenReturn(AccessSecretVersionResponse.getDefaultInstance());
 
@@ -59,9 +58,10 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testCreateSecretIfMissing() {
-		this.secretManagerTemplate.createSecret("my-secret", "hello world!");
+		// This means that no previous secrets exist.
+		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
 
-		verify(this.client).listSecrets(ProjectName.of("my-project"));
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!");
 
 		// Verify the secret is created correctly.
 		Secret secretToAdd = Secret.newBuilder()
@@ -88,12 +88,12 @@ public class SecretManagerTemplateTests {
 	@Test
 	public void testCreateSecretIfAlreadyPresent() {
 		// The secret 'my-secret' already exists.
-		ListSecretsPagedResponse response = createListSecretsResponse("my-secret");
-		when(this.client.listSecrets(any(ProjectName.class))).thenReturn(response);
+		when(this.client.getSecret(SecretName.of("my-project", "my-secret")))
+				.thenReturn(Secret.getDefaultInstance());
 
 		// Verify that the secret is not created.
 		this.secretManagerTemplate.createSecret("my-secret", "hello world!");
-		verify(this.client).listSecrets(ProjectName.of("my-project"));
+		verify(this.client).getSecret(SecretName.of("my-project", "my-secret"));
 		verify(this.client, never()).createSecret(any());
 
 		// Verifies the secret payload is added correctly.

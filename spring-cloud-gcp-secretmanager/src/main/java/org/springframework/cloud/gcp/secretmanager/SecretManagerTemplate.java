@@ -16,8 +16,7 @@
 
 package org.springframework.cloud.gcp.secretmanager;
 
-import java.util.stream.StreamSupport;
-
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
@@ -25,7 +24,6 @@ import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
@@ -55,25 +53,27 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public void createSecret(String secretId, String payload) {
-		if (!secretExists(secretId)) {
-			createSecret(secretId);
-		}
-
 		createNewSecretVersion(secretId, ByteString.copyFromUtf8(payload));
 	}
 
 	@Override
 	public void createSecret(String secretId, byte[] payload) {
-		if (!secretExists(secretId)) {
-			createSecret(secretId);
-		}
-
 		createNewSecretVersion(secretId, ByteString.copyFrom(payload));
+	}
+
+	@Override
+	public String getSecretString(String secretId) {
+		return getSecretString(secretId, "latest");
 	}
 
 	@Override
 	public String getSecretString(String secretId, String versionName) {
 		return getSecretByteString(secretId, versionName).toStringUtf8();
+	}
+
+	@Override
+	public byte[] getSecretBytes(String secretId) {
+		return getSecretBytes(secretId, "latest");
 	}
 
 	@Override
@@ -95,16 +95,17 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	/**
 	 * Create a new version of the secret with the specified payload under a {@link Secret}.
+	 * Will also create the parent secret if it does not already exist.
 	 */
-	private void createNewSecretVersion(String secretId, ByteString byteStringPayload) {
-		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
-		SecretPayload payloadObject = SecretPayload.newBuilder()
-				.setData(byteStringPayload)
-				.build();
+	private void createNewSecretVersion(String secretId, ByteString payload) {
+		if (!secretExists(secretId)) {
+			createSecret(secretId);
+		}
 
+		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
 		AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
 				.setParent(name.toString())
-				.setPayload(payloadObject)
+				.setPayload(SecretPayload.newBuilder().setData(payload))
 				.build();
 		secretManagerServiceClient.addSecretVersion(payloadRequest);
 	}
@@ -121,9 +122,8 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 		Secret secret = Secret.newBuilder()
 				.setReplication(
-						Replication.newBuilder()
-								.setAutomatic(Replication.Automatic.newBuilder().build())
-								.build())
+						Replication.newBuilder().setAutomatic(
+								Replication.Automatic.getDefaultInstance()))
 				.build();
 		CreateSecretRequest request = CreateSecretRequest.newBuilder()
 				.setParent(projectName.toString())
@@ -138,10 +138,14 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	 * {@code secretId}.
 	 */
 	private boolean secretExists(String secretId) {
-		ProjectName projectName = ProjectName.of(this.projectIdProvider.getProjectId());
-		ListSecretsPagedResponse listSecretsResponse = this.secretManagerServiceClient.listSecrets(projectName);
+		SecretName secretName = SecretName.of(this.projectIdProvider.getProjectId(), secretId);
+		try {
+			this.secretManagerServiceClient.getSecret(secretName);
+		}
+		catch (NotFoundException ex) {
+			return false;
+		}
 
-		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.anyMatch(secret -> secret.getName().contains(secretId));
+		return true;
 	}
 }

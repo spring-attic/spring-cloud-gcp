@@ -27,8 +27,8 @@ import com.google.protobuf.ByteString;
 public interface SecretManagerOperations {
 
 	/**
-	 * Creates a new secret using the provided {@code secretId} and creates a new version of
-	 * the secret with the provided {@code payload}.
+	 * Creates a new secret or a new version of existing secret with the provided
+	 * {@code payload}.
 	 *
 	 * <p>
 	 * If there is already a secret saved in SecretManager with the specified
@@ -41,8 +41,8 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, String payload);
 
 	/**
-	 * Creates a new secret using the provided {@code secretId} and creates a new version of
-	 * the secret with the provided {@code payload}.
+	 * Creates a new secret or a new version of existing secret with the provided
+	 * {@code payload}.
 	 *
 	 * <p>
 	 * If there is already a secret saved in SecretManager with the specified
@@ -55,6 +55,14 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload);
 
 	/**
+	 * Gets the secret payload of the specified {@code secretId} at the latest version.
+	 *
+	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * @return The secret payload as String
+	 */
+	String getSecretString(String secretId);
+
+	/**
 	 * Gets the secret payload of the specified {@code secretId} at version
 	 * {@code versionName}.
 	 *
@@ -64,6 +72,14 @@ public interface SecretManagerOperations {
 	 * @return The secret payload as String
 	 */
 	String getSecretString(String secretId, String versionName);
+
+	/**
+	 * Gets the secret payload of the specified {@code secretId} at the latest version.
+	 *
+	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * @return The secret payload as byte[]
+	 */
+	byte[] getSecretBytes(String secretId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at version
