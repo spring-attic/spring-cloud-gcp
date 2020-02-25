@@ -33,7 +33,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import static org.springframework.cloud.gcp.data.spanner.core.convert.CommitTimestamp.CommitTimestampSupplier;
+import static org.springframework.cloud.gcp.data.spanner.core.convert.CommitTimestamp.CommitTimestampDecorator;
 
 /**
  * Default commonly-used custom converters.
@@ -118,9 +118,9 @@ public final class SpannerConverters {
 	 */
 	public static final Converter<LocalDateTime, Timestamp> LOCAL_DATE_TIME_TIMESTAMP_CONVERTER =
 			CommitTimestamp.register(
-					new CommitTimestampSupplier<LocalDateTime>(
+					new CommitTimestampDecorator<LocalDateTime>(
 							Value.COMMIT_TIMESTAMP.toSqlTimestamp().toLocalDateTime(),
-							SpannerConverters::toTimestamp
+							l -> toTimestamp(java.sql.Timestamp.valueOf(l))
 					) { });
 
 	/**
@@ -142,9 +142,14 @@ public final class SpannerConverters {
 	 */
 	public static final Converter<java.util.Date, Timestamp> DATE_TIMESTAMP_CONVERTER =
 			CommitTimestamp.register(
-					new CommitTimestampSupplier<java.util.Date>(
+					new CommitTimestampDecorator<java.util.Date>(
 							Value.COMMIT_TIMESTAMP.toDate(),
-							SpannerConverters::toTimestamp
+							d -> {
+								long time = d.getTime();
+								long secs = Math.floorDiv(time, 1000L);
+								int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
+								return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
+							}
 					) { });
 
 	/**
@@ -165,9 +170,9 @@ public final class SpannerConverters {
 	 */
 	public static final Converter<Instant, Timestamp> INSTANT_TIMESTAMP_CONVERTER =
 			CommitTimestamp.register(
-					new CommitTimestampSupplier<Instant>(
+					new CommitTimestampDecorator<Instant>(
 							Instant.ofEpochSecond(Value.COMMIT_TIMESTAMP.getSeconds(), Value.COMMIT_TIMESTAMP.getNanos()),
-							SpannerConverters::toTimestamp
+							i -> Timestamp.ofTimeSecondsAndNanos(i.getEpochSecond(), i.getNano())
 					) { });
 
 	/**
@@ -189,7 +194,7 @@ public final class SpannerConverters {
 	 */
 	public static final Converter<java.sql.Timestamp, Timestamp> JAVA_TO_SPANNER_TIMESTAMP_CONVERTER =
 			CommitTimestamp.register(
-					new CommitTimestampSupplier<java.sql.Timestamp>(
+					new CommitTimestampDecorator<java.sql.Timestamp>(
 							Value.COMMIT_TIMESTAMP.toSqlTimestamp(),
 							SpannerConverters::toTimestamp
 					) { });
@@ -259,20 +264,6 @@ public final class SpannerConverters {
 					TIMESTAMP_LOCAL_DATE_TIME_CONVERTER));
 
 	/**
-	 * An utility function to convert a value inherited from {@link java.util.Date} to the {@link Timestamp}.
-	 * It also can be used to convert a {@link java.sql.Date} value.
-	 * @param date the value to convert
-	 * @param <D> the type of the value to convert
-	 * @return the equivalent Timestamp value
-	 */
-	public static <D extends java.util.Date> Timestamp toTimestamp(@NonNull D date) {
-		long time = date.getTime();
-		long secs = Math.floorDiv(time, 1000L);
-		int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
-		return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
-	}
-
-	/**
 	 * An utility function to convert a {@link java.sql.Timestamp} value to the {@link Timestamp}.
 	 * @param timestamp the value to convert
 	 * @return the equivalent Timestamp value
@@ -282,21 +273,4 @@ public final class SpannerConverters {
 		return Timestamp.ofTimeSecondsAndNanos(secs, timestamp.getNanos());
 	}
 
-	/**
-	 * An utility function to convert a {@link LocalDateTime} value to the {@link Timestamp}.
-	 * @param dateTime the value to convert
-	 * @return the equivalent Timestamp value
-	 */
-	public static Timestamp toTimestamp(@NonNull LocalDateTime dateTime) {
-		return toTimestamp(java.sql.Timestamp.valueOf(dateTime));
-	}
-
-	/**
-	 * An utility function to convert an {@link Instant} value to the {@link Timestamp}.
-	 * @param instant the value to convert
-	 * @return the equivalent Timestamp value
-	 */
-	public static Timestamp toTimestamp(@NonNull Instant instant) {
-		return Timestamp.ofTimeSecondsAndNanos(instant.getEpochSecond(), instant.getNano());
-	}
 }
