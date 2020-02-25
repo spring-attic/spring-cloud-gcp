@@ -27,15 +27,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import static org.springframework.core.GenericTypeResolver.resolveTypeArgument;
-
 /**
- * The factory method {@link #of(Class)} should be used to create a specific value of a pointed class
- * that will be converted then to the {@link Value#COMMIT_TIMESTAMP} by {@link CommitTimestampDecorator}.
+ * The factory method {@link #of(Class)} should be used to resolve a specific value of a pointed class
+ * which is converted then to the {@link Value#COMMIT_TIMESTAMP} by {@link CommitTimestampDecorator}.
  * It should be used when a database column has type of Timestamp with an option "allow_commit_timestamp"
  * and the business logic needs to manage in runtime when the PENDING_COMMIT_TIMESTAMP should be stored into this field.
- * The method {@link #register(CommitTimestampDecorator)} should be used to add a custom "to timestamp" converter
- * to the list of converters that support this "CommitTimestamp" feature.
  *
  * @author Roman Solodovnichenko
  *
@@ -59,8 +55,8 @@ public final class CommitTimestamp {
 	 * 	{@link java.time.Instant}, {@link java.util.Date}.
 	 * @return a value that will be converted to {@link Value#COMMIT_TIMESTAMP} by {@link SpannerConverters}
 	 * @throws IllegalArgumentException when the {@code timestampClass} was not registered
-	 * 	 with the method {@link #register(CommitTimestampDecorator)}.
-	 * @see #register(CommitTimestampDecorator)
+	 * 	 with the method {@link #register}.
+	 * @see #register
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T of(Class<T> timestampClass) throws IllegalArgumentException {
@@ -71,26 +67,21 @@ public final class CommitTimestamp {
 	}
 
 	/**
-	 * The method should be used when we need to register a custom "to timestamp" converter as {@link CommitTimestampDecorator}.
-	 * @param converter the {@link Converter} to register as CommitTimestampSupplier
-	 * @param <S> the "source" type of {@link Converter}
-	 * @param <C> the type if {@link CommitTimestampDecorator}
-	 * @return registered converter.
-	 * @throws IllegalStateException when the typed argument of the {@code converter} already registered.
+	 * The method is used to register a custom "commitTimestamp" value within {@link CommitTimestampDecorator} converter.
+	 * @param commitTimestamp the "commitTimestamp" value.
+	 * @param <C> the type of "commitTimestamp".
+	 * @throws IllegalStateException when the "commitTimestamp" withe same type is already registered.
 	 *   It is impossible to overwrite existing registrations because it could affect the core converters
 	 *   of the {@link SpannerConverters} class.
 	 */
-	@SuppressWarnings("unchecked")
-	public static <S, C extends CommitTimestampDecorator<S>> C register(C converter) throws IllegalStateException {
-		final Class<S> argument = (Class<S>) resolveTypeArgument(converter.getClass(), CommitTimestampDecorator.class);
-		VALUES.compute(argument, (key, old) -> {
+	private static <C> void register(C commitTimestamp) throws IllegalStateException {
+		VALUES.compute(commitTimestamp.getClass(), (key, old) -> {
 			if (old == null) {
-				return converter.commitTimestamp;
+				return commitTimestamp;
 			}
 			throw new IllegalStateException(
 					String.format("The value %s already registered as \"CommitTimestamp\" for the type %s", old, key));
 		});
-		return converter;
 	}
 
 	/**
@@ -106,6 +97,7 @@ public final class CommitTimestamp {
 		protected CommitTimestampDecorator(S commitTimestamp, Function<S, Timestamp> converter) {
 			this.commitTimestamp = commitTimestamp;
 			this.converter = converter;
+			CommitTimestamp.register(commitTimestamp);
 		}
 
 		@Nullable

@@ -117,11 +117,10 @@ public final class SpannerConverters {
 	 * A converter from {@link LocalDateTime} to the Spanner timestamp type.
 	 */
 	public static final Converter<LocalDateTime, Timestamp> LOCAL_DATE_TIME_TIMESTAMP_CONVERTER =
-			CommitTimestamp.register(
 					new CommitTimestampDecorator<LocalDateTime>(
 							Value.COMMIT_TIMESTAMP.toSqlTimestamp().toLocalDateTime(),
 							l -> toTimestamp(java.sql.Timestamp.valueOf(l))
-					) { });
+					) { };
 
 	/**
 	 * A converter from the Spanner timestamp type to {@link LocalDateTime}.
@@ -141,7 +140,6 @@ public final class SpannerConverters {
 	 * A converter from {@link java.util.Date} to the Spanner timestamp type.
 	 */
 	public static final Converter<java.util.Date, Timestamp> DATE_TIMESTAMP_CONVERTER =
-			CommitTimestamp.register(
 					new CommitTimestampDecorator<java.util.Date>(
 							Value.COMMIT_TIMESTAMP.toDate(),
 							d -> {
@@ -150,7 +148,7 @@ public final class SpannerConverters {
 								int nanos = Math.toIntExact((time - secs * 1000L) * 1000000L);
 								return Timestamp.ofTimeSecondsAndNanos(secs, nanos);
 							}
-					) { });
+					) { };
 
 	/**
 	 * A converter from the Spanner timestamp type to {@link java.util.Date}.
@@ -169,11 +167,10 @@ public final class SpannerConverters {
 	 * A converter from {@link Instant} to the Spanner instantaneous time type.
 	 */
 	public static final Converter<Instant, Timestamp> INSTANT_TIMESTAMP_CONVERTER =
-			CommitTimestamp.register(
 					new CommitTimestampDecorator<Instant>(
 							Instant.ofEpochSecond(Value.COMMIT_TIMESTAMP.getSeconds(), Value.COMMIT_TIMESTAMP.getNanos()),
 							i -> Timestamp.ofTimeSecondsAndNanos(i.getEpochSecond(), i.getNano())
-					) { });
+					) { };
 
 	/**
 	 * A converter from the Spanner instantaneous time type to {@link Instant}.
@@ -193,11 +190,10 @@ public final class SpannerConverters {
 	 * A converter from {@link java.sql.Timestamp} to the Spanner instantaneous time type.
 	 */
 	public static final Converter<java.sql.Timestamp, Timestamp> JAVA_TO_SPANNER_TIMESTAMP_CONVERTER =
-			CommitTimestamp.register(
 					new CommitTimestampDecorator<java.sql.Timestamp>(
 							Value.COMMIT_TIMESTAMP.toSqlTimestamp(),
 							SpannerConverters::toTimestamp
-					) { });
+					) { };
 
 	/**
 	 * A converter from the Spanner instantaneous time type to {@link java.sql.Timestamp}.
