@@ -11,8 +11,8 @@
 
   <artifactId>spring-cloud-gcp-secretmanager</artifactId>
   <name>Spring Cloud GCP Secret Manager Module</name>
-  <description>Provides Spring Framework integrations with Google Cloud Secret
-    Manager
+  <description>
+    Provides Spring Framework integrations with Google Cloud Secret Manager
   </description>
 
   <dependencies>
