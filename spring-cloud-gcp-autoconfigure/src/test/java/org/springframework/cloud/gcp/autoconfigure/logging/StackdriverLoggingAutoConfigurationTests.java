@@ -88,9 +88,9 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testWithSleuth() {
 		this.contextRunner
-				.withConfiguration(AutoConfigurations.of(Configuration.class,
-						StackdriverTraceAutoConfiguration.class,
+				.withConfiguration(AutoConfigurations.of(StackdriverTraceAutoConfiguration.class,
 						TraceAutoConfiguration.class))
+				.withUserConfiguration(Configuration.class)
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())

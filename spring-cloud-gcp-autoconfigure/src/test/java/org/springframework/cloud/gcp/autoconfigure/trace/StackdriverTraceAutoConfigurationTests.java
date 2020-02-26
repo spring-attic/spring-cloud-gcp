@@ -83,12 +83,12 @@ public class StackdriverTraceAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(
-					StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
 					StackdriverTraceAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					TraceAutoConfiguration.class,
 					SleuthLogAutoConfiguration.class,
 					RefreshAutoConfiguration.class))
+			.withUserConfiguration(StackdriverTraceAutoConfigurationTests.MockConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.project-id=proj",
 					"spring.sleuth.sampler.probability=1.0");
 
