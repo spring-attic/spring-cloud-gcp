@@ -19,10 +19,12 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 
 /**
  * An interleaved child of {@link Trade}.
@@ -30,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  * @author Chengyuan Zhao
  */
 @Table(name = "#{'sub_trades_'.concat(tableNameSuffix)}")
+@Where("deleted = false")
 public class SubTrade {
 
 	@Embedded
@@ -40,7 +43,11 @@ public class SubTrade {
 	String subTradeId;
 
 	@Interleaved
+	@Where("deleted = false")
 	List<SubTradeComponent> subTradeComponentList;
+
+	@Column
+	boolean deleted;
 
 	public SubTrade() {
 
@@ -80,6 +87,7 @@ public class SubTrade {
 		}
 		SubTrade subTrade = (SubTrade) o;
 		return Objects.equals(this.tradeIdentifier, subTrade.tradeIdentifier) &&
+				Objects.equals(this.deleted, subTrade.deleted) &&
 				Objects.equals(getSubTradeId(), subTrade.getSubTradeId()) &&
 				(Objects.equals(getSubTradeComponentList(), subTrade.getSubTradeComponentList()) ||
 						(getSubTradeComponentList() == null && subTrade.getSubTradeComponentList().size() == 0) ||
@@ -98,6 +106,7 @@ public class SubTrade {
 				"tradeIdentifier=" + this.tradeIdentifier +
 				", subTradeId='" + this.subTradeId + '\'' +
 				", subTradeComponentList=" + this.subTradeComponentList +
+				", deleted=" + this.deleted +
 				'}';
 	}
 }

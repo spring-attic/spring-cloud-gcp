@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -43,6 +44,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
@@ -162,6 +165,11 @@ public final class SpannerStatementQueryExecutor {
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
+		String whereCause = Optional.ofNullable(persistentEntity.findAnnotation(Where.class))
+				.map(Where::value).orElse("");
+		if (!whereCause.isEmpty()) {
+			sb.append(" WHERE ").append(whereCause);
+		}
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
@@ -201,14 +209,15 @@ public final class SpannerStatementQueryExecutor {
 	public static <T> Statement buildQuery(KeySet keySet,
 			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
-		StringJoiner orJoiner = new StringJoiner(" OR ");
+		List<String> or = new ArrayList<>();
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
+
 		int tagNum = 0;
 		List<SpannerPersistentProperty> keyProperties = persistentEntity.getFlattenedPrimaryKeyProperties();
 
 		for (Key key : keySet.getKeys()) {
-			StringJoiner andJoiner = new StringJoiner(" AND ", "(", ")");
+			StringJoiner andJoiner = new StringJoiner(" AND ");
 			Iterator parentKeyParts = key.getParts().iterator();
 			while (parentKeyParts.hasNext()) {
 				SpannerPersistentProperty keyProp = keyProperties.get(tagNum % keyProperties.size());
@@ -218,27 +227,45 @@ public final class SpannerStatementQueryExecutor {
 				keyParts.add(parentKeyParts.next());
 				tagNum++;
 			}
-			orJoiner.add(andJoiner.toString());
+			or.add(andJoiner.toString());
 		}
-		String cond = orJoiner.toString();
+		String whereCause = Optional.ofNullable(persistentEntity.findAnnotation(Where.class))
+				.map(Where::value).orElse("");
+		String condition = join(or.size() == 0 ? "" : or.size() == 1 ? or.get(0)
+				: or.stream().collect(Collectors.joining(") OR (", "(", ")")), whereCause);
 		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext, true) + " FROM "
-				+ persistentEntity.tableName() + (cond.isEmpty() ? "" : " WHERE " + cond);
+				+ persistentEntity.tableName() + (condition.isEmpty() ? "" : " WHERE " + condition);
 		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
+	}
+
+	private static String join(String cond1, String cond2) {
+		if (cond1.isEmpty()) {
+			return cond2;
+		}
+		if (cond2.isEmpty()) {
+			return cond1;
+		}
+		StringJoiner where = new StringJoiner(") AND (", "(", ")");
+		where.add(cond1);
+		where.add(cond2);
+		return where.toString();
 	}
 
 	private static <C, P> String getChildrenStructsQuery(
 			SpannerPersistentEntity<C> childPersistentEntity,
 			SpannerPersistentEntity<P> parentPersistentEntity, SpannerMappingContext mappingContext,
-			String columnName) {
+			String columnName, Optional<String> where) {
 		String tableName = childPersistentEntity.tableName();
 		List<SpannerPersistentProperty> parentKeyProperties = parentPersistentEntity
 				.getFlattenedPrimaryKeyProperties();
-		String condition = parentKeyProperties.stream()
+		List<String> conditions = parentKeyProperties.stream()
 				.map(keyProp -> tableName + "." + keyProp.getColumnName()
 						+ " = "
 						+ parentPersistentEntity.tableName() + "." + keyProp.getColumnName())
-				.collect(Collectors.joining(" AND "));
+				.collect(Collectors.toList());
+		where.ifPresent(conditions::add);
+		String condition = String.join(" AND ", conditions);
 
 		return "ARRAY (SELECT AS STRUCT " + getColumnsStringForSelect(childPersistentEntity, mappingContext, true) + " FROM "
 				+ tableName + " WHERE " + condition + ") as " + columnName;
@@ -324,7 +351,11 @@ public final class SpannerStatementQueryExecutor {
 				Class childType = spannerPersistentProperty.getColumnInnerType();
 				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
 				joiner.add(getChildrenStructsQuery(
-						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
+						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName(),
+						Optional.ofNullable(spannerPersistentProperty.getWhere().map(Where::value)
+								.orElseGet(() -> Optional.ofNullable(AnnotatedElementUtils
+										.findMergedAnnotation(childType, Where.class)).map(Where::value).orElse(null))))
+				);
 			}
 		});
 		String sql = joiner.toString();
@@ -489,8 +520,10 @@ public final class SpannerStatementQueryExecutor {
 				orString += " )";
 				orStrings.add(orString);
 			});
-
-			stringBuilder.append(orStrings.toString());
+			String whereCause = Optional.ofNullable(persistentEntity.findAnnotation(Where.class))
+					.map(Where::value).orElse("");
+			String condition = join(orStrings.toString(), whereCause);
+			stringBuilder.append(condition);
 		}
 	}
 

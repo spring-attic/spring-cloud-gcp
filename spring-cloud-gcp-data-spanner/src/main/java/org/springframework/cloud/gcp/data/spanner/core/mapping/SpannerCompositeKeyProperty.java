@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -141,6 +142,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	@Override
 	public boolean isEagerInterleaved() {
 		return false;
+	}
+
+	@Override
+	public Optional<Where> getWhere() {
+		return Optional.empty();
 	}
 
 	@Override

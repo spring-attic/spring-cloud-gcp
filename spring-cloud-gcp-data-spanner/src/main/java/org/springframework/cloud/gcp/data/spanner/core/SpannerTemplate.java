@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
@@ -54,6 +55,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
@@ -66,6 +68,7 @@ import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatem
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -213,9 +216,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			SpannerPersistentEntity<T> persistentEntity) {
 		//an entity is eligible if all of the following true:
 		//1. entity has eager loaded properties
-		//2. there are no read options, as they can't be applied to a query
-		//3. key set does not have ranges, as they can't be used in a query
+		//2. entity has "Where" annotation
+		//3. there are no read options, as they can't be applied to a query
+		//4. key set does not have ranges, as they can't be used in a query
 		return persistentEntity.hasEagerlyLoadedProperties() &&
+				persistentEntity.findAnnotation(Where.class) == null &&
 				options == null && !keys.getRanges().iterator().hasNext();
 	}
 
@@ -253,10 +258,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
+		String condition = Optional.ofNullable(AnnotatedElementUtils
+				.findMergedAnnotation(entityClass, Where.class)).map(cause -> " WHERE " + cause.value()).orElse("");
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName();
+				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName() + condition;
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(

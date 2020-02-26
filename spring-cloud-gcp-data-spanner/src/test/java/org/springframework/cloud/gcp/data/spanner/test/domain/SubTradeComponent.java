@@ -48,6 +48,9 @@ public class SubTradeComponent {
 	@Column(spannerCommitTimestamp = true)
 	Timestamp commitTimestamp;
 
+	@Column
+	boolean deleted;
+
 	public SubTradeComponent() {
 
 	}

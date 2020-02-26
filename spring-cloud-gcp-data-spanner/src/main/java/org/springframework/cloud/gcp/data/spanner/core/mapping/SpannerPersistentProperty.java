@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -119,5 +120,11 @@ public interface SpannerPersistentProperty
 	 * @return {@code true} if the property is eagerly-fetched. {@code false} otherwise.
 	 */
 	boolean isEagerInterleaved();
+
+	/**
+	 * Return Where cause of the property. Could be null.
+	 * @return an optional {@code Where} cause of the property.
+	 */
+	Optional<Where> getWhere();
 
 }

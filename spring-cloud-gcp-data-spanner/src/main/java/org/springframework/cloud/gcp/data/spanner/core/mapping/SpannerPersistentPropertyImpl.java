@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
@@ -168,6 +169,11 @@ public class SpannerPersistentPropertyImpl
 	public boolean isCommitTimestamp() {
 		Column annotation = findAnnotation(Column.class);
 		return annotation != null && annotation.spannerCommitTimestamp();
+	}
+
+	@Override
+	public Optional<Where> getWhere() {
+		return Optional.ofNullable(findAnnotation(Where.class));
 	}
 
 	@Override
