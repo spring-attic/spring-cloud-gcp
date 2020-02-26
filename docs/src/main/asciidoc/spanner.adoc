@@ -1087,15 +1087,22 @@ The SQL query for the method can be mapped to repository methods in one of two w
 
 The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
 
-Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of any paging but will override any sorting in the SQL:
+Interleaved properties are loaded eagerly, unless they are annotated with `@Interleaved(lazy = true)`.
+
+Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of the specified custom query.
+It is the recommended way to control the sort order of the results, which is not guaranteed by the `ORDER BY` clause in the SQL query.
+This is due to the fact that the user-provided query is used as a sub-query, and Cloud Spanner doesn't preserve order in subquery results.
+
+You might want to use `ORDER BY` with `LIMIT` to obtain the top records, according to a specified order.
+However, to ensure the correct sort order of the final result set, sort options have to be passed in with a `Pageable`.
 
 [source, java]
 ----
-	@Query("SELECT * FROM trades ORDER BY action DESC")
-	List<Trade> sortedTrades(Pageable pageable);
+	@Query("SELECT * FROM trades") 
+	List<Trade> fetchTrades(Pageable pageable);
 
-	@Query("SELECT * FROM trades ORDER BY action DESC LIMIT 1")
- 	Trade sortedTopTrade(Pageable pageable);
+	@Query("SELECT * FROM trades ORDER BY price DESC LIMIT 1")
+ 	Trade topTrade(Pageable pageable);
 
 ----
 
@@ -1103,7 +1110,7 @@ This can be used:
 
 [source, java]
 ----
-	List<Trade> customSortedTrades = tradeRepository.sortedTrades(PageRequest
+	List<Trade> customSortedTrades = tradeRepository.fetchTrades(PageRequest
   				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
 ----
 
