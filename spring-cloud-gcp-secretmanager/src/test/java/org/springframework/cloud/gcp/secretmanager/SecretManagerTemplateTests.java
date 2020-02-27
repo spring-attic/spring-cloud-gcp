@@ -35,6 +35,7 @@ import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -51,7 +52,11 @@ public class SecretManagerTemplateTests {
 	public void setupMocks() {
 		this.client = mock(SecretManagerServiceClient.class);
 		when(this.client.accessSecretVersion(any(SecretVersionName.class)))
-				.thenReturn(AccessSecretVersionResponse.getDefaultInstance());
+				.thenReturn(
+						AccessSecretVersionResponse.newBuilder()
+								.setPayload(SecretPayload.newBuilder()
+										.setData(ByteString.copyFromUtf8("get after it.")))
+								.build());
 
 		this.secretManagerTemplate = new SecretManagerTemplate(this.client, () -> "my-project");
 	}
@@ -105,10 +110,29 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
-	public void testAccessSecret() {
-		this.secretManagerTemplate.getSecretString("my-secret", "latest");
+	public void testAccessSecretBytes() {
+		byte[] result = this.secretManagerTemplate.getSecretBytes("my-secret");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("my-project", "my-secret", "latest"));
+		assertThat(result).isEqualTo("get after it.".getBytes());
+
+		result = this.secretManagerTemplate.getSecretBytes("my-secret", "1");
+		verify(this.client).accessSecretVersion(
+				SecretVersionName.of("my-project", "my-secret", "1"));
+		assertThat(result).isEqualTo("get after it.".getBytes());
+	}
+
+	@Test
+	public void testAccessSecretString() {
+		String result = this.secretManagerTemplate.getSecretString("my-secret");
+		verify(this.client).accessSecretVersion(
+				SecretVersionName.of("my-project", "my-secret", "latest"));
+		assertThat(result).isEqualTo("get after it.");
+
+		result = this.secretManagerTemplate.getSecretString("my-secret", "1");
+		verify(this.client).accessSecretVersion(
+				SecretVersionName.of("my-project", "my-secret", "1"));
+		assertThat(result).isEqualTo("get after it.");
 	}
 
 	private ListSecretsPagedResponse createListSecretsResponse(String... secretIds) {
