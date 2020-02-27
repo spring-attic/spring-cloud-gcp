@@ -20,7 +20,7 @@
 
 	<properties>
 		<main.basedir>${basedir}/..</main.basedir>
-		<spring-cloud-build-tools.version>2.2.1.BUILD-SNAPSHOT</spring-cloud-build-tools.version>
+		<spring-cloud-build-tools.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-build-tools.version>
 	</properties>
 
 	<modules>
