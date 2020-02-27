@@ -106,6 +106,9 @@ public interface SecretManagerOperations {
 	/**
 	 * Returns true if there already exists a secret under the GCP project with the
 	 * {@code secretId}.
+	 *
+	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * @return true if the secret exists in Secret Manager; false otherwise
 	 */
 	boolean secretExists(String secretId);
 }
