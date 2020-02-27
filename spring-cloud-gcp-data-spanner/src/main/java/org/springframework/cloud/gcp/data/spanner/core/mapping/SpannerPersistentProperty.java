@@ -122,7 +122,7 @@ public interface SpannerPersistentProperty
 	boolean isEagerInterleaved();
 
 	/**
-	 * Return Where cause of the property. Could be null.
+	 * Return {@code WHERE} clause of the property. Could be {@code null}.
 	 * @return an optional {@code Where} cause of the property.
 	 */
 	Optional<Where> getWhere();
