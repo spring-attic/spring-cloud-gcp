@@ -93,6 +93,19 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		return response.getPayload().getData();
 	}
 
+	@Override
+	public boolean secretExists(String secretId) {
+		SecretName secretName = SecretName.of(this.projectIdProvider.getProjectId(), secretId);
+		try {
+			this.secretManagerServiceClient.getSecret(secretName);
+		}
+		catch (NotFoundException ex) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Create a new version of the secret with the specified payload under a {@link Secret}.
 	 * Will also create the parent secret if it does not already exist.
@@ -131,21 +144,5 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 				.setSecret(secret)
 				.build();
 		this.secretManagerServiceClient.createSecret(request);
-	}
-
-	/**
-	 * Returns true if there already exists a secret under the GCP project with the
-	 * {@code secretId}.
-	 */
-	private boolean secretExists(String secretId) {
-		SecretName secretName = SecretName.of(this.projectIdProvider.getProjectId(), secretId);
-		try {
-			this.secretManagerServiceClient.getSecret(secretName);
-		}
-		catch (NotFoundException ex) {
-			return false;
-		}
-
-		return true;
 	}
 }

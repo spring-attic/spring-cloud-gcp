@@ -102,4 +102,10 @@ public interface SecretManagerOperations {
 	 * @return The secret payload as {@link ByteString}
 	 */
 	ByteString getSecretByteString(String secretId, String versionName);
+
+	/**
+	 * Returns true if there already exists a secret under the GCP project with the
+	 * {@code secretId}.
+	 */
+	boolean secretExists(String secretId);
 }
