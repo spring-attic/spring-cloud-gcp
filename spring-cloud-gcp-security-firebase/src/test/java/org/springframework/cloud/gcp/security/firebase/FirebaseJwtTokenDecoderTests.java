@@ -65,7 +65,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 public class FirebaseJwtTokenDecoderTests {
 

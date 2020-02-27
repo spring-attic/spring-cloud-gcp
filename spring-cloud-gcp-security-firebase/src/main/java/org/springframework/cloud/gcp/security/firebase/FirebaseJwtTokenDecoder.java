@@ -58,7 +58,7 @@ import org.springframework.web.client.RestOperations;
  * {@link org.springframework.security.oauth2.jwt.JwtIssuerValidator} - Validates the iss claim header
  * {@link FirebaseTokenValidator} - Validates all other headers according to definition at https://firebase.google.com/docs/auth/admin/verify-id-tokens
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 public class FirebaseJwtTokenDecoder implements JwtDecoder {
 	private static final String DECODING_ERROR_MESSAGE_TEMPLATE =

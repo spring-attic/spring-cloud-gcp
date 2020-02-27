@@ -51,6 +51,6 @@ All uploaded javadocs will be published under the following URL:
 https://googleapis.dev/java/spring-cloud-gcp/{BRANCH_VERSION_NAME}/index.html
 ----
 +
-Example: If you published the javadocs for version `1.3.0.BUILD-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/1.3.0.BUILD-SNAPSHOT/index.html
+Example: If you published the javadocs for version `1.2.2.BUILD-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/1.2.2.BUILD-SNAPSHOT/index.html
 
 5. For GA releases, ask on the https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter] for the Spring team to update the https://spring.io/projects/spring-cloud-gcp#learn[API Documentation link] to point to the published Javadocs of the correct version.

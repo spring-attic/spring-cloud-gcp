@@ -33,7 +33,7 @@ import org.springframework.cloud.gcp.core.util.MapBuilder;
  *
  * @author Dmitry Solomakha
  * @author Mike Eltsufin
- * @since 1.3
+ * @since 1.2.2
  */
 public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 

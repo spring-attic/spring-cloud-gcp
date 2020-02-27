@@ -22,7 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Firebase Authentication application properties.
  *
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 @ConfigurationProperties("spring.cloud.gcp.security.firebase")
 public class FirebaseAuthenticationProperties {

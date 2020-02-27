@@ -28,7 +28,7 @@ import org.springframework.core.env.PropertySource;
  * property source.
  *
  * @author Daniel Zou
- * @since 1.3
+ * @since 1.2.2
  */
 public class SecretManagerPropertySourceLocator implements PropertySourceLocator {
 

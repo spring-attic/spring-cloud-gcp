@@ -42,7 +42,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * properties into the application {@link org.springframework.core.env.Environment}.
  *
  * @author Daniel Zou
- * @since 1.3
+ * @since 1.2.2
  */
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
