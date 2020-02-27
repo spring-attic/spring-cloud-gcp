@@ -2,12 +2,12 @@
 
 = Spring Framework on Google Cloud Platform
 
-This project makes it easy for Spring users to run their applications on Google Cloud Platform.
-You can check our project website https://cloud.spring.io/spring-cloud-gcp[here].
+The Spring Cloud GCP project makes it easy for Spring users to run their applications on Google Cloud Platform.
+You can check our https://github.com/spring-cloud/spring-cloud-gcp/blob/master/README.adoc[project website] for more information.
 
-For a deep dive into the project, refer to the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.0.RELEASE/reference/html/[Spring Cloud GCP 1.2 Reference Document].
+For a deep dive into the project, refer to the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.1.RELEASE/reference/html/[Spring Cloud GCP 1.2 Reference Document] and https://googleapis.dev/java/spring-cloud-gcp/1.2.1.RELEASE/index.html[Javadocs].
 
-If you prefer to learn by doing, try https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
+If you prefer to learn by doing, try taking a look at the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[Spring Cloud GCP sample applications] or the https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
 
 Currently, this repository provides support for:
 
