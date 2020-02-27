@@ -35,6 +35,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicator;
 import org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.ApplicationContext;
@@ -76,24 +77,25 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testUserDatastoreBean() {
 		ApplicationContextRunner runner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-						GcpContextAutoConfiguration.class,
-						TestConfigurationWithDatastoreBean.class))
+				.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class))
+				.withUserConfiguration(TestConfigurationWithDatastoreBean.class)
 				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 						"spring.cloud.gcp.datastore.namespace=testNamespace",
 						"spring.cloud.gcp.datastore.host=localhost:8081",
 						"management.health.datastore.enabled=false");
 
-		runner.run(context -> assertThat(getDatastoreBean(context))
-				.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT));
+		runner.run(context -> {
+			assertThat(getDatastoreBean(context))
+					.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT);
+		});
 	}
 
 	@Test
 	public void testUserDatastoreBeanNamespace() {
 		ApplicationContextRunner runner = new ApplicationContextRunner()
 				.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-						GcpContextAutoConfiguration.class,
-						TestConfigurationWithDatastoreBeanNamespaceProvider.class))
+						GcpContextAutoConfiguration.class))
+				.withUserConfiguration(TestConfigurationWithDatastoreBeanNamespaceProvider.class)
 				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 						"spring.cloud.gcp.datastore.namespace=testNamespace",
 						"spring.cloud.gcp.datastore.host=localhost:8081",
@@ -194,6 +196,11 @@ public class GcpDatastoreAutoConfigurationTests {
 		@Bean
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
+		}
+
+		@Bean
+		public GcpProjectIdProvider gcpProjectIdProvider() {
+			return () -> "project123";
 		}
 
 		@Bean

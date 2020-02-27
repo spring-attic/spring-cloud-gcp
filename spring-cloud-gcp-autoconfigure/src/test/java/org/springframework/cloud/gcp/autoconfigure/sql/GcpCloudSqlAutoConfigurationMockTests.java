@@ -42,8 +42,9 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.sql.databaseName=test-database")
 			.withConfiguration(AutoConfigurations.of(GcpCloudSqlAutoConfiguration.class,
-					GcpContextAutoConfiguration.class, GcpCloudSqlTestConfiguration.class,
-					DataSourceAutoConfiguration.class));
+					GcpContextAutoConfiguration.class,
+					DataSourceAutoConfiguration.class))
+			.withUserConfiguration(GcpCloudSqlTestConfiguration.class);
 
 	@Test
 	public void testCloudSqlDataSourceTest() {
@@ -59,8 +60,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance");
 					assertThat(dataSource.getUsername()).matches("root");
 					assertThat(dataSource.getPassword()).isNull();
 					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
@@ -82,8 +82,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance");
 					assertThat(dataSource.getUsername()).matches("root");
 					assertThat(dataSource.getPassword()).isNull();
 					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
@@ -110,8 +109,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=tubular-bells:australia:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=tubular-bells:australia:test-instance");
 					assertThat(dataSource.getUsername()).matches("root");
 					assertThat(dataSource.getPassword()).isNull();
 				});
@@ -130,8 +128,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=proj:reg:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=proj:reg:test-instance");
 					assertThat(dataSource.getUsername()).matches("watchmaker");
 					assertThat(dataSource.getPassword()).matches("pass");
 					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
@@ -152,8 +149,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=proj:reg:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=proj:reg:test-instance");
 					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
 					assertThat(dataSource.getMaximumPoolSize()).isEqualTo(19);
 					assertThat(dataSource.getConnectionTestQuery()).matches("select 1");
@@ -170,8 +166,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-									+ "&cloudSqlInstance=world:asia:japan"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=world:asia:japan");
 					assertThat(urlProvider.getJdbcDriverClass()).matches("com.mysql.jdbc.Driver");
 				});
 	}
@@ -188,8 +183,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
 							"jdbc:postgresql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
-									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance"
-									+ "&useSSL=false");
+									+ "&cloudSqlInstance=tubular-bells:singapore:test-instance");
 					assertThat(urlProvider.getJdbcDriverClass()).matches("org.postgresql.Driver");
 				});
 	}

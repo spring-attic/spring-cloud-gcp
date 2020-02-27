@@ -179,7 +179,7 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		String columnsStringForSelect = SpannerStatementQueryExecutor.getColumnsStringForSelect(
 				this.spannerMappingContext.getPersistentEntity(TestEntity.class),
-				this.spannerMappingContext);
+				this.spannerMappingContext, true);
 
 		assertThat(columnsStringForSelect)
 				.isEqualTo("other, id, custom_col, id_2, " +

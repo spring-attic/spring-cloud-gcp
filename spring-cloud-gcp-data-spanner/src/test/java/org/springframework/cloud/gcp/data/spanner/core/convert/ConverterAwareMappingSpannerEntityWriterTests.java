@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -36,7 +39,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.ChildTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
@@ -47,6 +49,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.test.domain.CommitTimestamps;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,8 +61,10 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.util.ReflectionUtils.doWithFields;
+import static org.springframework.util.ReflectionUtils.setField;
 
 /**
  * Tests for the conversion and mapping of entities for write.
@@ -298,7 +303,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void writeSomeColumnsTest() throws ClassNotFoundException {
+	public void writeSomeColumnsTest() {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
 		t.enumField = TestEntity.Color.BLACK;
@@ -322,7 +327,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
-		verifyZeroInteractions(booleanFieldBinder);
+		verifyNoInteractions(booleanFieldBinder);
 	}
 
 	@Test
@@ -330,7 +335,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		this.expectedEx.expect(SpannerDataException.class);
 		this.expectedEx.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
-		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
+		ft.listWithUnsupportedInnerType = new ArrayList<>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
 		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
@@ -354,7 +359,6 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	}
 
 	@Test
-	@Parameterized.Parameters
 	public void writeValidColumnToKey() {
 		Key key = this.spannerEntityWriter.convertToKey(true);
 		assertThat(key).isEqualTo(Key.of(true));
@@ -367,6 +371,23 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
+	}
+
+	@Test
+	public void testCommitTimestampsType() {
+		CommitTimestamps entity = new CommitTimestamps();
+
+		doWithFields(CommitTimestamps.class,
+				f -> setField(f, entity, CommitTimestamp.of(f.getType())),
+				ff -> !ff.isSynthetic() && Objects.isNull(ff.getAnnotation(PrimaryKey.class)));
+
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("commit_timestamps_table");
+		this.spannerEntityWriter.write(entity, writeBuilder::set);
+		Mutation mutation = writeBuilder.build();
+		assertThat(mutation.asMap().entrySet().stream()
+				.filter(e -> !"id".equals(e.getKey()))
+				.map(Map.Entry::getValue)
+				.collect(Collectors.toList())).allMatch(Value::isCommitTimestamp);
 	}
 
 	/**

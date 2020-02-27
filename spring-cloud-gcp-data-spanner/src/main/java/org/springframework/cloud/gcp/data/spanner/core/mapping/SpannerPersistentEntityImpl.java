@@ -227,7 +227,7 @@ public class SpannerPersistentEntityImpl<T>
 			// getting the inner type will throw an exception if the property isn't a
 			// collection.
 			Class childType = spannerPersistentProperty.getColumnInnerType();
-			SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl)
+			SpannerPersistentEntityImpl<?> childEntity = (SpannerPersistentEntityImpl<?>)
 					this.spannerMappingContext.getPersistentEntity(childType);
 			List<SpannerPersistentProperty> primaryKeyProperties = getFlattenedPrimaryKeyProperties();
 			List<SpannerPersistentProperty> childKeyProperties = childEntity
@@ -258,9 +258,9 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
-			SpannerPersistentEntity spannerPersistentEntity) {
+			SpannerPersistentEntity<?> spannerPersistentEntity) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						if (ConversionUtils.isIterableNonByteArrayType(
 								spannerPersistentProperty.getType())) {
@@ -313,7 +313,7 @@ public class SpannerPersistentEntityImpl<T>
 		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
 			if (property.isEmbedded()) {
 				primaryKeyColumns
-						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
+						.addAll((this.spannerMappingContext
 								.getPersistentEntity(property.getType()))
 										.getFlattenedPrimaryKeyProperties());
 			}
@@ -391,21 +391,21 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public PersistentPropertyAccessor getPropertyAccessor(Object object) {
-		PersistentPropertyAccessor delegatedAccessor = super.getPropertyAccessor(object);
-		return new PersistentPropertyAccessor() {
+	public <B> PersistentPropertyAccessor<B> getPropertyAccessor(B object) {
+		PersistentPropertyAccessor<B> delegatedAccessor = super.getPropertyAccessor(object);
+		return new PersistentPropertyAccessor<B>() {
 
 			@Override
-			public void setProperty(PersistentProperty property,
+			public void setProperty(PersistentProperty<?> property,
 					@Nullable Object value) {
 				if (property.isIdProperty()) {
-					SpannerPersistentEntity owner = (SpannerPersistentEntity) property.getOwner();
+					SpannerPersistentEntity<?> owner = (SpannerPersistentEntity<?>) property.getOwner();
 					SpannerPersistentProperty[] primaryKeyProperties = owner.getPrimaryKeyProperties();
 
 					Iterator<Object> partsIterator;
 					if (value instanceof Key) {
 						Key keyValue = (Key) value;
-						if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
+						if (keyValue.size() != primaryKeyProperties.length) {
 							throwWrongNumOfPartsException();
 						}
 						partsIterator = keyValue.getParts().iterator();
@@ -435,7 +435,7 @@ public class SpannerPersistentEntityImpl<T>
 
 			@Nullable
 			@Override
-			public Object getProperty(PersistentProperty property) {
+			public Object getProperty(PersistentProperty<?> property) {
 				if (property.isIdProperty()) {
 					return ((SpannerCompositeKeyProperty) property).getId(getBean());
 				}
@@ -445,7 +445,7 @@ public class SpannerPersistentEntityImpl<T>
 			}
 
 			@Override
-			public Object getBean() {
+			public B getBean() {
 				return delegatedAccessor.getBean();
 			}
 		};

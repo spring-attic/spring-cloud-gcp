@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>2.2.1.BUILD-SNAPSHOT</version>
+		<version>2.2.3.BUILD-SNAPSHOT</version>
 		<relativePath/><!-- lookup parent from repository -->
 	</parent>
 
@@ -15,6 +15,7 @@
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
+	<url>https://spring.io/projects/spring-cloud-gcp</url>
 
 	<scm>
 		<url>https://github.com/spring-cloud/spring-cloud-gcp</url>

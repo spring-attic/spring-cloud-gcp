@@ -23,14 +23,19 @@ import java.util.List;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import org.assertj.core.util.Sets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
@@ -51,6 +56,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Integration tests for Spanner Repository that uses many features.
@@ -75,6 +82,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Autowired
 	SpannerMappingContext spannerMappingContext;
+
+	@SpyBean
+	SpannerTemplate spannerTemplate;
 
 	@Before
 	@After
@@ -180,7 +190,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.compareTo(tradesReceivedPage2.get(1).getId())).isNegative();
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
-				.annotatedTradesByAction("BUY");
+				.annotatedTradesByAction("BUY", PageRequest.of(0, 100, Sort.by(Order.desc("id"))));
 		assertThat(buyTradesRetrieved).containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
 		assertThat(buyTradesRetrieved.get(0).getId()).isGreaterThan(buyTradesRetrieved.get(1).getId());
 		assertThat(buyTradesRetrieved.get(1).getId()).isGreaterThan(buyTradesRetrieved.get(2).getId());
@@ -245,6 +255,20 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(this.subTradeRepository.count()).isEqualTo(2);
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(3);
+
+		// test eager-fetch in @Query
+		Mockito.clearInvocations(spannerTemplate);
+		final Trade aTrade = someTrade;
+		assertThat(tradeRepository.fetchById(aTrade.getId()))
+				.isNotEmpty()
+				.hasValueSatisfying(t -> assertThat(t.getId()).isEqualTo(aTrade.getId()))
+				.hasValueSatisfying(t -> assertThat(t.getTraderId()).isEqualTo(aTrade.getTraderId()))
+				.hasValueSatisfying(t -> assertThat(t.getSymbol()).isEqualTo(aTrade.getSymbol()))
+				.hasValueSatisfying(t -> assertThat(t.getSubTrades()).hasSize(aTrade.getSubTrades().size()));
+		Mockito.verify(spannerTemplate, Mockito.times(1))
+				.executeQuery(any(Statement.class), any());
+		Mockito.verify(spannerTemplate, Mockito.times(1))
+				.query(eq(Trade.class), any(Statement.class), any(SpannerQueryOptions.class));
 
 		List<SubTradeComponent> subTradeComponents = (List) this.subTradeComponentRepository.findAll();
 

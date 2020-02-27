@@ -42,6 +42,7 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -120,7 +121,7 @@ public class SqlSpannerQueryTests {
 	}
 
 	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml) {
-		return new SqlSpannerQuery<Trade>(Trade.class, this.queryMethod,
+		return new SqlSpannerQuery<>(Trade.class, this.queryMethod,
 				this.spannerTemplate,
 				sql, this.evaluationContextProvider, this.expressionParser,
 				new SpannerMappingContext(), isDml);
@@ -131,7 +132,9 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
-		String entityResolvedSql = "SELECT DISTINCT * FROM trades";
+		String entityResolvedSql = "SELECT *"
+				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
+				+ "FROM (SELECT DISTINCT * FROM trades) trades";
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -169,6 +172,51 @@ public class SqlSpannerQueryTests {
 	}
 
 	@Test
+	public void noPageableParamWrappedQueryTest() throws NoSuchMethodException {
+		String sql = "SELECT DISTINCT * FROM "
+				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
+
+		String entityResolvedSql = "SELECT *, " +
+				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children " +
+				"FROM (SELECT DISTINCT * FROM trades) trades";
+
+		Parameters parameters = mock(Parameters.class);
+
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
+
+		when(parameters.getNumberOfParameters()).thenReturn(0);
+
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+				.thenReturn(evaluationContext);
+
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
+
+		doAnswer((invocation) -> {
+			Statement statement = invocation.getArgument(0);
+			SpannerQueryOptions queryOptions = invocation.getArgument(1);
+			assertThat(queryOptions.isAllowPartialRead()).isTrue();
+
+			assertThat(statement.getSql()).isEqualTo(entityResolvedSql);
+
+			return null;
+		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+		// This dummy method was created so the metadata for the ARRAY param inner type is
+		// provided.
+		Method method = QueryHolder.class.getMethod("dummyMethod2");
+		when(this.queryMethod.getMethod()).thenReturn(method);
+
+		sqlSpannerQuery.execute(new Object[] {});
+
+		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
+	}
+
+
+	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
 
 		String sql = "SELECT DISTINCT * FROM "
@@ -179,15 +227,16 @@ public class SqlSpannerQueryTests {
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3;";
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10)) ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
+		String entityResolvedSql = "SELECT *, ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children FROM " +
+				"(SELECT DISTINCT * FROM trades@{index=fakeindex}"
 				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
-				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10))ORDER BY id DESC LIMIT 3) "
+				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10)) ORDER BY id DESC LIMIT 3) trades "
 				+ "ORDER BY COLA ASC , COLB DESC LIMIT 10 OFFSET 30";
 
 		Object[] params = new Object[] { "BUY", this.pageable, "abcd", "abc123", 8.88,
@@ -382,6 +431,21 @@ public class SqlSpannerQueryTests {
 
 		@Column(name = "trader_id")
 		String traderId;
+
+		@Interleaved
+		List<Child> children;
+	}
+
+
+	@Table(name = "children")
+	private static class Child {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String childId;
+
+		String value;
 	}
 
 	private static class QueryHolder {
