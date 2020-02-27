@@ -27,7 +27,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * Where clause to add to the element Entity or target entity of a collection.
  * The clause is written in SQL. A common use case here is for soft-deletes.
  * It can be used on class level or on interleaved list as well.
- * It overwrites the class annotation when used on an interleaved list of the same type.
+ * It overwrites the class-level `@Where` annotation when used on an interleaved list property of the same type.
  *
  * @author Roman Solodovnichenko
  *
