@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Roman Solodovnichenko
  *
- * @since 1.3.0
+ * @since 1.2.2
  */
 public final class CommitTimestamp {
 	private static final Map<Object, Object> VALUES = new ConcurrentHashMap<>();

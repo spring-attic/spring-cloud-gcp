@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
  *  - sub : Must not be empty
  *
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 
