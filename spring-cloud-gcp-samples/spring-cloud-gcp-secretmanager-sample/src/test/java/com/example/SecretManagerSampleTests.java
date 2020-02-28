@@ -23,8 +23,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -49,9 +53,22 @@ public class SecretManagerSampleTests {
 	public void testApplicationStartup() {
 		ResponseEntity<String> response = this.testRestTemplate.getForEntity("/", String.class);
 		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+		assertThat(response.getBody()).contains("application-secret: Hello world.");
+	}
+
+	@Test
+	public void testCreateReadSecret() {
+		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+		params.add("secretId", "secret-manager-sample-secret");
+		params.add("secretPayload", "12345");
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
+
+		ResponseEntity<String> response = this.testRestTemplate.postForEntity("/createSecret", request, String.class);
+		assertThat(response.getStatusCode().is3xxRedirection()).isTrue();
+
+		response = this.testRestTemplate.getForEntity(
+				"/getSecret?secretId=secret-manager-sample-secret", String.class);
 		assertThat(response.getBody()).isEqualTo(
-				"<h1>Secret Manager Sample Application</h1>"
-						+ "The secret property is: Hello world.<br/>"
-						+ "You can also access secrets using @Value: Hello world.<br/>");
+				"Secret ID: secret-manager-sample-secret | Value: 12345");
 	}
 }

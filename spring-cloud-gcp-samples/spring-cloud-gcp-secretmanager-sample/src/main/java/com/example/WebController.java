@@ -18,11 +18,17 @@ package com.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
-@RestController
+@Controller
 public class WebController {
 
 	@Autowired
@@ -31,6 +37,9 @@ public class WebController {
 	@Autowired
 	private MyAppProperties properties;
 
+	@Autowired
+	private SecretManagerTemplate secretManagerTemplate;
+
 	// Application secrets can be accessed using @Value and passing in the secret name.
 	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
 	// bootstrap.properties.
@@ -38,10 +47,21 @@ public class WebController {
 	private String applicationSecretValue;
 
 	@GetMapping("/")
-	public String getRoot() {
-		// In practice, you never want to print your secrets as plaintext.
-		return "<h1>Secret Manager Sample Application</h1>"
-				+ "The secret property is: " + properties.getApplicationSecret() + "<br/>"
-				+ "You can also access secrets using @Value: " + applicationSecretValue + "<br/>";
+	public ModelAndView renderIndex(ModelMap map) {
+		map.put("applicationSecret", this.applicationSecretValue);
+		return new ModelAndView("index.html", map);
+	}
+
+	@GetMapping("/getSecret")
+	@ResponseBody
+	public String getSecret(@RequestParam String secretId, ModelMap map) {
+		String secretPayload = this.secretManagerTemplate.getSecretString(secretId);
+		return "Secret ID: " + secretId + " | Value: " + secretPayload;
+	}
+
+	@PostMapping("/createSecret")
+	public String createSecret(@RequestParam String secretId, @RequestParam String secretPayload) {
+		this.secretManagerTemplate.createSecret(secretId, secretPayload);
+		return "redirect:/";
 	}
 }
