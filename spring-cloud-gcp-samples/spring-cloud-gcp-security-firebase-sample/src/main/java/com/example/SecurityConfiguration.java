@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.Http403ForbiddenEntryPoin
 
 /**
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 @Configuration
 @EnableWebSecurity

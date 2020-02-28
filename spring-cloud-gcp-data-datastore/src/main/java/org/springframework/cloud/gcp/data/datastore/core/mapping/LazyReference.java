@@ -29,7 +29,7 @@ import org.springframework.data.annotation.Reference;
  *
  * @author Dmitry Solomakha
  *
- * @since 1.3
+ * @since 1.2.2
  */
 @Documented
 @Target(ElementType.FIELD)

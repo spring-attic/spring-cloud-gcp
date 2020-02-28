@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * client side javascript
  *
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 @Controller
 @RequestMapping("/templates")

@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 @Controller
 @RequestMapping("/answer")

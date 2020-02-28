@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Vinicius Carvalho
  *
- * @since 1.3
+ * @since 1.2.2
  */
 @Configuration
 @ConditionalOnClass({HealthIndicator.class, PubSubTemplate.class})

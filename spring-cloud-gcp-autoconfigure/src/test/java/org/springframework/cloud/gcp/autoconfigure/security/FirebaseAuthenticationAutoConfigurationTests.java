@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 
 /**
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 public class FirebaseAuthenticationAutoConfigurationTests {
 

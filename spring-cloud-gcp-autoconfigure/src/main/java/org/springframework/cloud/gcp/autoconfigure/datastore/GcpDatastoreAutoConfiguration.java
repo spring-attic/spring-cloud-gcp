@@ -68,7 +68,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 @EnableConfigurationProperties(GcpDatastoreProperties.class)
 public class GcpDatastoreAutoConfiguration {
 
-	private static final Log LOGGER = LogFactory.getLog(GcpDatastoreEmulatorAutoConfiguration.class);
+	private static final Log LOGGER = LogFactory.getLog(GcpDatastoreAutoConfiguration.class);
 
 	private final String projectId;
 

@@ -34,7 +34,7 @@ import sun.security.x509.X500Name;
  * Test utility class to generate a pair of Public/Private keys. Used for testing JWT signing.
  *
  * @author Vinicius Carvalho
- * @since 1.3
+ * @since 1.2.2
  */
 public class RSAKeyGeneratorUtils {
 

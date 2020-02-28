@@ -98,7 +98,7 @@ We offer `BUILD-SNAPSHOT` versions that always reflect the latest code changes t
 </repositories>
 ----
 
-For example, the `1.3.0.BUILD-SNAPSHOT` is available from this repository.
+For example, the `1.2.2.BUILD-SNAPSHOT` is available from this repository.
 
 == Spring Boot Starters
 
