@@ -36,7 +36,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
  * creating and reading secrets.
  *
  * @author Daniel Zou
- * @since 1.3
+ * @since 1.2.2
  */
 public class SecretManagerTemplate implements SecretManagerOperations {
 

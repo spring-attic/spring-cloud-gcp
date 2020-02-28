@@ -22,7 +22,7 @@ import com.google.protobuf.ByteString;
  * Describes supported operations that one can perform on the Secret Manager API.
  *
  * @author Daniel Zou
- * @since 1.3
+ * @since 1.2.2
  */
 public interface SecretManagerOperations {
 
