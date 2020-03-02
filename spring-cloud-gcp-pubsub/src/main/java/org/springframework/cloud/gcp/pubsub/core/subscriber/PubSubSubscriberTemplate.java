@@ -37,7 +37,12 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
-import com.google.pubsub.v1.*;
+import com.google.pubsub.v1.AcknowledgeRequest;
+import com.google.pubsub.v1.ModifyAckDeadlineRequest;
+import com.google.pubsub.v1.ProjectSubscriptionName;
+import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.PullRequest;
+import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
