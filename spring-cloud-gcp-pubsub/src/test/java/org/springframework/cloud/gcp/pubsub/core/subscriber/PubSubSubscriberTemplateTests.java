@@ -20,11 +20,7 @@ import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 import com.google.api.core.ApiFuture;
@@ -34,12 +30,7 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.protobuf.Empty;
-import com.google.pubsub.v1.AcknowledgeRequest;
-import com.google.pubsub.v1.ModifyAckDeadlineRequest;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.PullRequest;
-import com.google.pubsub.v1.PullResponse;
-import com.google.pubsub.v1.ReceivedMessage;
+import com.google.pubsub.v1.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,14 +52,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link PubSubSubscriberTemplate}.
@@ -124,15 +108,19 @@ public class PubSubSubscriberTemplateTests {
 	private UnaryCallable<ModifyAckDeadlineRequest, Empty> modifyAckDeadlineCallable;
 
 	@Mock
-	private ApiFuture<Empty> apiFuture;
+	private ApiFuture<PullResponse> pullApiFuture;
+
+	@Mock
+	private ApiFuture<Empty> ackApiFuture;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws ExecutionException, InterruptedException {
 		reset(this.subscriberFactory);
 		reset(this.subscriberStub);
 		reset(this.subscriber);
 		reset(this.messageReceiver);
-		reset(this.apiFuture);
+		reset(this.pullApiFuture);
+		reset(this.ackApiFuture);
 
 		when(this.subscriberFactory.getProjectId()).thenReturn("testProject");
 
@@ -158,20 +146,32 @@ public class PubSubSubscriberTemplateTests {
 		when(this.subscriberStub.acknowledgeCallable()).thenReturn(this.ackCallable);
 		when(this.subscriberStub.modifyAckDeadlineCallable()).thenReturn(this.modifyAckDeadlineCallable);
 
-		when(this.ackCallable.futureCall(any(AcknowledgeRequest.class))).thenReturn(this.apiFuture);
+		when(this.ackCallable.futureCall(any(AcknowledgeRequest.class))).thenReturn(this.ackApiFuture);
 
-		when(this.modifyAckDeadlineCallable.futureCall(any(ModifyAckDeadlineRequest.class))).thenReturn(this.apiFuture);
+		when(this.modifyAckDeadlineCallable.futureCall(any(ModifyAckDeadlineRequest.class))).thenReturn(this.ackApiFuture);
 
 		doAnswer((invocation) -> {
 			Runnable runnable = invocation.getArgument(0);
 			runnable.run();
 			return null;
-		}).when(this.apiFuture).addListener(any(Runnable.class), any(Executor.class));
+		}).when(this.ackApiFuture).addListener(any(Runnable.class), any(Executor.class));
 
-		when(this.apiFuture.isDone()).thenReturn(true);
+		when(this.ackApiFuture.isDone()).thenReturn(true);
 
 		doNothing().when(this.ackReplyConsumer).ack();
 		doNothing().when(this.ackReplyConsumer).nack();
+
+		// for pull future
+		when(this.pullCallable.futureCall(any(PullRequest.class))).thenReturn(this.pullApiFuture);
+
+		doAnswer((invocation) -> {
+			Runnable runnable = invocation.getArgument(0);
+			runnable.run();
+			return null;
+		}).when(this.pullApiFuture).addListener(any(Runnable.class), any(Executor.class));
+		when(this.pullApiFuture.isDone()).thenReturn(true);
+		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder()
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
 
 		// create objects under test
 		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
@@ -369,7 +369,7 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 		verify(this.ackCallable, times(2)).futureCall(any(AcknowledgeRequest.class));
-		verify(this.apiFuture, times(2)).addListener(any(), same(mockExecutor));
+		verify(this.ackApiFuture, times(2)).addListener(any(), same(mockExecutor));
 	}
 
 	@Test
@@ -408,6 +408,38 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
+	}
+
+	@Test
+	public void testPullFuture_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
+
+		ListenableFuture<List<AcknowledgeablePubsubMessage>> pullListenableFuture = this.pubSubSubscriberTemplate
+				.pullFuture("sub", 1, true);
+
+		List<AcknowledgeablePubsubMessage> result = pullListenableFuture.get(10L, TimeUnit.SECONDS);
+
+		assertThat(pullListenableFuture.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(1);
+		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
+		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
+		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub");
+
+		AcknowledgeablePubsubMessage acknowledgeablePubsubMessage = result.get(0);
+		assertThat(acknowledgeablePubsubMessage.getAckId()).isNotNull();
+
+		TestListenableFutureCallback ackTestListenableFutureCallback = new TestListenableFutureCallback();
+
+		ListenableFuture<Void> ackListenableFuture = this.pubSubSubscriberTemplate.ack(result);
+
+		assertThat(ackListenableFuture).isNotNull();
+
+		ackListenableFuture.addCallback(ackTestListenableFutureCallback);
+		ackListenableFuture.get(10L, TimeUnit.SECONDS);
+
+		assertThat(ackListenableFuture.isDone()).isTrue();
+
+		assertThat(ackTestListenableFutureCallback.getThrowable()).isNull();
 	}
 
 	private class TestListenableFutureCallback implements ListenableFutureCallback<Void> {
