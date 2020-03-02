@@ -35,13 +35,9 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
-import com.google.pubsub.v1.AcknowledgeRequest;
-import com.google.pubsub.v1.ModifyAckDeadlineRequest;
-import com.google.pubsub.v1.ProjectSubscriptionName;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.PullRequest;
-import com.google.pubsub.v1.PullResponse;
+import com.google.pubsub.v1.*;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -182,11 +178,48 @@ public class PubSubSubscriberTemplate
 						.collect(Collectors.toList());
 	}
 
+	private ListenableFuture<List<AcknowledgeablePubsubMessage>> pullFuture(PullRequest pullRequest) {
+		Assert.notNull(pullRequest, "The pull request can't be null.");
+
+		ApiFuture<PullResponse> pullFuture = this.subscriberStub.pullCallable().futureCall(pullRequest);
+
+		final String projectId = this.subscriberFactory.getProjectId();
+
+		final SettableListenableFuture<List<AcknowledgeablePubsubMessage>> settableFuture = new SettableListenableFuture<>();
+		ApiFutures.addCallback(pullFuture, new ApiFutureCallback<PullResponse>() {
+
+			@Override
+			public void onFailure(Throwable throwable) {
+				settableFuture.setException(throwable);
+			}
+
+			@Override
+			public void onSuccess(PullResponse pullResponse) {
+				List<AcknowledgeablePubsubMessage> result = pullResponse.getReceivedMessagesList().stream()
+						.map((message) -> new PulledAcknowledgeablePubsubMessage(
+								PubSubSubscriptionUtils.toProjectSubscriptionName(pullRequest.getSubscription(), projectId),
+								message.getMessage(),
+								message.getAckId()))
+						.collect(Collectors.toList());
+
+				settableFuture.set(result);
+			}
+
+		}, MoreExecutors.directExecutor());
+
+		return settableFuture;
+	}
+
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(
 			String subscription, Integer maxMessages, Boolean returnImmediately) {
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
+	}
+
+	@Override
+	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullFuture(String subscription, Integer maxMessages, Boolean returnImmediately) {
+		return pullFuture(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately));
 	}
 
 	@Override

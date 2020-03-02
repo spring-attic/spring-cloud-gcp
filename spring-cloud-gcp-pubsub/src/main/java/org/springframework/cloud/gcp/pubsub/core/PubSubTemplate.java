@@ -159,6 +159,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullFuture(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pullFuture(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
 	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
