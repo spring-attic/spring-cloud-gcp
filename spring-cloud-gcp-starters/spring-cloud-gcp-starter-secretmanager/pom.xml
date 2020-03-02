@@ -25,8 +25,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-secretmanager</artifactId>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-secretmanager</artifactId>
 		</dependency>
 	</dependencies>
 </project>

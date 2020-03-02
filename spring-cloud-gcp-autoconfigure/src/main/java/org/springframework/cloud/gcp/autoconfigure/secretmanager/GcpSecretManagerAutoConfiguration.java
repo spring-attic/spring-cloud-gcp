@@ -21,25 +21,22 @@ import java.io.IOException;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceSettings;
-import com.google.protobuf.ByteString;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
- * Bootstrap Autoconfiguration for GCP Secret Manager which enables loading secrets as
- * properties into the application {@link org.springframework.core.env.Environment}.
+ * Autoconfiguration for GCP Secret Manager which provides an instance of the
+ * {@link SecretManagerTemplate}.
  *
  * @author Daniel Zou
  * @since 1.2.2
@@ -47,8 +44,8 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
 @ConditionalOnClass(SecretManagerServiceClient.class)
-@ConditionalOnProperty("spring.cloud.gcp.secretmanager.bootstrap.enabled")
-public class GcpSecretManagerBootstrapConfiguration {
+@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
+public class GcpSecretManagerAutoConfiguration {
 
 	private final GcpSecretManagerProperties properties;
 
@@ -56,32 +53,13 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	private final GcpProjectIdProvider gcpProjectIdProvider;
 
-	public GcpSecretManagerBootstrapConfiguration(
-			GcpSecretManagerProperties properties,
-			ConfigurableEnvironment configurableEnvironment) throws IOException {
-
+	public GcpSecretManagerAutoConfiguration(
+			GcpSecretManagerProperties properties) throws IOException {
 		this.properties = properties;
 		this.credentialsProvider = new DefaultCredentialsProvider(properties);
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId
 				: new DefaultGcpProjectIdProvider();
-
-		// Registers {@link ByteString} type converters to convert to String and byte[].
-		configurableEnvironment.getConversionService().addConverter(
-				new Converter<ByteString, String>() {
-					@Override
-					public String convert(ByteString source) {
-						return source.toStringUtf8();
-					}
-				});
-
-		configurableEnvironment.getConversionService().addConverter(
-				new Converter<ByteString, byte[]>() {
-					@Override
-					public byte[] convert(ByteString source) {
-						return source.toByteArray();
-					}
-				});
 	}
 
 	@Bean
@@ -89,15 +67,16 @@ public class GcpSecretManagerBootstrapConfiguration {
 	public SecretManagerServiceClient secretManagerClient() throws IOException {
 		SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
-				.setHeaderProvider(new UserAgentHeaderProvider(GcpSecretManagerBootstrapConfiguration.class))
+				.setHeaderProvider(
+						new UserAgentHeaderProvider(GcpSecretManagerAutoConfiguration.class))
 				.build();
 
 		return SecretManagerServiceClient.create(settings);
 	}
 
 	@Bean
-	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		return new SecretManagerPropertySourceLocator(
-				client, this.gcpProjectIdProvider, this.properties.getSecretNamePrefix());
+	@ConditionalOnMissingBean
+	public SecretManagerTemplate secretManagerTemplate(SecretManagerServiceClient client) {
+		return new SecretManagerTemplate(client, this.gcpProjectIdProvider);
 	}
 }

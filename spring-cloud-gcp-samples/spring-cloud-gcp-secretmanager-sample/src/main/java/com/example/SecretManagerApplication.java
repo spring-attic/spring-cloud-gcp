@@ -22,8 +22,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @SpringBootApplication
 @EnableConfigurationProperties(MyAppProperties.class)
-public class Application {
+public class SecretManagerApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(SecretManagerApplication.class, args);
 	}
 }
