@@ -57,6 +57,8 @@ include::vision.adoc[]
 
 include::bigquery.adoc[]
 
+include::secretmanager.adoc[]
+
 include::cloudfoundry.adoc[]
 
 include::kotlin.adoc[]
