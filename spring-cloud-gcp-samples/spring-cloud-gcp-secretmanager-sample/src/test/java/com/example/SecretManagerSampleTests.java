@@ -35,7 +35,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class)
+@SpringBootTest(
+		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		classes = SecretManagerApplication.class,
+		properties = {"spring.cloud.gcp.secretmanager.bootstrap.enabled=true"})
 public class SecretManagerSampleTests {
 
 	@Autowired

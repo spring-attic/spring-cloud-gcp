@@ -44,8 +44,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
 @ConditionalOnClass(SecretManagerServiceClient.class)
-@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.template.enabled", matchIfMissing = true)
-public class GcpSecretManagerTemplateConfiguration {
+@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
+public class GcpSecretManagerAutoConfiguration {
 
 	private final GcpSecretManagerProperties properties;
 
@@ -53,7 +53,7 @@ public class GcpSecretManagerTemplateConfiguration {
 
 	private final GcpProjectIdProvider gcpProjectIdProvider;
 
-	public GcpSecretManagerTemplateConfiguration(
+	public GcpSecretManagerAutoConfiguration(
 			GcpSecretManagerProperties properties) throws IOException {
 		this.properties = properties;
 		this.credentialsProvider = new DefaultCredentialsProvider(properties);
@@ -68,7 +68,7 @@ public class GcpSecretManagerTemplateConfiguration {
 		SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.setHeaderProvider(
-						new UserAgentHeaderProvider(GcpSecretManagerTemplateConfiguration.class))
+						new UserAgentHeaderProvider(GcpSecretManagerAutoConfiguration.class))
 				.build();
 
 		return SecretManagerServiceClient.create(settings);
