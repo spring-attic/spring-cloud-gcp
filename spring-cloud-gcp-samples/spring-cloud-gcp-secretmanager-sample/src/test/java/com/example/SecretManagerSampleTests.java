@@ -56,7 +56,7 @@ public class SecretManagerSampleTests {
 	public void testApplicationStartup() {
 		ResponseEntity<String> response = this.testRestTemplate.getForEntity("/", String.class);
 		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-		assertThat(response.getBody()).contains("application-secret: Hello world.");
+		assertThat(response.getBody()).contains("<b>application-secret:</b> <i>Hello world.</i>");
 	}
 
 	@Test
@@ -67,11 +67,11 @@ public class SecretManagerSampleTests {
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
 
 		ResponseEntity<String> response = this.testRestTemplate.postForEntity("/createSecret", request, String.class);
-		assertThat(response.getStatusCode().is3xxRedirection()).isTrue();
+		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 
 		response = this.testRestTemplate.getForEntity(
 				"/getSecret?secretId=secret-manager-sample-secret", String.class);
-		assertThat(response.getBody()).isEqualTo(
+		assertThat(response.getBody()).contains(
 				"Secret ID: secret-manager-sample-secret | Value: 12345");
 	}
 }

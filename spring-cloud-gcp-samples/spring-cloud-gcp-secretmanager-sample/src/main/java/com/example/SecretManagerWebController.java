@@ -56,12 +56,16 @@ public class SecretManagerWebController {
 	@ResponseBody
 	public String getSecret(@RequestParam String secretId, ModelMap map) {
 		String secretPayload = this.secretManagerTemplate.getSecretString(secretId);
-		return "Secret ID: " + secretId + " | Value: " + secretPayload;
+		return "Secret ID: " + secretId + " | Value: " + secretPayload
+				+ "<br/><br/><a href='/'>Go back</a>";
 	}
 
 	@PostMapping("/createSecret")
-	public String createSecret(@RequestParam String secretId, @RequestParam String secretPayload) {
+	public ModelAndView createSecret(
+			@RequestParam String secretId, @RequestParam String secretPayload, ModelMap map) {
 		this.secretManagerTemplate.createSecret(secretId, secretPayload);
-		return "redirect:/";
+		map.put("applicationSecret", this.applicationSecretValue);
+		map.put("message", "Secret created!");
+		return new ModelAndView("index.html", map);
 	}
 }
