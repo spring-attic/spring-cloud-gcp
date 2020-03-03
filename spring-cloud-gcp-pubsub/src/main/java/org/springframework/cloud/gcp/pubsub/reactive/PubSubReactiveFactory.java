@@ -67,6 +67,9 @@ public final class PubSubReactiveFactory {
 	 * <p>For specific demand, as many messages as are available will be returned immediately,
 	 * with remaining demand being fulfilled in the future.
 	 * Pub/Sub timeout will cause a retry with the same demand.
+	 * <p>Any exceptions that are thrown by the Pub/Sub client will be passed as an error to the stream.
+	 * The error handling operators, like {@link Flux#retry()},
+	 * can be used to recover and continue streaming messages.
 	 * @param subscriptionName subscription from which to retrieve messages.
 	 * @param pollingPeriodMs how frequently to poll the source subscription in case of unlimited demand, in milliseconds.
 	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
