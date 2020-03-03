@@ -133,7 +133,7 @@ public class SqlSpannerQueryTests {
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
 		String entityResolvedSql = "SELECT *"
-				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children "
+				+ ", ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) AS children "
 				+ "FROM (SELECT DISTINCT * FROM trades) trades";
 
 		Parameters parameters = mock(Parameters.class);
@@ -177,7 +177,7 @@ public class SqlSpannerQueryTests {
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:";
 
 		String entityResolvedSql = "SELECT *, " +
-				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children " +
+				"ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) AS children " +
 				"FROM (SELECT DISTINCT * FROM trades) trades";
 
 		Parameters parameters = mock(Parameters.class);
@@ -229,7 +229,7 @@ public class SqlSpannerQueryTests {
 				+ "struct_val = @tag8 AND struct_val = @tag9 "
 				+ "price>@tag6 AND price<=@tag7 and price in unnest(@tag10)) ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT *, ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) as children FROM " +
+		String entityResolvedSql = "SELECT *, ARRAY (SELECT AS STRUCT id, childId, value FROM children WHERE children.id = trades.id) AS children FROM " +
 				"(SELECT DISTINCT * FROM trades@{index=fakeindex}"
 				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "

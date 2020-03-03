@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
@@ -43,6 +42,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -172,8 +172,9 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
-	public Optional<Where> getWhere() {
-		return Optional.ofNullable(findAnnotation(Where.class));
+	public String getWhere() {
+		Where annotation = findAnnotation(Where.class);
+		return annotation != null ? annotation.value() : "";
 	}
 
 	@Override

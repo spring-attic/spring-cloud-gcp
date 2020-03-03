@@ -57,6 +57,7 @@ import static org.mockito.Mockito.when;
  * Tests Spanner Query Method lookups.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 public class SpannerQueryLookupStrategyTests {
 
@@ -164,10 +165,10 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter(),
-				this.spannerMappingContext);
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class).getPersistentProperty("childEntities"),
+				new SpannerWriteConverter(), this.spannerMappingContext);
 		assertThat(statement.getSql())
-				.isEqualTo("SELECT deleted, id3, id, id_2 FROM child_test_table WHERE id = @tag0 AND id_2 = @tag1");
+				.isEqualTo("SELECT deleted, id3, id, id_2 FROM child_test_table WHERE ((id = @tag0 AND id_2 = @tag1)) AND (deleted = false)");
 		assertThat(statement.getParameters()).hasSize(2);
 		assertThat(statement.getParameters().get("tag0").getString()).isEqualTo("key");
 		assertThat(statement.getParameters().get("tag1").getString()).isEqualTo("key2");
@@ -185,8 +186,8 @@ public class SpannerQueryLookupStrategyTests {
 		assertThat(columnsStringForSelect)
 				.isEqualTo("other, deleted, id, custom_col, id_2, " +
 						"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 " +
-						"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
-						"AND child_test_table.id_2 = custom_test_table.id_2 AND deleted = false) as childEntities");
+						"FROM child_test_table WHERE (child_test_table.id = custom_test_table.id " +
+						"AND child_test_table.id_2 = custom_test_table.id_2) AND (deleted = false)) AS childEntities");
 	}
 
 
@@ -200,8 +201,8 @@ public class SpannerQueryLookupStrategyTests {
 		assertThat(childrenRowsQuery.getSql())
 				.isEqualTo(
 						"SELECT other, deleted, id, custom_col, id_2, ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 " +
-								"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
-								"AND child_test_table.id_2 = custom_test_table.id_2 AND deleted = false) as childEntities " +
+								"FROM child_test_table WHERE (child_test_table.id = custom_test_table.id " +
+								"AND child_test_table.id_2 = custom_test_table.id_2) AND (deleted = false)) AS childEntities " +
 								"FROM custom_test_table WHERE ((id = @tag0 AND id_2 = @tag1) " +
 								"OR (id = @tag2 AND id_2 = @tag3)) AND (deleted = false)");
 	}

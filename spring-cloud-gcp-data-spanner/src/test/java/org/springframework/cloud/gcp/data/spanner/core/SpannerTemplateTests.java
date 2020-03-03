@@ -89,6 +89,7 @@ import static org.mockito.Mockito.when;
  * Tests for the Spanner Template.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 public class SpannerTemplateTests {
 
@@ -454,8 +455,8 @@ public class SpannerTemplateTests {
 		spyTemplate.read(ParentEntity.class, keys);
 		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
 				"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 FROM child_test_table " +
-				"WHERE child_test_table.id = parent_test_table.id " +
-				"AND child_test_table.id_2 = parent_test_table.id_2 AND deleted = false) as childEntities " +
+				"WHERE (child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) AND (deleted = false)) AS childEntities " +
 				"FROM parent_test_table WHERE (id = @tag0) OR (id_2 = @tag1)")
 				.bind("tag0").to("key1").bind("tag1").to("key2").build();
 		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
@@ -468,11 +469,10 @@ public class SpannerTemplateTests {
 		spyTemplate.readAll(ParentEntity.class);
 		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
 				"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 FROM child_test_table " +
-				"WHERE child_test_table.id = parent_test_table.id " +
-				"AND child_test_table.id_2 = parent_test_table.id_2 AND deleted = false) as childEntities " +
+				"WHERE (child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) AND (deleted = false)) AS childEntities " +
 				"FROM parent_test_table")
 				.build();
-
 		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
 		verify(this.databaseClient, times(1)).singleUse();
 	}

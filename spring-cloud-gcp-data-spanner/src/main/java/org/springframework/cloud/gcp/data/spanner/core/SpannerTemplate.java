@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
@@ -36,6 +35,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
@@ -55,7 +55,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
@@ -68,10 +67,11 @@ import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatem
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
+
+import static org.apache.commons.lang3.ArrayUtils.toArray;
 
 /**
  * An implementation of {@link SpannerOperations}.
@@ -79,6 +79,7 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author Ray Tsang
  * @author Mike Eltsufin
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -194,13 +195,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> read(Class<T> entityClass, KeySet keys,
-			SpannerReadOptions options) {
-		SpannerPersistentEntity<T> persistentEntity = (SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
+	public <T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) {
+		SpannerPersistentEntity<T> persistentEntity =
+				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
 		List<T> entities;
-
-		if (isEligibleForEagerFetch(keys, options, persistentEntity)) {
-			entities = executeReadQueryAndResolveChildren(keys, persistentEntity);
+		if (persistentEntity.hasEagerlyLoadedProperties() || !persistentEntity.getWhere().isEmpty()) {
+			entities = executeReadQueryAndResolveChildren(keys, persistentEntity,
+					toQueryOption(keys, options), options != null ? options.getIndex() : null);
 		}
 		else {
 			entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
@@ -212,16 +213,35 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return entities;
 	}
 
-	private <T> boolean isEligibleForEagerFetch(KeySet keys, SpannerReadOptions options,
-			SpannerPersistentEntity<T> persistentEntity) {
-		//an entity is eligible if all of the following true:
-		//1. entity has eager loaded properties
-		//2. entity has "Where" annotation
-		//3. there are no read options, as they can't be applied to a query
-		//4. key set does not have ranges, as they can't be used in a query
-		return persistentEntity.hasEagerlyLoadedProperties() &&
-				persistentEntity.findAnnotation(Where.class) == null &&
-				options == null && !keys.getRanges().iterator().hasNext();
+	/**
+	 * In many cases {@link KeySet} with {@link SpannerReadOptions} are compatible with
+	 * {@link SpannerReadOptions}. The method throws exception when it is impossible.
+	 * @param options read-parameters
+	 * @return query-parameters
+	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}
+	 * 	or {@code keys} have "ranges".
+	 */
+	private static SpannerQueryOptions toQueryOption(KeySet keys, SpannerReadOptions options) throws IllegalArgumentException {
+		if (keys != null && keys.getRanges().iterator().hasNext()) {
+			throw new IllegalArgumentException(String.format("KeySet %s has ranges", keys));
+		}
+		SpannerQueryOptions query = new SpannerQueryOptions();
+		if (options == null) {
+			return query;
+		}
+		query.setAllowPartialRead(options.isAllowPartialRead());
+		query.setIncludeProperties(options.getIncludeProperties());
+		query.setTimestampBound(options.getTimestampBound());
+
+		for (ReadOption ro : options.getOptions()) {
+			if (ro instanceof Options.ReadAndQueryOption) {
+				query.addQueryOption((Options.ReadAndQueryOption) ro);
+			}
+			else {
+				throw new IllegalArgumentException(String.format("Can't convert %s to SpannerQueryOptions ", options));
+			}
+		}
+		return query;
 	}
 
 	@Override
@@ -259,8 +279,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-		String condition = Optional.ofNullable(AnnotatedElementUtils
-				.findMergedAnnotation(entityClass, Where.class)).map(cause -> " WHERE " + cause.value()).orElse("");
+		String condition = persistentEntity.getWhere().isEmpty() ? "" : " WHERE " + persistentEntity.getWhere();
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
 				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName() + condition;
 		return query(entityClass,
@@ -479,12 +498,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return resultSet;
 	}
 
-	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity) {
+	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity,
+			SpannerQueryOptions options, String index) {
 		Statement statement = SpannerStatementQueryExecutor.buildQuery(keys, persistentEntity,
 				this.spannerEntityProcessor.getWriteConverter(),
-				this.mappingContext);
+				this.mappingContext, index);
 
-		return resolveChildEntities(query(persistentEntity.getType(), statement, null), null);
+		return resolveChildEntities(query(persistentEntity.getType(), statement, options), options.getIncludeProperties());
 	}
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
@@ -492,22 +512,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
-		ResultSet resultSet;
-
 		ReadContext readContext = (options != null && options.getTimestampBound() != null)
 				? getReadContext(options.getTimestampBound())
 				: getReadContext();
 
-		if (options == null) {
-			resultSet = readContext.read(tableName, keys, columns);
-		}
-		else if (options.getIndex() != null) {
-			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getOptions());
-		}
-		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
-		}
+		final ResultSet resultSet = options != null && options.getIndex() != null
+				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
+				: readContext.read(tableName, keys, columns, options == null ? toArray() : options.getOptions());
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
@@ -596,13 +607,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 						return;
 					}
 					Class<?> childType = spannerPersistentProperty.getColumnInnerType();
-					SpannerPersistentEntity<?> childPersistentEntity = this.mappingContext
-							.getPersistentEntity(childType);
 
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter(),
+									spannerPersistentProperty, this.spannerEntityProcessor.getWriteConverter(),
 									this.mappingContext),
 							null);
 

@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -43,6 +42,7 @@ import org.springframework.util.Assert;
  * correspond to actual properties of POJOs, as it might even be a composite, multi-column key.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -145,8 +145,8 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
-	public Optional<Where> getWhere() {
-		return Optional.empty();
+	public String getWhere() {
+		return "";
 	}
 
 	@Override
