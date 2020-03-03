@@ -177,7 +177,8 @@ public class PubSubReactiveFactoryTests {
 	/**
 	 * Replays provided messages.
 	 * If a synthetic message "stop" is encountered, immediately returns previously collected messages.
-	 * If a synthetic message "throw" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "timeout" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "throw" is encountered, throws an {@link RuntimeException}.
 	 * Fails the calling test if there are not enough messages to fulfill demand from cumulative calls to {@code pull()}.
 	 * @param messages messages to replay
 	 */
