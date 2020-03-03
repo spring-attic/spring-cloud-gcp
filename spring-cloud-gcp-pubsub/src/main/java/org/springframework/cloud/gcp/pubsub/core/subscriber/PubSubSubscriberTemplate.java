@@ -183,7 +183,7 @@ public class PubSubSubscriberTemplate
 						.collect(Collectors.toList());
 	}
 
-	private ListenableFuture<List<AcknowledgeablePubsubMessage>> pullFuture(PullRequest pullRequest) {
+	private ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		ApiFuture<PullResponse> pullFuture = this.subscriberStub.pullCallable().futureCall(pullRequest);
@@ -223,8 +223,8 @@ public class PubSubSubscriberTemplate
 	}
 
 	@Override
-	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullFuture(String subscription, Integer maxMessages, Boolean returnImmediately) {
-		return pullFuture(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately));
+	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages, Boolean returnImmediately) {
+		return pullAsync(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately));
 	}
 
 	@Override

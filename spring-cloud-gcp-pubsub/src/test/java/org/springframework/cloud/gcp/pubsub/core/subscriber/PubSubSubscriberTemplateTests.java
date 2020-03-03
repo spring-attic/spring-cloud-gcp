@@ -430,7 +430,7 @@ public class PubSubSubscriberTemplateTests {
 	public void testPullFuture_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
 
 		ListenableFuture<List<AcknowledgeablePubsubMessage>> pullListenableFuture = this.pubSubSubscriberTemplate
-				.pullFuture("sub", 1, true);
+				.pullAsync("sub", 1, true);
 
 		List<AcknowledgeablePubsubMessage> result = pullListenableFuture.get(10L, TimeUnit.SECONDS);
 

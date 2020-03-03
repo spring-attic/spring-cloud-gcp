@@ -82,8 +82,8 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations).pullFuture("sub1", 1, false);
-		methodOrder.verify(this.subscriberOperations).pullFuture("sub1",  3, false);
+		methodOrder.verify(this.subscriberOperations).pullAsync("sub1", 1, false);
+		methodOrder.verify(this.subscriberOperations).pullAsync("sub1",  3, false);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -99,8 +99,8 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations).pullFuture("sub1", 4, false);
-		methodOrder.verify(this.subscriberOperations).pullFuture("sub1",  3, false);
+		methodOrder.verify(this.subscriberOperations).pullAsync("sub1", 4, false);
+		methodOrder.verify(this.subscriberOperations).pullAsync("sub1",  3, false);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -116,7 +116,7 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations, times(2)).pullFuture("sub1", 2, false);
+		methodOrder.verify(this.subscriberOperations, times(2)).pullAsync("sub1", 2, false);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -132,7 +132,7 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations, times(2)).pullFuture("sub1", 2, false);
+		methodOrder.verify(this.subscriberOperations, times(2)).pullAsync("sub1", 2, false);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -151,7 +151,7 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations, times(3)).pullFuture("sub1", Integer.MAX_VALUE, true);
+		methodOrder.verify(this.subscriberOperations, times(3)).pullAsync("sub1", Integer.MAX_VALUE, true);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -167,7 +167,7 @@ public class PubSubReactiveFactoryTests {
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
-		methodOrder.verify(this.subscriberOperations, times(2)).pullFuture("sub1", Integer.MAX_VALUE, true);
+		methodOrder.verify(this.subscriberOperations, times(2)).pullAsync("sub1", Integer.MAX_VALUE, true);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
@@ -186,7 +186,7 @@ public class PubSubReactiveFactoryTests {
 	private void setUpMessages(String... messages) {
 		List<String> msgList = new ArrayList<>(Arrays.asList(messages));
 
-		when(subscriberOperations.pullFuture(eq("sub1"), any(Integer.class), any(Boolean.class))).then(invocationOnMock -> {
+		when(subscriberOperations.pullAsync(eq("sub1"), any(Integer.class), any(Boolean.class))).then(invocationOnMock -> {
 			List<AcknowledgeablePubsubMessage> result = new ArrayList<>();
 			for (int i = 0; i < (Integer) invocationOnMock.getArgument(1); i++) {
 				if (msgList.isEmpty()) {

@@ -129,7 +129,7 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 	}
 
 	private void setUpThreadPrefixVerification(String threadPrefix) {
-		when(mockSubscriberTemplate.pullFuture("testSubscription", Integer.MAX_VALUE, true))
+		when(mockSubscriberTemplate.pullAsync("testSubscription", Integer.MAX_VALUE, true))
 				.then(arg -> {
 					assertThat(Thread.currentThread().getName()).startsWith(threadPrefix);
 
