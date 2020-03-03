@@ -105,13 +105,29 @@ public class PubSubReactiveFactoryTests {
 
 	@Test
 	public void testDeadlineExceededCausesRetry() throws InterruptedException {
-		setUpMessages("throw", "msg1", "msg2");
+		setUpMessages("timeout", "msg1", "msg2");
 
 		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString), 2)
 				.expectSubscription()
 				.expectNext("msg1", "msg2")
 				.expectNoEvent(Duration.ofSeconds(10))
 				.thenCancel()
+				.verify();
+
+		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
+		methodOrder.verify(this.subscriberOperations, times(2)).pull("sub1", 2, false);
+		methodOrder.verifyNoMoreInteractions();
+	}
+
+	@Test
+	public void testExceptionThrownByPubSubClientResultingInErrorStream() throws InterruptedException {
+		setUpMessages("msg1", "msg2", "throw");
+
+		StepVerifier.create(factory.poll("sub1", 10).map(this::messageToString), 2)
+				.expectSubscription()
+				.expectNext("msg1", "msg2")
+				.thenRequest(2)
+				.expectError(RuntimeException.class)
 				.verify();
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
@@ -138,6 +154,22 @@ public class PubSubReactiveFactoryTests {
 		methodOrder.verifyNoMoreInteractions();
 	}
 
+	@Test
+	public void testUnlimitedDemandWithException() throws InterruptedException {
+		setUpMessages("msg1", "msg2", "stop", "throw");
+
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString))
+				.expectSubscription()
+				.expectNext("msg1", "msg2")
+				.expectNoEvent(Duration.ofMillis(10))
+				.expectError(RuntimeException.class)
+				.verify();
+
+		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
+		methodOrder.verify(this.subscriberOperations, times(2)).pull("sub1", Integer.MAX_VALUE, true);
+		methodOrder.verifyNoMoreInteractions();
+	}
+
 	private String messageToString(AcknowledgeablePubsubMessage message) {
 		return new String(message.getPubsubMessage().getData().toByteArray(), Charset.defaultCharset());
 	}
@@ -145,7 +177,8 @@ public class PubSubReactiveFactoryTests {
 	/**
 	 * Replays provided messages.
 	 * If a synthetic message "stop" is encountered, immediately returns previously collected messages.
-	 * If a synthetic message "throw" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "timeout" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "throw" is encountered, throws an {@link RuntimeException}.
 	 * Fails the calling test if there are not enough messages to fulfill demand from cumulative calls to {@code pull()}.
 	 * @param messages messages to replay
 	 */
@@ -163,11 +196,13 @@ public class PubSubReactiveFactoryTests {
 				switch (nextPayload) {
 					case "stop":
 						return result;
-					case "throw":
+					case "timeout":
 						if (!result.isEmpty()) {
 							fail("Bad setup -- 'throw' should be the first event in batch");
 						}
 						throw new DeadlineExceededException("this is a noop", null, GrpcStatusCode.of(Status.Code.DEADLINE_EXCEEDED), true);
+					case "throw":
+						throw new RuntimeException("expected exception during pull of messages");
 				}
 
 				AcknowledgeablePubsubMessage msg = mock(AcknowledgeablePubsubMessage.class);

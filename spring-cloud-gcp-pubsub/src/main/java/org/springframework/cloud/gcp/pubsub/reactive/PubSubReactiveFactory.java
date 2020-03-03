@@ -67,6 +67,9 @@ public final class PubSubReactiveFactory {
 	 * <p>For specific demand, as many messages as are available will be returned immediately,
 	 * with remaining demand being fulfilled in the future.
 	 * Pub/Sub timeout will cause a retry with the same demand.
+	 * <p>Any exceptions that are thrown by the Pub/Sub client will be passed as an error to the stream.
+	 * The error handling operators, like {@link Flux#retry()},
+	 * can be used to recover and continue streaming messages.
 	 * @param subscriptionName subscription from which to retrieve messages.
 	 * @param pollingPeriodMs how frequently to poll the source subscription in case of unlimited demand, in milliseconds.
 	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
@@ -88,7 +91,7 @@ public final class PubSubReactiveFactory {
 				}
 			});
 
-			sink.onCancel(subscriptionWorker);
+			sink.onDispose(subscriptionWorker);
 
 		});
 	}
@@ -139,21 +142,26 @@ public final class PubSubReactiveFactory {
 
 		@Override
 		public void run() {
-			long demand = this.initialDemand;
-			List<AcknowledgeablePubsubMessage> messages;
+			try {
+				long demand = this.initialDemand;
+				List<AcknowledgeablePubsubMessage> messages;
 
-			while (demand > 0 && !this.sink.isCancelled()) {
-				try {
-					int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
-					demand -= pullToSink(intDemand, true);
-				}
-				catch (DeadlineExceededException e) {
-					if (LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Blocking pull timed out due to empty subscription "
-							+ this.subscriptionName
-							+ "; retrying.");
+				while (demand > 0 && !this.sink.isCancelled()) {
+					try {
+						int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
+						demand -= pullToSink(intDemand, true);
+					}
+					catch (DeadlineExceededException e) {
+						if (LOGGER.isTraceEnabled()) {
+							LOGGER.trace("Blocking pull timed out due to empty subscription "
+									+ this.subscriptionName
+									+ "; retrying.");
+						}
 					}
 				}
+			}
+			catch (RuntimeException e) {
+				sink.error(e);
 			}
 		}
 
@@ -171,7 +179,12 @@ public final class PubSubReactiveFactory {
 
 		@Override
 		public void run() {
-			pullToSink(Integer.MAX_VALUE, false);
+			try {
+				pullToSink(Integer.MAX_VALUE, false);
+			}
+			catch (RuntimeException e) {
+				sink.error(e);
+			}
 		}
 
 	}
