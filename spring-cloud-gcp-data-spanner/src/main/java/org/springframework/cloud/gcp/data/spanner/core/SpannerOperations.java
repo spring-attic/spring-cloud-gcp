@@ -98,9 +98,9 @@ public interface SpannerOperations {
 	 * @throws IllegalArgumentException when a combination of provided parameters and annotations does not allow to take
 	 *  unambiguous decision about the way to perform the operation. Such algorithm is used:
 	 *  <ul>
-	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}<li/>
-	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query<li/>
-	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} can't be converted to {@link SpannerQueryOptions} - an exception< will be thrown<li/>
+	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}</li>
+	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
+	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} can't be converted to {@link SpannerQueryOptions} - an exception< will be thrown</li>
 	 *  </ul>
 	 */
 	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) throws IllegalArgumentException;

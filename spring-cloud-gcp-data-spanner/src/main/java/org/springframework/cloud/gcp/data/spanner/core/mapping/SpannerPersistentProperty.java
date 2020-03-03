@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -126,6 +125,6 @@ public interface SpannerPersistentProperty
 	 * Return {@code WHERE} clause of the interleaved property. Couldn't be {@code null} but an empty string.
 	 * @return a {@code Where} cause of the interleaved property or empty string.
 	 */
-	Optional<Where> getWhere();
+	String getWhere();
 
 }
