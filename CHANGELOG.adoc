@@ -5,6 +5,70 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.2.RELEASE (2020-03-03)
+
+=== General
+
+* Switched to using GCP Libraries BOM for managing GCP library versions (#2109)
+* Core auto-configuration can now be disabled with `spring.cloud.gcp.core.enabled=false` (#2147)
+* Reference documentation improvements
+* Two new modules: Firebase Auth and Secret Manager
+
+=== Datastore
+
+* Support lazy loading entities using @LazyReference (#2104)
+* Made existsById more efficient by retrieving only the key field (#2127)
+* Projections now work with the Slice return type (#2133) and GQL queries (#2139) in repositories
+* Improved repository method name validation (#2155)
+* Fixed delete for void repository method return type (#2169)
+
+=== Firebase (NEW)
+
+* Introduced Firebase Authentication module (#2111)
+
+=== Firestore
+
+* Added IN support in name-based queries (#2054)
+
+=== Pub/Sub
+
+* ACK_MODE is now configurable using stream binders (2079)
+* Added HealthIndicator implementation (#2030)
+* Fixed: `PubSubReactiveFactory.poll` doesn't handle exceptions thrown by the `PubSubSubscriberOperations` (#2229)
+
+=== Secret Manager (NEW)
+
+* Bootstrap Property Source which loads secrets from Secret Manager to be accessible as environment properties to your application (#2168)
+* SecretManagerTemplate implementation (#2195)
+* New Secret Manager sample app (#2190)
+
+=== Spanner
+
+* Fixed java.util.Date conversion and added LocalDate and LocalDateTime support (#2067)
+* Added support for non-Key ID types in Spring Data REST repositories (#2049)
+* Optimized eager loading for interleaved properties (#2110) (#2165)
+* Enable using PENDING_COMMIT_TIMESTAMP in Spring Data Spanner (#2203)
+
+=== Storage
+
+* Added ability to provide initial file contents on blob creation (#2097)
+* You can now use a comparator with GcsStreamingMessageSource to process blobs from Cloud Storage in an ordered manner. (#2117)
+* Fixed GCS emulator BlobInfo update time initialization (#2113)
+
+=== Trace
+
+* Hid trace scheduler from Spring Sleuth (#2158)
+
+== 1.2.1.RELEASE (2019-12-20)
+
+=== Spanner
+
+* Fixed java.sql.Timestamp to com.google.cloud.Timestamp conversion (#2064)
+
+=== Pub/Sub
+
+* Fixed AUTO_ACK acking behavior in PubSubInboundChannelAdapter (#2075)
+
 == 1.2.0.RELEASE (2019-11-26)
 
 === BigQuery
