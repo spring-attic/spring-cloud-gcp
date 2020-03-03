@@ -201,7 +201,7 @@ public class PubSubReactiveFactoryTests {
 						}
 						throw new DeadlineExceededException("this is a noop", null, GrpcStatusCode.of(Status.Code.DEADLINE_EXCEEDED), true);
 					case "throw":
-						throw new RuntimeException("exception during pull of messages");
+						throw new RuntimeException("expected exception during pull of messages");
 				}
 
 				AcknowledgeablePubsubMessage msg = mock(AcknowledgeablePubsubMessage.class);
