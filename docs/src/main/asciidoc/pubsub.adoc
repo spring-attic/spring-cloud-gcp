@@ -176,6 +176,9 @@ For unlimited demand, the Pub/Sub subscription will be polled regularly, at inte
 For bounded demand, the `pollingPeriodMs` parameter is unused.
 Instead, as many messages as possible (up to the requested number) are delivered immediately, with the remaining messages delivered as they become available.
 
+Any exceptions thrown by the underlying message retrieval logic will be passed as an error to the stream.
+The error handling operators (`Flux#retry()`, `Flux#onErrorResume()` etc.) can be used to recover.
+	 
 The full range of Project Reactor operations can be applied to the stream.
 For example, if you only want to fetch 5 messages, you can use `limitRequest` operation to turn the infinite stream into a finite one:
 
