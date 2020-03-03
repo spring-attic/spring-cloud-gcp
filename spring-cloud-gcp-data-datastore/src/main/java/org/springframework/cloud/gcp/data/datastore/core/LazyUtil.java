@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  *
  * @author Dmitry Solomakha
  *
- * @since 1.3
+ * @since 1.2.2
  */
 final class LazyUtil {
 

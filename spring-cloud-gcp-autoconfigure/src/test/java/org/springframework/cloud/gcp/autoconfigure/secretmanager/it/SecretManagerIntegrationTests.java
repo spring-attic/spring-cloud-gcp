@@ -66,6 +66,7 @@ public class SecretManagerIntegrationTests {
 		this.context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.run();
 
 		this.projectIdProvider = this.context.getBeanFactory().getBean(GcpProjectIdProvider.class);

@@ -34,7 +34,7 @@ import org.springframework.core.env.EnumerablePropertySource;
  * Retrieves secrets from GCP Secret Manager under the current GCP project.
  *
  * @author Daniel Zou
- * @since 1.3
+ * @since 1.2.2
  */
 public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
 

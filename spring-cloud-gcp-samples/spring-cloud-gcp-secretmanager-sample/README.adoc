@@ -31,8 +31,12 @@ Instructions for using the Secret Manager UI can be found in the https://cloud.g
 Your secret value is injected into your application through the `WebController` and you will see it displayed.
 +
 ```
-The secret property is: Hello world.
-You can also access secrets using @Value: Hello world.
+applicationSecret: Hello world.
 ```
++
+You will also see some web forms that allow you to create, read, and update secrets in Secret Manager.
+This is done by using the `SecretManagerTemplate`.
++
+Finally, you can view all of your secrets using the https://console.cloud.google.com/security/secret-manager[Secret Manager Cloud Console UI], which is the source of truth for all of your secrets in Secret Manager.
 
 

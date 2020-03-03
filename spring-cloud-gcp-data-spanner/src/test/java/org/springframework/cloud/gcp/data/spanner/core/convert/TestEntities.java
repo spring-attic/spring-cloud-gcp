@@ -290,4 +290,5 @@ public class TestEntities {
 			this.booleanField = booleanField;
 		}
 	}
+
 }

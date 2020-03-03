@@ -1,0 +1,104 @@
+<html xmlns:th="https://www.thymeleaf.org">
+
+<style>
+  html * {
+    font-family: Roboto, Verdana, sans-serif;
+  }
+
+  body {
+    max-width: 50em;
+  }
+
+  li {
+    padding: 0.25em;
+  }
+
+  .panel {
+    margin: 1em;
+    padding: 1em;
+    border: 1px solid black;
+    border-radius: 5px;
+  }
+
+  .highlight {
+    background-color: #d6f5d6;
+  }
+
+
+</style>
+
+<head>
+  <title>Google Cloud Secret Manager Demo</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" href="css/style.css" rel="stylesheet"/>
+</head>
+
+<body>
+<h1>Secret Manager Demo with Spring Cloud GCP</h1>
+
+<div class="panel">
+  <h3>Secret Manager Property Source</h3>
+  At the bootstrap phase, we loaded the following secret into the application context:
+  <br/>
+  <br/>
+  <b>application-secret:</b> <i>[[${applicationSecret}]]</i>
+</div>
+
+<div class="panel">
+  <h2>Create, Read, and Update Secrets</h2>
+
+  <p>
+    Using the form below, you can create/update secrets in Secret Manager and also read them.
+    In the controller code, the <i>SecretManagerTemplate</i> is being used to do these operations.
+  </p>
+
+  <p>
+    <b>NOTE: </b> In practice, you never want to allow your secrets to be visible as plaintext.
+    This is just a demonstration!
+  </p>
+
+  <div class="panel highlight">
+    <h3>Get Secret by Secret ID</h3>
+    <p>
+      Get a secret by secret ID from Secret Manager. You will receive an error if you
+      try to get a secret ID that does not already exist.
+    </p>
+    <form method="GET" action="/getSecret">
+      <ol>
+        <li>Secret ID: <input type="text" name="secretId"/></li>
+        <li><input type="submit" value="Get Secret"/></li>
+      </ol>
+    </form>
+  </div>
+
+  <div class="panel highlight">
+    <h3>Create/Update Secret</h3>
+    <p>
+      This will create a secret if the provided secret ID does not exists.
+      Otherwise it will create version under the provided secret ID.
+    </p>
+    <form method="POST" action="/createSecret">
+      <ol>
+        <li>Secret ID: <input type="text" name="secretId"/></li>
+        <li>Secret Payload: <input type="text" name="secretPayload"/></li>
+        <li><input type="submit" value="Create/Update Secret"/></li>
+      </ol>
+    </form>
+
+    <h3 th:if="${message}">
+      [[${message}]]
+    </h3>
+  </div>
+</div>
+
+<div class="panel">
+  <p>
+    You can also view your secrets in the
+    <a href="https://console.cloud.google.com/security/secret-manager">
+      Secret Manager UI in Google Cloud Console
+    </a>.
+  </p>
+</div>
+
+</body>
+</html>

@@ -178,7 +178,8 @@ public class PubSubReactiveFactoryTests {
 	/**
 	 * Replays provided messages.
 	 * If a synthetic message "stop" is encountered, immediately returns previously collected messages.
-	 * If a synthetic message "throw" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "timeout" is encountered, throws an {@link DeadlineExceededException}.
+	 * If a synthetic message "throw" is encountered, throws an {@link RuntimeException}.
 	 * Fails the calling test if there are not enough messages to fulfill demand from cumulative calls to {@code pull()}.
 	 * @param messages messages to replay
 	 */
@@ -202,7 +203,7 @@ public class PubSubReactiveFactoryTests {
 						}
 						return AsyncResult.forExecutionException(new DeadlineExceededException("this is a noop", null, GrpcStatusCode.of(Status.Code.DEADLINE_EXCEEDED), true));
 					case "throw":
-						return AsyncResult.forExecutionException(new RuntimeException("exception during pull of messages"));
+						return AsyncResult.forExecutionException(new RuntimeException("expected exception during pull of messages"));
 				}
 
 				AcknowledgeablePubsubMessage msg = mock(AcknowledgeablePubsubMessage.class);

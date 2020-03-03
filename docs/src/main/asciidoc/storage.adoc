@@ -1,8 +1,6 @@
-== Spring Resources
+== Google Cloud Storage
 
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html[Spring Resources] are an abstraction for a number of low-level resources, such as file system files, classpath files, servlet context-relative files, etc.
-Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
-
+https://cloud.google.com/storage/docs[Google Cloud Storage] allows storing any types of files in single or multiple regions.
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
@@ -26,7 +24,30 @@ dependencies {
 
 This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
-=== Google Cloud Storage
+=== Using Cloud Storage
+
+The starter automatically configures and registers a `Storage` bean in the Spring application context.
+The `Storage` bean (https://googleapis.dev/java/google-cloud-storage/latest/com/google/cloud/storage/Storage.html[Javadoc]) can be used to list/create/update/delete buckets (a group of objects with similar permissions and resiliency requirements) and objects.
+
+[source,java]
+----
+@Autowired
+private Storage storage;
+
+public void createFile() {
+    Bucket bucket = storage.create(BucketInfo.of("my-app-storage-bucket"));
+
+    storage.create(
+        BlobInfo.newBuilder("my-app-storage-bucket", "subdirectory/my-file").build(),
+            "file contents".getBytes()
+    );
+}
+----
+
+=== Cloud Storage Objects As Spring Resources
+
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html[Spring Resources] are an abstraction for a number of low-level resources, such as file system files, classpath files, servlet context-relative files, etc.
+Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
 
 The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their GCS URL using the `@Value` annotation:
 
@@ -96,4 +117,3 @@ https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for 
 === Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application] and a https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab] are available.
-
