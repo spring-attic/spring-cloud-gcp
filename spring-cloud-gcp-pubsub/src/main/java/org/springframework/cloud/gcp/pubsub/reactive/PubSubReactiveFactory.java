@@ -88,7 +88,7 @@ public final class PubSubReactiveFactory {
 				}
 			});
 
-			sink.onCancel(subscriptionWorker);
+			sink.onDispose(subscriptionWorker);
 
 		});
 	}
@@ -139,21 +139,26 @@ public final class PubSubReactiveFactory {
 
 		@Override
 		public void run() {
-			long demand = this.initialDemand;
-			List<AcknowledgeablePubsubMessage> messages;
+			try {
+				long demand = this.initialDemand;
+				List<AcknowledgeablePubsubMessage> messages;
 
-			while (demand > 0 && !this.sink.isCancelled()) {
-				try {
-					int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
-					demand -= pullToSink(intDemand, true);
-				}
-				catch (DeadlineExceededException e) {
-					if (LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Blocking pull timed out due to empty subscription "
-							+ this.subscriptionName
-							+ "; retrying.");
+				while (demand > 0 && !this.sink.isCancelled()) {
+					try {
+						int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
+						demand -= pullToSink(intDemand, true);
+					}
+					catch (DeadlineExceededException e) {
+						if (LOGGER.isTraceEnabled()) {
+							LOGGER.trace("Blocking pull timed out due to empty subscription "
+									+ this.subscriptionName
+									+ "; retrying.");
+						}
 					}
 				}
+			}
+			catch (RuntimeException e) {
+				sink.error(e);
 			}
 		}
 
@@ -171,7 +176,12 @@ public final class PubSubReactiveFactory {
 
 		@Override
 		public void run() {
-			pullToSink(Integer.MAX_VALUE, false);
+			try {
+				pullToSink(Integer.MAX_VALUE, false);
+			}
+			catch (RuntimeException e) {
+				sink.error(e);
+			}
 		}
 
 	}
