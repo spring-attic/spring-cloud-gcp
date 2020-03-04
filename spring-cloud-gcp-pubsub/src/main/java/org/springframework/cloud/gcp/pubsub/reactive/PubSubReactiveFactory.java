@@ -36,7 +36,13 @@ import org.springframework.util.Assert;
 /**
  * A factory for procuring {@link Flux} instances backed by GCP Pub/Sub Subscriptions.
  *
+ * The {@link Scheduler}, that is given to the constructor,
+ * is used for regularly polling the subscription,
+ * when the demand is unlimited.
+ * The scheduler is not used when there is a specific demand (a.k.a backpressure).
+ *
  * @author Elena Felder
+ * @author Maurice Zeijen
  *
  * @since 1.2
  */
