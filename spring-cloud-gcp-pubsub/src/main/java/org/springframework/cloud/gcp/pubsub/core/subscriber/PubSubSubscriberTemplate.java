@@ -211,13 +211,9 @@ public class PubSubSubscriberTemplate
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
-		return pullResponse.getReceivedMessagesList().stream()
-						.map((message) -> new PulledAcknowledgeablePubsubMessage(
-								PubSubSubscriptionUtils.toProjectSubscriptionName(pullRequest.getSubscription(),
-										this.subscriberFactory.getProjectId()),
-								message.getMessage(),
-								message.getAckId()))
-						.collect(Collectors.toList());
+		return toAcknowledgeablePubsubMessageList(
+				pullResponse.getReceivedMessagesList(), this.subscriberFactory.getProjectId(),
+				pullRequest.getSubscription());
 	}
 
 
@@ -246,12 +242,8 @@ public class PubSubSubscriberTemplate
 
 			@Override
 			public void onSuccess(PullResponse pullResponse) {
-				List<AcknowledgeablePubsubMessage> result = pullResponse.getReceivedMessagesList().stream()
-						.map((message) -> new PulledAcknowledgeablePubsubMessage(
-								PubSubSubscriptionUtils.toProjectSubscriptionName(pullRequest.getSubscription(), projectId),
-								message.getMessage(),
-								message.getAckId()))
-						.collect(Collectors.toList());
+				List<AcknowledgeablePubsubMessage> result = toAcknowledgeablePubsubMessageList(
+						pullResponse.getReceivedMessagesList(), projectId, pullRequest.getSubscription());
 
 				settableFuture.set(result);
 			}
@@ -259,6 +251,17 @@ public class PubSubSubscriberTemplate
 		}, asyncPullExecutor);
 
 		return settableFuture;
+	}
+	
+	private List<AcknowledgeablePubsubMessage> toAcknowledgeablePubsubMessageList(List<ReceivedMessage> messages,
+			String projectId, String subscriptionId) {
+		return messages.stream()
+				.map((message) -> new PulledAcknowledgeablePubsubMessage(
+						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionId,
+								projectId),
+						message.getMessage(),
+						message.getAckId()))
+				.collect(Collectors.toList());
 	}
 
 	@Override
