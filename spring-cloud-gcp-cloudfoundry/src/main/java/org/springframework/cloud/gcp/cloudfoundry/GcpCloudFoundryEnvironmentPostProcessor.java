@@ -126,13 +126,16 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		try {
 			List<CfService> serviceBindings = cfEnv.findServicesByLabel(cfServiceName);
 
-			if (serviceBindings == null) {
-				return properties;
+			// If finding by label fails, attempt to find the service by tag.
+			if (serviceBindings.isEmpty()) {
+				serviceBindings = cfEnv.findServicesByTag(cfServiceName);
 			}
 
 			if (serviceBindings.size() != 1) {
-				LOGGER.warn("The service " + cfServiceName + " has to be bound to a "
-						+ "Cloud Foundry application once and only once.");
+				if (serviceBindings.size() > 1) {
+					LOGGER.warn("The service " + cfServiceName + " has to be bound to a "
+							+ "Cloud Foundry application once and only once.");
+				}
 				return properties;
 			}
 
