@@ -88,8 +88,7 @@ public final class PubSubReactiveFactory {
 		return Flux.create(sink -> {
 			sink.onRequest((numRequested) -> {
 				if (numRequested == Long.MAX_VALUE) {
-					Disposable disposable = infinitePull(subscriptionName, pollingPeriodMs, sink);
-					sink.onCancel(disposable);
+					pollingPull(subscriptionName, pollingPeriodMs, sink);
 				}
 				else {
 					backpressurePull(subscriptionName, numRequested, sink);
@@ -98,12 +97,14 @@ public final class PubSubReactiveFactory {
 		});
 	}
 
-	private Disposable infinitePull(String subscriptionName, long pollingPeriodMs,
+	private void pollingPull(String subscriptionName, long pollingPeriodMs,
 			FluxSink<AcknowledgeablePubsubMessage> sink) {
-		return Flux
+		Disposable disposable = Flux
 				.interval(Duration.ZERO, Duration.ofMillis(pollingPeriodMs), scheduler)
 				.flatMap(ignore -> pullAll(subscriptionName))
 				.subscribe(sink::next, sink::error);
+
+		sink.onDispose(disposable);
 	}
 
 	private Flux<AcknowledgeablePubsubMessage> pullAll(String subscriptionName) {
