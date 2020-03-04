@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<!DOCTYPE suppressions PUBLIC
-        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
-        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
-<suppressions>
-    <!-- The PubSubSubscriberTemplate class already uses many Google classes which themselves use the MoreExecutors class,
-         so not allowing PubSubSubscriberTemplate to use the MoreExecutors, does not prevent anything. -->
-    <suppress files="PubSubSubscriberTemplate\.java" checks="IllegalImport" message=".* com\.google\.common\.util\.concurrent\.MoreExecutors.*" />
-</suppressions>

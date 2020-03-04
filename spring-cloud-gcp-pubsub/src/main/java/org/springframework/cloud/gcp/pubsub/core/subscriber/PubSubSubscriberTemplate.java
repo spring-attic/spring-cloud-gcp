@@ -44,6 +44,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
+import com.google.pubsub.v1.ReceivedMessage;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
@@ -65,6 +66,12 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * A custom {@link Executor} can be injected to control per-subscription batch
  * parallelization in acknowledgement and deadline operations.
+ * By default, this is a single thread executor,
+ * created per instance of the {@link PubSubSubscriberOperations}.
+ *
+ * A custom {@link Executor} can be injected to control the threads that process
+ * the responses of the asynchronous pull callback operations.
+ * By default, this is executed on the same thread that executes the callback.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -72,6 +79,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Chengyuan Zhao
  * @author Doug Hoard
  * @author Elena Felder
+ * @author Maurice Zeijen
  *
  * @since 1.1
  */
@@ -88,6 +96,8 @@ public class PubSubSubscriberTemplate
 
 	private Executor ackExecutor = this.defaultAckExecutor;
 
+	private Executor asyncPullExecutor = Runnable::run;
+
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor.
 	 *
@@ -101,19 +111,46 @@ public class PubSubSubscriberTemplate
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
 	}
 
+	/**
+	 * Get the converter used to convert a message payload to the desired type.
+	 *
+	 * @return the converter to set
+	 */
 	public PubSubMessageConverter getMessageConverter() {
 		return this.pubSubMessageConverter;
 	}
 
+	/**
+	 * Set the converter used to convert a message payload to the desired type.
+	 *
+	 * @param pubSubMessageConverter the converter to set
+	 */
 	public void setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
 		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
 
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
 
+	/**
+	 * Sets the {@link Executor} to control per-subscription batch
+	 * parallelization in acknowledgement and deadline operations.
+	 *
+	 * @param ackExecutor the executor to set
+	 */
 	public void setAckExecutor(Executor ackExecutor) {
 		Assert.notNull(ackExecutor, "ackExecutor can't be null.");
 		this.ackExecutor = ackExecutor;
+	}
+
+	/**
+	 * Sets a custom {@link Executor} can be injected to control the threads that process
+	 * the responses of the asynchronous pull callback operations.
+	 *
+	 * @param asyncPullExecutor the executor to set
+	 */
+	public void setAsyncPullExecutor(Executor asyncPullExecutor) {
+		Assert.notNull(asyncPullExecutor, "asyncPullExecutor can't be null.");
+		this.asyncPullExecutor = asyncPullExecutor;
 	}
 
 	@Override
@@ -183,6 +220,15 @@ public class PubSubSubscriberTemplate
 						.collect(Collectors.toList());
 	}
 
+
+	/**
+	 * Pulls messages asynchronously, on demand, using the pull request in argument.
+	 *
+	 * @param pullRequest pull request containing the subscription name
+	 * @return the ListenableFuture for the asynchronous execution, returning
+	 * the list of {@link AcknowledgeablePubsubMessage} containing the ack ID, subscription
+	 * and acknowledger
+	 */
 	private ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
@@ -210,7 +256,7 @@ public class PubSubSubscriberTemplate
 				settableFuture.set(result);
 			}
 
-		}, MoreExecutors.directExecutor());
+		}, asyncPullExecutor);
 
 		return settableFuture;
 	}
