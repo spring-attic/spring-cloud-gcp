@@ -193,6 +193,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<PubsubMessage> pullNextAsync(String subscription) {
+		return this.pubSubSubscriberTemplate.pullNextAsync(subscription);
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 	}
 

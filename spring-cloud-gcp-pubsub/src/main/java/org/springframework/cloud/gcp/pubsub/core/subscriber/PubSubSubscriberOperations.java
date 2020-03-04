@@ -172,6 +172,16 @@ public interface PubSubSubscriberOperations {
 	PubsubMessage pullNext(String subscription);
 
 	/**
+	 * Asynchronously pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
+	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
+	 * @return the ListenableFuture for the asynchronous execution, returning a received message,
+	 * or {@code null} if none exists in the subscription
+	 * @since 1.3
+	 */
+	ListenableFuture<PubsubMessage> pullNextAsync(String subscription);
+
+	/**
 	 * Acknowledge a batch of messages. The messages must have the same project id.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution

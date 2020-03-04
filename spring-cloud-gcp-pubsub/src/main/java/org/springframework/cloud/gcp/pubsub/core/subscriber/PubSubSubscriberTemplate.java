@@ -358,7 +358,21 @@ public class PubSubSubscriberTemplate
 	public PubsubMessage pullNext(String subscription) {
 		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
-		return (receivedMessageList.size() > 0) ? receivedMessageList.get(0) : null;
+		return receivedMessageList.isEmpty() ? null: receivedMessageList.get(0);
+	}
+
+	@Override
+	public ListenableFuture<PubsubMessage> pullNextAsync(String subscription) {
+		final SettableListenableFuture<PubsubMessage> settableFuture = new SettableListenableFuture<>();
+
+		this.pullAndAckAsync(subscription, 1, true).addCallback(
+				messages -> {
+					PubsubMessage message = messages.isEmpty() ? null : messages.get(0);
+					settableFuture.set(message);
+				},
+				settableFuture::setException);
+
+		return settableFuture;
 	}
 
 	public SubscriberFactory getSubscriberFactory() {
