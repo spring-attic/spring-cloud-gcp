@@ -146,6 +146,22 @@ public interface PubSubSubscriberOperations {
 	<T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType);
 
+	/**
+	 * Asynchronously pull a number of messages from a Google Cloud Pub/Sub subscription and convert them to Spring messages with
+	 * the desired payload type.
+	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
+	 * @param maxMessages the maximum number of pulled messages
+	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
+	 * messages to satisfy {@code maxMessages}
+	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
+	 * @param <T> the type of the payload
+	 * @return the ListenableFuture for the asynchronous execution, returning the list of
+	 *  received acknowledgeable messages
+	 * @since 1.3
+	 */
+	<T> ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<T>>> pullAndConvertAsync(String subscription,
+			Integer maxMessages, Boolean returnImmediately, Class<T> payloadType);
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.

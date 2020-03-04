@@ -35,7 +35,6 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
 import com.google.pubsub.v1.AcknowledgeRequest;
 import com.google.pubsub.v1.ModifyAckDeadlineRequest;
@@ -280,6 +279,23 @@ public class PubSubSubscriberTemplate
 			Boolean returnImmediately, Class<T> payloadType) {
 		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
 
+		return this.toConvertedAcknowledgeablePubsubMessages(payloadType, ackableMessages);
+	}
+
+	@Override
+	public <T> ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<T>>> pullAndConvertAsync(String subscription,
+			Integer maxMessages, Boolean returnImmediately, Class<T> payloadType) {
+		final SettableListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<T>>> settableFuture = new SettableListenableFuture<>();
+
+		this.pullAsync(subscription, maxMessages, returnImmediately).addCallback(
+				ackableMessages -> settableFuture
+						.set(this.toConvertedAcknowledgeablePubsubMessages(payloadType, ackableMessages)),
+				settableFuture::setException);
+
+		return settableFuture;
+	}
+
+	private <T> List<ConvertedAcknowledgeablePubsubMessage<T>> toConvertedAcknowledgeablePubsubMessages(Class<T> payloadType, List<AcknowledgeablePubsubMessage> ackableMessages) {
 		return ackableMessages.stream().map(
 				(m) -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
 						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
@@ -322,7 +338,7 @@ public class PubSubSubscriberTemplate
 
 		final SettableListenableFuture<List<PubsubMessage>> settableFuture = new SettableListenableFuture<>();
 
-		pullAsync(pullRequest).addCallback(
+		this.pullAsync(pullRequest).addCallback(
 				ackableMessages -> {
 					if (!ackableMessages.isEmpty()) {
 						ack(ackableMessages);

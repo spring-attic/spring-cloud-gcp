@@ -458,6 +458,23 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
+	public void testPullAndConvertAsync() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<BigInteger>>> asyncResult = this.pubSubSubscriberTemplate.pullAndConvertAsync(
+				"sub2", 1, true, BigInteger.class);
+
+		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		verify(this.messageConverter).fromPubSubMessage(this.pubsubMessage, BigInteger.class);
+
+		assertThat(result.size()).isEqualTo(1);
+		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
+		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
+		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
+	}
+
+
+	@Test
 	public void testPullAsync_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
 
 		ListenableFuture<List<AcknowledgeablePubsubMessage>> asyncResult = this.pubSubSubscriberTemplate
