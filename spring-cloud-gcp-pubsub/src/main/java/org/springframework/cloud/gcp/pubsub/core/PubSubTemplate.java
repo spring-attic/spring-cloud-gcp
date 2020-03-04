@@ -177,6 +177,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages, Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pullAndAckAsync(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
 	public PubsubMessage pullNext(String subscription) {
 		return this.pubSubSubscriberTemplate.pullNext(subscription);
 	}

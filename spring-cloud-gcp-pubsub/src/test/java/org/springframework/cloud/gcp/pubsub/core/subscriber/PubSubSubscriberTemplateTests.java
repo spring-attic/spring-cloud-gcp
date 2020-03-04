@@ -414,6 +414,37 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
+	public void testPullAndAckAsync() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<List<PubsubMessage>> asyncResult = this.pubSubSubscriberTemplate.pullAndAckAsync(
+				"sub2", 1, true);
+
+		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(1);
+
+		PubsubMessage pubsubMessage = result.get(0);
+		assertThat(pubsubMessage).isSameAs(this.pubsubMessage);
+
+		verify(this.pubSubSubscriberTemplate, times(1)).ack(any());
+	}
+
+	@Test
+	public void testPullAndAckAsync_NoMessages() throws InterruptedException, ExecutionException, TimeoutException {
+		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder().build());
+
+		ListenableFuture<List<PubsubMessage>> asyncResult = this.pubSubSubscriberTemplate.pullAndAckAsync(
+				"sub2", 1, true);
+
+		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(0);
+
+		verify(this.pubSubSubscriberTemplate, never()).ack(any());
+	}
+
+	@Test
 	public void testPullAndConvert() {
 		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result = this.pubSubSubscriberTemplate.pullAndConvert(
 				"sub2", 1, true, BigInteger.class);
@@ -429,12 +460,12 @@ public class PubSubSubscriberTemplateTests {
 	@Test
 	public void testPullFuture_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
 
-		ListenableFuture<List<AcknowledgeablePubsubMessage>> pullListenableFuture = this.pubSubSubscriberTemplate
+		ListenableFuture<List<AcknowledgeablePubsubMessage>> asyncResult = this.pubSubSubscriberTemplate
 				.pullAsync("sub", 1, true);
 
-		List<AcknowledgeablePubsubMessage> result = pullListenableFuture.get(10L, TimeUnit.SECONDS);
+		List<AcknowledgeablePubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
 
-		assertThat(pullListenableFuture.isDone()).isTrue();
+		assertThat(asyncResult.isDone()).isTrue();
 
 		assertThat(result.size()).isEqualTo(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);

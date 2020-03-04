@@ -216,7 +216,6 @@ public class PubSubSubscriberTemplate
 				pullRequest.getSubscription());
 	}
 
-
 	/**
 	 * Pulls messages asynchronously, on demand, using the pull request in argument.
 	 *
@@ -301,12 +300,42 @@ public class PubSubSubscriberTemplate
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
-		if (ackableMessages.size() > 0) {
+		if (!ackableMessages.isEmpty()) {
 			ack(ackableMessages);
 		}
 
 		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
+		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+		}
+
+		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
+				subscription, maxMessages, returnImmediately);
+
+		final SettableListenableFuture<List<PubsubMessage>> settableFuture = new SettableListenableFuture<>();
+
+		pullAsync(pullRequest).addCallback(
+				ackableMessages -> {
+					if (!ackableMessages.isEmpty()) {
+						ack(ackableMessages);
+					}
+					List<PubsubMessage> messages = ackableMessages.stream()
+							.map(AcknowledgeablePubsubMessage::getPubsubMessage)
+							.collect(Collectors.toList());
+
+					settableFuture.set(messages);
+				},
+				settableFuture::setException);
+
+		return settableFuture;
 	}
 
 	@Override

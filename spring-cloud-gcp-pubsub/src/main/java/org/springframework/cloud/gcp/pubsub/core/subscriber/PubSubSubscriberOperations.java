@@ -38,6 +38,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author Maurice Zeijen
  *
  * @since 1.1
  */
@@ -91,6 +92,19 @@ public interface PubSubSubscriberOperations {
 	 * @return the list of received messages
 	 */
 	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages, Boolean returnImmediately);
+
+	/**
+	 * Asynchronously pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
+	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
+	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
+	 * @param maxMessages the maximum number of pulled messages
+	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
+	 * messages to satisfy {@code maxMessages}
+	 * @return the ListenableFuture for the asynchronous execution, returning the list of
+	 * received acknowledgeable messages
+	 * @since 1.3
+	 */
+	ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages, Boolean returnImmediately);
 
 	/**
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
