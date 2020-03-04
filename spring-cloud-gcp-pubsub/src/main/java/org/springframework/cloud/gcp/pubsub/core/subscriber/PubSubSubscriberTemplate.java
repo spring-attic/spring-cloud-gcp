@@ -42,8 +42,8 @@ import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
-
 import com.google.pubsub.v1.ReceivedMessage;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
@@ -250,7 +250,7 @@ public class PubSubSubscriberTemplate
 
 		return settableFuture;
 	}
-	
+
 	private List<AcknowledgeablePubsubMessage> toAcknowledgeablePubsubMessageList(List<ReceivedMessage> messages,
 			String projectId, String subscriptionId) {
 		return messages.stream()
@@ -358,7 +358,7 @@ public class PubSubSubscriberTemplate
 	public PubsubMessage pullNext(String subscription) {
 		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
-		return receivedMessageList.isEmpty() ? null: receivedMessageList.get(0);
+		return receivedMessageList.isEmpty() ? null : receivedMessageList.get(0);
 	}
 
 	@Override
