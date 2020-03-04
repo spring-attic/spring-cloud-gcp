@@ -37,7 +37,7 @@ For example, if you create a user-provided service using Cloud Spanner, you migh
 $ cf create-user-provided-service user-spanner-service -t "google-spanner" ...
 ----
 
-This allows Spring Cloud GCP to retrieve the correct service properties from Cloud Foundry and use them in the auto configuration for your environment.
+This allows Spring Cloud GCP to retrieve the correct service properties from Cloud Foundry and use them in the auto configuration for your application.
 
 A mapping of Google service names to Cloud Foundry names are provided below:
 
