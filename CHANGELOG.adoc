@@ -35,6 +35,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * ACK_MODE is now configurable using stream binders (https://github.com/spring-cloud/spring-cloud-gcp/issues/2079[#2079])
 * Added HealthIndicator implementation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2030[#2030])
 * Fixed: `PubSubReactiveFactory.poll` doesn't handle exceptions thrown by the `PubSubSubscriberOperations` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2229[#2229])
+** NOTE: previously silently ignored exceptions are now forwarded to the Flux
 
 === Secret Manager (NEW)
 
