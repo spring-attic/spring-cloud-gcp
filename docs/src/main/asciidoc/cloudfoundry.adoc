@@ -22,3 +22,35 @@ This includes both MySQL and PostgreSQL bindings to the same app.
 WARNING: In order for the Cloud SQL integration to work in Cloud Foundry, auto-reconfiguration must be disabled.
 You can do so using the `cf set-env <APP> JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{enabled: false}'` command.
 Otherwise, Cloud Foundry will produce a `DataSource` with an invalid JDBC URL (i.e., `jdbc:mysql://null/null`).
+
+=== User-Provided Services
+
+https://docs.cloudfoundry.org/devguide/services/user-provided.html[User-provided services] enable developers to use services that are not available in the marketplace with their apps running on Cloud Foundry.
+For example, you may want to use a user-provided service that points to a shared Google Service (like Cloud Spanner) used across your organization.
+
+In order for Spring Cloud GCP to detect your user-provided service as a Google Cloud Service, you must add an https://docs.cloudfoundry.org/devguide/services/managing-services.html#instance-tags-create[instance tag] indicating the Google Cloud Service it uses.
+The tag should simply be the Cloud Foundry name for the Google Service.
+
+For example, if you create a user-provided service using Cloud Spanner, you might run:
+[source, shell]
+----
+$ cf create-user-provided-service user-spanner-service -t "google-spanner" ...
+----
+
+This allows Spring Cloud GCP to retrieve the correct service properties from Cloud Foundry and use them in the auto configuration for your application.
+
+A mapping of Google service names to Cloud Foundry names are provided below:
+
+|===
+| Google Cloud Service | Cloud Foundry Name (add this as a tag)
+| https://cloud.google.com/pubsub[Google Cloud Pub/Sub] | `google-pubsub`
+| https://cloud.google.com/storage[Google Cloud Storage] | `google-storage`
+| https://cloud.google.com/spanner[Google Cloud Spanner] | `google-spanner`
+| https://cloud.google.com/datastore[Datastore] | `google-datastore`
+| https://cloud.google.com/firestore[Firestore] | `google-firestore`
+| https://cloud.google.com/bigquery[BigQuery] | `google-bigquery`
+| https://cloud.google.com/products/operations[Stackdriver Trace] | `google-stackdriver-trace`
+| https://cloud.google.com/sql[Cloud Sql (MySQL)] | `google-cloudsql-mysql`
+| https://cloud.google.com/sql[Cloud Sql (PostgreSQL)] | `google-cloudsql-postgres`
+|===
+

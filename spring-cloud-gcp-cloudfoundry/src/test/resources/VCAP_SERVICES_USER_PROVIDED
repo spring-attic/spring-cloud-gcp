@@ -1,0 +1,21 @@
+{
+  "user-provided": [
+    {
+      "label": "user-provided",
+      "name": "supply-spanner-service",
+      "tags": ["google-spanner"],
+      "instance_name": "supply-spanner-service",
+      "binding_name": null,
+      "credentials": {
+        "Email": "hello-world@gmail.com",
+        "Name": "hello-world",
+        "PrivateKeyData": "xxxxxxxxx",
+        "ProjectId": "spanner-project-id",
+        "instance_id": "spanner-instance",
+        "UniqueId": "xxxxxxxxxx"
+      },
+      "syslog_drain_url": "",
+      "volume_mounts": []
+    }
+  ]
+}
