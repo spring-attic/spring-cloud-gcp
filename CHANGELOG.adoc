@@ -5,6 +5,71 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.2.RELEASE (2020-03-04)
+
+=== General
+
+* Switched to using GCP Libraries BOM for managing GCP library versions (https://github.com/spring-cloud/spring-cloud-gcp/issues/2109[#2109])
+* Core auto-configuration can now be disabled with `spring.cloud.gcp.core.enabled=false` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2147[#2147])
+* Reference documentation improvements
+* Two new modules: Firebase Auth and Secret Manager
+
+=== Datastore
+
+* Support lazy loading entities using @LazyReference (https://github.com/spring-cloud/spring-cloud-gcp/issues/2104[#2104])
+* Made existsById more efficient by retrieving only the key field (https://github.com/spring-cloud/spring-cloud-gcp/issues/2127[#2127])
+* Projections now work with the Slice return type (https://github.com/spring-cloud/spring-cloud-gcp/issues/2133[#2133]) and GQL queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2139[#2139]) in repositories
+* Improved repository method name validation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2155[#2155])
+* Fixed delete for void repository method return type (https://github.com/spring-cloud/spring-cloud-gcp/issues/2169[#2169])
+
+=== Firebase (NEW)
+
+* Introduced Firebase Authentication module (https://github.com/spring-cloud/spring-cloud-gcp/issues/2111[#2111])
+
+=== Firestore
+
+* Added IN support in name-based queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2054[#2054])
+
+=== Pub/Sub
+
+* ACK_MODE is now configurable using stream binders (https://github.com/spring-cloud/spring-cloud-gcp/issues/2079[#2079])
+* Added HealthIndicator implementation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2030[#2030])
+* Fixed: `PubSubReactiveFactory.poll` doesn't handle exceptions thrown by the `PubSubSubscriberOperations` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2229[#2229])
+** NOTE: previously silently ignored exceptions are now forwarded to the Flux
+
+=== Secret Manager (NEW)
+
+* Bootstrap Property Source which loads secrets from Secret Manager to be accessible as environment properties to your application (https://github.com/spring-cloud/spring-cloud-gcp/issues/2168[#2168])
+* SecretManagerTemplate implementation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2195[#2195])
+* New Secret Manager sample app (https://github.com/spring-cloud/spring-cloud-gcp/issues/2190[#2190])
+
+=== Spanner
+
+* Fixed java.util.Date conversion and added LocalDate and LocalDateTime support (https://github.com/spring-cloud/spring-cloud-gcp/issues/2067[#2067])
+* Added support for non-Key ID types in Spring Data REST repositories (https://github.com/spring-cloud/spring-cloud-gcp/issues/2049[#2049])
+* Optimized eager loading for interleaved properties (https://github.com/spring-cloud/spring-cloud-gcp/issues/2110[#2110]) (https://github.com/spring-cloud/spring-cloud-gcp/issues/2165[#2165])
+* Enable using PENDING_COMMIT_TIMESTAMP in Spring Data Spanner (https://github.com/spring-cloud/spring-cloud-gcp/issues/2203[#2203])
+
+=== Storage
+
+* Added ability to provide initial file contents on blob creation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2097[#2097])
+* You can now use a comparator with GcsStreamingMessageSource to process blobs from Cloud Storage in an ordered manner. (https://github.com/spring-cloud/spring-cloud-gcp/issues/2117[#2117])
+* Fixed GCS emulator BlobInfo update time initialization (https://github.com/spring-cloud/spring-cloud-gcp/issues/2113[#2113])
+
+=== Trace
+
+* Hid trace scheduler from Spring Sleuth (https://github.com/spring-cloud/spring-cloud-gcp/issues/2158[#2158])
+
+== 1.2.1.RELEASE (2019-12-20)
+
+=== Spanner
+
+* Fixed java.sql.Timestamp to com.google.cloud.Timestamp conversion (https://github.com/spring-cloud/spring-cloud-gcp/issues/2064[#2064])
+
+=== Pub/Sub
+
+* Fixed AUTO_ACK acking behavior in PubSubInboundChannelAdapter (https://github.com/spring-cloud/spring-cloud-gcp/issues/2075[#2075])
+
 == 1.2.0.RELEASE (2019-11-26)
 
 === BigQuery
@@ -26,7 +91,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * Support key fields in name-based query methods
 * Events and Auditing support
 * Support for multiple namespaces
-* Spring Boot Actuator Support for Datastore Health Indicator (#1423)
+* Spring Boot Actuator Support for Datastore Health Indicator (https://github.com/spring-cloud/spring-cloud-gcp/issues/1423[#1423])
 
 === Firestore
 
@@ -35,43 +100,43 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 
 === Logging
 
-* Additional metadata support for JSON logging (#1310)
+* Additional metadata support for JSON logging (https://github.com/spring-cloud/spring-cloud-gcp/issues/1310[#1310])
 * Add service context for Stackdriver Error Reporting
 * Add option to add custom json to log messages
-* A separate module for Logging outside of autoconfiguration (#1455)
+* A separate module for Logging outside of autoconfiguration (https://github.com/spring-cloud/spring-cloud-gcp/issues/1455[#1455])
 
 === Pub/Sub
 
-* PubsubTemplate publish to topics in other projects (#1678)
-* PubsubTemplate subscribe in other projects (#1880)
-* Reactive support for Pub/Sub subscription (#1461)
-* Spring Integration - Pollable Message Source (using Pub/Sub Synchronous Pull) (#1321)
-* Pubsub stream binder via synchronous pull (#1419)
-* Add keepalive property to pubsub; set default at 5 minutes (#1807)
-* Change thread pools to create daemon threads that do not prevent JVM shutdown (#2010)
+* PubsubTemplate publish to topics in other projects (https://github.com/spring-cloud/spring-cloud-gcp/issues/1678[#1678])
+* PubsubTemplate subscribe in other projects (https://github.com/spring-cloud/spring-cloud-gcp/issues/1880[#1880])
+* Reactive support for Pub/Sub subscription (https://github.com/spring-cloud/spring-cloud-gcp/issues/1461[#1461])
+* Spring Integration - Pollable Message Source (using Pub/Sub Synchronous Pull) (https://github.com/spring-cloud/spring-cloud-gcp/issues/1321[#1321])
+* Pubsub stream binder via synchronous pull (https://github.com/spring-cloud/spring-cloud-gcp/issues/1419[#1419])
+* Add keepalive property to pubsub; set default at 5 minutes (https://github.com/spring-cloud/spring-cloud-gcp/issues/1807[#1807])
+* Change thread pools to create daemon threads that do not prevent JVM shutdown (https://github.com/spring-cloud/spring-cloud-gcp/issues/2010[#2010])
 ** This is a change in behavior for non-web applications that subscribe to a Cloud Pub/Sub topic.
 The subscription threads used to keep the application alive, but will now allow the application to shut down if no other work needs to be done.
-* Added original message to the throwable for Pub/Sub publish failures (#2020)
+* Added original message to the throwable for Pub/Sub publish failures (https://github.com/spring-cloud/spring-cloud-gcp/issues/2020[#2020])
 
 === IAP
 
-* Added support to allow multiple IAP audience claims (#1856)
+* Added support to allow multiple IAP audience claims (https://github.com/spring-cloud/spring-cloud-gcp/issues/1856[#1856])
 
 === Spanner
 
-* Expose Spanner failIfPoolExhausted property (#1889)
-* Lazy fetch support for interleaved collections (#1460)
-* Bounded staleness option support (#1727)
-* Spring Data Spanner Repositories `In` clause queries support (#1701)
+* Expose Spanner failIfPoolExhausted property (https://github.com/spring-cloud/spring-cloud-gcp/issues/1889[#1889])
+* Lazy fetch support for interleaved collections (https://github.com/spring-cloud/spring-cloud-gcp/issues/1460[#1460])
+* Bounded staleness option support (https://github.com/spring-cloud/spring-cloud-gcp/issues/1727[#1727])
+* Spring Data Spanner Repositories `In` clause queries support (https://github.com/spring-cloud/spring-cloud-gcp/issues/1701[#1701])
 * Spanner array param binding
 * Events and Auditing support
-* Multi-Instance support (#1530)
-* Fixed conversion for timestamps older than unix epoch (#2043)
-* Fixed REST Repositories PUT by populating key fields when virtual key property is set (#2053)
+* Multi-Instance support (https://github.com/spring-cloud/spring-cloud-gcp/issues/1530[#1530])
+* Fixed conversion for timestamps older than unix epoch (https://github.com/spring-cloud/spring-cloud-gcp/issues/2043[#2043])
+* Fixed REST Repositories PUT by populating key fields when virtual key property is set (https://github.com/spring-cloud/spring-cloud-gcp/issues/2053[#2053])
 
 === Spring Cloud Bus
 
-* Spring Cloud Config and Bus over Pub/Sub sample/docs (#1550)
+* Spring Cloud Config and Bus over Pub/Sub sample/docs (https://github.com/spring-cloud/spring-cloud-gcp/issues/1550[#1550])
 
 === Vision
 
