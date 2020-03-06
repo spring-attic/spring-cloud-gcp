@@ -44,11 +44,11 @@ public class SubTrade {
 	String subTradeId;
 
 	@Interleaved
-	@Where("deleted = false")
+	@Where("disabled = false")
 	List<SubTradeComponent> subTradeComponentList;
 
 	@Column
-	boolean deleted;
+	boolean disabled;
 
 	public SubTrade() {
 
@@ -60,6 +60,14 @@ public class SubTrade {
 		tradeIdentifier.trader_id = traderId;
 		this.subTradeId = subTradeId;
 		this.tradeIdentifier = tradeIdentifier;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
 	}
 
 	public String getSubTradeId() {
@@ -88,7 +96,7 @@ public class SubTrade {
 		}
 		SubTrade subTrade = (SubTrade) o;
 		return Objects.equals(this.tradeIdentifier, subTrade.tradeIdentifier) &&
-				Objects.equals(this.deleted, subTrade.deleted) &&
+				Objects.equals(this.disabled, subTrade.disabled) &&
 				Objects.equals(getSubTradeId(), subTrade.getSubTradeId()) &&
 				(Objects.equals(getSubTradeComponentList(), subTrade.getSubTradeComponentList()) ||
 						(getSubTradeComponentList() == null && subTrade.getSubTradeComponentList().size() == 0) ||
@@ -107,7 +115,7 @@ public class SubTrade {
 				"tradeIdentifier=" + this.tradeIdentifier +
 				", subTradeId='" + this.subTradeId + '\'' +
 				", subTradeComponentList=" + this.subTradeComponentList +
-				", deleted=" + this.deleted +
+				", disabled=" + this.disabled +
 				'}';
 	}
 }

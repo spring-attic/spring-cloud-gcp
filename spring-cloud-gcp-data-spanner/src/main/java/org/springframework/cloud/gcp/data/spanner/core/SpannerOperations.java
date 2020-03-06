@@ -100,7 +100,7 @@ public interface SpannerOperations {
 	 *  <ul>
 	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}</li>
 	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
-	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} can't be converted to {@link SpannerQueryOptions} - an exception< will be thrown</li>
+	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} can't be converted to {@link SpannerQueryOptions} - an exception will be thrown</li>
 	 *  </ul>
 	 */
 	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) throws IllegalArgumentException;

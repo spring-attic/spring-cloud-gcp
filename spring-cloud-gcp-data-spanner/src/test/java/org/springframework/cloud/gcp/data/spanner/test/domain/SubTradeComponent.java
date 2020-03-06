@@ -50,7 +50,7 @@ public class SubTradeComponent {
 	Timestamp commitTimestamp;
 
 	@Column
-	boolean deleted;
+	boolean disabled;
 
 	public SubTradeComponent() {
 

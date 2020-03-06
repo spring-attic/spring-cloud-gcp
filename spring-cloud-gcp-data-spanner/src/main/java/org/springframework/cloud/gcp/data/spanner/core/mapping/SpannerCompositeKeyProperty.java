@@ -150,6 +150,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	public boolean hasWhere() {
+		return false;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		return OptionalLong.empty();
 	}

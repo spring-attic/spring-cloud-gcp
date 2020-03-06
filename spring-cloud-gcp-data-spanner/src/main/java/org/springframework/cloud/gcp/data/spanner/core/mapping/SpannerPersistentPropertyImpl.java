@@ -178,6 +178,11 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean hasWhere() {
+		return !getWhere().isEmpty();
+	}
+
+	@Override
 	public Code getAnnotatedColumnItemType() {
 		Column annotation = findAnnotation(Column.class);
 		if (annotation == null

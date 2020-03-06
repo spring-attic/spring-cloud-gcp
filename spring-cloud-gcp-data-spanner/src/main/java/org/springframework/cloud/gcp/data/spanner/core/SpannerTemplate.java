@@ -35,7 +35,6 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
@@ -199,7 +198,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		SpannerPersistentEntity<T> persistentEntity =
 				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
 		List<T> entities;
-		if (persistentEntity.hasEagerlyLoadedProperties() || !persistentEntity.getWhere().isEmpty()) {
+		if (persistentEntity.hasEagerlyLoadedProperties() || persistentEntity.hasWhere()) {
 			entities = executeReadQueryAndResolveChildren(keys, persistentEntity,
 					toQueryOption(keys, options), options != null ? options.getIndex() : null);
 		}
@@ -220,28 +219,16 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	 * @return query-parameters
 	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}
 	 * 	or {@code keys} have "ranges".
+	 * @see SpannerReadOptions#toQueryOptions()
 	 */
 	private static SpannerQueryOptions toQueryOption(KeySet keys, SpannerReadOptions options) throws IllegalArgumentException {
 		if (keys != null && keys.getRanges().iterator().hasNext()) {
 			throw new IllegalArgumentException(String.format("KeySet %s has ranges", keys));
 		}
-		SpannerQueryOptions query = new SpannerQueryOptions();
 		if (options == null) {
-			return query;
+			return new SpannerQueryOptions();
 		}
-		query.setAllowPartialRead(options.isAllowPartialRead());
-		query.setIncludeProperties(options.getIncludeProperties());
-		query.setTimestampBound(options.getTimestampBound());
-
-		for (ReadOption ro : options.getOptions()) {
-			if (ro instanceof Options.ReadAndQueryOption) {
-				query.addQueryOption((Options.ReadAndQueryOption) ro);
-			}
-			else {
-				throw new IllegalArgumentException(String.format("Can't convert %s to SpannerQueryOptions ", options));
-			}
-		}
-		return query;
+		return options.toQueryOptions();
 	}
 
 	@Override
@@ -258,11 +245,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> query(Class<T> entityClass, Statement statement,
-			SpannerQueryOptions options) {
-		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
-		maybeEmitEvent(new AfterQueryEvent(entitites, statement, options));
-		return entitites;
+	public <T> List<T> query(Class<T> entityClass, Statement statement, SpannerQueryOptions options) {
+		List<T> entities = queryAndResolveChildren(entityClass, statement, options);
+		maybeEmitEvent(new AfterQueryEvent(entities, statement, options));
+		return entities;
 	}
 
 	@Override
@@ -279,7 +265,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-		String condition = persistentEntity.getWhere().isEmpty() ? "" : " WHERE " + persistentEntity.getWhere();
+		String condition = persistentEntity.hasWhere() ? " WHERE " + persistentEntity.getWhere() : "";
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
 				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName() + condition;
 		return query(entityClass,

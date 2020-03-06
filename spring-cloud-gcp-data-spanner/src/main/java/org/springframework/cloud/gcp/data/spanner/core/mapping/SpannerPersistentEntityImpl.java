@@ -389,6 +389,11 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
+	public boolean hasWhere() {
+		return !where.isEmpty();
+	}
+
+	@Override
 	public Set<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
 	}

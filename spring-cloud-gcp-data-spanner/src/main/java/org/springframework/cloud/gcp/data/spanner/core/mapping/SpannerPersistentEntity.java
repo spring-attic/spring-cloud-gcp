@@ -129,6 +129,15 @@ public interface SpannerPersistentEntity<T> extends
 	 *
 	 * @return the value of the {@link Where} from the entity's class or inherited from parents
 	 *     or an empty string when no annotation found.
+	 * @see #hasWhere()
 	 */
 	String getWhere();
+
+	/**
+	 * Returns true when the entity has an annotation {@link Where} with a non-empty value.
+	 *
+	 * @return true when the entity has an annotation {@link Where} with a non-empty value.
+	 * @see #getWhere()
+	 */
+	boolean hasWhere();
 }

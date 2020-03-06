@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
@@ -293,8 +295,22 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.subTradeRepository.count()).isEqualTo(0);
 
 		this.tradeRepository.deleteAll();
-		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
+		this.tradeRepositoryTransactionalService.testTransactionalAnnotation(3);
 		assertThat(this.tradeRepository.count()).isEqualTo(1L);
+
+		List<Trade> trades = (List) tradeRepository.findAll();
+		someTrade = trades.get(0);
+		assertThat(someTrade.getSubTrades()).hasSize(3);
+		SubTrade someSubTrade = trades.get(0).getSubTrades().get(0);
+		someSubTrade.setDisabled(true); // a soft-delete
+		subTradeRepository.save(someSubTrade);
+
+		someTrade = this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		assertThat(someTrade.getSubTrades())
+				.doesNotContain(someSubTrade) // "someSubTrade" was soft-deleted
+				.hasSize(2);
+
 	}
 
 	@Test
@@ -356,10 +372,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		TradeRepository tradeRepository;
 
 		@Transactional
-		public void testTransactionalAnnotation() {
+		public void testTransactionalAnnotation(int numSubTrades) {
 			Trade trade = Trade.aTrade();
+			trade.setSubTrades(
+					IntStream.range(0, numSubTrades)
+							.mapToObj(i -> new SubTrade(trade.getTradeDetail().getId(), trade.getTraderId(), "subTrade" + i))
+							.collect(Collectors.toList()));
 			this.tradeRepository.save(trade);
-
 			// because the insert happens within the same transaction, this count is still
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);
