@@ -113,7 +113,7 @@ public class PubSubSubscriberTemplate
 	/**
 	 * Get the converter used to convert a message payload to the desired type.
 	 *
-	 * @return the converter to set
+	 * @return the currently used converter
 	 */
 	public PubSubMessageConverter getMessageConverter() {
 		return this.pubSubMessageConverter;
