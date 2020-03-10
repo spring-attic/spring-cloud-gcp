@@ -12,7 +12,7 @@
 	<artifactId>spring-cloud-gcp-dependencies</artifactId>
 	<name>Spring Cloud GCP Dependencies</name>
 	<description>Spring Cloud GCP Dependencies</description>
-	<version>1.2.2.BUILD-SNAPSHOT</version>
+	<version>1.2.3.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -205,6 +205,13 @@
 			</dependency>
 
 			<!--Google Cloud Platform Libraries BOM -->
+
+			<dependency>
+				<groupId>com.google.api-client</groupId>
+				<artifactId>google-api-client</artifactId>
+				<version>1.30.7</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.google.cloud</groupId>
 				<artifactId>libraries-bom</artifactId>

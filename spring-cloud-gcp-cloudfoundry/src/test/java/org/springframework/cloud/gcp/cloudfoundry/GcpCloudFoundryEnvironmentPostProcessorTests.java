@@ -125,6 +125,20 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests extends AbstractCfEnvT
 				.isEqualTo("test-key");
 	}
 
+	@Test
+	public void testUserProvidedServices() throws IOException {
+		String vcapFileContents = new String(Files.readAllBytes(
+				new ClassPathResource("VCAP_SERVICES_USER_PROVIDED").getFile().toPath()));
+		mockVcapServices(vcapFileContents);
+
+		this.initializer.postProcessEnvironment(this.context.getEnvironment(), null);
+
+		assertThat(getProperty("spring.cloud.gcp.spanner.project-id"))
+				.isEqualTo("spanner-project-id");
+		assertThat(getProperty("spring.cloud.gcp.spanner.instance-id"))
+				.isEqualTo("spanner-instance");
+	}
+
 	private String getPrivateKeyDataFromJson(String json, String serviceName) {
 		JsonParser parser = JsonParserFactory.getJsonParser();
 		Map<String, Object> vcapMap = parser.parseMap(json);
