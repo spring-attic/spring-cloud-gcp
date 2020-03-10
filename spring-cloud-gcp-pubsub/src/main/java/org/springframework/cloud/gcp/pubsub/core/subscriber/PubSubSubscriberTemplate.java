@@ -142,7 +142,7 @@ public class PubSubSubscriberTemplate
 	}
 
 	/**
-	 * Sets a custom {@link Executor} can be injected to control the threads that process
+	 * Set a custom {@link Executor} to control the threads that process
 	 * the responses of the asynchronous pull callback operations.
 	 *
 	 * @param asyncPullExecutor the executor to set
