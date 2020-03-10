@@ -154,12 +154,6 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "pubSubAsynchronousPullExecutor")
-	public Executor pubSubAsynchronousPullExecutor() {
-		return Runnable::run;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(name = "pubSubAcknowledgementExecutor")
 	public Executor pubSubAcknowledgementExecutor() {
 		ThreadPoolTaskExecutor ackExecutor = new ThreadPoolTaskExecutor();
@@ -173,12 +167,12 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory,
 			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter,
-			@Qualifier("pubSubAsynchronousPullExecutor") Executor asyncPullExecutor,
+			@Qualifier("pubSubAsynchronousPullExecutor") ObjectProvider<Executor> asyncPullExecutor,
 			@Qualifier("pubSubAcknowledgementExecutor") Executor ackExecutor) {
 		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
 		pubSubSubscriberTemplate.setAckExecutor(ackExecutor);
-		pubSubSubscriberTemplate.setAsyncPullExecutor(asyncPullExecutor);
+		asyncPullExecutor.ifAvailable(pubSubSubscriberTemplate::setAsyncPullExecutor);
 		return pubSubSubscriberTemplate;
 	}
 
