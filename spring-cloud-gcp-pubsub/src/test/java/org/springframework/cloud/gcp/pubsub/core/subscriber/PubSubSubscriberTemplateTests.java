@@ -188,13 +188,13 @@ public class PubSubSubscriberTemplateTests {
 		}).when(this.pullApiFuture).addListener(any(Runnable.class), any(Executor.class));
 		when(this.pullApiFuture.isDone()).thenReturn(true);
 		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder()
-				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage)).build());
 
 		// create objects under test
 		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
 		when(this.subscriberStub.pullCallable()).thenReturn(this.pullCallable);
 		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder()
-				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage)).build());
 
 		// create object under test
 		this.pubSubSubscriberTemplate = spy(new PubSubSubscriberTemplate(this.subscriberFactory));
