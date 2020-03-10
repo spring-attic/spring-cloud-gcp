@@ -211,7 +211,7 @@ public class PubSubSubscriberTemplate
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		return toAcknowledgeablePubsubMessageList(
-				pullResponse.getReceivedMessagesList(), this.subscriberFactory.getProjectId(),
+				pullResponse.getReceivedMessagesList(),
 				pullRequest.getSubscription());
 	}
 
@@ -228,8 +228,6 @@ public class PubSubSubscriberTemplate
 
 		ApiFuture<PullResponse> pullFuture = this.subscriberStub.pullCallable().futureCall(pullRequest);
 
-		final String projectId = this.subscriberFactory.getProjectId();
-
 		final SettableListenableFuture<List<AcknowledgeablePubsubMessage>> settableFuture = new SettableListenableFuture<>();
 		ApiFutures.addCallback(pullFuture, new ApiFutureCallback<PullResponse>() {
 
@@ -241,7 +239,7 @@ public class PubSubSubscriberTemplate
 			@Override
 			public void onSuccess(PullResponse pullResponse) {
 				List<AcknowledgeablePubsubMessage> result = toAcknowledgeablePubsubMessageList(
-						pullResponse.getReceivedMessagesList(), projectId, pullRequest.getSubscription());
+						pullResponse.getReceivedMessagesList(), pullRequest.getSubscription());
 
 				settableFuture.set(result);
 			}
@@ -252,11 +250,11 @@ public class PubSubSubscriberTemplate
 	}
 
 	private List<AcknowledgeablePubsubMessage> toAcknowledgeablePubsubMessageList(List<ReceivedMessage> messages,
-			String projectId, String subscriptionId) {
+			String subscriptionId) {
 		return messages.stream()
 				.map((message) -> new PulledAcknowledgeablePubsubMessage(
 						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionId,
-								projectId),
+								this.subscriberFactory.getProjectId()),
 						message.getMessage(),
 						message.getAckId()))
 				.collect(Collectors.toList());
