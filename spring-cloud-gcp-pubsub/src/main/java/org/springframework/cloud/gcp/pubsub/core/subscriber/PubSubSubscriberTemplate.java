@@ -66,7 +66,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * A custom {@link Executor} can be injected to control per-subscription batch
  * parallelization in acknowledgement and deadline operations.
  * By default, this is a single thread executor,
- * created per instance of the {@link PubSubSubscriberOperations}.
+ * created per instance of the {@link PubSubSubscriberTemplate}.
  *
  * A custom {@link Executor} can be injected to control the threads that process
  * the responses of the asynchronous pull callback operations.
