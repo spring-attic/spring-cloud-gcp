@@ -425,7 +425,7 @@ The `@Where` annotation could be applied to an entity class or to an interleaved
 This annotation provides an SQL where clause that will be applied at the fetching of interleaved collections or the entity itself.
 
 Let's think we have an `Agreement` with a list of `Participants` which could be changed at work on it.
-The business requirement is to fetch an actual list of participants but for a security reason, all records should remain in the database forever.
+We would like to fetch a list of currently active participants. For security reasons, all records should remain in the database forever, even if participants become inactive.
 The simplest way to do it is to use the `@Where` annotation like on the example below.
 
 [source, java]
