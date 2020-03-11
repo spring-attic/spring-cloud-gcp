@@ -303,12 +303,6 @@ public class PubSubSubscriberTemplate
 	@Override
 	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
-		Assert.hasText(subscription, "The subscription can't be null or empty.");
-
-		if (maxMessages != null) {
-			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
-		}
-
 		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
 				subscription, maxMessages, returnImmediately);
 
@@ -325,12 +319,6 @@ public class PubSubSubscriberTemplate
 	@Override
 	public ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
-		Assert.hasText(subscription, "The subscription can't be null or empty.");
-
-		if (maxMessages != null) {
-			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
-		}
-
 		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
 				subscription, maxMessages, returnImmediately);
 

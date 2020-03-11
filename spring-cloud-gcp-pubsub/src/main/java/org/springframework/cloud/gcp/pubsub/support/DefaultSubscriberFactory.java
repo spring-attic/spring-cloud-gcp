@@ -227,6 +227,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString());
 
 		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+
 			pullRequestBuilder.setMaxMessages(maxMessages);
 		}
 

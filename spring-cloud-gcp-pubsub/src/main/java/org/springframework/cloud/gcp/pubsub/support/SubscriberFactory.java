@@ -53,7 +53,8 @@ public interface SubscriberFactory {
 	 * Create a {@link PullRequest} for synchronously pulling a number of messages from
 	 * a Google Cloud Pub/Sub subscription.
 	 * @param subscriptionName the name of the subscription
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages,
+	 * which can be null or must be a positive number
 	 * @param returnImmediately causes the pull request to return immediately even
 	 * if subscription doesn't contain enough messages to satisfy {@code maxMessages}
 	 * @return the pull request that can be executed using a {@link SubscriberStub}
