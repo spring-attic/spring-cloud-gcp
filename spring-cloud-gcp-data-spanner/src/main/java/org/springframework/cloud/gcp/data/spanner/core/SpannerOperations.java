@@ -99,7 +99,7 @@ public interface SpannerOperations {
 	 *  unambiguous decision about the way to perform the operation. Such algorithm is used:
 	 *  <ul>
 	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}</li>
-	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
+	 *      <li>we need "eager" or "Where", {@code options} and {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
 	 *      <li>we need "eager" or "Where" and {@code options} with {@code keys} can't be converted to {@link SpannerQueryOptions} - an exception will be thrown</li>
 	 *  </ul>
 	 */
