@@ -426,7 +426,7 @@ This annotation provides an SQL where clause that will be applied at the fetchin
 
 Let's think we have an `Agreement` with a list of `Participants` which could be changed at work on it.
 We would like to fetch a list of currently active participants. For security reasons, all records should remain in the database forever, even if participants become inactive.
-The simplest way to do it is to use the `@Where` annotation like on the example below.
+That can be easily achieved with the `@Where` annotation, which is demonstrated by this example:
 
 [source, java]
 ----
