@@ -27,6 +27,13 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.64</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
