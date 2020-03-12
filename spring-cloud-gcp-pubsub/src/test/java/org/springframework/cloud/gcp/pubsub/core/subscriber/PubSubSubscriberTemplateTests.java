@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ import static org.mockito.Mockito.when;
  * @author Mike Eltsufin
  * @author Doug Hoard
  * @author Elena Felder
+ * @author Maurice Zeijen
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubSubscriberTemplateTests {
@@ -124,15 +125,19 @@ public class PubSubSubscriberTemplateTests {
 	private UnaryCallable<ModifyAckDeadlineRequest, Empty> modifyAckDeadlineCallable;
 
 	@Mock
-	private ApiFuture<Empty> apiFuture;
+	private ApiFuture<PullResponse> pullApiFuture;
+
+	@Mock
+	private ApiFuture<Empty> ackApiFuture;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws ExecutionException, InterruptedException {
 		reset(this.subscriberFactory);
 		reset(this.subscriberStub);
 		reset(this.subscriber);
 		reset(this.messageReceiver);
-		reset(this.apiFuture);
+		reset(this.pullApiFuture);
+		reset(this.ackApiFuture);
 
 		when(this.subscriberFactory.getProjectId()).thenReturn("testProject");
 
@@ -158,26 +163,38 @@ public class PubSubSubscriberTemplateTests {
 		when(this.subscriberStub.acknowledgeCallable()).thenReturn(this.ackCallable);
 		when(this.subscriberStub.modifyAckDeadlineCallable()).thenReturn(this.modifyAckDeadlineCallable);
 
-		when(this.ackCallable.futureCall(any(AcknowledgeRequest.class))).thenReturn(this.apiFuture);
+		when(this.ackCallable.futureCall(any(AcknowledgeRequest.class))).thenReturn(this.ackApiFuture);
 
-		when(this.modifyAckDeadlineCallable.futureCall(any(ModifyAckDeadlineRequest.class))).thenReturn(this.apiFuture);
+		when(this.modifyAckDeadlineCallable.futureCall(any(ModifyAckDeadlineRequest.class))).thenReturn(this.ackApiFuture);
 
 		doAnswer((invocation) -> {
 			Runnable runnable = invocation.getArgument(0);
 			runnable.run();
 			return null;
-		}).when(this.apiFuture).addListener(any(Runnable.class), any(Executor.class));
+		}).when(this.ackApiFuture).addListener(any(Runnable.class), any(Executor.class));
 
-		when(this.apiFuture.isDone()).thenReturn(true);
+		when(this.ackApiFuture.isDone()).thenReturn(true);
 
 		doNothing().when(this.ackReplyConsumer).ack();
 		doNothing().when(this.ackReplyConsumer).nack();
+
+		// for pull future
+		when(this.pullCallable.futureCall(any(PullRequest.class))).thenReturn(this.pullApiFuture);
+
+		doAnswer((invocation) -> {
+			Runnable runnable = invocation.getArgument(0);
+			runnable.run();
+			return null;
+		}).when(this.pullApiFuture).addListener(any(Runnable.class), any(Executor.class));
+		when(this.pullApiFuture.isDone()).thenReturn(true);
+		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder()
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage)).build());
 
 		// create objects under test
 		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
 		when(this.subscriberStub.pullCallable()).thenReturn(this.pullCallable);
 		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder()
-				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage)).build());
 
 		// create object under test
 		this.pubSubSubscriberTemplate = spy(new PubSubSubscriberTemplate(this.subscriberFactory));
@@ -369,7 +386,39 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 		verify(this.ackCallable, times(2)).futureCall(any(AcknowledgeRequest.class));
-		verify(this.apiFuture, times(2)).addListener(any(), same(mockExecutor));
+		verify(this.ackApiFuture, times(2)).addListener(any(), same(mockExecutor));
+	}
+
+	@Test
+	public void testPullAsync_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
+
+		ListenableFuture<List<AcknowledgeablePubsubMessage>> asyncResult = this.pubSubSubscriberTemplate
+				.pullAsync("sub", 1, true);
+
+		List<AcknowledgeablePubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
+
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(1);
+		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
+		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
+		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub");
+
+		AcknowledgeablePubsubMessage acknowledgeablePubsubMessage = result.get(0);
+		assertThat(acknowledgeablePubsubMessage.getAckId()).isNotNull();
+
+		TestListenableFutureCallback ackTestListenableFutureCallback = new TestListenableFutureCallback();
+
+		ListenableFuture<Void> ackListenableFuture = this.pubSubSubscriberTemplate.ack(result);
+
+		assertThat(ackListenableFuture).isNotNull();
+
+		ackListenableFuture.addCallback(ackTestListenableFutureCallback);
+		ackListenableFuture.get(10L, TimeUnit.SECONDS);
+
+		assertThat(ackListenableFuture.isDone()).isTrue();
+
+		assertThat(ackTestListenableFutureCallback.getThrowable()).isNull();
 	}
 
 	@Test
@@ -398,6 +447,37 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
+	public void testPullAndAckAsync() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<List<PubsubMessage>> asyncResult = this.pubSubSubscriberTemplate.pullAndAckAsync(
+				"sub2", 1, true);
+
+		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(1);
+
+		PubsubMessage pubsubMessage = result.get(0);
+		assertThat(pubsubMessage).isSameAs(this.pubsubMessage);
+
+		verify(this.pubSubSubscriberTemplate, times(1)).ack(any());
+	}
+
+	@Test
+	public void testPullAndAckAsync_NoMessages() throws InterruptedException, ExecutionException, TimeoutException {
+		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder().build());
+
+		ListenableFuture<List<PubsubMessage>> asyncResult = this.pubSubSubscriberTemplate.pullAndAckAsync(
+				"sub2", 1, true);
+
+		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(result.size()).isEqualTo(0);
+
+		verify(this.pubSubSubscriberTemplate, never()).ack(any());
+	}
+
+	@Test
 	public void testPullAndConvert() {
 		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result = this.pubSubSubscriberTemplate.pullAndConvert(
 				"sub2", 1, true, BigInteger.class);
@@ -408,6 +488,74 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
+	}
+
+	@Test
+	public void testPullAndConvertAsync() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<BigInteger>>> asyncResult = this.pubSubSubscriberTemplate.pullAndConvertAsync(
+				"sub2", 1, true, BigInteger.class);
+
+		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		verify(this.messageConverter).fromPubSubMessage(this.pubsubMessage, BigInteger.class);
+
+		assertThat(result.size()).isEqualTo(1);
+		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
+		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
+		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
+	}
+
+	@Test
+	public void testPullNext() {
+
+		PubsubMessage message = this.pubSubSubscriberTemplate.pullNext("sub2");
+
+		assertThat(message).isSameAs(this.pubsubMessage);
+
+		verify(this.subscriberFactory).createPullRequest("sub2", 1, true);
+		verify(this.pubSubSubscriberTemplate, times(1)).ack(any());
+	}
+
+	@Test
+	public void testPullNext_NoMessages() {
+		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder().build());
+
+		PubsubMessage message = this.pubSubSubscriberTemplate.pullNext("sub2");
+
+		assertThat(message).isNull();
+
+		verify(this.subscriberFactory).createPullRequest("sub2", 1, true);
+		verify(this.pubSubSubscriberTemplate, never()).ack(any());
+	}
+
+
+	@Test
+	public void testPullNextAsync() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<PubsubMessage> asyncResult = this.pubSubSubscriberTemplate.pullNextAsync("sub2");
+
+		PubsubMessage message = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(message).isSameAs(this.pubsubMessage);
+
+		verify(this.subscriberFactory).createPullRequest("sub2", 1, true);
+		verify(this.pubSubSubscriberTemplate, times(1)).ack(any());
+	}
+
+	@Test
+	public void testPullNextAsync_NoMessages() throws InterruptedException, ExecutionException, TimeoutException {
+		when(this.pullApiFuture.get()).thenReturn(PullResponse.newBuilder().build());
+
+		ListenableFuture<PubsubMessage> asyncResult = this.pubSubSubscriberTemplate.pullNextAsync("sub2");
+
+		PubsubMessage message = asyncResult.get(10L, TimeUnit.SECONDS);
+		assertThat(asyncResult.isDone()).isTrue();
+
+		assertThat(message).isNull();
+
+		verify(this.subscriberFactory).createPullRequest("sub2", 1, true);
+		verify(this.pubSubSubscriberTemplate, never()).ack(any());
 	}
 
 	private class TestListenableFutureCallback implements ListenableFutureCallback<Void> {

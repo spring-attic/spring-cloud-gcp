@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Mike Eltsufin
  * @author Doug Hoard
  * @author Chengyuan Zhao
+ * @author Maurice Zeijen
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -227,6 +228,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString());
 
 		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+
 			pullRequestBuilder.setMaxMessages(maxMessages);
 		}
 
