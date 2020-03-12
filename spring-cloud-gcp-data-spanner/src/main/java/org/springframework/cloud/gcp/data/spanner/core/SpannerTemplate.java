@@ -264,10 +264,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
-		String condition = persistentEntity.hasWhere() ? " WHERE " + persistentEntity.getWhere() : "";
+		SpannerPersistentEntity<?> entity = this.mappingContext.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName() + condition;
+				entity, this.mappingContext, true)
+				+ " FROM " + entity.tableName() + SpannerStatementQueryExecutor.buildWhere(entity);
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
