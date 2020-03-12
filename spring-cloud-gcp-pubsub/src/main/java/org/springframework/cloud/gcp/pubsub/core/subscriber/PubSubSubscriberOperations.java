@@ -102,7 +102,7 @@ public interface PubSubSubscriberOperations {
 	 * messages to satisfy {@code maxMessages}
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
 	 * received acknowledgeable messages
-	 * @since 1.3
+	 * @since 1.2.3
 	 */
 	ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages, Boolean returnImmediately);
 
@@ -126,7 +126,7 @@ public interface PubSubSubscriberOperations {
 	 * messages to satisfy {@code maxMessages}
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
 	 * received acknowledgeable messages
-	 * @since 1.3
+	 * @since 1.2.3
 	 */
 	ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages, Boolean returnImmediately);
 
@@ -158,7 +158,7 @@ public interface PubSubSubscriberOperations {
 	 * @param <T> the type of the payload
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
 	 *  received acknowledgeable messages
-	 * @since 1.3
+	 * @since 1.2.3
 	 */
 	<T> ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<T>>> pullAndConvertAsync(String subscription,
 			Integer maxMessages, Boolean returnImmediately, Class<T> payloadType);
@@ -177,7 +177,7 @@ public interface PubSubSubscriberOperations {
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
 	 * @return the ListenableFuture for the asynchronous execution, returning a received message,
 	 * or {@code null} if none exists in the subscription
-	 * @since 1.3
+	 * @since 1.2.3
 	 */
 	ListenableFuture<PubsubMessage> pullNextAsync(String subscription);
 
