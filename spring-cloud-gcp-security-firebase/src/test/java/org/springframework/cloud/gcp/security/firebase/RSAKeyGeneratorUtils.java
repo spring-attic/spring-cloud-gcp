@@ -38,7 +38,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObjectGenerator;
 import org.bouncycastle.util.io.pem.PemWriter;
-import sun.security.jca.Providers;
 
 
 /**
@@ -60,8 +59,6 @@ public class RSAKeyGeneratorUtils {
 		keyStore.load(null, null);
 		KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance("RSA");
 		kpGenerator.initialize(2048);
-		System.out.println("========== on travis, providers: " + Providers.getProviderList());
-
 		KeyPair keyPair = kpGenerator.generateKeyPair();
 
 		X500Name issuerName = new X500Name("OU=spring-cloud-gcp,CN=firebase-auth-integration-test");
