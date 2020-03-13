@@ -16,24 +16,35 @@
 
 package org.springframework.cloud.gcp.security.firebase;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
+import java.time.Instant;
 import java.util.Date;
 
-import sun.security.provider.X509Factory;
-import sun.security.tools.keytool.CertAndKeyGen;
-import sun.security.x509.X500Name;
-
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.util.io.pem.PemObjectGenerator;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 
 /**
  * Test utility class to generate a pair of Public/Private keys. Used for testing JWT signing.
  *
  * @author Vinicius Carvalho
+ * @author Elena Felder
  * @since 1.2.2
  */
 public class RSAKeyGeneratorUtils {
@@ -46,13 +57,21 @@ public class RSAKeyGeneratorUtils {
 	public RSAKeyGeneratorUtils() throws Exception {
 		KeyStore keyStore = KeyStore.getInstance("JKS");
 		keyStore.load(null, null);
-		CertAndKeyGen keypair = new CertAndKeyGen("RSA", "SHA1WithRSA", null);
-		X500Name x500Name = new X500Name("www.springframework.org", "dev", "cloud", "NYC", "NY", "US");
-		keypair.generate(2048);
-		this.privateKey =  keypair.getPrivateKey();
-		X509Certificate[] chain = new X509Certificate[1];
-		chain[0] = keypair.getSelfCertificate(x500Name, new Date(), (long) 1096 * 24 * 60 * 60);
-		this.certificate = chain[0];
+		KeyPairGenerator kpGenerator = KeyPairGenerator.getInstance("RSA");
+		kpGenerator.initialize(2048);
+		KeyPair keyPair = kpGenerator.generateKeyPair();
+
+		X500Name issuerName = new X500Name("OU=spring-cloud-gcp,CN=firebase-auth-integration-test");
+		this.privateKey =  keyPair.getPrivate();
+
+		JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
+				issuerName,
+				BigInteger.valueOf(System.currentTimeMillis()),
+				Date.from(Instant.now()), Date.from(Instant.now().plusMillis(1096 * 24 * 60 * 60)),
+				issuerName, keyPair.getPublic());
+		ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(privateKey);
+		X509CertificateHolder certHolder = builder.build(signer);
+		this.certificate = new JcaX509CertificateConverter().getCertificate(certHolder);
 		this.publicKey = this.certificate.getPublicKey();
 	}
 
@@ -62,12 +81,15 @@ public class RSAKeyGeneratorUtils {
 	 * @throws CertificateEncodingException if certificate can't be encoded.
 	 */
 	public String getPublicKeyCertificate() throws CertificateEncodingException {
-		final Base64.Encoder encoder = Base64.getMimeEncoder(64, LINE_SEPARATOR.getBytes());
-		StringBuilder builder = new StringBuilder();
-		builder.append(X509Factory.BEGIN_CERT + LINE_SEPARATOR);
-		builder.append(encoder.encodeToString(certificate.getEncoded()) + LINE_SEPARATOR);
-		builder.append(X509Factory.END_CERT);
-		return builder.toString();
+		StringWriter sw = new StringWriter();
+		try (PemWriter pw = new PemWriter(sw)) {
+			PemObjectGenerator gen = new JcaMiscPEMGenerator(this.certificate);
+			pw.writeObject(gen);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return sw.toString();
 	}
 
 	public PrivateKey getPrivateKey() {
