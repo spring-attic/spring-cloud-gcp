@@ -95,7 +95,7 @@ public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption
 
 	/**
 	 * In many cases a {@link SpannerReadOptions} class instance could be compatible with {@link SpannerQueryOptions}.
-	 * The method does this conversion or throws an exception when such is impossible.
+	 * The method executes such conversion or throws an exception if it's impossible.
 	 * @return query-parameters
 	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}.
 	 */
