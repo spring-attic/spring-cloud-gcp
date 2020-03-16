@@ -45,6 +45,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -69,8 +70,6 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
-
-import static org.apache.commons.lang3.ArrayUtils.toArray;
 
 /**
  * An implementation of {@link SpannerOperations}.
@@ -504,7 +503,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		final ResultSet resultSet = options != null && options.getIndex() != null
 				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
-				: readContext.read(tableName, keys, columns, options == null ? toArray() : options.getOptions());
+				: readContext.read(tableName, keys, columns, options == null ? ArrayUtils.toArray() : options.getOptions());
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
