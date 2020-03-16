@@ -77,15 +77,13 @@ public class DefaultSubscriberFactoryTests {
 		factory.setCredentialsProvider(this.credentialsProvider);
 
 		// If a maxMessages is null (it was omitted), then set max to MAX_INT
-		PullRequest request =
-				factory.createPullRequest("test", null, true);
+		PullRequest request = factory.createPullRequest("test", null, true);
 		assertThat(request.getMaxMessages()).isEqualTo(Integer.MAX_VALUE);
 
 		// If maxMessages < 0, should throw an error.
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("The maxMessages must be greater than 0.");
-		request = factory.createPullRequest(
-				"test", -1, true);
+		request = factory.createPullRequest("test", -1, true);
 	}
 
 }
