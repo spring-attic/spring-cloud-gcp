@@ -123,7 +123,7 @@ public interface SpannerPersistentProperty
 
 	/**
 	 * Return {@code WHERE} clause of the interleaved property. Couldn't be {@code null} but an empty string.
-	 * @return a {@code Where} cause of the interleaved property or empty string.
+	 * @return a {@code Where} clause of the interleaved property or empty string.
 	 * @see #hasWhere()
 	 */
 	String getWhere();
