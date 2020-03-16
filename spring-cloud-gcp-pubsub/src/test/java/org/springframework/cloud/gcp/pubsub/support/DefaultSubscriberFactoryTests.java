@@ -72,18 +72,21 @@ public class DefaultSubscriberFactoryTests {
 	}
 
 	@Test
-	public void testCreatePullRequest_nonZeroMaxMessages() {
+	public void testCreatePullRequest_greaterThanZeroMaxMessages() {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "project");
 		factory.setCredentialsProvider(this.credentialsProvider);
 
-		// If a maxMessages is null (it was omitted), then set max to MAX_INT
-		PullRequest request = factory.createPullRequest("test", null, true);
-		assertThat(request.getMaxMessages()).isEqualTo(Integer.MAX_VALUE);
-
-		// If maxMessages < 0, should throw an error.
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("The maxMessages must be greater than 0.");
-		request = factory.createPullRequest("test", -1, true);
+		factory.createPullRequest("test", -1, true);
 	}
 
+	@Test
+	public void testCreatePullRequest_nonNullMaxMessages() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "project");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		PullRequest request = factory.createPullRequest("test", null, true);
+		assertThat(request.getMaxMessages()).isEqualTo(Integer.MAX_VALUE);
+	}
 }
