@@ -86,7 +86,8 @@ public interface PubSubSubscriberOperations {
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @return the list of received messages
@@ -97,7 +98,8 @@ public interface PubSubSubscriberOperations {
 	 * Asynchronously pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
@@ -110,7 +112,8 @@ public interface PubSubSubscriberOperations {
 	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @return the list of received acknowledgeable messages
@@ -121,7 +124,8 @@ public interface PubSubSubscriberOperations {
 	 * Asynchronously pull a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
@@ -135,7 +139,8 @@ public interface PubSubSubscriberOperations {
 	 * the desired payload type.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
@@ -151,7 +156,8 @@ public interface PubSubSubscriberOperations {
 	 * the desired payload type.
 	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
 	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @param maxMessages the maximum number of pulled messages
+	 * @param maxMessages the maximum number of pulled messages. If this value is null then
+	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted

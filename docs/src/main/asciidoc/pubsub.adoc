@@ -99,6 +99,9 @@ h|pull(String subscription, Integer maxMessages,
        			Boolean returnImmediately) | Pulls a number of messages from a subscription, allowing for the retry settings to be configured.
        			Any messages received by `pull()` are not automatically acknowledged. See <<Acknowledging messages>>.
 
+				The `maxMessages` parameter is the maximum limit of how many messages to pull from a subscription in a single call; this value **must** be greater than 0.
+				You may omit this parameter by passing in `null`; this means there will be no limit on the number of messages pulled (`maxMessages` will be `Integer.MAX_INTEGER`).
+
        			If `returnImmediately` is `true`, the system will respond immediately even if it there are no messages available to return in the `Pull` response. Otherwise, the system may wait (for a bounded amount of time) until at least one message is available, rather than returning no messages.
 h|pullAndAck | Works the same as the `pull` method and, additionally, acknowledges all received messages.
 
