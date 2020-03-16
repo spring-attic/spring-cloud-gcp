@@ -33,6 +33,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.data.repository.core.NamedQueries;
@@ -192,11 +193,14 @@ public class SpannerQueryLookupStrategyTests {
 
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void getColumnsStringForSelectMultipleTest() {
+		final SpannerPersistentEntity<TestEntity> entity = (SpannerPersistentEntity<TestEntity>)
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class);
 		Statement childrenRowsQuery = SpannerStatementQueryExecutor.buildQuery(
 				KeySet.newBuilder().addKey(Key.of("k1.1", "k1.2")).addKey(Key.of("k2.1", "k2.2")).build(),
-				this.spannerMappingContext.getPersistentEntity(TestEntity.class), new SpannerWriteConverter(),
-				this.spannerMappingContext);
+				entity, new SpannerWriteConverter(),
+				this.spannerMappingContext, entity.getWhere());
 
 		assertThat(childrenRowsQuery.getSql())
 				.isEqualTo(

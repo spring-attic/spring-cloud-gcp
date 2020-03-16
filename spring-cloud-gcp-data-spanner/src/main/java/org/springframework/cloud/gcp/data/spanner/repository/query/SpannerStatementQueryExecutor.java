@@ -44,6 +44,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
@@ -208,7 +209,7 @@ public final class SpannerStatementQueryExecutor {
 	/**
 	 * Builds a query that returns the rows associated with a key set.
 	 * If the entity class has {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where}
-	 * annotation it will be taken into account.
+	 * annotation it will be used to build the query.
 	 * @param keySet the key set whose members to get.
 	 * @param persistentEntity the persistent entity of the table.
 	 * @param <T> the type of the persistent entity
@@ -224,7 +225,8 @@ public final class SpannerStatementQueryExecutor {
 
 	/**
 	 * Builds a query that returns the rows associated with a key set with additional SQL-where.
-	 * But the {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} will be ignored.
+	 * The {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} of the {@code persistentEntity} parameter
+	 * is ignored, you should pass the SQL-where as a {@code whereClause} parameter.
 	 * @param keySet the key set whose members to get.
 	 * @param persistentEntity the persistent entity of the table.
 	 * @param <T> the type of the persistent entity
@@ -241,7 +243,8 @@ public final class SpannerStatementQueryExecutor {
 
 	/**
 	 * Builds a query that returns the rows associated with a key set with additional SQL-where.
-	 * But the {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} will be ignored.
+	 * The {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} of the {@code persistentEntity} parameter
+	 * is ignored, you should pass the SQL-where as a {@code whereClause} parameter.
 	 * The secondary {@code index} will be used instead of the table name when the corresponding parameter is not null.
 	 * @param keySet the key set whose members to get.
 	 * @param persistentEntity the persistent entity of the table.
@@ -388,6 +391,13 @@ public final class SpannerStatementQueryExecutor {
 		return fetchInterleaved ? sql + getChildrenSubquery(spannerPersistentEntity, mappingContext) : sql;
 	}
 
+	/**
+	 * Returns the value of the {@link Where} annotation of the Property or Persistent Entity.
+	 * When the {@link Where} is used on the Property it has higher priority then from Persistent Entity and overrides it.
+	 * @param spannerPersistentProperty the Persistent Property.
+	 * @param childPersistentEntity the Entity of the Persistent Property.
+	 * @return the value of the {@link Where} annotation of the Property or Persistent Entity
+	 */
 	private static String getWhere(SpannerPersistentProperty spannerPersistentProperty, SpannerPersistentEntity<?> childPersistentEntity) {
 		return spannerPersistentProperty.hasWhere()
 				?  spannerPersistentProperty.getWhere() : childPersistentEntity.getWhere();
