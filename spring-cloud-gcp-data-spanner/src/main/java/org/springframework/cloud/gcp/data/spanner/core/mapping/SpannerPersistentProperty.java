@@ -122,7 +122,7 @@ public interface SpannerPersistentProperty
 	boolean isEagerInterleaved();
 
 	/**
-	 * Return {@code WHERE} clause of the interleaved property. Couldn't be {@code null} but an empty string.
+	 * Returns {@code WHERE} clause of the interleaved property or empty string if no value.
 	 * @return a {@code Where} clause of the interleaved property or empty string.
 	 * @see #hasWhere()
 	 */
