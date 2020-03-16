@@ -223,15 +223,16 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			Boolean returnImmediately) {
 		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
 
-		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscription(
-						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString());
-
-		if (maxMessages != null) {
-			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
-
-			pullRequestBuilder.setMaxMessages(maxMessages);
+		if (maxMessages == null) {
+			maxMessages = Integer.MAX_VALUE;
 		}
+		Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+
+		PullRequest.Builder pullRequestBuilder =
+				PullRequest.newBuilder()
+						.setSubscription(
+								PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString())
+						.setMaxMessages(maxMessages);
 
 		if (returnImmediately != null) {
 			pullRequestBuilder.setReturnImmediately(returnImmediately);

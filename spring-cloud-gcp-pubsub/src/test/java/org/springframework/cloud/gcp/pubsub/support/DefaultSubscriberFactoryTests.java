@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.pubsub.v1.PullRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -68,6 +69,23 @@ public class DefaultSubscriberFactoryTests {
 		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("The project ID can't be null or empty.");
 		new DefaultSubscriberFactory(() -> null);
+	}
+
+	@Test
+	public void testCreatePullRequest_nonZeroMaxMessages() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "project");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		// If a maxMessages is null (it was omitted), then set max to MAX_INT
+		PullRequest request =
+				factory.createPullRequest("test", null, true);
+		assertThat(request.getMaxMessages()).isEqualTo(Integer.MAX_VALUE);
+
+		// If maxMessages < 0, should throw an error.
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The maxMessages must be greater than 0.");
+		request = factory.createPullRequest(
+				"test", -1, true);
 	}
 
 }
