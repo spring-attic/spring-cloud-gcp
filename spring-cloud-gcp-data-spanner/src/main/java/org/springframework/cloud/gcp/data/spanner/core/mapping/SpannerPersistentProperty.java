@@ -29,6 +29,7 @@ import org.springframework.data.mapping.PersistentProperty;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -119,5 +120,20 @@ public interface SpannerPersistentProperty
 	 * @return {@code true} if the property is eagerly-fetched. {@code false} otherwise.
 	 */
 	boolean isEagerInterleaved();
+
+	/**
+	 * Returns {@code WHERE} clause of the interleaved property or empty string if no value.
+	 * @return a {@code WHERE} clause of the interleaved property or empty string.
+	 * @see #hasWhere()
+	 */
+	String getWhere();
+
+	/**
+	 * Returns true when the property has an annotation {@link Where} with a non-empty value.
+	 *
+	 * @return true when the property has an annotation {@link Where} with a non-empty value.
+	 * @see #getWhere()
+	 */
+	boolean hasWhere();
 
 }

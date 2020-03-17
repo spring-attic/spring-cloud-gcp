@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
@@ -85,14 +86,24 @@ public interface SpannerOperations {
 
 	/**
 	 * Finds objects stored from their keys.
+	 * When the entity has a {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} class annotation
+	 * or any of the properties is eagerly interleaved, the SQL query will be performed instead of the
+	 * {@link ReadContext#read} to fetch such properties and satisfy the {@code sql where} condition.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param keys the keys of the objects to retrieve.
 	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of objects that could be found using the given keys. If no keys could be
 	 * found the list will be empty.
+	 * @throws IllegalArgumentException when a combination of provided parameters and annotations does not allow to take
+	 *  unambiguous decision about the way to perform the operation. Such algorithm is used:
+	 *  <ul>
+	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}</li>
+	 *      <li>we need "eager" or "Where", {@code options} and {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
+	 *      <li>otherwise an exception will be thrown</li>
+	 *  </ul>
 	 */
-	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options);
+	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) throws IllegalArgumentException;
 
 	/**
 	 * Finds objects stored from their keys.

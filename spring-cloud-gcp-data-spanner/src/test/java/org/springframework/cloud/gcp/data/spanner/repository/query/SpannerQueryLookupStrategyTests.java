@@ -33,7 +33,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
@@ -56,6 +58,7 @@ import static org.mockito.Mockito.when;
  * Tests Spanner Query Method lookups.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 public class SpannerQueryLookupStrategyTests {
 
@@ -163,10 +166,10 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerMappingContext.getPersistentEntity(ChildEntity.class), new SpannerWriteConverter(),
-				this.spannerMappingContext);
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class).getPersistentProperty("childEntities"),
+				new SpannerWriteConverter(), this.spannerMappingContext);
 		assertThat(statement.getSql())
-				.isEqualTo("SELECT id3, id, id_2 FROM child_test_table WHERE (id = @tag0 AND id_2 = @tag1)");
+				.isEqualTo("SELECT deleted, id3, id, id_2 FROM child_test_table WHERE ((id = @tag0 AND id_2 = @tag1)) AND (deleted = false)");
 		assertThat(statement.getParameters()).hasSize(2);
 		assertThat(statement.getParameters().get("tag0").getString()).isEqualTo("key");
 		assertThat(statement.getParameters().get("tag1").getString()).isEqualTo("key2");
@@ -182,30 +185,34 @@ public class SpannerQueryLookupStrategyTests {
 				this.spannerMappingContext, true);
 
 		assertThat(columnsStringForSelect)
-				.isEqualTo("other, id, custom_col, id_2, " +
-						"ARRAY (SELECT AS STRUCT id3, id, id_2 " +
-						"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
-						"AND child_test_table.id_2 = custom_test_table.id_2) as childEntities");
+				.isEqualTo("other, deleted, id, custom_col, id_2, " +
+						"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 " +
+						"FROM child_test_table WHERE (child_test_table.id = custom_test_table.id " +
+						"AND child_test_table.id_2 = custom_test_table.id_2) AND (deleted = false)) AS childEntities");
 	}
 
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void getColumnsStringForSelectMultipleTest() {
+		final SpannerPersistentEntity<TestEntity> entity = (SpannerPersistentEntity<TestEntity>)
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class);
 		Statement childrenRowsQuery = SpannerStatementQueryExecutor.buildQuery(
 				KeySet.newBuilder().addKey(Key.of("k1.1", "k1.2")).addKey(Key.of("k2.1", "k2.2")).build(),
-				this.spannerMappingContext.getPersistentEntity(TestEntity.class), new SpannerWriteConverter(),
-				this.spannerMappingContext);
+				entity, new SpannerWriteConverter(),
+				this.spannerMappingContext, entity.getWhere());
 
 		assertThat(childrenRowsQuery.getSql())
 				.isEqualTo(
-						"SELECT other, id, custom_col, id_2, ARRAY (SELECT AS STRUCT id3, id, id_2 " +
-								"FROM child_test_table WHERE child_test_table.id = custom_test_table.id " +
-								"AND child_test_table.id_2 = custom_test_table.id_2) as childEntities " +
-								"FROM custom_test_table WHERE (id = @tag0 AND id_2 = @tag1) " +
-								"OR (id = @tag2 AND id_2 = @tag3)");
+						"SELECT other, deleted, id, custom_col, id_2, ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 " +
+								"FROM child_test_table WHERE (child_test_table.id = custom_test_table.id " +
+								"AND child_test_table.id_2 = custom_test_table.id_2) AND (deleted = false)) AS childEntities " +
+								"FROM custom_test_table WHERE ((id = @tag0 AND id_2 = @tag1) " +
+								"OR (id = @tag2 AND id_2 = @tag3)) AND (deleted = false)");
 	}
 
 	@Table(name = "custom_test_table")
+	@Where("deleted = false")
 	private static class TestEntity {
 		@PrimaryKey(keyOrder = 1)
 		String id;
@@ -221,7 +228,10 @@ public class SpannerQueryLookupStrategyTests {
 		String other;
 
 		@Interleaved
+		@Where("deleted = false")
 		List<ChildEntity> childEntities;
+
+		boolean deleted;
 	}
 
 	@Table(name = "child_test_table")
@@ -234,5 +244,7 @@ public class SpannerQueryLookupStrategyTests {
 
 		@PrimaryKey(keyOrder = 3)
 		String id3;
+
+		boolean deleted;
 	}
 }

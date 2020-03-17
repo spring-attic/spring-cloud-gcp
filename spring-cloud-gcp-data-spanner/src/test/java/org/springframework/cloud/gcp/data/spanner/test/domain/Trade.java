@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 
 /**
  * A test domain object using many features.
@@ -68,6 +69,7 @@ public class Trade {
 	private List<Instant> executionTimes;
 
 	@Interleaved
+	@Where("disabled = false")
 	private List<SubTrade> subTrades = Collections.emptyList();
 
 	/**

@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  * A child interleaved table of {@link SubTrade} and a grand-child of {@link Trade}.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 @Table(name = "#{'sub_trade_component'.concat(tableNameSuffix)}")
 public class SubTradeComponent {
@@ -47,6 +48,9 @@ public class SubTradeComponent {
 
 	@Column(spannerCommitTimestamp = true)
 	Timestamp commitTimestamp;
+
+	@Column
+	boolean disabled;
 
 	public SubTradeComponent() {
 

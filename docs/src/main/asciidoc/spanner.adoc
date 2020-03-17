@@ -420,6 +420,34 @@ If a property marked for lazy fetching is never retrieved, then it is also skipp
 
 If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.
 
+===== Declarative Filtering with `@Where`
+The `@Where` annotation could be applied to an entity class or to an interleaved property.
+This annotation provides an SQL where clause that will be applied at the fetching of interleaved collections or the entity itself.
+
+Let's say we have an `Agreement` with a list of `Participants` which could be assigned to it.
+We would like to fetch a list of currently active participants.
+For security reasons, all records should remain in the database forever, even if participants become inactive.
+That can be easily achieved with the `@Where` annotation, which is demonstrated by this example:
+
+[source, java]
+----
+@Table(name = "participants")
+public class Participant {
+  //...
+  boolean active;
+  //...
+}
+
+@Table(name = "agreements")
+public class Agreement {
+  //...
+  @Interleaved
+  @Where("active = true")
+  List<Participant> participants;
+  Person person;
+  //...
+}
+----
 
 ==== Supported Types
 

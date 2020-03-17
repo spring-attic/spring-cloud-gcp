@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @param <T> the type of the persistent entity
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -91,6 +92,8 @@ public class SpannerPersistentEntityImpl<T>
 	private String tableName;
 
 	private boolean hasEagerlyLoadedProperties = false;
+
+	private final String where;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}.
@@ -126,6 +129,8 @@ public class SpannerPersistentEntityImpl<T>
 		this.context = new StandardEvaluationContext();
 
 		this.table = this.findAnnotation(Table.class);
+		Where annotation = findAnnotation(Where.class);
+		this.where = annotation != null ? annotation.value() : "";
 		this.tableNameExpression = detectExpression();
 	}
 
@@ -376,6 +381,16 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public boolean hasEagerlyLoadedProperties() {
 		return this.hasEagerlyLoadedProperties;
+	}
+
+	@Override
+	public String getWhere() {
+		return where;
+	}
+
+	@Override
+	public boolean hasWhere() {
+		return !where.isEmpty();
 	}
 
 	@Override

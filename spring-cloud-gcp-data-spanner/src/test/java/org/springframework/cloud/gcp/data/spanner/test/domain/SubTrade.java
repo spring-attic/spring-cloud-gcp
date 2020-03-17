@@ -19,17 +19,21 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 
 /**
  * An interleaved child of {@link Trade}.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 @Table(name = "#{'sub_trades_'.concat(tableNameSuffix)}")
+@Where("deleted = false")
 public class SubTrade {
 
 	@Embedded
@@ -40,7 +44,11 @@ public class SubTrade {
 	String subTradeId;
 
 	@Interleaved
+	@Where("disabled = false")
 	List<SubTradeComponent> subTradeComponentList;
+
+	@Column
+	boolean disabled;
 
 	public SubTrade() {
 
@@ -52,6 +60,14 @@ public class SubTrade {
 		tradeIdentifier.trader_id = traderId;
 		this.subTradeId = subTradeId;
 		this.tradeIdentifier = tradeIdentifier;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
 	}
 
 	public String getSubTradeId() {
@@ -80,6 +96,7 @@ public class SubTrade {
 		}
 		SubTrade subTrade = (SubTrade) o;
 		return Objects.equals(this.tradeIdentifier, subTrade.tradeIdentifier) &&
+				Objects.equals(this.disabled, subTrade.disabled) &&
 				Objects.equals(getSubTradeId(), subTrade.getSubTradeId()) &&
 				(Objects.equals(getSubTradeComponentList(), subTrade.getSubTradeComponentList()) ||
 						(getSubTradeComponentList() == null && subTrade.getSubTradeComponentList().size() == 0) ||
@@ -98,6 +115,7 @@ public class SubTrade {
 				"tradeIdentifier=" + this.tradeIdentifier +
 				", subTradeId='" + this.subTradeId + '\'' +
 				", subTradeComponentList=" + this.subTradeComponentList +
+				", disabled=" + this.disabled +
 				'}';
 	}
 }

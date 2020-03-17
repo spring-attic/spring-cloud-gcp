@@ -33,6 +33,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
+import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -43,6 +44,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
@@ -57,6 +59,7 @@ import org.springframework.data.util.Pair;
  * @author Chengyuan Zhao
  * @author Balint Pato
  * @author Mike Eltsufin
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -162,6 +165,7 @@ public final class SpannerStatementQueryExecutor {
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
+		sb.append(buildWhere(persistentEntity));
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
@@ -172,25 +176,40 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	/**
+	 * Builds an SQL where clause for the persistent entity.
+	 * @param entity the persistent entity instance
+	 * @return SQL where clause for the persistent entity instance.
+	 * @see SpannerPersistentEntity#hasWhere()
+	 * @see SpannerPersistentEntity#getWhere()
+	 */
+	public static String buildWhere(SpannerPersistentEntity<?> entity) {
+		return entity.hasWhere() ? " WHERE " + entity.getWhere() : "";
+	}
+
+	/**
 	 * Gets a {@link Statement} that returns the rows associated with a parent entity. This function is
 	 * intended to be used with parent-child interleaved tables, so that the retrieval of all
 	 * child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
-	 * @param childPersistentEntity the persistent entity of the child table.
-	 * @param <T> the type of the child persistent entity
+	 * @param spannerPersistentProperty the property with interleaved list of child entries in the parent entity.
 	 * @param writeConverter a converter to convert key values as needed to bind to the query
 	 *     statement.
 	 * @param mappingContext mapping context
 	 * @return the Spanner statement to perform the retrieval.
 	 */
-	public static <T> Statement getChildrenRowsQuery(Key parentKey,
-			SpannerPersistentEntity<T> childPersistentEntity, SpannerCustomConverter writeConverter,
+	public static Statement getChildrenRowsQuery(Key parentKey,
+			SpannerPersistentProperty spannerPersistentProperty, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
-		return buildQuery(KeySet.singleKey(parentKey), childPersistentEntity, writeConverter, mappingContext);
+		Class<?> childType = spannerPersistentProperty.getColumnInnerType();
+		SpannerPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(childType);
+		String whereClause = getWhere(spannerPersistentProperty, persistentEntity);
+		return buildQuery(KeySet.singleKey(parentKey), persistentEntity, writeConverter, mappingContext, whereClause);
 	}
 
 	/**
 	 * Builds a query that returns the rows associated with a key set.
+	 * If the entity class has {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where}
+	 * annotation it will be used to build the query.
 	 * @param keySet the key set whose members to get.
 	 * @param persistentEntity the persistent entity of the table.
 	 * @param <T> the type of the persistent entity
@@ -201,14 +220,52 @@ public final class SpannerStatementQueryExecutor {
 	public static <T> Statement buildQuery(KeySet keySet,
 			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
-		StringJoiner orJoiner = new StringJoiner(" OR ");
+		return buildQuery(keySet, persistentEntity, writeConverter, mappingContext, persistentEntity.getWhere());
+	}
+
+	/**
+	 * Builds a query that returns the rows associated with a key set with additional SQL-where.
+	 * The {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} of the {@code persistentEntity} parameter
+	 * is ignored, you should pass the SQL-where as a {@code whereClause} parameter.
+	 * @param keySet the key set whose members to get.
+	 * @param persistentEntity the persistent entity of the table.
+	 * @param <T> the type of the persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query statement.
+	 * @param mappingContext mapping context
+	 * @param whereClause SQL where clause
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static <T> Statement buildQuery(KeySet keySet,
+			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
+			SpannerMappingContext mappingContext, String whereClause) {
+		return buildQuery(keySet, persistentEntity, writeConverter, mappingContext, whereClause, null);
+	}
+
+	/**
+	 * Builds a query that returns the rows associated with a key set with additional SQL-where.
+	 * The {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} of the {@code persistentEntity} parameter
+	 * is ignored, you should pass the SQL-where as a {@code whereClause} parameter.
+	 * The secondary {@code index} will be used instead of the table name when the corresponding parameter is not null.
+	 * @param keySet the key set whose members to get.
+	 * @param persistentEntity the persistent entity of the table.
+	 * @param <T> the type of the persistent entity
+	 * @param writeConverter a converter to convert key values as needed to bind to the query statement.
+	 * @param mappingContext mapping context
+	 * @param whereClause SQL where clause
+	 * @param index the secondary index name
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static <T> Statement buildQuery(KeySet keySet,
+			SpannerPersistentEntity<T> persistentEntity, SpannerCustomConverter writeConverter,
+			SpannerMappingContext mappingContext, String whereClause, String index) {
+		List<String> orParts = new ArrayList<>();
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
 		int tagNum = 0;
 		List<SpannerPersistentProperty> keyProperties = persistentEntity.getFlattenedPrimaryKeyProperties();
 
 		for (Key key : keySet.getKeys()) {
-			StringJoiner andJoiner = new StringJoiner(" AND ", "(", ")");
+			StringJoiner andJoiner = new StringJoiner(" AND ");
 			Iterator parentKeyParts = key.getParts().iterator();
 			while (parentKeyParts.hasNext()) {
 				SpannerPersistentProperty keyProp = keyProperties.get(tagNum % keyProperties.size());
@@ -218,11 +275,13 @@ public final class SpannerStatementQueryExecutor {
 				keyParts.add(parentKeyParts.next());
 				tagNum++;
 			}
-			orJoiner.add(andJoiner.toString());
+			orParts.add(andJoiner.toString());
 		}
-		String cond = orJoiner.toString();
+		String keyClause = orParts.stream().map(s -> "(" + s + ")").collect(Collectors.joining(" OR "));
+		String condition = combineWithAnd(keyClause, whereClause);
 		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext, true) + " FROM "
-				+ persistentEntity.tableName() + (cond.isEmpty() ? "" : " WHERE " + cond);
+				+ (StringUtils.isEmpty(index) ? persistentEntity.tableName() : String.format("%s@{FORCE_INDEX=%s}", persistentEntity.tableName(), index))
+				+ (condition.isEmpty() ? "" : " WHERE " + condition);
 		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
 	}
@@ -230,20 +289,36 @@ public final class SpannerStatementQueryExecutor {
 	private static <C, P> String getChildrenStructsQuery(
 			SpannerPersistentEntity<C> childPersistentEntity,
 			SpannerPersistentEntity<P> parentPersistentEntity, SpannerMappingContext mappingContext,
-			String columnName) {
+			String columnName, String whereClause) {
 		String tableName = childPersistentEntity.tableName();
 		List<SpannerPersistentProperty> parentKeyProperties = parentPersistentEntity
 				.getFlattenedPrimaryKeyProperties();
-		String condition = parentKeyProperties.stream()
+		String keylCause = parentKeyProperties.stream()
 				.map(keyProp -> tableName + "." + keyProp.getColumnName()
 						+ " = "
 						+ parentPersistentEntity.tableName() + "." + keyProp.getColumnName())
 				.collect(Collectors.joining(" AND "));
-
+		String condition = combineWithAnd(keylCause, whereClause);
 		return "ARRAY (SELECT AS STRUCT " + getColumnsStringForSelect(childPersistentEntity, mappingContext, true) + " FROM "
-				+ tableName + " WHERE " + condition + ") as " + columnName;
+				+ tableName + " WHERE " + condition + ") AS " + columnName;
 	}
 
+	/**
+	 * Combines two SQL conditions with {@code AND} or returns only one when another is a null or empty string.
+	 * The method never return null but an empty string instead.
+	 * @param cond1 the first SQL condition
+	 * @param cond2 the second SQL condition
+	 * @return the combination of SQL conditions joined by {@code AND}.
+	 */
+	private static String combineWithAnd(String cond1, String cond2) {
+		if (StringUtils.isEmpty(cond1)) {
+			return StringUtils.defaultIfEmpty(cond2, StringUtils.EMPTY);
+		}
+		if (StringUtils.isEmpty(cond2)) {
+			return StringUtils.defaultIfEmpty(cond1, StringUtils.EMPTY);
+		}
+		return "(" + cond1 + ") AND (" + cond2 + ")";
+	}
 
 	/**
 	 * Creates a Cloud Spanner statement.
@@ -316,19 +391,32 @@ public final class SpannerStatementQueryExecutor {
 		return fetchInterleaved ? sql + getChildrenSubquery(spannerPersistentEntity, mappingContext) : sql;
 	}
 
+	/**
+	 * Returns the value of the {@link Where} annotation of the Property or Persistent Entity.
+	 * When the {@link Where} is used on the Property it has higher priority then from Persistent Entity and overrides it.
+	 * @param spannerPersistentProperty the Persistent Property.
+	 * @param childPersistentEntity the Entity of the Persistent Property.
+	 * @return the value of the {@link Where} annotation of the Property or Persistent Entity
+	 */
+	private static String getWhere(SpannerPersistentProperty spannerPersistentProperty, SpannerPersistentEntity<?> childPersistentEntity) {
+		return spannerPersistentProperty.hasWhere()
+				?  spannerPersistentProperty.getWhere() : childPersistentEntity.getWhere();
+	}
+
 	private static String getChildrenSubquery(
 			SpannerPersistentEntity<?> spannerPersistentEntity, SpannerMappingContext mappingContext) {
-		StringJoiner joiner = new StringJoiner(", ");
+		StringJoiner joiner = new StringJoiner(", ", ", ", "").setEmptyValue("");
 		spannerPersistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
 			if (spannerPersistentProperty.isEagerInterleaved()) {
-				Class childType = spannerPersistentProperty.getColumnInnerType();
-				SpannerPersistentEntity childPersistentEntity = mappingContext.getPersistentEntity(childType);
+				Class<?> childType = spannerPersistentProperty.getColumnInnerType();
+				SpannerPersistentEntity<?> childPersistentEntity = mappingContext.getPersistentEntity(childType);
 				joiner.add(getChildrenStructsQuery(
-						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName()));
+						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName(),
+						getWhere(spannerPersistentProperty, childPersistentEntity))
+				);
 			}
 		});
-		String sql = joiner.toString();
-		return sql.isEmpty() ? "" : ", " + sql;
+		return joiner.toString();
 	}
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
@@ -489,8 +577,8 @@ public final class SpannerStatementQueryExecutor {
 				orString += " )";
 				orStrings.add(orString);
 			});
-
-			stringBuilder.append(orStrings.toString());
+			stringBuilder.append(
+					combineWithAnd(orStrings.toString(), persistentEntity.getWhere()));
 		}
 	}
 
