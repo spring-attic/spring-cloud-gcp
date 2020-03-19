@@ -49,7 +49,7 @@ import org.springframework.web.client.RestTemplate;
  * @since 1.2.2
  */
 @Configuration
-@ConditionalOnClass(JwtIssuerValidator.class)
+@ConditionalOnClass(FirebaseTokenValidator.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.firebase.enabled", matchIfMissing = true)
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
