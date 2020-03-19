@@ -32,7 +32,6 @@ import reactor.test.StepVerifier;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
@@ -73,10 +72,11 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 
 		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 				.withConfiguration(
-						AutoConfigurations.of(TestConfig.class));
-		contextRunner.run(ctx -> {
-			assertThat(ctx.containsBean("pubSubReactiveFactory")).isTrue();
-		});
+						AutoConfigurations.of(
+								TestConfig.class,
+								GcpPubSubAutoConfiguration.class,
+								GcpPubSubReactiveAutoConfiguration.class));
+		contextRunner.run(ctx -> assertThat(ctx.containsBean("pubSubReactiveFactory")).isTrue());
 	}
 
 	@Test
@@ -159,7 +159,6 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 	}
 
 	@Configuration
-	@ImportAutoConfiguration({GcpPubSubReactiveAutoConfiguration.class, GcpPubSubAutoConfiguration.class})
 	static class TestConfig {
 		@Bean
 		public GcpProjectIdProvider projectIdProvider() {
