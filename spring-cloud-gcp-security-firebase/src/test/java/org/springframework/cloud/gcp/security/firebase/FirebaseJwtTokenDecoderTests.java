@@ -197,8 +197,7 @@ public class FirebaseJwtTokenDecoderTests {
 		RestOperations operations = mockRestOperations();
 		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
 		assertThatExceptionOfType(JwtException.class)
-				.isThrownBy(() -> decoder.decode(signedJWT.serialize()))
-				.withMessageStartingWith("An error occurred while attempting to decode the Jwt: This iss claim is not");
+				.isThrownBy(() -> decoder.decode(signedJWT.serialize()));
 	}
 
 	@Test
