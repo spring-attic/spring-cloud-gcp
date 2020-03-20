@@ -42,6 +42,13 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String secretNamePrefix = "";
 
+	private static final String LATEST_VERSION_STRING = "latest";
+
+	/**
+	 * Defines the secret's version to be used.
+	 */
+	private String version = LATEST_VERSION_STRING;
+
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -60,5 +67,13 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public void setSecretNamePrefix(String secretNamePrefix) {
 		this.secretNamePrefix = secretNamePrefix;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
 	}
 }

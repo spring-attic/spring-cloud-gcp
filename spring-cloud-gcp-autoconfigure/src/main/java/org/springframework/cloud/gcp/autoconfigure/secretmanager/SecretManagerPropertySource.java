@@ -34,11 +34,10 @@ import org.springframework.core.env.EnumerablePropertySource;
  * Retrieves secrets from GCP Secret Manager under the current GCP project.
  *
  * @author Daniel Zou
+ * @author Eddú Meléndez
  * @since 1.2.2
  */
 public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
-
-	private static final String LATEST_VERSION_STRING = "latest";
 
 	private final Map<String, Object> properties;
 
@@ -48,12 +47,13 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			String propertySourceName,
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix) {
+			String secretsPrefix,
+			String version) {
 
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix);
+				client, projectIdProvider.getProjectId(), secretsPrefix, version);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -70,14 +70,14 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 
 		HashMap<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = getSecretPayload(client, projectId, secretId);
+			ByteString secretPayload = getSecretPayload(client, projectId, secretId, version);
 			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
@@ -85,12 +85,12 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static ByteString getSecretPayload(
-			SecretManagerServiceClient client, String projectId, String secretId) {
+			SecretManagerServiceClient client, String projectId, String secretId, String version) {
 
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
-				.setSecretVersion(LATEST_VERSION_STRING)
+				.setSecretVersion(version)
 				.build();
 
 		AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);

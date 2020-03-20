@@ -28,6 +28,7 @@ import org.springframework.core.env.PropertySource;
  * property source.
  *
  * @author Daniel Zou
+ * @author Eddú Meléndez
  * @since 1.2.2
  */
 public class SecretManagerPropertySourceLocator implements PropertySourceLocator {
@@ -40,13 +41,17 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final String secretsPrefix;
 
+	private final String version;
+
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix) {
+			String secretsPrefix,
+			String version) {
 		this.client = client;
 		this.projectIdProvider = projectIdProvider;
 		this.secretsPrefix = secretsPrefix;
+		this.version = version;
 	}
 
 	@Override
@@ -55,6 +60,7 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 				SECRET_MANAGER_NAME,
 				this.client,
 				this.projectIdProvider,
-				this.secretsPrefix);
+				this.secretsPrefix,
+				this.version);
 	}
 }
