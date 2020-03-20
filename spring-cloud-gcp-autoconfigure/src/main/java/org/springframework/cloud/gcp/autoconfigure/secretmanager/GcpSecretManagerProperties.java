@@ -45,12 +45,10 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String secretNamePrefix = "";
 
-	private static final String LATEST_VERSION_STRING = "latest";
-
 	/**
 	 * Defines the secret's version to be used.
 	 */
-	private String version = LATEST_VERSION_STRING;
+	private String version;
 
 	/**
 	 * Defines versions for specific secret-ids.
