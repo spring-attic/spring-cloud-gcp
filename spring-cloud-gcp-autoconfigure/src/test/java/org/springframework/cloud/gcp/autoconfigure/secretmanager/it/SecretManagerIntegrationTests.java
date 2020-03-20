@@ -27,6 +27,7 @@ import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
+import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
 import org.junit.After;
 import org.junit.Before;
@@ -202,9 +203,18 @@ public class SecretManagerIntegrationTests {
 	}
 
 	private boolean secretExists(String secretId, String version) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+		String projectId = projectIdProvider.getProjectId();
+		ProjectName projectName = ProjectName.of(projectId);
 		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
 		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.anyMatch(secret -> secret.getName().contains(secretId) && secret.getName().endsWith(version));
+				.filter(secret -> secret.getName().contains(secretId))
+				.anyMatch(secret -> {
+					SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+							.setProject(projectId)
+							.setSecret(secretId)
+							.setSecretVersion(version)
+							.build();
+					return this.client.accessSecretVersion(secretVersionName) != null;
+				});
 	}
 }
