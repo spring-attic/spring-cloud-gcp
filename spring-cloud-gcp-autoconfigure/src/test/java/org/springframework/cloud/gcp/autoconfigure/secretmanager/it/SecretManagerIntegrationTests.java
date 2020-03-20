@@ -122,6 +122,23 @@ public class SecretManagerIntegrationTests {
 		assertThat(byteArraySecret).isEqualTo("the secret data v2.".getBytes());
 	}
 
+	@Test
+	public void testSecretsWithSpecificVersion() {
+		this.context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.versions.my-secret=2")
+				.run();
+
+		createSecret(TEST_SECRET_ID, "the secret data");
+		createSecret(TEST_SECRET_ID, "the secret data v2");
+		assertThat(secretExists(TEST_SECRET_ID, "2")).isTrue();
+
+		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
+		assertThat(byteArraySecret).isEqualTo("the secret data v2.".getBytes());
+	}
+
 	private void createSecret(String secretId, String payload) {
 		createSecret(secretId, payload, "latest");
 	}

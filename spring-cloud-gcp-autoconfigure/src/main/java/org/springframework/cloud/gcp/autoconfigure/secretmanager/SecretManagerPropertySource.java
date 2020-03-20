@@ -48,12 +48,13 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix,
-			String version) {
+			String version,
+			Map<String, String> versions) {
 
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, version);
+				client, projectIdProvider.getProjectId(), secretsPrefix, version, versions);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -70,18 +71,26 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version, Map<String, String> versions) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 
-		HashMap<String, Object> secretsMap = new HashMap<>();
+		Map<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = getSecretPayload(client, projectId, secretId, version);
+			ByteString secretPayload = resolverSecretVersion(client, projectId, version, versions, secretId);
 			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
 		return secretsMap;
+	}
+
+	private static ByteString resolverSecretVersion(SecretManagerServiceClient client, String projectId, String version, Map<String, String> versions, String secretId) {
+		if (versions.containsKey(secretId)) {
+			String secretVersion = versions.get(secretId);
+			return getSecretPayload(client, projectId, secretId, secretVersion);
+		}
+		return getSecretPayload(client, projectId, secretId, version);
 	}
 
 	private static ByteString getSecretPayload(

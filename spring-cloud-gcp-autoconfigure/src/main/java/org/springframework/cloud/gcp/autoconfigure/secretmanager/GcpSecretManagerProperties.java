@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -49,6 +52,11 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String version = LATEST_VERSION_STRING;
 
+	/**
+	 * Defines versions for specific secret-ids.
+	 */
+	private Map<String, String> versions = new HashMap<>();
+
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -75,5 +83,13 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public Map<String, String> getVersions() {
+		return versions;
+	}
+
+	public void setVersions(Map<String, String> versions) {
+		this.versions = versions;
 	}
 }
