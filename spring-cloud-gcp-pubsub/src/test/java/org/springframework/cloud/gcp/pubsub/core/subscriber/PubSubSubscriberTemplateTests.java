@@ -157,9 +157,6 @@ public class PubSubSubscriberTemplateTests {
 		when(this.subscriberFactory.createPullRequest(any(String.class), any(Integer.class), any(Boolean.class)))
 				.then((invocation) -> PullRequest.newBuilder().setSubscription(invocation.getArgument(0)).build());
 
-		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
-
-		when(this.subscriberStub.pullCallable()).thenReturn(this.pullCallable);
 		when(this.subscriberStub.acknowledgeCallable()).thenReturn(this.ackCallable);
 		when(this.subscriberStub.modifyAckDeadlineCallable()).thenReturn(this.modifyAckDeadlineCallable);
 
