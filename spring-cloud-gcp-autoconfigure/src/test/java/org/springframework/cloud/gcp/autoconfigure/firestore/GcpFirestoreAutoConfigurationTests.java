@@ -23,8 +23,8 @@ import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firestore.v1.FirestoreGrpc;
 import io.grpc.ManagedChannel;
 import org.junit.Test;
-
 import org.mockito.Mockito;
+
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -69,8 +69,8 @@ public class GcpFirestoreAutoConfigurationTests {
 		this.contextRunner
 				.withBean("wrongManagedChannel", ManagedChannel.class, () -> wrongChannel)
 				.run(ctx -> {
-					FirestoreGrpc.FirestoreStub stub = (FirestoreGrpc.FirestoreStub)ctx.getBean("firestoreGrpcStub");
-					ManagedChannel channel = (ManagedChannel)stub.getChannel();
+					FirestoreGrpc.FirestoreStub stub = (FirestoreGrpc.FirestoreStub) ctx.getBean("firestoreGrpcStub");
+					ManagedChannel channel = (ManagedChannel) stub.getChannel();
 					assertThat(channel.authority()).isEqualTo("firestore.googleapis.com:443");
 				});
 	}
