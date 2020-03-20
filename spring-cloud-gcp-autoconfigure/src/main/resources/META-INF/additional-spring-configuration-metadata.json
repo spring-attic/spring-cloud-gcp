@@ -7,6 +7,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.config.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Runtime components.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.datastore.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Datastore components.",
@@ -46,6 +52,12 @@
       "name": "spring.cloud.gcp.sql.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud SQL support components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.secretmanager.bootstrap.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure GCP Secret Manager support components.",
       "defaultValue": true
     },
     {
