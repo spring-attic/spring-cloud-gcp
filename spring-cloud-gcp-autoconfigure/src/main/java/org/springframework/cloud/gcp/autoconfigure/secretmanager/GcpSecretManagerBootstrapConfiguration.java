@@ -98,7 +98,10 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		return new SecretManagerPropertySourceLocator(
-				client, this.gcpProjectIdProvider, this.properties.getSecretNamePrefix(), this.properties.getVersion(), this.properties.getVersions());
+		SecretManagerPropertySourceLocator propertySourceLocator = new SecretManagerPropertySourceLocator(
+				client, this.gcpProjectIdProvider, this.properties.getSecretNamePrefix());
+		propertySourceLocator.setVersion(this.properties.getVersion());
+		propertySourceLocator.setVersions(this.properties.getVersions());
+		return propertySourceLocator;
 	}
 }

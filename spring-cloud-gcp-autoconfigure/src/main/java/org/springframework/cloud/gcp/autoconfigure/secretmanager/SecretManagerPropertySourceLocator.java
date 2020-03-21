@@ -43,20 +43,24 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final String secretsPrefix;
 
-	private final String version;
+	private String version;
 
-	private final Map<String, String> versions;
+	private Map<String, String> versions;
 
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix,
-			String version,
-			Map<String, String> versions) {
+			String secretsPrefix) {
 		this.client = client;
 		this.projectIdProvider = projectIdProvider;
 		this.secretsPrefix = secretsPrefix;
+	}
+
+	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public void setVersions(Map<String, String> versions) {
 		this.versions = versions;
 	}
 

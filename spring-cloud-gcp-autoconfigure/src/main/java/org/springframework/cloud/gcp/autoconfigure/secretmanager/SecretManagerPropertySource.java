@@ -29,6 +29,7 @@ import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.util.StringUtils;
 
 /**
  * Retrieves secrets from GCP Secret Manager under the current GCP project.
@@ -39,6 +40,8 @@ import org.springframework.core.env.EnumerablePropertySource;
  */
 public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
 
+	private static final String LATEST_VERSION_STRING = "latest";
+
 	private final Map<String, Object> properties;
 
 	private final String[] propertyNames;
@@ -47,10 +50,23 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			String propertySourceName,
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
+			String secretsPrefix) {
+		super(propertySourceName, client);
+
+		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
+				client, projectIdProvider.getProjectId(), secretsPrefix, null, null);
+
+		this.properties = propertiesMap;
+		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
+	}
+
+	public SecretManagerPropertySource(
+			String propertySourceName,
+			SecretManagerServiceClient client,
+			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix,
 			String version,
 			Map<String, String> versions) {
-
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
@@ -78,19 +94,23 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		Map<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = resolverSecretVersion(client, projectId, version, versions, secretId);
+			ByteString secretPayload = resolveSecretVersion(client, projectId, version, versions, secretId);
 			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
 		return secretsMap;
 	}
 
-	private static ByteString resolverSecretVersion(SecretManagerServiceClient client, String projectId, String version, Map<String, String> versions, String secretId) {
-		if (versions.containsKey(secretId)) {
+	private static ByteString resolveSecretVersion(SecretManagerServiceClient client, String projectId, String version, Map<String, String> versions, String secretId) {
+		if (!versions.isEmpty() && versions.containsKey(secretId)) {
 			String secretVersion = versions.get(secretId);
 			return getSecretPayload(client, projectId, secretId, secretVersion);
 		}
-		return getSecretPayload(client, projectId, secretId, version);
+		return getSecretPayload(client, projectId, secretId, resolveVersion(version));
+	}
+
+	private static String resolveVersion(String version) {
+		return StringUtils.hasText(version) ? version : LATEST_VERSION_STRING;
 	}
 
 	private static ByteString getSecretPayload(
