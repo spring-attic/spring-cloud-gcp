@@ -152,20 +152,20 @@ public final class SpannerStatementQueryExecutor {
 		// derived table
 		// in SELECT * FROM () if there is no overriding pageable param.
 		if ((options.getSort() == null || options.getSort().isUnsorted()) && options.getLimit() == null
-				&& options.getOffset() == null && !fetchInterleaved) {
+				&& options.getOffset() == null && !fetchInterleaved && !persistentEntity.hasWhere()) {
 			return sql;
 		}
 		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
 		final String alias = subquery.isEmpty() ? "" : " " + persistentEntity.tableName();
 		StringBuilder sb = applySort(options.getSort(),
 				new StringBuilder("SELECT *").append(subquery)
-						.append(" FROM (").append(sql).append(")").append(alias),
+						.append(" FROM (").append(sql).append(")").append(alias)
+						.append(buildWhere(persistentEntity)),
 				(o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
-		sb.append(buildWhere(persistentEntity));
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
