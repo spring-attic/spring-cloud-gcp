@@ -1,6 +1,6 @@
 [[spring-cloud-gcp-reference]]
 = Spring Cloud GCP
-João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; Andreas Berger; Balint Pato; Chengyuan Zhao; Dmitry Solomakha; Elena Felder; Daniel Zou
+João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; Andreas Berger; Balint Pato; Chengyuan Zhao; Dmitry Solomakha; Elena Felder; Daniel Zou, Eddú Meléndez
 
 include::_attributes.adoc[]
 

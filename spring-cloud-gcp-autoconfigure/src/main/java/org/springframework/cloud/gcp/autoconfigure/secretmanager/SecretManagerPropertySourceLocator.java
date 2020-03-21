@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
+import java.util.Map;
+
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
@@ -28,6 +30,7 @@ import org.springframework.core.env.PropertySource;
  * property source.
  *
  * @author Daniel Zou
+ * @author Eddú Meléndez
  * @since 1.2.2
  */
 public class SecretManagerPropertySourceLocator implements PropertySourceLocator {
@@ -40,6 +43,10 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final String secretsPrefix;
 
+	private String version;
+
+	private Map<String, String> versions;
+
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
@@ -49,12 +56,22 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 		this.secretsPrefix = secretsPrefix;
 	}
 
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public void setVersions(Map<String, String> versions) {
+		this.versions = versions;
+	}
+
 	@Override
 	public PropertySource<?> locate(Environment environment) {
 		return new SecretManagerPropertySource(
 				SECRET_MANAGER_NAME,
 				this.client,
 				this.projectIdProvider,
-				this.secretsPrefix);
+				this.secretsPrefix,
+				this.version,
+				this.versions);
 	}
 }

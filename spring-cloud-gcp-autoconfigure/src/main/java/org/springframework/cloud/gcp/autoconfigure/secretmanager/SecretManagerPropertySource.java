@@ -29,11 +29,13 @@ import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.util.StringUtils;
 
 /**
  * Retrieves secrets from GCP Secret Manager under the current GCP project.
  *
  * @author Daniel Zou
+ * @author Eddú Meléndez
  * @since 1.2.2
  */
 public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
@@ -49,11 +51,26 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix) {
-
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix);
+				client, projectIdProvider.getProjectId(), secretsPrefix, null, null);
+
+		this.properties = propertiesMap;
+		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
+	}
+
+	public SecretManagerPropertySource(
+			String propertySourceName,
+			SecretManagerServiceClient client,
+			GcpProjectIdProvider projectIdProvider,
+			String secretsPrefix,
+			String version,
+			Map<String, String> versions) {
+		super(propertySourceName, client);
+
+		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
+				client, projectIdProvider.getProjectId(), secretsPrefix, version, versions);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -70,27 +87,39 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version, Map<String, String> versions) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 
-		HashMap<String, Object> secretsMap = new HashMap<>();
+		Map<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = getSecretPayload(client, projectId, secretId);
+			ByteString secretPayload = resolveSecretVersion(client, projectId, version, versions, secretId);
 			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
 		return secretsMap;
 	}
 
+	private static ByteString resolveSecretVersion(SecretManagerServiceClient client, String projectId, String version, Map<String, String> versions, String secretId) {
+		if (!versions.isEmpty() && versions.containsKey(secretId)) {
+			String secretVersion = versions.get(secretId);
+			return getSecretPayload(client, projectId, secretId, secretVersion);
+		}
+		return getSecretPayload(client, projectId, secretId, resolveVersion(version));
+	}
+
+	private static String resolveVersion(String version) {
+		return StringUtils.hasText(version) ? version : LATEST_VERSION_STRING;
+	}
+
 	private static ByteString getSecretPayload(
-			SecretManagerServiceClient client, String projectId, String secretId) {
+			SecretManagerServiceClient client, String projectId, String secretId, String version) {
 
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
-				.setSecretVersion(LATEST_VERSION_STRING)
+				.setSecretVersion(version)
 				.build();
 
 		AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
