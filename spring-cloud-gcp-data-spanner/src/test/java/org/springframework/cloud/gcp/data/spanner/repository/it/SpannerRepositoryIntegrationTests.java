@@ -101,6 +101,10 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		final String identifier = trade.getTradeDetail().getId();
 		final String traderId = trade.getTraderId();
 
+		long count = subTradeRepository.countBy(identifier, traderId);
+		assertThat(count)
+				.isEqualTo(subTrades);
+
 		List<SubTrade> list = subTradeRepository.getList(
 				identifier, traderId, Sort.by(Order.desc("subTradeId")));
 		assertThat(list)

@@ -44,4 +44,8 @@ public interface SubTradeRepository extends SpannerRepository<SubTrade, Key> {
 			+ " WHERE id = @id AND trader_id = @trader_id")
 	List<SubTrade> getList(@Param("id") String id, @Param("trader_id") String tradeId, Sort sort);
 
+	@Query("SELECT count(1) FROM :org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade:"
+			+ " WHERE id = @id AND trader_id = @trader_id")
+	long countBy(@Param("id") String id, @Param("trader_id") String tradeId);
+
 }

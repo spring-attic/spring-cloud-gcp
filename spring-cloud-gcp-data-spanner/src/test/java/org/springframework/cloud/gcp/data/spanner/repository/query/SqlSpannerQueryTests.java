@@ -143,6 +143,9 @@ public class SqlSpannerQueryTests {
 				.thenReturn(parameters);
 		// @formatter:on
 
+		when(queryMethod.isCollectionQuery()).thenReturn(false);
+		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Trade.class);
+
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
@@ -186,6 +189,8 @@ public class SqlSpannerQueryTests {
 		Mockito.<Parameters>when(this.queryMethod.getParameters())
 				.thenReturn(parameters);
 		// @formatter:on
+		when(queryMethod.isCollectionQuery()).thenReturn(false);
+		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Trade.class);
 
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
@@ -255,6 +260,8 @@ public class SqlSpannerQueryTests {
 		Mockito.<Parameters>when(this.queryMethod.getParameters())
 				.thenReturn(parameters);
 		// @formatter:on
+		when(queryMethod.isCollectionQuery()).thenReturn(false);
+		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Trade.class);
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
 		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {

@@ -242,15 +242,16 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
-		final Class<?> simpleItemType = getReturnedSimpleConvertableItemType();
+		final Class<?> returnedType = getReturnedType();
+		final SpannerPersistentEntity<?> entity = returnedType == null ? null : this.spannerMappingContext.getPersistentEntity(returnedType);
 
 		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						queryTagValue.sql, this.spannerMappingContext, simpleItemType == null);
+						queryTagValue.sql, this.spannerMappingContext, entity != null && entity.hasEagerlyLoadedProperties());
 
 		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
 
-		return (simpleItemType != null)
+		return (getReturnedSimpleConvertableItemType() != null)
 				? this.spannerTemplate.query(
 						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)

@@ -152,7 +152,7 @@ public final class SpannerStatementQueryExecutor {
 		// derived table
 		// in SELECT * FROM () if there is no overriding pageable param.
 		if ((options.getSort() == null || options.getSort().isUnsorted()) && options.getLimit() == null
-				&& options.getOffset() == null && !fetchInterleaved && !persistentEntity.hasWhere()) {
+				&& options.getOffset() == null && !fetchInterleaved) {
 			return sql;
 		}
 		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
