@@ -213,8 +213,7 @@ public class IapAuthenticationAutoConfigurationTests {
 					assertThat(result.getErrors().size()).isEqualTo(2);
 					assertThat(result.getErrors().stream().map(error -> error.getDescription()))
 							.containsExactlyInAnyOrder(
-									"The iss claim is not valid",
-									"This aud claim is not equal to the configured audience");
+									"The iss claim is not valid", "This aud claim is not equal to the configured audience");
 				});
 	}
 
