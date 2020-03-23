@@ -202,7 +202,6 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testFixedStringAudienceValidatorAddedWhenAvailable() throws Exception {
 		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
 		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
-		when(mockJwt.getClaimAsString("iss")).thenReturn("https://cloud.google.com/iap");
 
 		this.contextRunner
 				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
@@ -211,10 +210,10 @@ public class IapAuthenticationAutoConfigurationTests {
 							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
 					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
 					assertThat(result.hasErrors()).isTrue();
-					assertThat(result.getErrors().size()).isEqualTo(1);
-					assertThat(
-							result.getErrors().stream().findAny().get().getDescription())
-								.startsWith("This aud claim is not equal");
+					assertThat(result.getErrors().size()).isEqualTo(2);
+					assertThat(result.getErrors().stream().map(error -> error.getDescription()))
+							.containsExactlyInAnyOrder(
+									"The iss claim is not valid", "This aud claim is not equal to the configured audience");
 				});
 	}
 
