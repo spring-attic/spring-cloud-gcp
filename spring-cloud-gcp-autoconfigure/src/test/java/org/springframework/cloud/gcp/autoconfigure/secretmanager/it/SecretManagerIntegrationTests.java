@@ -27,6 +27,7 @@ import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
+import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
 import org.junit.After;
 import org.junit.Before;
@@ -103,13 +104,71 @@ public class SecretManagerIntegrationTests {
 				.getProperty("spring-cloud-gcp.secrets.my-secret")).isNull();
 	}
 
+	@Test
+	public void testVersion() {
+		this.context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.version=2")
+				.run();
+
+		createSecret(TEST_SECRET_ID, "the secret data");
+		assertThat(secretExists(TEST_SECRET_ID, "1")).isTrue();
+		createSecret(TEST_SECRET_ID, "the secret data v2");
+		assertThat(secretExists(TEST_SECRET_ID, "2")).isTrue();
+		assertThat(secretExists(TEST_SECRET_ID, "latest")).isTrue();
+
+		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
+		assertThat(byteArraySecret).isEqualTo("the secret data v2.".getBytes());
+	}
+
+	@Test
+	public void testSecretsWithSpecificVersion() {
+		this.context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.versions.my-secret=2")
+				.run();
+
+		createSecret(TEST_SECRET_ID, "the secret data");
+		createSecret(TEST_SECRET_ID, "the secret data v2");
+		assertThat(secretExists(TEST_SECRET_ID, "2")).isTrue();
+
+		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
+		assertThat(byteArraySecret).isEqualTo("the secret data v2.".getBytes());
+	}
+
+	@Test
+	public void testSecretsWithSpecificVersionHasPriorityOverGlobalVersion() {
+		this.context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.version=2")
+				.properties("spring.cloud.gcp.secretmanager.versions.my-secret=1")
+				.run();
+
+		createSecret(TEST_SECRET_ID, "the secret data");
+		assertThat(secretExists(TEST_SECRET_ID, "1")).isTrue();
+		createSecret(TEST_SECRET_ID, "the secret data v2");
+		assertThat(secretExists(TEST_SECRET_ID, "2")).isTrue();
+
+		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
+		assertThat(byteArraySecret).isEqualTo("the secret data".getBytes());
+	}
+
+	private void createSecret(String secretId, String payload) {
+		createSecret(secretId, payload, "latest");
+	}
+
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.
 	 */
-	private void createSecret(String secretId, String payload) {
-		if (!secretExists(secretId)) {
-			ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
-
+	private void createSecret(String secretId, String payload, String version) {
+		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+		if (!secretExists(secretId, version)) {
 			// Creates the secret.
 			Secret secret = Secret.newBuilder()
 					.setReplication(
@@ -123,24 +182,39 @@ public class SecretManagerIntegrationTests {
 					.setSecret(secret)
 					.build();
 			client.createSecret(request);
-
-			// Create the secret payload.
-			SecretName name = SecretName.of(projectIdProvider.getProjectId(), TEST_SECRET_ID);
-			SecretPayload payloadObject = SecretPayload.newBuilder()
-					.setData(ByteString.copyFromUtf8("the secret data."))
-					.build();
-			AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
-					.setParent(name.toString())
-					.setPayload(payloadObject)
-					.build();
-			client.addSecretVersion(payloadRequest);
+			createSecretPayload("the secret data.");
+		}
+		else {
+			createSecretPayload("the secret data v2.");
 		}
 	}
 
-	private boolean secretExists(String secretId) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+	private void createSecretPayload(String data) {
+		// Create the secret payload.
+		SecretName name = SecretName.of(projectIdProvider.getProjectId(), TEST_SECRET_ID);
+		SecretPayload payloadObject = SecretPayload.newBuilder()
+				.setData(ByteString.copyFromUtf8(data))
+				.build();
+		AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
+				.setParent(name.toString())
+				.setPayload(payloadObject)
+				.build();
+		client.addSecretVersion(payloadRequest);
+	}
+
+	private boolean secretExists(String secretId, String version) {
+		String projectId = projectIdProvider.getProjectId();
+		ProjectName projectName = ProjectName.of(projectId);
 		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
 		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.anyMatch(secret -> secret.getName().contains(secretId));
+				.filter(secret -> secret.getName().contains(secretId))
+				.anyMatch(secret -> {
+					SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+							.setProject(projectId)
+							.setSecret(secretId)
+							.setSecretVersion(version)
+							.build();
+					return this.client.accessSecretVersion(secretVersionName) != null;
+				});
 	}
 }

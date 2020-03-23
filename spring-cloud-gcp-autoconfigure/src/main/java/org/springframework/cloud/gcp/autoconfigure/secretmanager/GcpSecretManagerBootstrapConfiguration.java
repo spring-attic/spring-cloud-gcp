@@ -42,6 +42,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * properties into the application {@link org.springframework.core.env.Environment}.
  *
  * @author Daniel Zou
+ * @author Eddú Meléndez
  * @since 1.2.2
  */
 @Configuration
@@ -97,7 +98,10 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		return new SecretManagerPropertySourceLocator(
+		SecretManagerPropertySourceLocator propertySourceLocator = new SecretManagerPropertySourceLocator(
 				client, this.gcpProjectIdProvider, this.properties.getSecretNamePrefix());
+		propertySourceLocator.setVersion(this.properties.getVersion());
+		propertySourceLocator.setVersions(this.properties.getVersions());
+		return propertySourceLocator;
 	}
 }
