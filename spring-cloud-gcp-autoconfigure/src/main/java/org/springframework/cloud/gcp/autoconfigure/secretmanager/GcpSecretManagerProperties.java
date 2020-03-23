@@ -48,7 +48,7 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	/**
 	 * Defines the secret's version to be used.
 	 */
-	private String version;
+	private String defaultVersion = "latest";
 
 	/**
 	 * Defines versions for specific secret-ids.
@@ -75,12 +75,12 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 		this.secretNamePrefix = secretNamePrefix;
 	}
 
-	public String getVersion() {
-		return version;
+	public String getDefaultVersion() {
+		return defaultVersion;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
+	public void setDefaultVersion(String defaultVersion) {
+		this.defaultVersion = defaultVersion;
 	}
 
 	public Map<String, String> getVersions() {
