@@ -29,6 +29,9 @@ import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSec
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.protobuf.ByteString;
+import io.grpc.StatusRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,9 +45,12 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class SecretManagerIntegrationTests {
+
+	private static final Log LOGGER = LogFactory.getLog(SecretManagerIntegrationTests.class);
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
 
@@ -109,10 +115,10 @@ public class SecretManagerIntegrationTests {
 
 	@Test
 	public void testDefaultVersion() {
-		createSecret(TEST_SECRET_ID, "secret-v1");
 		createSecret(VERSIONED_SECRET_ID, "the secret data");
 		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
 		createSecret(VERSIONED_SECRET_ID, "the secret data v3");
+		createSecret(TEST_SECRET_ID, "secret-v1");
 
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
@@ -146,6 +152,20 @@ public class SecretManagerIntegrationTests {
 		assertThat(versionedSecret).isEqualTo("the secret data v2");
 	}
 
+	@Test
+	public void testSecretsWithMissingVersion() {
+		createSecret(VERSIONED_SECRET_ID, "the secret data");
+		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
+
+		assertThatThrownBy(() -> new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=7")
+				.properties("spring.cloud.gcp.secretmanager.default-version=latest")
+				.run())
+				.hasCauseInstanceOf(StatusRuntimeException.class);
+	}
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.
 	 * Otherwise creates a new version of the secret under the existing {@code secretId}.
@@ -196,10 +216,8 @@ public class SecretManagerIntegrationTests {
 		try {
 			this.client.deleteSecret(SecretName.of(this.projectIdProvider.getProjectId(), secretId));
 		}
-		catch (Exception e) {
-			if (!(e instanceof NotFoundException)) {
-				throw e;
-			}
+		catch (NotFoundException e) {
+			LOGGER.debug("Skipped deleting " + secretId + " because it does not exist.");
 		}
 	}
 }

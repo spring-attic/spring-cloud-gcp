@@ -107,7 +107,9 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			String secretId,
 			String defaultVersion,
 			Map<String, String> versions) {
-		String version = versions.containsKey(secretId) ? versions.get(secretId) : defaultVersion;
+
+		boolean usingSpecificVersion = versions.containsKey(secretId);
+		String version = usingSpecificVersion ? versions.get(secretId) : defaultVersion;
 
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
@@ -119,12 +121,12 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
 			return response.getPayload().getData();
 		}
-		catch (Exception e) {
-			if (e instanceof NotFoundException) {
-				LOGGER.debug("Skipped loading secret " + secretId + " because it does not have version " + defaultVersion);
+		catch (NotFoundException e) {
+			if (usingSpecificVersion) {
+				throw e;
 			}
 			else {
-				throw e;
+				LOGGER.debug("Skipped loading secret " + secretId + " because it does not have version " + defaultVersion);
 			}
 		}
 
