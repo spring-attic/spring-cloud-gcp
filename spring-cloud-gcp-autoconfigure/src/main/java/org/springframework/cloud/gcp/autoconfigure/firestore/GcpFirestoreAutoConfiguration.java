@@ -28,6 +28,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import reactor.core.publisher.Flux;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -116,7 +117,7 @@ public class GcpFirestoreAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
-				ManagedChannel firestoreManagedChannel) throws IOException {
+				@Qualifier("firestoreManagedChannel") ManagedChannel firestoreManagedChannel) throws IOException {
 			return FirestoreGrpc.newStub(firestoreManagedChannel)
 					.withCallCredentials(MoreCallCredentials.from(
 							GcpFirestoreAutoConfiguration.this.credentialsProvider.getCredentials()));
@@ -151,7 +152,7 @@ public class GcpFirestoreAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean
+		@ConditionalOnMissingBean (name = "firestoreManagedChannel")
 		public ManagedChannel firestoreManagedChannel() {
 			return ManagedChannelBuilder
 					.forTarget("dns:///" + GcpFirestoreAutoConfiguration.this.hostPort)
