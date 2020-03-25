@@ -127,7 +127,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 		catch (IOException ioe) {
 			LOGGER.warn("No core credentials are set. Service-specific credentials " +
 					"(e.g., spring.cloud.gcp.pubsub.credentials.*) should be used if your app uses "
-					+ "services that require credentials.");
+					+ "services that require credentials.", ioe);
 		}
 	}
 
