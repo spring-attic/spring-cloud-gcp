@@ -32,6 +32,7 @@ import com.google.protobuf.ByteString;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.boot.WebApplicationType;
@@ -44,6 +45,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+@Ignore
 public class SecretManagerIntegrationTests {
 
 	private static final String TEST_SECRET_ID = "my-secret";
