@@ -24,8 +24,7 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicator;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration;
+import org.springframework.cloud.gcp.pubsub.health.PubSubHealthIndicator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 
@@ -75,14 +74,26 @@ public class GcpPubSubAutoConfigurationTests {
 	@Test
 	public void healthIndicatorPresent() {
 		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(PubSubHealthIndicatorAutoConfiguration.class,
-						GcpPubSubAutoConfiguration.class))
+				.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
 				.withUserConfiguration(TestConfig.class)
 				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
 						"management.health.pubsub.enabled=true");
 		contextRunner.run(ctx -> {
 			PubSubHealthIndicator healthIndicator = ctx.getBean(PubSubHealthIndicator.class);
 			assertThat(healthIndicator).isNotNull();
+		});
+	}
+
+	@Test
+	public void healthIndicatorDisabledWhenPubSubTurnedOff() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(TestConfig.class)
+				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+						"management.health.pubsub.enabled=true",
+						"spring.cloud.gcp.pubsub.enabled=false");
+		contextRunner.run(ctx -> {
+			assertThat(ctx.getBeansOfType(PubSubHealthIndicator.class)).isEmpty();
 		});
 	}
 

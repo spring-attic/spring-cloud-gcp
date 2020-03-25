@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.pubsub.health;
+package org.springframework.cloud.gcp.pubsub.health;
 
 import java.util.UUID;
 

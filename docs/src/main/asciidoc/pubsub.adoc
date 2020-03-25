@@ -25,6 +25,24 @@ dependencies {
 
 This starter is also available from https://start.spring.io[Spring Initializr] through the `GCP Messaging` entry.
 
+=== Spring Boot Actuator Support
+
+==== Cloud Pub/Sub Health Indicator
+
+If you are using Spring Boot Actuator, you can take advantage of the Cloud Pub/Sub health indicator called `pubsub`.
+The health indicator will verify whether Cloud Pub/Sub is up and accessible by your application.
+To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+
+The `pubsub` indicator will then roll up to the overall application status visible at http://localhost:8080/actuator/health (use the `management.endpoint.health.show-details` property to view per-indicator details).
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
+
 === Sample
 
 Sample applications for https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[using the template] and https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample[using a subscription-backed reactive stream] are available.

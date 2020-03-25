@@ -37,6 +37,12 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
+import org.springframework.boot.actuate.autoconfigure.health.HealthContributorAutoConfiguration;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.cloud.gcp.pubsub.health.PubSubHealthIndicator;
 import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -390,4 +396,19 @@ public class GcpPubSubAutoConfiguration {
 			.build();
 	}
 
+	/**
+	 * Spring Boot Actuator healthcheck autoconfiguration for Cloud Pub/Sub.
+	 */
+	@Configuration (proxyBeanMethods = false)
+	@ConditionalOnClass(HealthIndicator.class)
+	@ConditionalOnEnabledHealthIndicator("pubsub")
+	protected static class PubSubHealthIndicatorAutoConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public PubSubHealthIndicator pubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
+			return new PubSubHealthIndicator(pubSubTemplate);
+		}
+
+	}
 }
