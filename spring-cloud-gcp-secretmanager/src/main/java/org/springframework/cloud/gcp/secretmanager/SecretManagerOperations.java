@@ -53,7 +53,7 @@ public interface SecretManagerOperations {
 	 * @param payload the secret payload string.
 	 * @param projectId unique identifier of your project.
 	 */
-	void createSecretWithProject(String secretId, String payload, String projectId);
+	void createSecret(String secretId, String payload, String projectId);
 
 	/**
 	 * Creates a new secret or a new version of existing secret with the provided
@@ -82,7 +82,7 @@ public interface SecretManagerOperations {
 	 * @param payload the secret payload as a byte array.
 	 * @param projectId unique identifier of your project.
 	 */
-	void createSecretWithProject(String secretId, byte[] payload, String projectId);
+	void createSecret(String secretId, byte[] payload, String projectId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at the latest version.
@@ -91,16 +91,6 @@ public interface SecretManagerOperations {
 	 * @return The secret payload as String
 	 */
 	String getSecretString(String secretId);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at the latest version for a
-	 * specific {@code projectId}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param projectId unique identifier of your project.
-	 * @return The secret payload as String
-	 */
-	String getSecretStringWithProject(String secretId, String projectId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at version
@@ -123,7 +113,7 @@ public interface SecretManagerOperations {
 	 * @param projectId unique identifier of your project.
 	 * @return The secret payload as String
 	 */
-	String getSecretStringWithProject(String secretId, String versionName, String projectId);
+	String getSecretString(String secretId, String versionName, String projectId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at the latest version.
@@ -132,16 +122,6 @@ public interface SecretManagerOperations {
 	 * @return The secret payload as byte[]
 	 */
 	byte[] getSecretBytes(String secretId);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at the latest version for a
-	 * specific {@code projectId}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param projectId unique identifier of your project.
-	 * @return The secret payload as byte[]
-	 */
-	byte[] getSecretBytesWithProject(String secretId, String projectId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at version
@@ -164,7 +144,7 @@ public interface SecretManagerOperations {
 	 * @param projectId unique identifier of your project.
 	 * @return The secret payload as byte[]
 	 */
-	byte[] getSecretBytesWithProject(String secretId, String versionName, String projectId);
+	byte[] getSecretBytes(String secretId, String versionName, String projectId);
 
 	/**
 	 * Gets the secret payload of the specified {@code secretId} at version
@@ -187,7 +167,7 @@ public interface SecretManagerOperations {
 	 * @param projectId unique identifier of your project.
 	 * @return The secret payload as {@link ByteString}
 	 */
-	ByteString getSecretByteStringWithProject(String secretId, String versionName, String projectId);
+	ByteString getSecretByteString(String secretId, String versionName, String projectId);
 
 	/**
 	 * Returns true if there already exists a secret under the GCP project with the
@@ -206,5 +186,5 @@ public interface SecretManagerOperations {
 	 * @param projectId unique identifier of your project.
 	 * @return true if the secret exists in Secret Manager; false otherwise
 	 */
-	boolean secretExistsWithProject(String secretId, String projectId);
+	boolean secretExists(String secretId, String projectId);
 }

@@ -95,7 +95,7 @@ public class SecretManagerTemplateTests {
 		// This means that no previous secrets exist.
 		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
 
-		this.secretManagerTemplate.createSecretWithProject("my-secret", "hello world!", "custom-project");
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!", "custom-project");
 
 		// Verify the secret is created correctly.
 		Secret secretToAdd = Secret.newBuilder()
@@ -145,7 +145,103 @@ public class SecretManagerTemplateTests {
 				.thenReturn(Secret.getDefaultInstance());
 
 		// Verify that the secret is not created.
-		this.secretManagerTemplate.createSecretWithProject("my-secret", "hello world!", "custom-project");
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!", "custom-project");
+		verify(this.client).getSecret(SecretName.of("custom-project", "my-secret"));
+		verify(this.client, never()).createSecret(any());
+
+		// Verifies the secret payload is added correctly.
+		AddSecretVersionRequest addSecretVersionRequest = AddSecretVersionRequest.newBuilder()
+				.setParent("projects/custom-project/secrets/my-secret")
+				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello world!")))
+				.build();
+		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	@Test
+	public void testCreateByteSecretIfMissing() {
+		// This means that no previous secrets exist.
+		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
+
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!".getBytes());
+
+		// Verify the secret is created correctly.
+		Secret secretToAdd = Secret.newBuilder()
+				.setReplication(
+						Replication.newBuilder()
+								.setAutomatic(Replication.Automatic.newBuilder()).build())
+				.build();
+
+		CreateSecretRequest createSecretRequest = CreateSecretRequest.newBuilder()
+				.setParent("projects/my-project")
+				.setSecretId("my-secret")
+				.setSecret(secretToAdd)
+				.build();
+		verify(this.client).createSecret(createSecretRequest);
+
+		// Verifies the secret payload is added correctly.
+		AddSecretVersionRequest addSecretVersionRequest = AddSecretVersionRequest.newBuilder()
+				.setParent("projects/my-project/secrets/my-secret")
+				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello world!")))
+				.build();
+		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	@Test
+	public void testCreateByteSecretIfMissing_withProject() {
+		// This means that no previous secrets exist.
+		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
+
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!".getBytes(), "custom-project");
+
+		// Verify the secret is created correctly.
+		Secret secretToAdd = Secret.newBuilder()
+				.setReplication(
+						Replication.newBuilder()
+								.setAutomatic(Replication.Automatic.newBuilder()).build())
+				.build();
+
+		CreateSecretRequest createSecretRequest = CreateSecretRequest.newBuilder()
+				.setParent("projects/custom-project")
+				.setSecretId("my-secret")
+				.setSecret(secretToAdd)
+				.build();
+		verify(this.client).createSecret(createSecretRequest);
+
+		// Verifies the secret payload is added correctly.
+		AddSecretVersionRequest addSecretVersionRequest = AddSecretVersionRequest.newBuilder()
+				.setParent("projects/custom-project/secrets/my-secret")
+				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello world!")))
+				.build();
+		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	@Test
+	public void testCreateByteSecretIfAlreadyPresent() {
+		// The secret 'my-secret' already exists.
+		when(this.client.getSecret(SecretName.of("my-project", "my-secret")))
+				.thenReturn(Secret.getDefaultInstance());
+
+		// Verify that the secret is not created.
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!".getBytes());
+		verify(this.client).getSecret(SecretName.of("my-project", "my-secret"));
+		verify(this.client, never()).createSecret(any());
+
+		// Verifies the secret payload is added correctly.
+		AddSecretVersionRequest addSecretVersionRequest = AddSecretVersionRequest.newBuilder()
+				.setParent("projects/my-project/secrets/my-secret")
+				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello world!")))
+				.build();
+		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	@Test
+	public void testCreateByteSecretIfAlreadyPresent_withProject() {
+		// The secret 'my-secret' already exists.
+		when(this.client.getSecret(SecretName.of("custom-project", "my-secret")))
+				.thenReturn(Secret.getDefaultInstance());
+
+		// Verify that the secret is not created.
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!".getBytes(), "custom-project");
 		verify(this.client).getSecret(SecretName.of("custom-project", "my-secret"));
 		verify(this.client, never()).createSecret(any());
 
@@ -172,12 +268,7 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testAccessSecretBytes_withProject() {
-		byte[] result = this.secretManagerTemplate.getSecretBytesWithProject("my-secret", "custom-project");
-		verify(this.client).accessSecretVersion(
-				SecretVersionName.of("custom-project", "my-secret", "latest"));
-		assertThat(result).isEqualTo("get after it.".getBytes());
-
-		result = this.secretManagerTemplate.getSecretBytesWithProject("my-secret", "1", "custom-project");
+		byte[] result = this.secretManagerTemplate.getSecretBytes("my-secret", "1", "custom-project");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("custom-project", "my-secret", "1"));
 		assertThat(result).isEqualTo("get after it.".getBytes());
@@ -198,12 +289,7 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testAccessSecretString_withProject() {
-		String result = this.secretManagerTemplate.getSecretStringWithProject("my-secret", "custom-project");
-		verify(this.client).accessSecretVersion(
-				SecretVersionName.of("custom-project", "my-secret", "latest"));
-		assertThat(result).isEqualTo("get after it.");
-
-		result = this.secretManagerTemplate.getSecretStringWithProject("my-secret", "1", "custom-project");
+		String result = this.secretManagerTemplate.getSecretString("my-secret", "1", "custom-project");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("custom-project", "my-secret", "1"));
 		assertThat(result).isEqualTo("get after it.");
