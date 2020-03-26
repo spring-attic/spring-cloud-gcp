@@ -43,11 +43,7 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final String secretsPrefix;
 
-	private String version;
-
 	private Map<String, String> versions;
-
-	private Map<String, String> projectIds;
 
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
@@ -58,16 +54,8 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 		this.secretsPrefix = secretsPrefix;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
 	public void setVersions(Map<String, String> versions) {
 		this.versions = versions;
-	}
-
-	public void setProjectIds(Map<String, String> projectIds) {
-		this.projectIds = projectIds;
 	}
 
 	@Override
@@ -77,8 +65,6 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 				this.client,
 				this.projectIdProvider,
 				this.secretsPrefix,
-				this.version,
-				this.versions,
-				this.projectIds);
+				this.versions);
 	}
 }
