@@ -18,6 +18,7 @@ package com.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.annotation.PostConstruct;
 
 @Controller
 public class SecretManagerWebController {
@@ -46,25 +49,49 @@ public class SecretManagerWebController {
 	@Value("${secrets.application-secret}")
 	private String applicationSecretValue;
 
+	// Application secret is set into the properties file and get here using @Value
+	@Value("${my-application-secret}")
+	private String myApplicationSecretValue;
+
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
 		map.put("applicationSecret", this.applicationSecretValue);
+		map.put("myApplicationSecret", this.myApplicationSecretValue);
 		return new ModelAndView("index.html", map);
 	}
 
 	@GetMapping("/getSecret")
 	@ResponseBody
-	public String getSecret(@RequestParam String secretId, ModelMap map) {
-		String secretPayload = this.secretManagerTemplate.getSecretString(secretId);
+	public String getSecret(@RequestParam String secretId, @RequestParam String version, @RequestParam String projectId,
+			ModelMap map) {
+		String resolvedVersion = version;
+		if (resolvedVersion == null || resolvedVersion.equals(""))
+			resolvedVersion = SecretManagerTemplate.latestVersion;
+
+		String secretPayload;
+		if (projectId == null || projectId.equals("")) {
+			// The latest parameter "Version" is optional. If missing, the latest is returned
+			secretPayload = this.secretManagerTemplate.getSecretString(secretId, resolvedVersion);
+		}
+		else {
+			secretPayload = this.secretManagerTemplate.getSecretString(secretId, resolvedVersion, projectId);
+		}
 		return "Secret ID: " + secretId + " | Value: " + secretPayload
 				+ "<br/><br/><a href='/'>Go back</a>";
 	}
 
 	@PostMapping("/createSecret")
 	public ModelAndView createSecret(
-			@RequestParam String secretId, @RequestParam String secretPayload, ModelMap map) {
-		this.secretManagerTemplate.createSecret(secretId, secretPayload);
+			@RequestParam String secretId, @RequestParam String secretPayload, @RequestParam String projectId,
+			ModelMap map) {
+		if (projectId == null || projectId.equals("")) {
+			this.secretManagerTemplate.createSecret(secretId, secretPayload);
+		}
+		else {
+			this.secretManagerTemplate.createSecret(secretId, secretPayload, projectId);
+		}
 		map.put("applicationSecret", this.applicationSecretValue);
+		map.put("myApplicationSecret", this.myApplicationSecretValue);
 		map.put("message", "Secret created!");
 		return new ModelAndView("index.html", map);
 	}
