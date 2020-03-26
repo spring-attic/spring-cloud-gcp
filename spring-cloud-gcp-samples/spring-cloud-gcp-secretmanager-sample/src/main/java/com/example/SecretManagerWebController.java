@@ -18,7 +18,6 @@ package com.example;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
@@ -28,8 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.annotation.PostConstruct;
 
 @Controller
 public class SecretManagerWebController {
@@ -65,8 +62,9 @@ public class SecretManagerWebController {
 	public String getSecret(@RequestParam String secretId, @RequestParam String version, @RequestParam String projectId,
 			ModelMap map) {
 		String resolvedVersion = version;
-		if (resolvedVersion == null || resolvedVersion.equals(""))
+		if (resolvedVersion == null || resolvedVersion.equals("")) {
 			resolvedVersion = SecretManagerTemplate.latestVersion;
+		}
 
 		String secretPayload;
 		if (projectId == null || projectId.equals("")) {
