@@ -63,6 +63,7 @@ public class SecretManagerSampleTests {
 	public void testCreateReadSecret() {
 		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
 		params.add("secretId", "secret-manager-sample-secret");
+		params.add("projectId", "");
 		params.add("secretPayload", "12345");
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
 
