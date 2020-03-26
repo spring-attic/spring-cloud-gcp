@@ -91,7 +91,7 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
-	public void testCreateSecretIfMissingWithProject() {
+	public void testCreateSecretIfMissing_withProject() {
 		// This means that no previous secrets exist.
 		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
 
@@ -139,7 +139,7 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
-	public void testCreateSecretIfAlreadyPresentWithProject() {
+	public void testCreateSecretIfAlreadyPresent_withProject() {
 		// The secret 'my-secret' already exists.
 		when(this.client.getSecret(SecretName.of("custom-project", "my-secret")))
 				.thenReturn(Secret.getDefaultInstance());
@@ -171,7 +171,7 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
-	public void testAccessSecretBytesWithProject() {
+	public void testAccessSecretBytes_withProject() {
 		byte[] result = this.secretManagerTemplate.getSecretBytesWithProject("my-secret", "custom-project");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("custom-project", "my-secret", "latest"));
@@ -197,7 +197,7 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
-	public void testAccessSecretStringWithProject() {
+	public void testAccessSecretString_withProject() {
 		String result = this.secretManagerTemplate.getSecretStringWithProject("my-secret", "custom-project");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("custom-project", "my-secret", "latest"));
