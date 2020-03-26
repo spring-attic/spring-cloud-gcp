@@ -54,7 +54,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, null, null);
+				client, projectIdProvider.getProjectId(), secretsPrefix, null, null, null);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -66,11 +66,12 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix,
 			String version,
-			Map<String, String> versions) {
+			Map<String, String> versions,
+			Map<String, String> projectIds) {
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, version, versions);
+				client, projectIdProvider.getProjectId(), secretsPrefix, version, versions, projectIds);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -87,26 +88,35 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version, Map<String, String> versions) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix, String version,
+			Map<String, String> versions, Map<String, String> projectIds) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 
 		Map<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = resolveSecretVersion(client, projectId, version, versions, secretId);
+			ByteString secretPayload = resolveSecretVersion(client, projectId, version, versions, secretId, projectIds);
 			secretsMap.put(secretsPrefix + secretId, secretPayload);
 		}
 
 		return secretsMap;
 	}
 
-	private static ByteString resolveSecretVersion(SecretManagerServiceClient client, String projectId, String version, Map<String, String> versions, String secretId) {
+	private static ByteString resolveSecretVersion(SecretManagerServiceClient client, String projectId, String version,
+			Map<String, String> versions, String secretId, Map<String, String> projectIds) {
+		// Get the version
+		String resolvedVersion = resolveVersion(version);
 		if (!versions.isEmpty() && versions.containsKey(secretId)) {
-			String secretVersion = versions.get(secretId);
-			return getSecretPayload(client, projectId, secretId, secretVersion);
+			resolvedVersion = versions.get(secretId);
 		}
-		return getSecretPayload(client, projectId, secretId, resolveVersion(version));
+		// Get the project
+		String resolvedProjectId = projectId;
+		if (!projectIds.isEmpty() && projectIds.containsKey(secretId)) {
+			resolvedProjectId = projectIds.get(secretId);
+		}
+
+		return getSecretPayload(client, resolvedProjectId, secretId, resolvedVersion);
 	}
 
 	private static String resolveVersion(String version) {

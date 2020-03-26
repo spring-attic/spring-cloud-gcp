@@ -102,6 +102,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 				client, this.gcpProjectIdProvider, this.properties.getSecretNamePrefix());
 		propertySourceLocator.setVersion(this.properties.getVersion());
 		propertySourceLocator.setVersions(this.properties.getVersions());
+		propertySourceLocator.setProjectIds(this.properties.getProjectIds());
 		return propertySourceLocator;
 	}
 }
