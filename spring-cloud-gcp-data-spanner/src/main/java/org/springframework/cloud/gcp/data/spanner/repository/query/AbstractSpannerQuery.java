@@ -83,11 +83,14 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 						.convert(results.get(0), simpleConvertedType);
 	}
 
-	Class<?> getReturnedSimpleConvertableItemType() {
-		Class<?> itemType = this.queryMethod.isCollectionQuery()
-				? this.queryMethod.getResultProcessor().getReturnedType()
-						.getReturnedType()
+	Class<?> getReturnedType() {
+		return this.queryMethod.isCollectionQuery()
+				? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType()
 				: this.queryMethod.getReturnedObjectType();
+	}
+
+	Class<?> getReturnedSimpleConvertableItemType() {
+		Class<?> itemType = getReturnedType();
 
 		// If the user has configured converters that can handle the item type, then it is
 		// assumed
