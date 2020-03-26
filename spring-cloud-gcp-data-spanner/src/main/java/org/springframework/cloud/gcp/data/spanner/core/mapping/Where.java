@@ -31,7 +31,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Roman Solodovnichenko
  *
- * @since 1.3.0
+ * @since 1.2.2
  */
 @Target({TYPE, FIELD})
 @Retention(RUNTIME)
