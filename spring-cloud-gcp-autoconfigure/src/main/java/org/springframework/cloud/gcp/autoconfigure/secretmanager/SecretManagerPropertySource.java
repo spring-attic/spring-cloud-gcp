@@ -56,7 +56,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix) {
-		this(propertySourceName, client, projectIdProvider, secretsPrefix, LATEST_VERSION_STRING, Collections.EMPTY_MAP);
+		this(propertySourceName, client, projectIdProvider, secretsPrefix, Collections.EMPTY_MAP);
 	}
 
 	public SecretManagerPropertySource(
@@ -64,12 +64,11 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix,
-			String defaultVersion,
 			Map<String, String> versions) {
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, defaultVersion, versions);
+				client, projectIdProvider.getProjectId(), secretsPrefix, versions);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
@@ -86,13 +85,13 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix, String defaultVersion, Map<String, String> versions) {
+			SecretManagerServiceClient client, String projectId, String secretsPrefix, Map<String, String> versions) {
 
 		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
 		Map<String, Object> secretsMap = new HashMap<>();
 		for (Secret secret : response.iterateAll()) {
 			String secretId = extractSecretId(secret);
-			ByteString secretPayload = getSecretPayload(client, projectId, secretId, defaultVersion, versions);
+			ByteString secretPayload = getSecretPayload(client, projectId, secretId, versions);
 			if (secretPayload != null) {
 				secretsMap.put(secretsPrefix + secretId, secretPayload);
 			}
@@ -105,11 +104,9 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			String projectId,
 			String secretId,
-			String defaultVersion,
 			Map<String, String> versions) {
 
-		boolean usingSpecificVersion = versions.containsKey(secretId);
-		String version = usingSpecificVersion ? versions.get(secretId) : defaultVersion;
+		String version = versions.containsKey(secretId) ? versions.get(secretId) : LATEST_VERSION_STRING;
 
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
@@ -117,20 +114,8 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 				.setSecretVersion(version)
 				.build();
 
-		try {
-			AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
-			return response.getPayload().getData();
-		}
-		catch (NotFoundException e) {
-			if (usingSpecificVersion) {
-				throw e;
-			}
-			else {
-				LOGGER.debug("Skipped loading secret " + secretId + " because it does not have version " + defaultVersion);
-			}
-		}
-
-		return null;
+		AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
+		return response.getPayload().getData();
 	}
 
 	/**

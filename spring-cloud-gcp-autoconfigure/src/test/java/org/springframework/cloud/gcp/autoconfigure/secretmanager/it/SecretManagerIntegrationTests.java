@@ -114,27 +114,6 @@ public class SecretManagerIntegrationTests {
 	}
 
 	@Test
-	public void testDefaultVersion() {
-		createSecret(VERSIONED_SECRET_ID, "the secret data");
-		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
-		createSecret(VERSIONED_SECRET_ID, "the secret data v3");
-		createSecret(TEST_SECRET_ID, "secret-v1");
-
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
-				.properties("spring.cloud.gcp.secretmanager.default-version=2")
-				.run();
-
-		String basicSecret = context.getEnvironment().getProperty(TEST_SECRET_ID, String.class);
-		assertThat(basicSecret).isNull();
-
-		String versionedSecret = context.getEnvironment().getProperty(VERSIONED_SECRET_ID, String.class);
-		assertThat(versionedSecret).isEqualTo("the secret data v2");
-	}
-
-	@Test
 	public void testSecretsWithSpecificVersion() {
 		createSecret(VERSIONED_SECRET_ID, "the secret data");
 		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
@@ -145,7 +124,6 @@ public class SecretManagerIntegrationTests {
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=2")
-				.properties("spring.cloud.gcp.secretmanager.default-version=latest")
 				.run();
 
 		String versionedSecret = context.getEnvironment().getProperty(VERSIONED_SECRET_ID, String.class);
@@ -162,7 +140,6 @@ public class SecretManagerIntegrationTests {
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=7")
-				.properties("spring.cloud.gcp.secretmanager.default-version=latest")
 				.run())
 				.hasCauseInstanceOf(StatusRuntimeException.class);
 	}
