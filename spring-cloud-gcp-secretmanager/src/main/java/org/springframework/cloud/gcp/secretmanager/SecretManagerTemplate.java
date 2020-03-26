@@ -53,12 +53,12 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public void createSecret(String secretId, String payload) {
-		createNewSecretVersion(secretId, ByteString.copyFromUtf8(payload));
+		createNewSecretVersionWithProject(secretId, ByteString.copyFromUtf8(payload), projectIdProvider.getProjectId());
 	}
 
 	@Override
 	public void createSecret(String secretId, byte[] payload) {
-		createNewSecretVersion(secretId, ByteString.copyFrom(payload));
+		createNewSecretVersionWithProject(secretId, ByteString.copyFrom(payload), projectIdProvider.getProjectId());
 	}
 
 	@Override
@@ -83,39 +83,24 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public ByteString getSecretByteString(String secretId, String versionName) {
-		SecretVersionName secretVersionName = SecretVersionName.of(
-				this.projectIdProvider.getProjectId(),
-				secretId,
-				versionName);
-
-		AccessSecretVersionResponse response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
-
-		return response.getPayload().getData();
+		return getSecretByteStringWithProject(secretId, versionName, this.projectIdProvider.getProjectId());
 	}
 
 	@Override
 	public boolean secretExists(String secretId) {
-		SecretName secretName = SecretName.of(this.projectIdProvider.getProjectId(), secretId);
-		try {
-			this.secretManagerServiceClient.getSecret(secretName);
-		}
-		catch (NotFoundException ex) {
-			return false;
-		}
-
-		return true;
+		return secretExistsWithProject(secretId, this.projectIdProvider.getProjectId());
 	}
 
 	/**
 	 * Create a new version of the secret with the specified payload under a {@link Secret}.
 	 * Will also create the parent secret if it does not already exist.
 	 */
-	private void createNewSecretVersion(String secretId, ByteString payload) {
-		if (!secretExists(secretId)) {
-			createSecret(secretId);
+	private void createNewSecretVersionWithProject(String secretId, ByteString payload, String projectId) {
+		if (!secretExistsWithProject(secretId, projectId)) {
+			createSecretWithProject(secretId, projectId);
 		}
 
-		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
+		SecretName name = SecretName.of(projectId, secretId);
 		AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
 				.setParent(name.toString())
 				.setPayload(SecretPayload.newBuilder().setData(payload))
@@ -130,8 +115,8 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	 * Note that the {@link Secret} object does not contain the secret payload. You must
 	 * create versions of the secret which stores the payload of the secret.
 	 */
-	private void createSecret(String secretId) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+	private void createSecretWithProject(String secretId, String projectId) {
+		ProjectName projectName = ProjectName.of(projectId);
 
 		Secret secret = Secret.newBuilder()
 				.setReplication(
@@ -144,5 +129,60 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 				.setSecret(secret)
 				.build();
 		this.secretManagerServiceClient.createSecret(request);
+	}
+
+	@Override
+	public void createSecretWithProject(String secretId, String payload, String projectId) {
+		createNewSecretVersionWithProject(secretId, ByteString.copyFromUtf8(payload), projectId);
+	}
+
+	@Override
+	public void createSecretWithProject(String secretId, byte[] payload, String projectId) {
+		createNewSecretVersionWithProject(secretId, ByteString.copyFrom(payload), projectId);
+	}
+
+	@Override
+	public String getSecretStringWithProject(String secretId, String projectId) {
+		return getSecretStringWithProject(secretId, "latest", projectId);
+	}
+
+	@Override
+	public String getSecretStringWithProject(String secretId, String versionName, String projectId) {
+		return getSecretByteStringWithProject(secretId, versionName, projectId).toStringUtf8();
+	}
+
+	@Override
+	public byte[] getSecretBytesWithProject(String secretId, String projectId) {
+		return getSecretBytesWithProject(secretId, "latest", projectId);
+	}
+
+	@Override
+	public byte[] getSecretBytesWithProject(String secretId, String versionName, String projectId) {
+		return getSecretByteStringWithProject(secretId, versionName, projectId).toByteArray();
+	}
+
+	@Override
+	public ByteString getSecretByteStringWithProject(String secretId, String versionName, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.of(
+				projectId,
+				secretId,
+				versionName);
+
+		AccessSecretVersionResponse response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
+
+		return response.getPayload().getData();
+	}
+
+	@Override
+	public boolean secretExistsWithProject(String secretId, String projectId) {
+		SecretName secretName = SecretName.of(projectId, secretId);
+		try {
+			this.secretManagerServiceClient.getSecret(secretName);
+		}
+		catch (NotFoundException ex) {
+			return false;
+		}
+
+		return true;
 	}
 }
