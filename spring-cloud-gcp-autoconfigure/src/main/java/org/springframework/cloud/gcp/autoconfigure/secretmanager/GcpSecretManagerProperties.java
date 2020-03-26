@@ -50,6 +50,11 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private Map<String, String> versions = new HashMap<>();
 
+	/**
+	 * Defines projectIds for specific secret-ids.
+	 */
+	private Map<String, String> projectIds = new HashMap<>();
+
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -72,6 +77,10 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public Map<String, String> getVersions() {
 		return versions;
+	}
+
+	public Map<String, String> getProjectIds() {
+		return projectIds;
 	}
 
 	public void setVersions(Map<String, String> versions) {
