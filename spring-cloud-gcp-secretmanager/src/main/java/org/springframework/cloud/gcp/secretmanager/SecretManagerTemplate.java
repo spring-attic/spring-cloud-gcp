@@ -43,7 +43,7 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	/**
 	 * Default value for the latest version of the secret.
 	 */
-	public static final String latestVersion = "latest";
+	public static final String LATEST_VERSION = "latest";
 
 	private final SecretManagerServiceClient secretManagerServiceClient;
 
@@ -68,7 +68,7 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public String getSecretString(String secretId) {
-		return getSecretString(secretId, latestVersion);
+		return getSecretString(secretId, LATEST_VERSION);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public byte[] getSecretBytes(String secretId) {
-		return getSecretBytes(secretId, latestVersion);
+		return getSecretBytes(secretId, LATEST_VERSION);
 	}
 
 	@Override

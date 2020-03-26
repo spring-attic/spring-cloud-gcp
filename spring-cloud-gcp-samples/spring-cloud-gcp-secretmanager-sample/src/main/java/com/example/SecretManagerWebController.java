@@ -63,7 +63,7 @@ public class SecretManagerWebController {
 			ModelMap map) {
 		String resolvedVersion = version;
 		if (resolvedVersion == null || resolvedVersion.equals("")) {
-			resolvedVersion = SecretManagerTemplate.latestVersion;
+			resolvedVersion = SecretManagerTemplate.LATEST_VERSION;
 		}
 
 		String secretPayload;
