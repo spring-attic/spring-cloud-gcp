@@ -41,7 +41,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 public class SecretManagerTemplate implements SecretManagerOperations {
 
 	/**
-	 * Default value for the latest version of the secret
+	 * Default value for the latest version of the secret.
 	 */
 	public static final String latestVersion = "latest";
 
