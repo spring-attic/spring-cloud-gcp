@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
@@ -96,6 +94,33 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void queryMethodsTest() {
+		final int subTrades = 42;
+		Trade trade = Trade.aTrade(null, subTrades);
+		this.spannerOperations.insert(trade);
+
+		final String identifier = trade.getTradeDetail().getId();
+		final String traderId = trade.getTraderId();
+
+		long count = subTradeRepository.countBy(identifier, traderId);
+		assertThat(count)
+				.isEqualTo(subTrades);
+
+		List<SubTrade> list = subTradeRepository.getList(
+				identifier, traderId, Sort.by(Order.desc("subTradeId")));
+		assertThat(list)
+				.hasSize(subTrades);
+		assertThat(list.get(subTrades - 1))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		List<SubTrade> page = subTradeRepository.getPage(
+				identifier, traderId, PageRequest.of(0, 1024, Sort.by(Order.asc("subTradeId"))));
+		assertThat(page)
+				.hasSize(subTrades);
+		assertThat(page.get(0))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		this.tradeRepository.deleteAll();
+
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
 		List<Trade> trader1SellTrades = insertTrades("trader1", "SELL", 2);
 		List<Trade> trader2Trades = insertTrades("trader2", "SELL", 3);
@@ -354,7 +379,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade(traderId, false);
+			Trade t = Trade.aTrade(traderId, 0);
 			t.setAction(action);
 			t.setSymbol("ABCD");
 			trades.add(t);
@@ -373,11 +398,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		@Transactional
 		public void testTransactionalAnnotation(int numSubTrades) {
-			Trade trade = Trade.aTrade();
-			trade.setSubTrades(
-					IntStream.range(0, numSubTrades)
-							.mapToObj(i -> new SubTrade(trade.getTradeDetail().getId(), trade.getTraderId(), "subTrade" + i))
-							.collect(Collectors.toList()));
+			Trade trade = Trade.aTrade(null, numSubTrades);
 			this.tradeRepository.save(trade);
 			// because the insert happens within the same transaction, this count is still
 			// 1

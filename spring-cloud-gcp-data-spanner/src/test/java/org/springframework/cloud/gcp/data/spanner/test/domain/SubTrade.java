@@ -33,7 +33,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
  * @author Roman Solodovnichenko
  */
 @Table(name = "#{'sub_trades_'.concat(tableNameSuffix)}")
-@Where("deleted = false")
+@Where("disabled = false")
 public class SubTrade {
 
 	@Embedded

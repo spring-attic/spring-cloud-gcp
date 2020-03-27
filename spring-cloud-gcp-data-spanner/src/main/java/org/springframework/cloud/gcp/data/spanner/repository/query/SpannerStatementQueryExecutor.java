@@ -159,13 +159,13 @@ public final class SpannerStatementQueryExecutor {
 		final String alias = subquery.isEmpty() ? "" : " " + persistentEntity.tableName();
 		StringBuilder sb = applySort(options.getSort(),
 				new StringBuilder("SELECT *").append(subquery)
-						.append(" FROM (").append(sql).append(")").append(alias),
+						.append(" FROM (").append(sql).append(")").append(alias)
+						.append(buildWhere(persistentEntity)),
 				(o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
-		sb.append(buildWhere(persistentEntity));
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
