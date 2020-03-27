@@ -17,6 +17,7 @@
 package com.example;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
@@ -62,8 +63,8 @@ public class SecretManagerWebController {
 	@ResponseBody
 	public String getSecret(
 			@RequestParam String secretId,
-			@RequestParam(required=false) String version,
-			@RequestParam(required=false) String projectId,
+			@RequestParam(required = false) String version,
+			@RequestParam(required = false) String projectId,
 			ModelMap map) {
 
 		if (StringUtils.isEmpty(version)) {
@@ -86,7 +87,7 @@ public class SecretManagerWebController {
 	public ModelAndView createSecret(
 			@RequestParam String secretId,
 			@RequestParam String secretPayload,
-			@RequestParam(required=false) String projectId,
+			@RequestParam(required = false) String projectId,
 			ModelMap map) {
 
 		if (StringUtils.isEmpty(projectId)) {
