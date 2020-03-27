@@ -23,8 +23,6 @@ import com.google.cloud.secretmanager.v1beta1.*;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,8 +40,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class SecretManagerIntegrationTests {
-
-	private static final Log LOGGER = LogFactory.getLog(SecretManagerIntegrationTests.class);
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
 
@@ -74,6 +70,13 @@ public class SecretManagerIntegrationTests {
 		// Clean up the test secrets in the project from prior runs.
 		deleteSecret(TEST_SECRET_ID);
 		deleteSecret(VERSIONED_SECRET_ID);
+
+		// The custom project is the same one as the default project. Integration test not relevant.
+		// TODO Which other project to use?
+		String customProject = projectIdProvider.getProjectId();
+		deleteSecret(TEST_SECRET_ID,customProject);
+		deleteSecret(VERSIONED_SECRET_ID,customProject);
+
 	}
 
 	@Test
@@ -123,44 +126,53 @@ public class SecretManagerIntegrationTests {
 		assertThat(versionedSecret).isEqualTo("the secret data v2");
 	}
 
-	***** To refresh *****
 	@Test
 	public void testSecretsWithSpecificProjectId() {
-		this.context = new SpringApplicationBuilder()
+		createSecret(TEST_SECRET_ID, "the secret data", projectIdProvider.getProjectId());
+
+		// The custom project is the same one as the default project. Integration test not relevant.
+		// TODO Which other project to use?
+		String customProject = projectIdProvider.getProjectId();
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.projectIds.my-secret=custom-project")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.projectIds." + TEST_SECRET_ID + "="
+						+ customProject)
 				.run();
 
-		createSecret(TEST_SECRET_ID, "the secret data", "latest", "custom-project");
-		assertThat(secretExists(TEST_SECRET_ID, "latest", "custom-project")).isTrue();
-		assertThat(secretExists(TEST_SECRET_ID, "latest")).isFalse();
+		assertThat(secretExists(TEST_SECRET_ID, customProject)).isTrue();
+		// TODO Check if not created in the default project
+		// assertThat(secretExists(TEST_SECRET_ID)).isFalse();
 
-		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
-		assertThat(byteArraySecret).isEqualTo("the secret data.".getBytes());
+		String secret = context.getEnvironment().getProperty(TEST_SECRET_ID, String.class);
+		assertThat(secret).isEqualTo("the secret data");
 	}
 
 	@Test
 	public void testSecretsWithSpecificProjectIdAndVersion() {
-		this.context = new SpringApplicationBuilder()
+		createSecret(VERSIONED_SECRET_ID, "the secret data", projectIdProvider.getProjectId());
+		createSecret(VERSIONED_SECRET_ID, "the secret data v2", projectIdProvider.getProjectId());
+
+		// The custom project is the same one as the default project. Integration test not relevant.
+		// TODO Which other project to use?
+		String customProject = projectIdProvider.getProjectId();
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.version=2")
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.projectIds.my-secret=custom-project")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.versions." + VERSIONED_SECRET_ID + "=2")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.projectIds." + VERSIONED_SECRET_ID
+						+ "=" + customProject)
 				.run();
 
-		createSecret(TEST_SECRET_ID, "the secret data", "latest", "custom-project");
-		createSecret(TEST_SECRET_ID, "the secret data v2", "latest", "custom-project");
-		assertThat(secretExists(TEST_SECRET_ID, "2", "custom-project")).isTrue();
-		assertThat(secretExists(TEST_SECRET_ID, "latest")).isFalse();
+		assertThat(secretExists(VERSIONED_SECRET_ID, customProject)).isTrue();
+		// TODO Check if not created in the default project
+		// assertThat(secretExists(VERSIONED_SECRET_ID)).isFalse();
 
-		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
-		assertThat(byteArraySecret).isEqualTo("the secret data v2.".getBytes());
+		String versionedSecret = context.getEnvironment().getProperty(VERSIONED_SECRET_ID, String.class);
+		assertThat(versionedSecret).isEqualTo("the secret data v2");
 	}
-	********
-
 
 	@Test
 	public void testSecretsWithMissingVersion() {
@@ -173,15 +185,22 @@ public class SecretManagerIntegrationTests {
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=7")
 				.run())
-				.hasCauseInstanceOf(StatusRuntimeException.class);
+						.hasCauseInstanceOf(StatusRuntimeException.class);
 	}
+
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.
 	 * Otherwise creates a new version of the secret under the existing {@code secretId}.
 	 */
 	private void createSecret(String secretId, String payload) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+		createSecret(secretId, payload, projectIdProvider.getProjectId());
+	}
 
+	/**
+	 * Creates the secret with the specified payload if the secret does not already exist.
+	 */
+	private void createSecret(String secretId, String payload, String projectId) {
+		ProjectName projectName = ProjectName.of(projectId);
 		if (!secretExists(secretId)) {
 			// Creates the secret.
 			Secret secret = Secret.newBuilder()
@@ -201,40 +220,6 @@ public class SecretManagerIntegrationTests {
 		createSecretPayload(secretId, payload);
 	}
 
-	*************** To merge ***********
-	private void createSecret(String secretId, String payload) {
-		createSecret(secretId, payload, "latest", projectIdProvider.getProjectId());
-	}
-
-	/**
-	 * Creates the secret with the specified payload if the secret does not already exist.
-	 */
-	private void createSecret(String secretId, String payload, String version, String projectId) {
-		ProjectName projectName = ProjectName.of(projectId);
-		if (!secretExists(secretId, version)) {
-			// Creates the secret.
-			Secret secret = Secret.newBuilder()
-					.setReplication(
-							Replication.newBuilder()
-									.setAutomatic(Replication.Automatic.newBuilder().build())
-									.build())
-					.build();
-			CreateSecretRequest request = CreateSecretRequest.newBuilder()
-					.setParent(projectName.toString())
-					.setSecretId(secretId)
-					.setSecret(secret)
-					.build();
-			client.createSecret(request);
-			createSecretPayload("the secret data.");
-		}
-		else {
-			createSecretPayload("the secret data v2.");
-		}
-	}
-	*******************
-
-
-
 	private void createSecretPayload(String secretId, String data) {
 		// Create the secret payload.
 		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
@@ -249,40 +234,27 @@ public class SecretManagerIntegrationTests {
 	}
 
 	private boolean secretExists(String secretId) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+		return secretExists(secretId, projectIdProvider.getProjectId());
+	}
+
+	private boolean secretExists(String secretId, String projectId) {
+		ProjectName projectName = ProjectName.of(projectId);
 		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
 		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
 				.anyMatch(secret -> secret.getName().contains(secretId));
 	}
 
-	*****UPDATE*******
-	private boolean secretExists(String secretId, String version) {
-		return secretExists(secretId, version, projectIdProvider.getProjectId());
-	}
-
-	private boolean secretExists(String secretId, String version, String projectId) {
-		ProjectName projectName = ProjectName.of(projectId);
-		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
-		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.filter(secret -> secret.getName().contains(secretId))
-				.anyMatch(secret -> {
-					SecretVersionName secretVersionName = SecretVersionName.newBuilder()
-							.setProject(projectId)
-							.setSecret(secretId)
-							.setSecretVersion(version)
-							.build();
-					return this.client.accessSecretVersion(secretVersionName) != null;
-				});
-	}
-	**********
-
-
 	private void deleteSecret(String secretId) {
+		this.deleteSecret(secretId, projectIdProvider.getProjectId());
+	}
+
+	private void deleteSecret(String secretId, String projectId) {
 		try {
-			this.client.deleteSecret(SecretName.of(this.projectIdProvider.getProjectId(), secretId));
+			this.client.deleteSecret(SecretName.of(projectId, secretId));
 		}
 		catch (NotFoundException e) {
-			LOGGER.debug("Skipped deleting " + secretId + " because it does not exist.");
+			// Can happen when cleaning project and custom project. Don't pollute the logs with this
+			// LOGGER.debug("Skipped deleting " + secretId + " because it does not exist.");
 		}
 	}
 }
