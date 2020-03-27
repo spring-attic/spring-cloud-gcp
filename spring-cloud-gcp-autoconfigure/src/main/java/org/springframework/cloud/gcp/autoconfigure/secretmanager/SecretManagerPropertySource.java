@@ -55,7 +55,8 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
 			String secretsPrefix) {
-		this(propertySourceName, client, projectIdProvider, secretsPrefix, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+		this(propertySourceName, client, projectIdProvider, secretsPrefix, Collections.EMPTY_MAP,
+				Collections.EMPTY_MAP);
 	}
 
 	public SecretManagerPropertySource(
@@ -68,7 +69,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		super(propertySourceName, client);
 
 		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, versions,projectIds);
+				client, projectIdProvider.getProjectId(), secretsPrefix, versions, projectIds);
 
 		this.properties = propertiesMap;
 		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);

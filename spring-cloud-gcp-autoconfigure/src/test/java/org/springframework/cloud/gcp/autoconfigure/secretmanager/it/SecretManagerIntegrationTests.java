@@ -19,8 +19,15 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager.it;
 import java.util.stream.StreamSupport;
 
 import com.google.api.gax.rpc.NotFoundException;
-import com.google.cloud.secretmanager.v1beta1.*;
+import com.google.cloud.secretmanager.v1beta1.ProjectName;
+import com.google.cloud.secretmanager.v1beta1.Replication;
+import com.google.cloud.secretmanager.v1beta1.Secret;
+import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
+import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
+import com.google.cloud.secretmanager.v1beta1.SecretName;
+import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
 import org.junit.Before;
@@ -71,11 +78,12 @@ public class SecretManagerIntegrationTests {
 		deleteSecret(TEST_SECRET_ID);
 		deleteSecret(VERSIONED_SECRET_ID);
 
-		// The custom project is the same one as the default project. Integration test not relevant.
+		// The custom project is the same one as the default project. Integration test not
+		// relevant.
 		// TODO Which other project to use?
 		String customProject = projectIdProvider.getProjectId();
-		deleteSecret(TEST_SECRET_ID,customProject);
-		deleteSecret(VERSIONED_SECRET_ID,customProject);
+		deleteSecret(TEST_SECRET_ID, customProject);
+		deleteSecret(VERSIONED_SECRET_ID, customProject);
 
 	}
 
@@ -130,7 +138,8 @@ public class SecretManagerIntegrationTests {
 	public void testSecretsWithSpecificProjectId() {
 		createSecret(TEST_SECRET_ID, "the secret data", projectIdProvider.getProjectId());
 
-		// The custom project is the same one as the default project. Integration test not relevant.
+		// The custom project is the same one as the default project. Integration test not
+		// relevant.
 		// TODO Which other project to use?
 		String customProject = projectIdProvider.getProjectId();
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
@@ -154,7 +163,8 @@ public class SecretManagerIntegrationTests {
 		createSecret(VERSIONED_SECRET_ID, "the secret data", projectIdProvider.getProjectId());
 		createSecret(VERSIONED_SECRET_ID, "the secret data v2", projectIdProvider.getProjectId());
 
-		// The custom project is the same one as the default project. Integration test not relevant.
+		// The custom project is the same one as the default project. Integration test not
+		// relevant.
 		// TODO Which other project to use?
 		String customProject = projectIdProvider.getProjectId();
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
