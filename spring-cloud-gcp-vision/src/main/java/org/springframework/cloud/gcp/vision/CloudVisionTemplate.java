@@ -29,6 +29,7 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.cloud.vision.v1.ImageContext;
 import com.google.protobuf.ByteString;
 import com.google.rpc.Code;
 
@@ -59,7 +60,18 @@ public class CloudVisionTemplate {
 	 * @throws CloudVisionException if the image could not be read or if text extraction failed
 	 */
 	public String extractTextFromImage(Resource imageResource) {
-		AnnotateImageResponse response = analyzeImage(imageResource, Type.TEXT_DETECTION);
+		return extractTextFromImage(imageResource, ImageContext.getDefaultInstance());
+	}
+
+	/**
+	 * Extract the text out of an image and return the result as a String.
+	 * @param imageResource the image one wishes to analyze
+	 * @param imageContext the image context to customize the text extraction request
+	 * @return the text extracted from the image aggregated to a String
+	 * @throws CloudVisionException if the image could not be read or if text extraction failed
+	 */
+	public String extractTextFromImage(Resource imageResource, ImageContext imageContext) {
+		AnnotateImageResponse response = analyzeImage(imageResource, imageContext, Type.TEXT_DETECTION);
 
 		String result = response.getFullTextAnnotation().getText();
 		if (result.isEmpty() && response.getError().getCode() != Code.OK.getNumber()) {
@@ -83,6 +95,25 @@ public class CloudVisionTemplate {
 	 *     is received from the Cloud Vision APIs
 	 */
 	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes) {
+		return analyzeImage(imageResource, ImageContext.getDefaultInstance(), featureTypes);
+	}
+
+	/**
+	 * Analyze an image and extract the features of the image specified by
+	 * {@code featureTypes}.
+	 * <p>A feature describes the kind of Cloud Vision analysis one wishes to perform on an
+	 * image, such as text detection, image labelling, facial detection, etc. A full list of
+	 * feature types can be found in {@link Feature.Type}.
+	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
+	 *     image formats described here: https://cloud.google.com/vision/docs/supported-files
+	 * @param imageContext the image context used to customize the Vision API request
+	 * @param featureTypes the types of image analysis to perform on the image
+	 * @return the results of image analyses
+	 * @throws CloudVisionException if the image could not be read or if a malformed response
+	 *     is received from the Cloud Vision APIs
+	 */
+	public AnnotateImageResponse analyzeImage(
+			Resource imageResource, ImageContext imageContext, Feature.Type... featureTypes) {
 		ByteString imgBytes;
 		try {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
@@ -101,6 +132,7 @@ public class CloudVisionTemplate {
 				.addRequests(
 						AnnotateImageRequest.newBuilder()
 								.addAllFeatures(featureList)
+								.setImageContext(imageContext)
 								.setImage(image))
 				.build();
 
@@ -115,5 +147,4 @@ public class CloudVisionTemplate {
 					"Failed to receive valid response Vision APIs; empty response received.");
 		}
 	}
-
 }
