@@ -67,7 +67,7 @@ public class SecretManagerTemplateTests {
 		verifyCreateSecretRequest("my-secret", "my-project");
 
 		// Verifies the secret payload is added correctly.
-    verifyAddSecretRequest("my-secret", "hello world!", "my-project");
+		verifyAddSecretRequest("my-secret", "hello world!", "my-project");
 	}
 
 	@Test
