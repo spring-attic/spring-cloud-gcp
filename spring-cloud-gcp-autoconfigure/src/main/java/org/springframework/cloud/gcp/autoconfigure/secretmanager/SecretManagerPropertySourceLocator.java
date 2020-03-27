@@ -45,6 +45,8 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private Map<String, String> versions;
 
+	private Map<String, String> projectIds;
+
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
 			GcpProjectIdProvider projectIdProvider,
@@ -58,6 +60,10 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 		this.versions = versions;
 	}
 
+	public void setProjectIds(Map<String, String> projectIds) {
+		this.projectIds = projectIds;
+	}
+
 	@Override
 	public PropertySource<?> locate(Environment environment) {
 		return new SecretManagerPropertySource(
@@ -65,6 +71,7 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 				this.client,
 				this.projectIdProvider,
 				this.secretsPrefix,
-				this.versions);
+				this.versions,
+				this.projectIds);
 	}
 }
