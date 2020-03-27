@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.annotation.PreDestroy;
 
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
+import brave.propagation.ExtraFieldPropagation;
 import brave.propagation.Propagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -221,8 +222,8 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Propagation.Factory stackdriverPropagation() {
-		return StackdriverTracePropagation.FACTORY;
+	public ExtraFieldPropagation.FactoryBuilder extraFieldPropagationFactoryBuilder() {
+		return ExtraFieldPropagation.newFactoryBuilder(StackdriverTracePropagation.FACTORY);
 	}
 
 	@PreDestroy
