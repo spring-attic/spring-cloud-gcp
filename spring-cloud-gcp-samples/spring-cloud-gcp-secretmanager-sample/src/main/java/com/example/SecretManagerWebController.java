@@ -16,6 +16,7 @@
 
 package com.example;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
@@ -59,35 +60,42 @@ public class SecretManagerWebController {
 
 	@GetMapping("/getSecret")
 	@ResponseBody
-	public String getSecret(@RequestParam String secretId, @RequestParam String version, @RequestParam String projectId,
+	public String getSecret(
+			@RequestParam String secretId,
+			@RequestParam(required=false) String version,
+			@RequestParam(required=false) String projectId,
 			ModelMap map) {
-		String resolvedVersion = version;
-		if (resolvedVersion == null || resolvedVersion.equals("")) {
-			resolvedVersion = SecretManagerTemplate.LATEST_VERSION;
+
+		if (StringUtils.isEmpty(version)) {
+			version = SecretManagerTemplate.LATEST_VERSION;
 		}
 
 		String secretPayload;
-		if (projectId == null || projectId.equals("")) {
-			// The latest parameter "Version" is optional. If missing, the latest is returned
-			secretPayload = this.secretManagerTemplate.getSecretString(secretId, resolvedVersion);
+		if (StringUtils.isEmpty(projectId)) {
+			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version);
 		}
 		else {
-			secretPayload = this.secretManagerTemplate.getSecretString(secretId, resolvedVersion, projectId);
+			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version, projectId);
 		}
+
 		return "Secret ID: " + secretId + " | Value: " + secretPayload
 				+ "<br/><br/><a href='/'>Go back</a>";
 	}
 
 	@PostMapping("/createSecret")
 	public ModelAndView createSecret(
-			@RequestParam String secretId, @RequestParam String secretPayload, @RequestParam String projectId,
+			@RequestParam String secretId,
+			@RequestParam String secretPayload,
+			@RequestParam(required=false) String projectId,
 			ModelMap map) {
-		if (projectId == null || projectId.equals("")) {
+
+		if (StringUtils.isEmpty(projectId)) {
 			this.secretManagerTemplate.createSecret(secretId, secretPayload);
 		}
 		else {
 			this.secretManagerTemplate.createSecret(secretId, secretPayload, projectId);
 		}
+
 		map.put("applicationSecret", this.applicationSecretValue);
 		map.put("myApplicationSecret", this.myApplicationSecretValue);
 		map.put("message", "Secret created!");

@@ -66,9 +66,9 @@
     </p>
       <form method="GET" action="/getSecret">
           <ol>
-              <li>Secret ID *: <input type="text" name="secretId"/></li>
-              <li>Version: <input type="text" name="version"/></li>
-              <li>Project ID: <input type="text" name="projectId"/></li>
+              <li>Secret ID: <input type="text" name="secretId"/></li>
+              <li>Version (optional): <input type="text" name="version"/></li>
+              <li>Project ID (optional): <input type="text" name="projectId"/></li>
               <li><input type="submit" value="Get Secret"/></li>
           </ol>
       </form>
@@ -82,9 +82,9 @@
     </p>
       <form method="POST" action="/createSecret">
           <ol>
-              <li>Secret ID *: <input type="text" name="secretId"/></li>
-              <li>Secret Payload *: <input type="text" name="secretPayload"/></li>
-              <li>Project ID: <input type="text" name="projectId"/></li>
+              <li>Secret ID: <input type="text" name="secretId"/></li>
+              <li>Secret Payload: <input type="text" name="secretPayload"/></li>
+              <li>Project ID (optional): <input type="text" name="projectId"/></li>
               <li><input type="submit" value="Create/Update Secret"/></li>
           </ol>
       </form>
