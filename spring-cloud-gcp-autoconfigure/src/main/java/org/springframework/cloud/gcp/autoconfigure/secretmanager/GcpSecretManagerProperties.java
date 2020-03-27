@@ -40,8 +40,8 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	private String projectId;
 
 	/**
-	 * Defines a prefix String that will be prepended to the environment property names of
-	 * secrets in Secret Manager.
+	 * Defines a prefix String that will be prepended to the environment property names
+	 * of secrets in Secret Manager.
 	 */
 	private String secretNamePrefix = "";
 
@@ -49,11 +49,6 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 * Defines versions for specific secret-ids.
 	 */
 	private Map<String, String> versions = new HashMap<>();
-
-	/**
-	 * Defines projectIds for specific secret-ids.
-	 */
-	private Map<String, String> projectIds = new HashMap<>();
 
 	public Credentials getCredentials() {
 		return credentials;
@@ -77,10 +72,6 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public Map<String, String> getVersions() {
 		return versions;
-	}
-
-	public Map<String, String> getProjectIds() {
-		return projectIds;
 	}
 
 	public void setVersions(Map<String, String> versions) {
