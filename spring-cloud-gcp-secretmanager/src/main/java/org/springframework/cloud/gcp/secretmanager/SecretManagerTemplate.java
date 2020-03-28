@@ -137,23 +137,8 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	}
 
 	@Override
-	public void createSecret(String secretId, String payload, String projectId) {
-		createNewSecretVersion(secretId, ByteString.copyFromUtf8(payload), projectId);
-	}
-
-	@Override
 	public void createSecret(String secretId, byte[] payload, String projectId) {
 		createNewSecretVersion(secretId, ByteString.copyFrom(payload), projectId);
-	}
-
-	@Override
-	public String getSecretString(String secretId, String versionName, String projectId) {
-		return getSecretByteString(secretId, versionName, projectId).toStringUtf8();
-	}
-
-	@Override
-	public byte[] getSecretBytes(String secretId, String versionName, String projectId) {
-		return getSecretByteString(secretId, versionName, projectId).toByteArray();
 	}
 
 	@Override

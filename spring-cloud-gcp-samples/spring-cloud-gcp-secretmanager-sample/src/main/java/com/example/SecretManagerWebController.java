@@ -76,7 +76,8 @@ public class SecretManagerWebController {
 			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version);
 		}
 		else {
-			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version, projectId);
+			secretPayload =
+					this.secretManagerTemplate.getSecretByteString(secretId, version, projectId).toStringUtf8();
 		}
 
 		return "Secret ID: " + secretId + " | Value: " + secretPayload
@@ -94,7 +95,7 @@ public class SecretManagerWebController {
 			this.secretManagerTemplate.createSecret(secretId, secretPayload);
 		}
 		else {
-			this.secretManagerTemplate.createSecret(secretId, secretPayload, projectId);
+			this.secretManagerTemplate.createSecret(secretId, secretPayload.getBytes(), projectId);
 		}
 
 		map.put("applicationSecret", this.applicationSecretValue);
