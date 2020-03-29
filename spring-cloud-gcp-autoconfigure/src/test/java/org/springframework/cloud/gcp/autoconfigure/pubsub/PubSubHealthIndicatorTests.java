@@ -24,8 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicator;
+import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.health.PubSubHealthIndicator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -69,4 +72,16 @@ public class PubSubHealthIndicatorTests {
 		assertThat(healthIndicator.health().getStatus()).isEqualTo(Status.DOWN);
 	}
 
+	@Test
+	public void healthIndicatorDisabledWhenPubSubTurnedOff() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(
+						GcpPubSubAutoConfiguration.class, PubSubHealthIndicatorAutoConfiguration.class))
+				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
+						"management.health.pubsub.enabled=true",
+						"spring.cloud.gcp.pubsub.enabled=false");
+		contextRunner.run(ctx -> {
+			assertThat(ctx.getBeansOfType(PubSubHealthIndicator.class)).isEmpty();
+		});
+	}
 }
