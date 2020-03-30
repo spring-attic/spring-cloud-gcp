@@ -32,6 +32,7 @@ This starter is also available from https://start.spring.io[Spring Initializr] t
 If you are using Spring Boot Actuator, you can take advantage of the Cloud Pub/Sub health indicator called `pubsub`.
 The health indicator will verify whether Cloud Pub/Sub is up and accessible by your application.
 To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
+To disable the Cloud Pub/Sub indicator, set `management.health.pubsub.enabled` to `false`.
 
 The `pubsub` indicator will then roll up to the overall application status visible at http://localhost:8080/actuator/health (use the `management.endpoint.health.show-details` property to view per-indicator details).
 
