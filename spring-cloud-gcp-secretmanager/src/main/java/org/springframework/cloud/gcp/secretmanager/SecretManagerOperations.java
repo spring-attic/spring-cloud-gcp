@@ -55,6 +55,21 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload);
 
 	/**
+	 * Creates a new secret or a new version of existing secret with the provided
+	 * {@code payload} for a specific {@code projectId}.
+	 *
+	 * <p>
+	 * If there is already a secret saved in SecretManager with the specified
+	 * {@code secretId}, then it simply creates a new version under the secret with the secret
+	 * {@code payload}.
+	 *
+	 * @param secretId the secret ID of the secret to create.
+	 * @param payload the secret payload as a byte array.
+	 * @param projectId unique identifier of your project.
+	 */
+	void createSecret(String secretId, byte[] payload, String projectId);
+
+	/**
 	 * Gets the secret payload of the specified {@code secretId} at the latest version.
 	 *
 	 * @param secretId unique identifier of your secret in Secret Manager.
@@ -104,6 +119,18 @@ public interface SecretManagerOperations {
 	ByteString getSecretByteString(String secretId, String versionName);
 
 	/**
+	 * Gets the secret payload of the specified {@code secretId} at version
+	 * {@code versionName} for a specific {@code projectId}.
+	 *
+	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * @param versionName which version of the secret to load. The version can be a version
+	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
+	 * @param projectId unique identifier of your project.
+	 * @return The secret payload as {@link ByteString}
+	 */
+	ByteString getSecretByteString(String secretId, String versionName, String projectId);
+
+	/**
 	 * Returns true if there already exists a secret under the GCP project with the
 	 * {@code secretId}.
 	 *
@@ -111,4 +138,14 @@ public interface SecretManagerOperations {
 	 * @return true if the secret exists in Secret Manager; false otherwise
 	 */
 	boolean secretExists(String secretId);
+
+	/**
+	 * Returns true if there already exists a secret under the GCP {@code projectId} with the
+	 * {@code secretId}.
+	 *
+	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * @param projectId unique identifier of your project.
+	 * @return true if the secret exists in Secret Manager; false otherwise
+	 */
+	boolean secretExists(String secretId, String projectId);
 }

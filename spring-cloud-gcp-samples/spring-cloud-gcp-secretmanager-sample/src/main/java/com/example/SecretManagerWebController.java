@@ -16,6 +16,8 @@
 
 package com.example;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
@@ -46,25 +48,58 @@ public class SecretManagerWebController {
 	@Value("${secrets.application-secret}")
 	private String applicationSecretValue;
 
+	// Application secret is set into the properties file and get here using @Value
+	@Value("${my-application-secret}")
+	private String myApplicationSecretValue;
+
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
 		map.put("applicationSecret", this.applicationSecretValue);
+		map.put("myApplicationSecret", this.myApplicationSecretValue);
 		return new ModelAndView("index.html", map);
 	}
 
 	@GetMapping("/getSecret")
 	@ResponseBody
-	public String getSecret(@RequestParam String secretId, ModelMap map) {
-		String secretPayload = this.secretManagerTemplate.getSecretString(secretId);
+	public String getSecret(
+			@RequestParam String secretId,
+			@RequestParam(required = false) String version,
+			@RequestParam(required = false) String projectId,
+			ModelMap map) {
+
+		if (StringUtils.isEmpty(version)) {
+			version = SecretManagerTemplate.LATEST_VERSION;
+		}
+
+		String secretPayload;
+		if (StringUtils.isEmpty(projectId)) {
+			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version);
+		}
+		else {
+			secretPayload =
+					this.secretManagerTemplate.getSecretByteString(secretId, version, projectId).toStringUtf8();
+		}
+
 		return "Secret ID: " + secretId + " | Value: " + secretPayload
 				+ "<br/><br/><a href='/'>Go back</a>";
 	}
 
 	@PostMapping("/createSecret")
 	public ModelAndView createSecret(
-			@RequestParam String secretId, @RequestParam String secretPayload, ModelMap map) {
-		this.secretManagerTemplate.createSecret(secretId, secretPayload);
+			@RequestParam String secretId,
+			@RequestParam String secretPayload,
+			@RequestParam(required = false) String projectId,
+			ModelMap map) {
+
+		if (StringUtils.isEmpty(projectId)) {
+			this.secretManagerTemplate.createSecret(secretId, secretPayload);
+		}
+		else {
+			this.secretManagerTemplate.createSecret(secretId, secretPayload.getBytes(), projectId);
+		}
+
 		map.put("applicationSecret", this.applicationSecretValue);
+		map.put("myApplicationSecret", this.myApplicationSecretValue);
 		map.put("message", "Secret created!");
 		return new ModelAndView("index.html", map);
 	}
