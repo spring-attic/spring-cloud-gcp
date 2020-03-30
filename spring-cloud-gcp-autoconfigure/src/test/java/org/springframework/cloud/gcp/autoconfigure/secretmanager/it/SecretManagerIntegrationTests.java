@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager.it;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 import com.google.api.gax.rpc.NotFoundException;
@@ -32,6 +33,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,6 +49,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.awaitility.Awaitility.await;
 
 public class SecretManagerIntegrationTests {
 
@@ -192,6 +195,10 @@ public class SecretManagerIntegrationTests {
 	private void deleteSecret(String secretId) {
 		try {
 			this.client.deleteSecret(SecretName.of(this.projectIdProvider.getProjectId(), secretId));
+
+			// Wait for the secret to be successfully removed from the project in the backend.
+			await().pollInterval(Duration.ONE_SECOND)
+					.atMost(20, TimeUnit.SECONDS).until(() -> !secretExists(secretId));
 		}
 		catch (NotFoundException e) {
 			LOGGER.debug("Skipped deleting " + secretId + " because it does not exist.");
