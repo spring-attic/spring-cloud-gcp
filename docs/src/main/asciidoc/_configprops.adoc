@@ -1,45 +1,46 @@
 |===
 |Name | Default | Description
 
-|spring.cloud.gcp.bigquery.credentials.encoded-key |  |
-|spring.cloud.gcp.bigquery.credentials.location |  |
-|spring.cloud.gcp.bigquery.credentials.scopes |  |
+|spring.cloud.gcp.bigquery.credentials.encoded-key |  | 
+|spring.cloud.gcp.bigquery.credentials.location |  | 
+|spring.cloud.gcp.bigquery.credentials.scopes |  | 
 |spring.cloud.gcp.bigquery.dataset-name |  | Name of the BigQuery dataset to use.
 |spring.cloud.gcp.bigquery.enabled | true | Auto-configure Google Cloud BigQuery components.
 |spring.cloud.gcp.bigquery.project-id |  | Overrides the GCP project ID specified in the Core module to use for BigQuery.
-|spring.cloud.gcp.config.credentials.encoded-key |  |
-|spring.cloud.gcp.config.credentials.location |  |
-|spring.cloud.gcp.config.credentials.scopes |  |
-|spring.cloud.gcp.config.enabled | false | Enables Spring Cloud GCP Config.
+|spring.cloud.gcp.config.credentials.encoded-key |  | 
+|spring.cloud.gcp.config.credentials.location |  | 
+|spring.cloud.gcp.config.credentials.scopes |  | 
+|spring.cloud.gcp.config.enabled | true | Auto-configure Google Cloud Runtime components.
 |spring.cloud.gcp.config.name |  | Name of the application.
 |spring.cloud.gcp.config.profile |  | Comma-delimited string of profiles under which the app is running. Gets its default value from the {@code spring.profiles.active} property, falling back on the {@code spring.profiles.default} property.
 |spring.cloud.gcp.config.project-id |  | Overrides the GCP project ID specified in the Core module.
 |spring.cloud.gcp.config.timeout-millis | 60000 | Timeout for Google Runtime Configuration API calls.
-|spring.cloud.gcp.credentials.encoded-key |  |
-|spring.cloud.gcp.credentials.location |  |
-|spring.cloud.gcp.credentials.scopes |  |
-|spring.cloud.gcp.datastore.credentials.encoded-key |  |
-|spring.cloud.gcp.datastore.credentials.location |  |
-|spring.cloud.gcp.datastore.credentials.scopes |  |
+|spring.cloud.gcp.core.enabled | true | Auto-configure Google Cloud Core components.
+|spring.cloud.gcp.credentials.encoded-key |  | 
+|spring.cloud.gcp.credentials.location |  | 
+|spring.cloud.gcp.credentials.scopes |  | 
+|spring.cloud.gcp.datastore.credentials.encoded-key |  | 
+|spring.cloud.gcp.datastore.credentials.location |  | 
+|spring.cloud.gcp.datastore.credentials.scopes |  | 
 |spring.cloud.gcp.datastore.emulator-host |  | @deprecated use <code>spring.cloud.gcp.datastore.host</code> instead. @see #host
 |spring.cloud.gcp.datastore.emulator.consistency | 0.9 | Consistency to use creating the Datastore server instance. Default: {@code 0.9}
 |spring.cloud.gcp.datastore.emulator.enabled | false | If enabled the Datastore client will connect to an local datastore emulator.
 |spring.cloud.gcp.datastore.emulator.port | 8081 | Is the datastore emulator port. Default: {@code 8081}
 |spring.cloud.gcp.datastore.enabled | true | Auto-configure Google Cloud Datastore components.
 |spring.cloud.gcp.datastore.host |  | The host and port of a Datastore emulator as the following example: localhost:8081.
-|spring.cloud.gcp.datastore.namespace |  |
-|spring.cloud.gcp.datastore.project-id |  |
-|spring.cloud.gcp.firestore.credentials.encoded-key |  |
-|spring.cloud.gcp.firestore.credentials.location |  |
-|spring.cloud.gcp.firestore.credentials.scopes |  |
+|spring.cloud.gcp.datastore.namespace |  | 
+|spring.cloud.gcp.datastore.project-id |  | 
+|spring.cloud.gcp.firestore.credentials.encoded-key |  | 
+|spring.cloud.gcp.firestore.credentials.location |  | 
+|spring.cloud.gcp.firestore.credentials.scopes |  | 
 |spring.cloud.gcp.firestore.enabled | true | Auto-configure Google Cloud Firestore components.
 |spring.cloud.gcp.firestore.host-port | firestore.googleapis.com:443 | The host and port of the Firestore emulator service; can be overridden to specify an emulator.
-|spring.cloud.gcp.firestore.project-id |  |
+|spring.cloud.gcp.firestore.project-id |  | 
 |spring.cloud.gcp.logging.enabled | true | Auto-configure Google Cloud Stackdriver logging for Spring MVC.
 |spring.cloud.gcp.project-id |  | GCP project ID where services are running.
-|spring.cloud.gcp.pubsub.credentials.encoded-key |  |
-|spring.cloud.gcp.pubsub.credentials.location |  |
-|spring.cloud.gcp.pubsub.credentials.scopes |  |
+|spring.cloud.gcp.pubsub.credentials.encoded-key |  | 
+|spring.cloud.gcp.pubsub.credentials.location |  | 
+|spring.cloud.gcp.pubsub.credentials.scopes |  | 
 |spring.cloud.gcp.pubsub.emulator-host |  | The host and port of the local running emulator. If provided, this will setup the client to connect against a running pub/sub emulator.
 |spring.cloud.gcp.pubsub.enabled | true | Auto-configure Google Cloud Pub/Sub components.
 |spring.cloud.gcp.pubsub.keep-alive-interval-minutes | 5 | How often to ping the server to keep the channel alive.
@@ -79,42 +80,50 @@
 |spring.cloud.gcp.pubsub.subscriber.retry.retry-delay-multiplier |  | RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.
 |spring.cloud.gcp.pubsub.subscriber.retry.rpc-timeout-multiplier |  | RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.
 |spring.cloud.gcp.pubsub.subscriber.retry.total-timeout-seconds |  | TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be attempted.
+|spring.cloud.gcp.secretmanager.bootstrap.enabled | true | Auto-configure GCP Secret Manager support components.
+|spring.cloud.gcp.secretmanager.credentials.encoded-key |  | 
+|spring.cloud.gcp.secretmanager.credentials.location |  | 
+|spring.cloud.gcp.secretmanager.credentials.scopes |  | 
+|spring.cloud.gcp.secretmanager.project-id |  | Overrides the GCP Project ID specified in the Core module.
+|spring.cloud.gcp.secretmanager.secret-name-prefix |  | Defines a prefix String that will be prepended to the environment property names of secrets in Secret Manager.
+|spring.cloud.gcp.secretmanager.versions |  | Defines versions for specific secret-ids.
+|spring.cloud.gcp.security.firebase.public-keys-endpoint | https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com | Link to Google's public endpoint containing Firebase public keys.
 |spring.cloud.gcp.security.iap.algorithm | ES256 | Encryption algorithm used to sign the JWK token.
 |spring.cloud.gcp.security.iap.audience |  | Non-dynamic audience string to validate.
 |spring.cloud.gcp.security.iap.enabled | true | Auto-configure Google Cloud IAP identity extraction components.
 |spring.cloud.gcp.security.iap.header | x-goog-iap-jwt-assertion | Header from which to extract the JWK key.
 |spring.cloud.gcp.security.iap.issuer | https://cloud.google.com/iap | JWK issuer to verify.
 |spring.cloud.gcp.security.iap.registry | https://www.gstatic.com/iap/verify/public_key-jwk | Link to JWK public key registry.
-|spring.cloud.gcp.spanner.create-interleaved-table-ddl-on-delete-cascade | true |
-|spring.cloud.gcp.spanner.credentials.encoded-key |  |
-|spring.cloud.gcp.spanner.credentials.location |  |
-|spring.cloud.gcp.spanner.credentials.scopes |  |
-|spring.cloud.gcp.spanner.database |  |
+|spring.cloud.gcp.spanner.create-interleaved-table-ddl-on-delete-cascade | true | 
+|spring.cloud.gcp.spanner.credentials.encoded-key |  | 
+|spring.cloud.gcp.spanner.credentials.location |  | 
+|spring.cloud.gcp.spanner.credentials.scopes |  | 
+|spring.cloud.gcp.spanner.database |  | 
 |spring.cloud.gcp.spanner.enabled | true | Auto-configure Google Cloud Spanner components.
-|spring.cloud.gcp.spanner.fail-if-pool-exhausted | false |
-|spring.cloud.gcp.spanner.instance-id |  |
-|spring.cloud.gcp.spanner.keep-alive-interval-minutes | -1 |
-|spring.cloud.gcp.spanner.max-idle-sessions | -1 |
-|spring.cloud.gcp.spanner.max-sessions | -1 |
-|spring.cloud.gcp.spanner.min-sessions | -1 |
-|spring.cloud.gcp.spanner.num-rpc-channels | -1 |
-|spring.cloud.gcp.spanner.prefetch-chunks | -1 |
-|spring.cloud.gcp.spanner.project-id |  |
-|spring.cloud.gcp.spanner.write-sessions-fraction | -1 |
+|spring.cloud.gcp.spanner.fail-if-pool-exhausted | false | 
+|spring.cloud.gcp.spanner.instance-id |  | 
+|spring.cloud.gcp.spanner.keep-alive-interval-minutes | -1 | 
+|spring.cloud.gcp.spanner.max-idle-sessions | -1 | 
+|spring.cloud.gcp.spanner.max-sessions | -1 | 
+|spring.cloud.gcp.spanner.min-sessions | -1 | 
+|spring.cloud.gcp.spanner.num-rpc-channels | -1 | 
+|spring.cloud.gcp.spanner.prefetch-chunks | -1 | 
+|spring.cloud.gcp.spanner.project-id |  | 
+|spring.cloud.gcp.spanner.write-sessions-fraction | -1 | 
 |spring.cloud.gcp.sql.credentials |  | Overrides the GCP OAuth2 credentials specified in the Core module.
 |spring.cloud.gcp.sql.database-name |  | Name of the database in the Cloud SQL instance.
 |spring.cloud.gcp.sql.enabled | true | Auto-configure Google Cloud SQL support components.
 |spring.cloud.gcp.sql.instance-connection-name |  | Cloud SQL instance connection name. [GCP_PROJECT_ID]:[INSTANCE_REGION]:[INSTANCE_NAME].
-|spring.cloud.gcp.storage.auto-create-files |  |
-|spring.cloud.gcp.storage.credentials.encoded-key |  |
-|spring.cloud.gcp.storage.credentials.location |  |
-|spring.cloud.gcp.storage.credentials.scopes |  |
+|spring.cloud.gcp.storage.auto-create-files |  | 
+|spring.cloud.gcp.storage.credentials.encoded-key |  | 
+|spring.cloud.gcp.storage.credentials.location |  | 
+|spring.cloud.gcp.storage.credentials.scopes |  | 
 |spring.cloud.gcp.storage.enabled | true | Auto-configure Google Cloud Storage components.
 |spring.cloud.gcp.trace.authority |  | HTTP/2 authority the channel claims to be connecting to.
 |spring.cloud.gcp.trace.compression |  | Compression to use for the call.
-|spring.cloud.gcp.trace.credentials.encoded-key |  |
-|spring.cloud.gcp.trace.credentials.location |  |
-|spring.cloud.gcp.trace.credentials.scopes |  |
+|spring.cloud.gcp.trace.credentials.encoded-key |  | 
+|spring.cloud.gcp.trace.credentials.location |  | 
+|spring.cloud.gcp.trace.credentials.scopes |  | 
 |spring.cloud.gcp.trace.deadline-ms |  | Call deadline.
 |spring.cloud.gcp.trace.enabled | true | Auto-configure Google Cloud Stackdriver tracing components.
 |spring.cloud.gcp.trace.max-inbound-size |  | Maximum size for an inbound message.
@@ -123,9 +132,9 @@
 |spring.cloud.gcp.trace.num-executor-threads | 4 | Number of threads to be used by the Trace executor.
 |spring.cloud.gcp.trace.project-id |  | Overrides the GCP project ID specified in the Core module.
 |spring.cloud.gcp.trace.wait-for-ready |  | Waits for the channel to be ready in case of a transient failure. Defaults to failing fast in that case.
-|spring.cloud.gcp.vision.credentials.encoded-key |  |
-|spring.cloud.gcp.vision.credentials.location |  |
-|spring.cloud.gcp.vision.credentials.scopes |  |
+|spring.cloud.gcp.vision.credentials.encoded-key |  | 
+|spring.cloud.gcp.vision.credentials.location |  | 
+|spring.cloud.gcp.vision.credentials.scopes |  | 
 |spring.cloud.gcp.vision.enabled | true | Auto-configure Google Cloud Vision components.
 |spring.cloud.gcp.vision.executor-threads-count | 1 | Number of threads used to poll for the completion of Document OCR operations.
 |spring.cloud.gcp.vision.json-output-batch-size | 20 | Number of document pages to include in each JSON output file.

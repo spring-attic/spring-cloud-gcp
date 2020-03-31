@@ -1,4 +1,4 @@
-== Google Cloud Vision
+== Cloud Vision
 
 The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage machine learning algorithms for processing images and documents including: image classification, face detection, text extraction, optical character recognition, and others.
 
@@ -32,6 +32,17 @@ dependencies {
   compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
 }
 ----
+
+=== Configuration
+
+The following options may be configured with Spring Cloud GCP Vision libraries.
+
+|===========================================================================
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.vision.enabled` | Enables or disables Cloud Vision autoconfiguration | No | `true`
+| `spring.cloud.gcp.vision.executors-threads-count` | Number of threads used during document OCR processing for waiting on long-running OCR operations | No | 1
+| `spring.cloud.gcp.vision.json-output-batch-size` | Number of document pages to include in each OCR output file. | No | 20
+|===========================================================================
 
 ==== Cloud Vision OCR Dependencies
 
@@ -192,17 +203,6 @@ public void parseSingleOutputFile() {
   System.out.println("Page 2 text: " + result.getPage(2).getText());
 }
 ----
-
-=== Configuration
-
-The following options may be configured with Spring Cloud GCP Vision libraries.
-
-|===========================================================================
-| Name | Description | Required | Default value
-| `spring.cloud.gcp.vision.enabled` | Enables or disables Cloud Vision autoconfiguration | No | `true`
-| `spring.cloud.gcp.vision.executors-threads-count` | Number of threads used during document OCR processing for waiting on long-running OCR operations | No | 1
-| `spring.cloud.gcp.vision.json-output-batch-size` | Number of document pages to include in each OCR output file. | No | 20
-|===========================================================================
 
 === Sample
 

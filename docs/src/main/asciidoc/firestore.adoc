@@ -1,10 +1,10 @@
 :spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
-== Spring Data Reactive Repositories for Cloud Firestore
+== Spring Data Cloud Firestore
 NOTE: Currently some features are not supported: transactions, sorting, query by example, projections, auditing.
 
 https://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode, providing reactive template and repositories support.
+Spring Cloud GCP adds Spring Data Reactive Repositories support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode, providing reactive template and repositories support.
 To begin using this library, add the `spring-cloud-gcp-data-firestore` artifact to your project.
 
 Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
@@ -281,7 +281,6 @@ dependencies {
   compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
 }
 ----
-
 
 ==== Using Cloud Firestore
 

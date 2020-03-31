@@ -1,4 +1,4 @@
-== Spring Cloud Sleuth
+== Stackdriver Trace
 
 https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications.
 It captures trace information and can forward traces to services like Zipkin for storage and analysis.
