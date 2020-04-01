@@ -1,10 +1,9 @@
-== Spring Cloud Sleuth
+== Stackdriver Trace
 
-https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications.
-It captures trace information and can forward traces to services like Zipkin for storage and analysis.
+Google Cloud Platform provides a managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace], and https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] can be used with it to easily instrument Spring Boot applications for observability.
 
-Google Cloud Platform provides its own managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace].
-Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
+Typically, Spring Cloud Sleuth captures trace information and forwards traces to services like Zipkin for storage and analysis.
+However, on GCP, instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
 
 This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.
 

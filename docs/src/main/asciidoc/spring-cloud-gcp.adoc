@@ -25,11 +25,11 @@ include::getting-started.adoc[]
 
 include::core.adoc[]
 
-include::pubsub.adoc[]
-
 include::storage.adoc[]
 
 include::sql.adoc[]
+
+include::pubsub.adoc[]
 
 include::spring-integration.adoc[]
 
@@ -41,8 +41,6 @@ include::trace.adoc[]
 
 include::logging.adoc[]
 
-include::config.adoc[]
-
 include::spanner.adoc[]
 
 include::datastore.adoc[]
@@ -51,13 +49,15 @@ include::firestore.adoc[]
 
 include::memorystore.adoc[]
 
+include::bigquery.adoc[]
+
 include::security-iap.adoc[]
 
 include::vision.adoc[]
 
-include::bigquery.adoc[]
-
 include::secretmanager.adoc[]
+
+include::config.adoc[]
 
 include::cloudfoundry.adoc[]
 
