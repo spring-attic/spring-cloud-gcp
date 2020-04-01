@@ -142,6 +142,7 @@ The `User` type parameter to `FirestoreReactiveRepository` refers to the underly
 
 NOTE: `_` character can be used to refer to embedded properties.
 In the example above, we refer to `User.homeAddress.Country` property in the `findByHomeAddress_Country` method.
+
 [source,java]
 ----
 public class MyApplication {
