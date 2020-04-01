@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.User.Address;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
@@ -145,7 +146,7 @@ public class FirestoreRepositoryIntegrationTests {
 	@Test
 	//tag::repository_part_tree[]
 	public void partTreeRepositoryMethodTest() {
-		User u1 = new User("Cloud", 22);
+		User u1 = new User("Cloud", 22, null, null, new Address("1 First st., NYC", "USA"));
 		User u2 = new User("Squall", 17);
 		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
 
@@ -153,6 +154,7 @@ public class FirestoreRepositoryIntegrationTests {
 
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByHomeAddress_Country("USA").collectList().block()).containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
 				.containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,

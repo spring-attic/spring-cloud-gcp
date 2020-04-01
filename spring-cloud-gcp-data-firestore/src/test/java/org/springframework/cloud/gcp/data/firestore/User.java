@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.PropertyName;
 
 /**
  * Sample entity for integration tests.
@@ -102,10 +103,12 @@ public class User {
 		this.addresses = addresses;
 	}
 
+	@PropertyName("address")
 	public Address getHomeAddress() {
 		return this.homeAddress;
 	}
 
+	@PropertyName("address")
 	public void setHomeAddress(Address homeAddress) {
 		this.homeAddress = homeAddress;
 	}
