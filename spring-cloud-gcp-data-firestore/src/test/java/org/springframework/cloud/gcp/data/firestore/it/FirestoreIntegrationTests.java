@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.firestore.it;
 
-import java.io.IOException;
 import java.util.List;
 
 import ch.qos.logback.classic.Level;
@@ -62,7 +61,7 @@ public class FirestoreIntegrationTests {
 	ReactiveFirestoreTransactionManager txManager;
 
 	@BeforeClass
-	public static void checkToRun() throws IOException {
+	public static void checkToRun() {
 		assumeThat("Firestore-sample tests are disabled. "
 						+ "Please use '-Dit.firestore=true' to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
