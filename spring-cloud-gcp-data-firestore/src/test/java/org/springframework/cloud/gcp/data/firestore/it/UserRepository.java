@@ -34,7 +34,9 @@ import org.springframework.data.domain.Pageable;
 public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAge(Integer age);
 
-	Flux<User> findByHomeAddress_Country(String country);
+	Flux<User> findByHomeAddressCountry(String country);
+
+	Flux<User> findByFavoriteDrink(String drink);
 
 	Flux<User> findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
 

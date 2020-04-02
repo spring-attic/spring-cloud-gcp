@@ -148,7 +148,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 		this.tree.getParts().forEach(part -> {
 			StructuredQuery.FieldReference fieldReference = StructuredQuery.FieldReference.newBuilder()
-					.setFieldPath(getName(part)).build();
+					.setFieldPath(buildName(part)).build();
 			StructuredQuery.Filter.Builder filter = StructuredQuery.Filter.newBuilder();
 
 			if (part.getType() == Part.Type.IS_NULL) {
@@ -172,9 +172,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		return builder;
 	}
 
-	private String getName(Part part) {
-		Iterator<PropertyPath> iterator = part.getProperty().iterator();
-		Iterable<PropertyPath> iterable = () -> iterator;
+	private String buildName(Part part) {
+		Iterable<PropertyPath> iterable = () -> part.getProperty().iterator();
 
 		return StreamSupport
 				.stream(iterable.spliterator(), false)
