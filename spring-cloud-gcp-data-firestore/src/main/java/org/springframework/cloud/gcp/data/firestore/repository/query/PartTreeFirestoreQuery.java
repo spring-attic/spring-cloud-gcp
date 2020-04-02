@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.firestore.v1.StructuredQuery;
 import com.google.protobuf.Int32Value;
@@ -31,8 +32,8 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
-import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentProperty;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
@@ -66,6 +67,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 	private final FirestoreClassMapper classMapper;
 
+	private final FirestoreMappingContext mappingContext;
+
 	private static final Map<Part.Type, OperatorSelector> PART_TO_FILTER_OP =
 			new MapBuilder<Part.Type, OperatorSelector>()
 					.put(SIMPLE_PROPERTY, new OperatorSelector(StructuredQuery.FieldFilter.Operator.EQUAL))
@@ -87,6 +90,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		ReturnedType returnedType = queryMethod.getResultProcessor().getReturnedType();
 		this.tree = new PartTree(queryMethod.getName(), returnedType.getDomainType());
 		this.persistentEntity = mappingContext.getPersistentEntity(returnedType.getDomainType());
+		this.mappingContext = mappingContext;
 		this.classMapper = classMapper;
 		validate();
 	}
@@ -143,10 +147,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		compositeFilter.setOp(StructuredQuery.CompositeFilter.Operator.AND);
 
 		this.tree.getParts().forEach(part -> {
-			FirestorePersistentProperty persistentProperty = this.persistentEntity
-					.getPersistentProperty(part.getProperty().getSegment());
 			StructuredQuery.FieldReference fieldReference = StructuredQuery.FieldReference.newBuilder()
-					.setFieldPath(persistentProperty.getName()).build();
+					.setFieldPath(buildName(part)).build();
 			StructuredQuery.Filter.Builder filter = StructuredQuery.Filter.newBuilder();
 
 			if (part.getType() == Part.Type.IS_NULL) {
@@ -168,6 +170,18 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 
 		builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
 		return builder;
+	}
+
+	private String buildName(Part part) {
+		Iterable<PropertyPath> iterable = () -> part.getProperty().iterator();
+
+		return StreamSupport
+				.stream(iterable.spliterator(), false)
+				.map(propertyPath -> {
+					FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(propertyPath.getOwningType());
+					return persistentEntity.getPersistentProperty(propertyPath.getSegment()).getPropertyName();
+				})
+				.collect(Collectors.joining("."));
 	}
 
 	@Override

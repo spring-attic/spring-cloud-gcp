@@ -140,6 +140,8 @@ Spring Data generates a working implementation of the specified interface, which
 
 The `User` type parameter to `FirestoreReactiveRepository` refers to the underlying domain type.
 
+NOTE: You can refer to nested fields using https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-property-expressions[Spring Data JPA Property Expressions]
+
 [source,java]
 ----
 public class MyApplication {
