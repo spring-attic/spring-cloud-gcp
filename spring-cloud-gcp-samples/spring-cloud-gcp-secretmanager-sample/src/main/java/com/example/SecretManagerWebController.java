@@ -48,8 +48,8 @@ public class SecretManagerWebController {
 	@Value("${secrets.application-secret}")
 	private String applicationSecretValue;
 
-	// Application secret is set into the properties file and get here using @Value
-	@Value("${my-application-secret}")
+	// Multiple ways of loading the application-secret are demonstrated in bootstrap.properties.
+	@Value("${my-application-secret-1}")
 	private String myApplicationSecretValue;
 
 	@GetMapping("/")
