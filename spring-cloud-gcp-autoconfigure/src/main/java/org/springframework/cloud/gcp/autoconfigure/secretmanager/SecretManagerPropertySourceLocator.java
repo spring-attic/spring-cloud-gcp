@@ -16,13 +16,10 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
-import java.util.Map;
-
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 
@@ -42,41 +39,18 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private final GcpProjectIdProvider projectIdProvider;
 
-	private final String secretsPrefix;
-
-	private Map<String, String> versions;
-
 	SecretManagerPropertySourceLocator(
 			SecretManagerServiceClient client,
-			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix) {
+			GcpProjectIdProvider projectIdProvider) {
 		this.client = client;
 		this.projectIdProvider = projectIdProvider;
-		this.secretsPrefix = secretsPrefix;
-	}
-
-	public void setVersions(Map<String, String> versions) {
-		this.versions = versions;
 	}
 
 	@Override
 	public PropertySource<?> locate(Environment environment) {
-		CompositePropertySource compositePropertySource = new CompositePropertySource(SECRET_MANAGER_NAME);
-
-		compositePropertySource.addPropertySource(
-				new SecretManagerPropertySource(
-						"spring-cloud-gcp-project-default-secret-manager",
-						this.client,
-						this.projectIdProvider,
-						this.secretsPrefix,
-						this.versions));
-
-		compositePropertySource.addPropertySource(
-				new SecretManagerAccessPropertySource(
-						"spring-cloud-gcp-access-secret-manager",
-						this.client,
-						this.projectIdProvider));
-
-		return compositePropertySource;
+		return new SecretManagerPropertySource(
+				SECRET_MANAGER_NAME,
+				this.client,
+				this.projectIdProvider);
 	}
 }

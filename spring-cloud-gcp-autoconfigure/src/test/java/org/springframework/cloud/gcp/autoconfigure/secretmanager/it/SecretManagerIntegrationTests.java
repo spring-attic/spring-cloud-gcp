@@ -30,7 +30,6 @@ import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSec
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.protobuf.ByteString;
-import io.grpc.StatusRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.awaitility.Duration;
@@ -47,7 +46,6 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
@@ -96,10 +94,11 @@ public class SecretManagerIntegrationTests {
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.run();
 
-		assertThat(context.getEnvironment().getProperty(TEST_SECRET_ID))
+		assertThat(context.getEnvironment().getProperty("gcp-secret/" + TEST_SECRET_ID))
 				.isEqualTo("the secret data.");
 
-		byte[] byteArraySecret = context.getEnvironment().getProperty(TEST_SECRET_ID, byte[].class);
+		byte[] byteArraySecret = context.getEnvironment().getProperty(
+				"gcp-secret/" + TEST_SECRET_ID + "/latest", byte[].class);
 		assertThat(byteArraySecret).isEqualTo("the secret data.".getBytes());
 	}
 
@@ -113,7 +112,8 @@ public class SecretManagerIntegrationTests {
 				.properties("spring.cloud.gcp.secretmanager.enabled=false")
 				.run();
 
-		assertThat(context.getEnvironment().getProperty(TEST_SECRET_ID, String.class)).isNull();
+		assertThat(context.getEnvironment().getProperty(
+				"gcp-secret/" + TEST_SECRET_ID, String.class)).isNull();
 	}
 
 	@Test
@@ -126,25 +126,26 @@ public class SecretManagerIntegrationTests {
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
-				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=2")
 				.run();
 
-		String versionedSecret = context.getEnvironment().getProperty(VERSIONED_SECRET_ID, String.class);
+		String versionedSecret = context.getEnvironment().getProperty(
+				"gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class);
 		assertThat(versionedSecret).isEqualTo("the secret data v2");
 	}
 
 	@Test
-	public void testSecretsWithMissingVersion() {
+	public void testMissingSecret() {
 		createSecret(VERSIONED_SECRET_ID, "the secret data");
-		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
 
-		assertThatThrownBy(() -> new SpringApplicationBuilder()
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
-				.properties("spring.cloud.gcp.secretmanager.versions." + VERSIONED_SECRET_ID + "=7")
-				.run())
-				.hasCauseInstanceOf(StatusRuntimeException.class);
+				.run();
+
+		String versionedSecret = context.getEnvironment().getProperty(
+				"gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class);
+		assertThat(versionedSecret).isNull();
 	}
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.

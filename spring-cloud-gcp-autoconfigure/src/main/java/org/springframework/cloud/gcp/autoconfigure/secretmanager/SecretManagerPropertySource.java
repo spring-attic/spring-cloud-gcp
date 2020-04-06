@@ -16,25 +16,17 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
-import com.google.cloud.secretmanager.v1beta1.ProjectName;
-import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.EnumerablePropertySource;
 
 /**
- * Retrieves secrets from GCP Secret Manager under the current GCP project.
+ * A property source for Secret Manager which accesses the Secret Manager APIs when {@link #getProperty} is called.
  *
  * @author Daniel Zou
  * @author Eddú Meléndez
@@ -42,91 +34,101 @@ import org.springframework.core.env.EnumerablePropertySource;
  */
 public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
 
-	private static final Log LOGGER = LogFactory.getLog(SecretManagerPropertySource.class);
+	private static final String GCP_SECRET_PREFIX = "gcp-secret/";
 
-	private static final String LATEST_VERSION_STRING = "latest";
-
-	private final Map<String, Object> properties;
-
-	private final String[] propertyNames;
+	private final GcpProjectIdProvider projectIdProvider;
 
 	public SecretManagerPropertySource(
 			String propertySourceName,
 			SecretManagerServiceClient client,
-			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix) {
-		this(propertySourceName, client, projectIdProvider, secretsPrefix, Collections.EMPTY_MAP);
-	}
-
-	public SecretManagerPropertySource(
-			String propertySourceName,
-			SecretManagerServiceClient client,
-			GcpProjectIdProvider projectIdProvider,
-			String secretsPrefix,
-			Map<String, String> versions) {
+			GcpProjectIdProvider projectIdProvider) {
 		super(propertySourceName, client);
 
-		Map<String, Object> propertiesMap = createSecretsPropertiesMap(
-				client, projectIdProvider.getProjectId(), secretsPrefix, versions);
-
-		this.properties = propertiesMap;
-		this.propertyNames = propertiesMap.keySet().toArray(new String[propertiesMap.size()]);
-	}
-
-	@Override
-	public String[] getPropertyNames() {
-		return propertyNames;
+		this.projectIdProvider = projectIdProvider;
 	}
 
 	@Override
 	public Object getProperty(String name) {
-		return properties.get(name);
+		SecretVersionName secretIdentifier = parseFromProperty(name, this.projectIdProvider);
+
+		if (secretIdentifier != null) {
+			return getSecretPayload(secretIdentifier);
+		}
+		else {
+			return null;
+		}
 	}
 
-	private static Map<String, Object> createSecretsPropertiesMap(
-			SecretManagerServiceClient client, String projectId, String secretsPrefix, Map<String, String> versions) {
+	/**
+	 * The {@link SecretManagerPropertySource} is not enumerable, so this always returns an empty array.
+	 * @return the empty array.
+	 */
+	@Override
+	public String[] getPropertyNames() {
+		return new String[0];
+	}
 
-		ListSecretsPagedResponse response = client.listSecrets(ProjectName.of(projectId));
-		Map<String, Object> secretsMap = new HashMap<>();
-		for (Secret secret : response.iterateAll()) {
-			String secretId = extractSecretId(secret);
-			ByteString secretPayload = getSecretPayload(client, projectId, secretId, versions);
-			if (secretPayload != null) {
-				secretsMap.put(secretsPrefix + secretId, secretPayload);
-			}
+	private ByteString getSecretPayload(SecretVersionName secretIdentifier) {
+		try {
+			AccessSecretVersionResponse response = getSource().accessSecretVersion(secretIdentifier);
+			return response.getPayload().getData();
+		}
+		catch (NotFoundException e) {
+			return null;
+		}
+	}
+
+	static SecretVersionName parseFromProperty(String property, GcpProjectIdProvider projectIdProvider) {
+		if (!property.startsWith(GCP_SECRET_PREFIX)) {
+			return null;
 		}
 
-		return secretsMap;
-	}
+		String resourcePath = property.substring(GCP_SECRET_PREFIX.length());
+		String[] tokens = resourcePath.split("/");
 
-	private static ByteString getSecretPayload(
-			SecretManagerServiceClient client,
-			String projectId,
-			String secretId,
-			Map<String, String> versions) {
+		String projectId = projectIdProvider.getProjectId();
+		String secretId = null;
+		String version = "latest";
 
-		String version = versions.containsKey(secretId) ? versions.get(secretId) : LATEST_VERSION_STRING;
+		if (tokens.length == 1) {
+			// property is form "gcp-secret/<secret-id>"
+			secretId = tokens[0];
+		}
+		else if (tokens.length == 2) {
+			// property is form "gcp-secret/<secret-id>/<version>"
+			secretId = tokens[0];
+			version = tokens[1];
+		}
+		else if (tokens.length == 3) {
+			// property is form "gcp-secret/<project-id>/<secret-id>/<version-id>"
+			projectId = tokens[0];
+			secretId = tokens[1];
+			version = tokens[2];
+		}
+		else if (tokens.length == 4
+				&& tokens[0].equals("projects")
+				&& tokens[2].equals("secrets")) {
+			// property is form "gcp-secret/projects/<project-id>/secrets/<secret-id>"
+			projectId = tokens[1];
+			secretId = tokens[3];
+		}
+		else if (tokens.length == 6
+				&& tokens[0].equals("projects")
+				&& tokens[2].equals("secrets")
+				&& tokens[4].equals("versions")) {
+			// property is form "gcp-secret/projects/<project-id>/secrets/<secret-id>/versions/<version>"
+			projectId = tokens[1];
+			secretId = tokens[3];
+			version = tokens[5];
+		}
+		else {
+			return null;
+		}
 
-		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+		return SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
 				.setSecretVersion(version)
 				.build();
-
-		AccessSecretVersionResponse response = client.accessSecretVersion(secretVersionName);
-		return response.getPayload().getData();
-	}
-
-	/**
-	 * Extracts the Secret ID from the {@link Secret}. The secret ID refers to the unique ID
-	 * given to the secret when it is saved under a GCP project.
-	 *
-	 * <p>
-	 * The secret ID is extracted from the full secret name of the form:
-	 * projects/${PROJECT_ID}/secrets/${SECRET_ID}
-	 */
-	private static String extractSecretId(Secret secret) {
-		String[] secretNameTokens = secret.getName().split("/");
-		return secretNameTokens[secretNameTokens.length - 1];
 	}
 }
