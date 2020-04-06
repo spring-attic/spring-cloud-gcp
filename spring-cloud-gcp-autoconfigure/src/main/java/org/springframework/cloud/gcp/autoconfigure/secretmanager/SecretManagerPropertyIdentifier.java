@@ -25,7 +25,7 @@ import org.springframework.util.Assert;
  * @author Daniel Zou
  * @since 1.2.3
  */
-public class SecretManagerPropertyIdentifier {
+class SecretManagerPropertyIdentifier {
 
 	// This prefix string distinguishes whether a property should be queried from Secret Manager or not.
 	private static final String GCP_SECRET_PREFIX = "gcp-secret/";
