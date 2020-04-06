@@ -38,8 +38,8 @@ public class SecretManagerPropertyIdentifier {
 
 	SecretManagerPropertyIdentifier(String projectId, String secretId, String version) {
 		Assert.notNull(projectId, "Project Id of GCP Secret Manager secret must not be null");
-		Assert.notNull(projectId, "Secret Id of GCP Secret Manager secret must not be null");
-		Assert.notNull(projectId, "Version of GCP Secret Manager secret must not be null");
+		Assert.notNull(secretId, "Secret Id of GCP Secret Manager secret must not be null");
+		Assert.notNull(version, "Version of GCP Secret Manager secret must not be null");
 
 		this.projectId = projectId;
 		this.secretId = secretId;
