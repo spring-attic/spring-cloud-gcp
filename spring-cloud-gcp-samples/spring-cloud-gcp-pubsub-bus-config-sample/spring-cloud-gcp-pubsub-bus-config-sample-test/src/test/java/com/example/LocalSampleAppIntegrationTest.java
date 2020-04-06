@@ -186,6 +186,7 @@ public class LocalSampleAppIntegrationTest {
 				// drain all lines up to the one requested, or until no more lines in reader.
 				while (reader.ready()) {
 					String line = reader.readLine();
+
 					if (line == null) {
 						return false;
 					}
