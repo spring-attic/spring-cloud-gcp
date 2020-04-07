@@ -46,12 +46,12 @@ public class SecretManagerWebController {
 	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
 	// bootstrap.properties.
 	@Value("${gcp-secret/application-secret}")
-	String appSecret;
+	private String appSecret;
 
 	// Multiple ways of loading the application-secret are demonstrated in bootstrap.properties.
 	// Try it with my-app-secret-1 or my-app-secret-2
 	@Value("${my-app-secret-1}")
-	String myAppSecret;
+	private String myAppSecret;
 
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
