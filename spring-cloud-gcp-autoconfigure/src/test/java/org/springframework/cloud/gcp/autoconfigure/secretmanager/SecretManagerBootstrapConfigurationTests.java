@@ -18,7 +18,11 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1beta1.SecretPayload;
+import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
+import com.google.protobuf.ByteString;
 import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -30,11 +34,14 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Mike Eltsufin
  */
 public class SecretManagerBootstrapConfigurationTests {
+
+	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSecretManagerBootstrapConfiguration.class))
@@ -65,6 +72,17 @@ public class SecretManagerBootstrapConfigurationTests {
 		@Bean
 		public static SecretManagerServiceClient secretManagerClient() throws Exception {
 			SecretManagerServiceClient client = mock(SecretManagerServiceClient.class);
+			SecretVersionName secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject(PROJECT_NAME)
+							.setSecret("my-secret")
+							.setSecretVersion("latest")
+							.build();
+			when(client.accessSecretVersion(secretVersionName)).thenReturn(
+					AccessSecretVersionResponse.newBuilder()
+							.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello")))
+							.build());
+
 			return client;
 		}
 
@@ -75,7 +93,7 @@ public class SecretManagerBootstrapConfigurationTests {
 
 		@Bean
 		public static GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "hollow-light-of-the-sealed-land";
+			return () -> PROJECT_NAME;
 		}
 	}
 
