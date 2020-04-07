@@ -49,7 +49,7 @@ public class SecretManagerWebController {
 	@Value("${my-application-secret}")
 	private String myApplicationSecretValue;
 
-	// Another way to access these properties is to @Autowire a @ConfigurationProperties-annotated class
+	// Another way to access your secrets is to @Autowire a @ConfigurationProperties-annotated class.
 	@Autowired
 	private MyAppProperties properties;
 
