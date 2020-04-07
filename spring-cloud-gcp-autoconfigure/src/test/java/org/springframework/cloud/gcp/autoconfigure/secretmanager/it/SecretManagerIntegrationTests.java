@@ -29,7 +29,9 @@ import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
+import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
+import io.grpc.StatusRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.awaitility.Duration;
@@ -40,12 +42,12 @@ import org.junit.Test;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
@@ -63,16 +65,16 @@ public class SecretManagerIntegrationTests {
 
 	@BeforeClass
 	public static void prepare() {
-		assumeThat(System.getProperty("it.secretmanager"))
-				.as("Secret manager integration tests are disabled. "
-						+ "Please use '-Dit.secretmanager=true' to enable them.")
-				.isEqualTo("true");
+//		assumeThat(System.getProperty("it.secretmanager"))
+//				.as("Secret manager integration tests are disabled. "
+//						+ "Please use '-Dit.secretmanager=true' to enable them.")
+//				.isEqualTo("true");
 	}
 
 	@Before
 	public void setupSecretManager() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerAutoConfiguration.class)
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
@@ -109,7 +111,7 @@ public class SecretManagerIntegrationTests {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.enabled=false")
+				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=false")
 				.run();
 
 		assertThat(context.getEnvironment().getProperty(
@@ -143,9 +145,10 @@ public class SecretManagerIntegrationTests {
 				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.run();
 
-		String versionedSecret = context.getEnvironment().getProperty(
-				"gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class);
-		assertThat(versionedSecret).isNull();
+		assertThatThrownBy(() ->
+				context.getEnvironment().getProperty("gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class))
+				.hasCauseInstanceOf(StatusRuntimeException.class)
+				.hasMessageContaining("NOT_FOUND");
 	}
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.
@@ -187,10 +190,19 @@ public class SecretManagerIntegrationTests {
 	}
 
 	private boolean secretExists(String secretId) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
-		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
-		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.anyMatch(secret -> secret.getName().contains(secretId));
+		try {
+		  SecretVersionName secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject(projectIdProvider.getProjectId())
+							.setSecret(secretId)
+							.setSecretVersion("latest")
+							.build();
+	  	this.client.accessSecretVersion(secretVersionName);
+		} catch (NotFoundException e) {
+	  	return false;
+		}
+
+	  return true;
 	}
 
 	private void deleteSecret(String secretId) {

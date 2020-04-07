@@ -16,14 +16,16 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
-import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * A property source for Secret Manager which accesses the Secret Manager APIs when {@link #getProperty} is called.
@@ -69,15 +71,11 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	}
 
 	private ByteString getSecretPayload(SecretVersionName secretIdentifier) {
-		try {
-			AccessSecretVersionResponse response = getSource().accessSecretVersion(secretIdentifier);
-			return response.getPayload().getData();
-		}
-		catch (NotFoundException e) {
-			return null;
-		}
+		AccessSecretVersionResponse response = getSource().accessSecretVersion(secretIdentifier);
+		return response.getPayload().getData();
 	}
 
+	@VisibleForTesting
 	static SecretVersionName parseFromProperty(String property, GcpProjectIdProvider projectIdProvider) {
 		if (!property.startsWith(GCP_SECRET_PREFIX)) {
 			return null;
@@ -122,8 +120,21 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			version = tokens[5];
 		}
 		else {
-			return null;
+		  throw new IllegalArgumentException(
+		  		"Unrecognized format for specifying a GCP Secret Manager secret: " + property);
 		}
+
+		Assert.isTrue(
+				!StringUtils.isEmpty(secretId),
+				"The GCP Secret Manager secret id must not be empty: " + property);
+
+		Assert.isTrue(
+				!StringUtils.isEmpty(projectId),
+				"The GCP Secret Manager project id must not be empty: " + property);
+
+		Assert.isTrue(
+				!StringUtils.isEmpty(version),
+				"The GCP Secret Manager secret version must not be empty: " + property);
 
 		return SecretVersionName.newBuilder()
 				.setProject(projectId)

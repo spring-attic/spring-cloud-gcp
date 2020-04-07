@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -48,7 +49,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
 @ConditionalOnClass(SecretManagerServiceClient.class)
-@ConditionalOnProperty("spring.cloud.gcp.secretmanager.bootstrap.enabled")
+@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
 
 	private final GcpSecretManagerProperties properties;
@@ -86,6 +87,13 @@ public class GcpSecretManagerBootstrapConfiguration {
 	}
 
 	@Bean
+	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
+		SecretManagerPropertySourceLocator propertySourceLocator =
+				new SecretManagerPropertySourceLocator(client, this.gcpProjectIdProvider);
+		return propertySourceLocator;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public SecretManagerServiceClient secretManagerClient() throws IOException {
 		SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
@@ -97,9 +105,8 @@ public class GcpSecretManagerBootstrapConfiguration {
 	}
 
 	@Bean
-	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		SecretManagerPropertySourceLocator propertySourceLocator =
-				new SecretManagerPropertySourceLocator(client, this.gcpProjectIdProvider);
-		return propertySourceLocator;
+	@ConditionalOnMissingBean
+	public SecretManagerTemplate secretManagerTemplate(SecretManagerServiceClient client) {
+		return new SecretManagerTemplate(client, this.gcpProjectIdProvider);
 	}
 }

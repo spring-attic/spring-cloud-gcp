@@ -22,8 +22,9 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class SecretPropertySourceTests {
+public class SecretManagerPropertySourceTests {
 
 	private static final GcpProjectIdProvider DEFAULT_PROJECT_ID_PROVIDER = () -> "defaultProject";
 
@@ -34,6 +35,16 @@ public class SecretPropertySourceTests {
 				SecretManagerPropertySource.parseFromProperty(property, DEFAULT_PROJECT_ID_PROVIDER);
 
 		assertThat(secretIdentifier).isNull();
+	}
+
+	@Test
+	public void testInvalidSecretFormat_missingSecretId() {
+		String property = "gcp-secret/";
+
+		assertThatThrownBy(() ->
+				SecretManagerPropertySource.parseFromProperty(property, DEFAULT_PROJECT_ID_PROVIDER))
+				.hasCauseInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("The GCP Secret Manager secret id must not be empty");
 	}
 
 	@Test
