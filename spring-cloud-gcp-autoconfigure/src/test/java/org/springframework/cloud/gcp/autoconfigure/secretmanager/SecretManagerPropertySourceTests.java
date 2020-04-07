@@ -43,7 +43,7 @@ public class SecretManagerPropertySourceTests {
 
 		assertThatThrownBy(() ->
 				SecretManagerPropertySource.parseFromProperty(property, DEFAULT_PROJECT_ID_PROVIDER))
-				.hasCauseInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessageContaining("The GCP Secret Manager secret id must not be empty");
 	}
 
