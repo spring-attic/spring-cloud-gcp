@@ -45,17 +45,18 @@ public class SecretManagerWebController {
 	// Application secrets can be accessed using @Value and passing in the secret name.
 	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
 	// bootstrap.properties.
-	@Value("${secrets.application-secret}")
-	private String applicationSecretValue;
+	@Value("${gcp-secret/application-secret}")
+	private String appSecret;
 
 	// Multiple ways of loading the application-secret are demonstrated in bootstrap.properties.
-	@Value("${my-application-secret-1}")
-	private String myApplicationSecretValue;
+	// Try it with my-app-secret-1 or my-app-secret-2
+	@Value("${my-app-secret-1}")
+	private String myAppSecret;
 
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
-		map.put("applicationSecret", this.applicationSecretValue);
-		map.put("myApplicationSecret", this.myApplicationSecretValue);
+		map.put("appSecret", this.appSecret);
+		map.put("myAppSecret", this.myAppSecret);
 		return new ModelAndView("index.html", map);
 	}
 
@@ -98,8 +99,8 @@ public class SecretManagerWebController {
 			this.secretManagerTemplate.createSecret(secretId, secretPayload.getBytes(), projectId);
 		}
 
-		map.put("applicationSecret", this.applicationSecretValue);
-		map.put("myApplicationSecret", this.myApplicationSecretValue);
+		map.put("applicationSecret", this.appSecret);
+		map.put("myApplicationSecret", this.myAppSecret);
 		map.put("message", "Secret created!");
 		return new ModelAndView("index.html", map);
 	}
