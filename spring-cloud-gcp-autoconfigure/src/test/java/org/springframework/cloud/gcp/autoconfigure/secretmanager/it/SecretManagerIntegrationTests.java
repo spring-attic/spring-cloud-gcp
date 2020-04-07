@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.secretmanager.it;
 
 import java.util.concurrent.TimeUnit;
-import java.util.stream.StreamSupport;
 
 import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
@@ -26,7 +25,6 @@ import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
@@ -65,10 +63,10 @@ public class SecretManagerIntegrationTests {
 
 	@BeforeClass
 	public static void prepare() {
-//		assumeThat(System.getProperty("it.secretmanager"))
-//				.as("Secret manager integration tests are disabled. "
-//						+ "Please use '-Dit.secretmanager=true' to enable them.")
-//				.isEqualTo("true");
+		assumeThat(System.getProperty("it.secretmanager"))
+				.as("Secret manager integration tests are disabled. "
+						+ "Please use '-Dit.secretmanager=true' to enable them.")
+				.isEqualTo("true");
 	}
 
 	@Before
@@ -191,18 +189,19 @@ public class SecretManagerIntegrationTests {
 
 	private boolean secretExists(String secretId) {
 		try {
-		  SecretVersionName secretVersionName =
+			SecretVersionName secretVersionName =
 					SecretVersionName.newBuilder()
 							.setProject(projectIdProvider.getProjectId())
 							.setSecret(secretId)
 							.setSecretVersion("latest")
 							.build();
-	  	this.client.accessSecretVersion(secretVersionName);
-		} catch (NotFoundException e) {
-	  	return false;
+			this.client.accessSecretVersion(secretVersionName);
+		}
+		catch (NotFoundException e) {
+			return false;
 		}
 
-	  return true;
+		return true;
 	}
 
 	private void deleteSecret(String secretId) {

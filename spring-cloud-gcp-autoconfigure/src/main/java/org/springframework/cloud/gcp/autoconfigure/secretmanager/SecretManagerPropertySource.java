@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -75,7 +74,6 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		return response.getPayload().getData();
 	}
 
-	@VisibleForTesting
 	static SecretVersionName parseFromProperty(String property, GcpProjectIdProvider projectIdProvider) {
 		if (!property.startsWith(GCP_SECRET_PREFIX)) {
 			return null;
@@ -120,8 +118,8 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 			version = tokens[5];
 		}
 		else {
-		  throw new IllegalArgumentException(
-		  		"Unrecognized format for specifying a GCP Secret Manager secret: " + property);
+			throw new IllegalArgumentException(
+					"Unrecognized format for specifying a GCP Secret Manager secret: " + property);
 		}
 
 		Assert.isTrue(
