@@ -32,8 +32,6 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
-import org.springframework.cloud.gcp.secretmanager.SecretManagerPropertySourceLocator;
-import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -50,8 +48,10 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
 @ConditionalOnClass(SecretManagerServiceClient.class)
-@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.bootstrap.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
+
+	private final GcpSecretManagerProperties properties;
 
 	private final CredentialsProvider credentialsProvider;
 
@@ -61,6 +61,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 			GcpSecretManagerProperties properties,
 			ConfigurableEnvironment configurableEnvironment) throws IOException {
 
+		this.properties = properties;
 		this.credentialsProvider = new DefaultCredentialsProvider(properties);
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId
@@ -96,17 +97,9 @@ public class GcpSecretManagerBootstrapConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public SecretManagerTemplate secretManagerTemplate(SecretManagerServiceClient client) {
-		return new SecretManagerTemplate(client, this.gcpProjectIdProvider);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public PropertySourceLocator secretManagerPropertySourceLocator(
-			SecretManagerTemplate secretManagerTemplate) {
+	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
 		SecretManagerPropertySourceLocator propertySourceLocator =
-				new SecretManagerPropertySourceLocator(secretManagerTemplate, this.gcpProjectIdProvider);
+				new SecretManagerPropertySourceLocator(client, this.gcpProjectIdProvider);
 		return propertySourceLocator;
 	}
 }
