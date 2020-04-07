@@ -74,6 +74,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		return response.getPayload().getData();
 	}
 
+	// Visible for Testing
 	static SecretVersionName parseFromProperty(String property, GcpProjectIdProvider projectIdProvider) {
 		if (!property.startsWith(GCP_SECRET_PREFIX)) {
 			return null;
