@@ -321,7 +321,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Iterator it = Arrays.asList(parameters).iterator();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
 			//build properties chain for nested properties
-			//if property is not nested, the list would contain only one property
+			//if the property is not nested, the list would contain only one property
 			List<DatastorePersistentProperty> propertiesChain = getPropertiesChain(part);
 
 			String fieldName = propertiesChain.stream().map(DatastorePersistentProperty::getFieldName)
