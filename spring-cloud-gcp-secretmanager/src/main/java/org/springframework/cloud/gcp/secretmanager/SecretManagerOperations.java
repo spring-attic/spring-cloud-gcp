@@ -23,19 +23,19 @@ package org.springframework.cloud.gcp.secretmanager;
  * The following secret URI syntax is supported:
  *
  * 1. Long form - specify the project ID, secret ID, and version
- * sm://projects/<project-id>/secrets/<secret-id>/versions/<version-id>}
+ * sm://projects/{project-id}/secrets/{secret-id}/versions/{version-id}
  *
  * 2.  Long form - specify project ID, secret ID, and use latest version
- * sm://projects/<project-id>/secrets/<secret-id>
+ * sm://projects/{project-id}/secrets/{secret-id}
  *
  * 3. Short form - specify project ID, secret ID, and version
- * sm://<project-id>/<secret-id>/<version-id>
+ * sm://{project-id}/{secret-id}/{version-id}
  *
  * 4. Short form - specify secret and version, use default GCP project configured
- * sm://<secret-id>/<version>
+ * sm://{secret-id}/{version}
  *
  * 5. Shortest form - specify secret ID, use default project and latest version.
- * sm://<secret-id>
+ * sm://{secret-id}
  *
  * @author Daniel Zou
  * @since 1.2.2
