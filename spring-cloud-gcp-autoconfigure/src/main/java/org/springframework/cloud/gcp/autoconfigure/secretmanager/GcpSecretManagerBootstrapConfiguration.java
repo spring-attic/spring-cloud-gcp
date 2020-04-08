@@ -52,8 +52,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
 
-	private final GcpSecretManagerProperties properties;
-
 	private final CredentialsProvider credentialsProvider;
 
 	private final GcpProjectIdProvider gcpProjectIdProvider;
@@ -62,7 +60,6 @@ public class GcpSecretManagerBootstrapConfiguration {
 			GcpSecretManagerProperties properties,
 			ConfigurableEnvironment configurableEnvironment) throws IOException {
 
-		this.properties = properties;
 		this.credentialsProvider = new DefaultCredentialsProvider(properties);
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId
