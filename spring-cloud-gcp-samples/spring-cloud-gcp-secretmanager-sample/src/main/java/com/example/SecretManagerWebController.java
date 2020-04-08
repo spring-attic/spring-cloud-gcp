@@ -37,9 +37,6 @@ public class SecretManagerWebController {
 	private Environment environment;
 
 	@Autowired
-	private MyAppProperties properties;
-
-	@Autowired
 	private SecretManagerTemplate secretManagerTemplate;
 
 	// Application secrets can be accessed using @Value and passing in the secret name.
@@ -51,6 +48,11 @@ public class SecretManagerWebController {
 	// Application secret is set into the properties file and get here using @Value
 	@Value("${my-application-secret}")
 	private String myApplicationSecretValue;
+
+	// Another way to access your secrets is to @Autowire a @ConfigurationProperties-annotated class.
+	@Autowired
+	private MyAppProperties properties;
+
 
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
