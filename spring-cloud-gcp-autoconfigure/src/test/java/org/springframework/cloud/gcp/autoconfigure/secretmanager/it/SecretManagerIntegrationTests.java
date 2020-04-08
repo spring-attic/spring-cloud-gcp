@@ -91,7 +91,7 @@ public class SecretManagerIntegrationTests {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.enabled=true")
 				.run();
 
 		assertThat(context.getEnvironment().getProperty("gcp-secret/" + TEST_SECRET_ID))
@@ -109,7 +109,7 @@ public class SecretManagerIntegrationTests {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=false")
+				.properties("spring.cloud.gcp.secretmanager.enabled=false")
 				.run();
 
 		assertThat(context.getEnvironment().getProperty(
@@ -125,7 +125,7 @@ public class SecretManagerIntegrationTests {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.enabled=true")
 				.run();
 
 		String versionedSecret = context.getEnvironment().getProperty(
@@ -140,7 +140,7 @@ public class SecretManagerIntegrationTests {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
+				.properties("spring.cloud.gcp.secretmanager.enabled=true")
 				.run();
 
 		assertThatThrownBy(() ->
