@@ -27,6 +27,6 @@ import org.springframework.data.mapping.PersistentProperty;
  */
 public interface FirestorePersistentProperty
 		extends PersistentProperty<FirestorePersistentProperty> {
-	String getPropertyName();
+	String getFieldName();
 
 }

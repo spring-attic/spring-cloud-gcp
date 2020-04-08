@@ -120,7 +120,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		List<OrPart> parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
-			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
+			if (parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");
 			}
@@ -320,16 +320,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
-			Iterable<PropertyPath> iterable = () -> part.getProperty().iterator();
-			List<DatastorePersistentProperty> properties =
-					StreamSupport.stream(iterable.spliterator(), false)
-					.map(propertyPath -> {
-						DatastorePersistentEntity<?> persistentEntity =
-								this.datastoreMappingContext.getPersistentEntity(propertyPath.getOwningType());
-						return persistentEntity.getPersistentProperty(propertyPath.getSegment());
-					}).collect(Collectors.toList());
+			//build properties chain for nested properties
+			//if property is not nested, the list would contain only one property
+			List<DatastorePersistentProperty> propertiesChain = getPropertiesChain(part);
 
-			String fieldName = properties.stream().map(DatastorePersistentProperty::getFieldName)
+			String fieldName = propertiesChain.stream().map(DatastorePersistentProperty::getFieldName)
 					.collect(Collectors.joining("."));
 
 			if (part.getType() == Part.Type.IS_NULL) {
@@ -345,7 +340,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						"Too few parameters are provided for query method: " + getQueryMethod().getName());
 			}
 
-			Value convertedValue = convertParam(properties.get(properties.size() - 1), it.next());
+			Value convertedValue = convertParam(propertiesChain.get(propertiesChain.size() - 1), it.next());
 
 			return filterFactory.apply(fieldName, convertedValue);
 		}).toArray(Filter[]::new);
@@ -354,6 +349,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				(filters.length > 1)
 						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
 						: filters[0]);
+	}
+
+	private List<DatastorePersistentProperty> getPropertiesChain(Part part) {
+		Iterable<PropertyPath> iterable = () -> part.getProperty().iterator();
+
+		return StreamSupport.stream(iterable.spliterator(), false)
+				.map(propertyPath ->
+						this.datastoreMappingContext
+								.getPersistentEntity(propertyPath.getOwningType())
+								.getPersistentProperty(propertyPath.getSegment())
+				).collect(Collectors.toList());
 	}
 
 	private Value convertParam(DatastorePersistentProperty persistentProperty, Object val) {

@@ -869,6 +869,10 @@ public class PartTreeDatastoreQueryTests {
 		return null;
 	}
 
+	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater) {
+		return null;
+	}
+
 	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater, Pageable pageable) {
 		return null;
 	}
