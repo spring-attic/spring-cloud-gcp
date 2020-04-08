@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
  */
 final class SecretManagerPropertyUtils {
 
-	private static final String GCP_SECRET_PREFIX = "gcp-secret/";
+	private static final String GCP_SECRET_PREFIX = "sm://";
 
 	private SecretManagerPropertyUtils() { }
 
@@ -46,16 +46,16 @@ final class SecretManagerPropertyUtils {
 		String version = "latest";
 
 		if (tokens.length == 1) {
-			// property is form "gcp-secret/<secret-id>"
+			// property is form "sm://<secret-id>"
 			secretId = tokens[0];
 		}
 		else if (tokens.length == 2) {
-			// property is form "gcp-secret/<secret-id>/<version>"
+			// property is form "sm://<secret-id>/<version>"
 			secretId = tokens[0];
 			version = tokens[1];
 		}
 		else if (tokens.length == 3) {
-			// property is form "gcp-secret/<project-id>/<secret-id>/<version-id>"
+			// property is form "sm://<project-id>/<secret-id>/<version-id>"
 			projectId = tokens[0];
 			secretId = tokens[1];
 			version = tokens[2];
@@ -63,7 +63,7 @@ final class SecretManagerPropertyUtils {
 		else if (tokens.length == 4
 				&& tokens[0].equals("projects")
 				&& tokens[2].equals("secrets")) {
-			// property is form "gcp-secret/projects/<project-id>/secrets/<secret-id>"
+			// property is form "sm://projects/<project-id>/secrets/<secret-id>"
 			projectId = tokens[1];
 			secretId = tokens[3];
 		}
@@ -71,7 +71,7 @@ final class SecretManagerPropertyUtils {
 				&& tokens[0].equals("projects")
 				&& tokens[2].equals("secrets")
 				&& tokens[4].equals("versions")) {
-			// property is form "gcp-secret/projects/<project-id>/secrets/<secret-id>/versions/<version>"
+			// property is form "sm://projects/<project-id>/secrets/<secret-id>/versions/<version>"
 			projectId = tokens[1];
 			secretId = tokens[3];
 			version = tokens[5];

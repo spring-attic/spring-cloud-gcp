@@ -39,7 +39,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testInvalidSecretFormat_missingSecretId() {
-		String property = "gcp-secret/";
+		String property = "sm://";
 
 		assertThatThrownBy(() ->
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER))
@@ -49,7 +49,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testShortProperty_secretId() {
-		String property = "gcp-secret/the-secret";
+		String property = "sm://the-secret";
 		SecretVersionName secretIdentifier =
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER);
 
@@ -60,7 +60,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testShortProperty_projectSecretId() {
-		String property = "gcp-secret/the-secret/the-version";
+		String property = "sm://the-secret/the-version";
 		SecretVersionName secretIdentifier =
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER);
 
@@ -71,7 +71,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testShortProperty_projectSecretIdVersion() {
-		String property = "gcp-secret/my-project/the-secret/2";
+		String property = "sm://my-project/the-secret/2";
 		SecretVersionName secretIdentifier =
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER);
 
@@ -82,7 +82,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testLongProperty_projectSecret() {
-		String property = "gcp-secret/projects/my-project/secrets/the-secret";
+		String property = "sm://projects/my-project/secrets/the-secret";
 		SecretVersionName secretIdentifier =
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER);
 
@@ -93,7 +93,7 @@ public class SecretManagerPropertyUtilsTests {
 
 	@Test
 	public void testLongProperty_projectSecretVersion() {
-		String property = "gcp-secret/projects/my-project/secrets/the-secret/versions/3";
+		String property = "sm://projects/my-project/secrets/the-secret/versions/3";
 		SecretVersionName secretIdentifier =
 				SecretManagerPropertyUtils.getSecretVersionName(property, DEFAULT_PROJECT_ID_PROVIDER);
 

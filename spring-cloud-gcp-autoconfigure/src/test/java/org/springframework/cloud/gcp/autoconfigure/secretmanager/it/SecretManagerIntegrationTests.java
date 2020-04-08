@@ -93,11 +93,11 @@ public class SecretManagerIntegrationTests {
 				.web(WebApplicationType.NONE)
 				.run();
 
-		assertThat(context.getEnvironment().getProperty("gcp-secret/" + TEST_SECRET_ID))
+		assertThat(context.getEnvironment().getProperty("sm://" + TEST_SECRET_ID))
 				.isEqualTo("the secret data.");
 
 		byte[] byteArraySecret = context.getEnvironment().getProperty(
-				"gcp-secret/" + TEST_SECRET_ID + "/latest", byte[].class);
+				"sm://" + TEST_SECRET_ID + "/latest", byte[].class);
 		assertThat(byteArraySecret).isEqualTo("the secret data.".getBytes());
 	}
 
@@ -112,7 +112,7 @@ public class SecretManagerIntegrationTests {
 				.run();
 
 		assertThat(context.getEnvironment().getProperty(
-				"gcp-secret/" + TEST_SECRET_ID, String.class)).isNull();
+				"sm://" + TEST_SECRET_ID, String.class)).isNull();
 	}
 
 	@Test
@@ -127,7 +127,7 @@ public class SecretManagerIntegrationTests {
 				.run();
 
 		String versionedSecret = context.getEnvironment().getProperty(
-				"gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class);
+				"sm://" + VERSIONED_SECRET_ID + "/2", String.class);
 		assertThat(versionedSecret).isEqualTo("the secret data v2");
 	}
 
@@ -141,7 +141,7 @@ public class SecretManagerIntegrationTests {
 				.run();
 
 		assertThatThrownBy(() ->
-				context.getEnvironment().getProperty("gcp-secret/" + VERSIONED_SECRET_ID + "/2", String.class))
+				context.getEnvironment().getProperty("sm://" + VERSIONED_SECRET_ID + "/2", String.class))
 				.hasCauseInstanceOf(StatusRuntimeException.class)
 				.hasMessageContaining("NOT_FOUND");
 	}

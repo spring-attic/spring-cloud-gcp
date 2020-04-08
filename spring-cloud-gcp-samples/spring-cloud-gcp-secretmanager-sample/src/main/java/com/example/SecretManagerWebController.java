@@ -45,7 +45,7 @@ public class SecretManagerWebController {
 	// Application secrets can be accessed using @Value and passing in the secret name.
 	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
 	// bootstrap.properties.
-	@Value("${gcp-secret/application-secret}")
+	@Value("${sm://application-secret}")
 	private String appSecret;
 
 	// Multiple ways of loading the application-secret are demonstrated in bootstrap.properties.
@@ -75,11 +75,11 @@ public class SecretManagerWebController {
 		String secretPayload;
 		if (StringUtils.isEmpty(projectId)) {
 			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
-					"gcp-secret/" + secretId + "/" + version);
+					"sm://" + secretId + "/" + version);
 		}
 		else {
 			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
-					"gcp-secret/" + projectId + "/" + secretId + "/" + version);
+					"sm://" + projectId + "/" + secretId + "/" + version);
 		}
 
 		return "Secret ID: " + secretId + " | Value: " + secretPayload

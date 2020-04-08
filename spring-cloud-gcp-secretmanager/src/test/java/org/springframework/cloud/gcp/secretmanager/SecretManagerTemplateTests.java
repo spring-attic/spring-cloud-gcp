@@ -161,7 +161,7 @@ public class SecretManagerTemplateTests {
 				SecretVersionName.of("my-project", "my-secret", "latest"));
 		assertThat(result).isEqualTo("get after it.".getBytes());
 
-		result = this.secretManagerTemplate.getSecretBytesByUri("gcp-secret/my-secret/1");
+		result = this.secretManagerTemplate.getSecretBytesByUri("sm://my-secret/1");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("my-project", "my-secret", "1"));
 		assertThat(result).isEqualTo("get after it.".getBytes());
@@ -174,7 +174,7 @@ public class SecretManagerTemplateTests {
 				SecretVersionName.of("my-project", "my-secret", "latest"));
 		assertThat(result).isEqualTo("get after it.");
 
-		result = this.secretManagerTemplate.getSecretStringByUri("gcp-secret/my-secret/1");
+		result = this.secretManagerTemplate.getSecretStringByUri("sm://my-secret/1");
 		verify(this.client).accessSecretVersion(
 				SecretVersionName.of("my-project", "my-secret", "1"));
 		assertThat(result).isEqualTo("get after it.");
