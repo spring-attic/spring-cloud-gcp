@@ -30,6 +30,7 @@ import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.util.Assert;
 
 /**
  * Offers convenience methods for performing common operations on Secret Manager including
@@ -67,33 +68,58 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	}
 
 	@Override
+	public void createSecret(String secretId, byte[] payload, String projectId) {
+		createNewSecretVersion(secretId, ByteString.copyFrom(payload), projectId);
+	}
+
+
+	@Override
 	public String getSecretString(String secretId) {
-		return getSecretString(secretId, LATEST_VERSION);
+		SecretVersionName secretVersionName = getDefaultSecretVersionName(secretId);
+		return getSecretByteString(secretVersionName).toStringUtf8();
 	}
 
 	@Override
-	public String getSecretString(String secretId, String versionName) {
-		return getSecretByteString(secretId, versionName).toStringUtf8();
+	public String getSecretStringByUri(String secretUri) {
+		SecretVersionName secretVersionName = SecretManagerPropertyUtils.getSecretVersionName(secretUri, projectIdProvider);
+		Assert.notNull(secretVersionName, "Secret URI was malformed: " + secretUri);
+		return getSecretByteString(secretVersionName).toStringUtf8();
 	}
 
 	@Override
 	public byte[] getSecretBytes(String secretId) {
-		return getSecretBytes(secretId, LATEST_VERSION);
+		SecretVersionName secretVersionName = getDefaultSecretVersionName(secretId);
+		return getSecretByteString(secretVersionName).toByteArray();
 	}
 
 	@Override
-	public byte[] getSecretBytes(String secretId, String versionName) {
-		return getSecretByteString(secretId, versionName).toByteArray();
-	}
-
-	@Override
-	public ByteString getSecretByteString(String secretId, String versionName) {
-		return getSecretByteString(secretId, versionName, this.projectIdProvider.getProjectId());
+	public byte[] getSecretBytesByUri(String secretUri) {
+		SecretVersionName secretVersionName = SecretManagerPropertyUtils.getSecretVersionName(secretUri, projectIdProvider);
+		Assert.notNull(secretVersionName, "Secret URI was malformed: " + secretUri);
+		return getSecretByteString(secretVersionName).toByteArray();
 	}
 
 	@Override
 	public boolean secretExists(String secretId) {
 		return secretExists(secretId, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
+	public boolean secretExists(String secretId, String projectId) {
+		SecretName secretName = SecretName.of(projectId, secretId);
+		try {
+			this.secretManagerServiceClient.getSecret(secretName);
+		}
+		catch (NotFoundException ex) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public ByteString getSecretByteString(SecretVersionName secretVersionName) {
+		AccessSecretVersionResponse response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
+		return response.getPayload().getData();
 	}
 
 	/**
@@ -136,33 +162,11 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		this.secretManagerServiceClient.createSecret(request);
 	}
 
-	@Override
-	public void createSecret(String secretId, byte[] payload, String projectId) {
-		createNewSecretVersion(secretId, ByteString.copyFrom(payload), projectId);
-	}
-
-	@Override
-	public ByteString getSecretByteString(String secretId, String versionName, String projectId) {
-		SecretVersionName secretVersionName = SecretVersionName.of(
-				projectId,
-				secretId,
-				versionName);
-
-		AccessSecretVersionResponse response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
-
-		return response.getPayload().getData();
-	}
-
-	@Override
-	public boolean secretExists(String secretId, String projectId) {
-		SecretName secretName = SecretName.of(projectId, secretId);
-		try {
-			this.secretManagerServiceClient.getSecret(secretName);
-		}
-		catch (NotFoundException ex) {
-			return false;
-		}
-
-		return true;
+	private SecretVersionName getDefaultSecretVersionName(String secretId) {
+		return SecretVersionName.newBuilder()
+				.setProject(this.projectIdProvider.getProjectId())
+				.setSecret(secretId)
+				.setSecretVersion(LATEST_VERSION)
+				.build();
 	}
 }

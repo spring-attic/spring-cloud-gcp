@@ -74,11 +74,12 @@ public class SecretManagerWebController {
 
 		String secretPayload;
 		if (StringUtils.isEmpty(projectId)) {
-			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version);
+			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
+					"gcp-secret/" + secretId + "/" + version);
 		}
 		else {
-			secretPayload =
-					this.secretManagerTemplate.getSecretByteString(secretId, version, projectId).toStringUtf8();
+			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
+					"gcp-secret/" + projectId + "/" + secretId + "/" + version);
 		}
 
 		return "Secret ID: " + secretId + " | Value: " + secretPayload

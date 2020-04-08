@@ -14,73 +14,31 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.secretmanager;
+package org.springframework.cloud.gcp.secretmanager;
 
-import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
-import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * A property source for Secret Manager which accesses the Secret Manager APIs when {@link #getProperty} is called.
+ * Utilities for parsing Secret Manager properties.
  *
  * @author Daniel Zou
- * @author Eddú Meléndez
- * @since 1.2.2
  */
-public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
+final class SecretManagerPropertyUtils {
 
 	private static final String GCP_SECRET_PREFIX = "gcp-secret/";
 
-	private final GcpProjectIdProvider projectIdProvider;
+	private SecretManagerPropertyUtils() { }
 
-	public SecretManagerPropertySource(
-			String propertySourceName,
-			SecretManagerServiceClient client,
-			GcpProjectIdProvider projectIdProvider) {
-		super(propertySourceName, client);
-
-		this.projectIdProvider = projectIdProvider;
-	}
-
-	@Override
-	public Object getProperty(String name) {
-		SecretVersionName secretIdentifier = parseFromProperty(name, this.projectIdProvider);
-
-		if (secretIdentifier != null) {
-			return getSecretPayload(secretIdentifier);
-		}
-		else {
-			return null;
-		}
-	}
-
-	/**
-	 * The {@link SecretManagerPropertySource} is not enumerable, so this always returns an empty array.
-	 * @return the empty array.
-	 */
-	@Override
-	public String[] getPropertyNames() {
-		return new String[0];
-	}
-
-	private ByteString getSecretPayload(SecretVersionName secretIdentifier) {
-		AccessSecretVersionResponse response = getSource().accessSecretVersion(secretIdentifier);
-		return response.getPayload().getData();
-	}
-
-	// Visible for Testing
-	static SecretVersionName parseFromProperty(String property, GcpProjectIdProvider projectIdProvider) {
-		if (!property.startsWith(GCP_SECRET_PREFIX)) {
+	static SecretVersionName getSecretVersionName(String input, GcpProjectIdProvider projectIdProvider) {
+		if (!input.startsWith(GCP_SECRET_PREFIX)) {
 			return null;
 		}
 
-		String resourcePath = property.substring(GCP_SECRET_PREFIX.length());
+		String resourcePath = input.substring(GCP_SECRET_PREFIX.length());
 		String[] tokens = resourcePath.split("/");
 
 		String projectId = projectIdProvider.getProjectId();
@@ -120,20 +78,20 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 		}
 		else {
 			throw new IllegalArgumentException(
-					"Unrecognized format for specifying a GCP Secret Manager secret: " + property);
+					"Unrecognized format for specifying a GCP Secret Manager secret: " + input);
 		}
 
 		Assert.isTrue(
 				!StringUtils.isEmpty(secretId),
-				"The GCP Secret Manager secret id must not be empty: " + property);
+				"The GCP Secret Manager secret id must not be empty: " + input);
 
 		Assert.isTrue(
 				!StringUtils.isEmpty(projectId),
-				"The GCP Secret Manager project id must not be empty: " + property);
+				"The GCP Secret Manager project id must not be empty: " + input);
 
 		Assert.isTrue(
 				!StringUtils.isEmpty(version),
-				"The GCP Secret Manager secret version must not be empty: " + property);
+				"The GCP Secret Manager secret version must not be empty: " + input);
 
 		return SecretVersionName.newBuilder()
 				.setProject(projectId)
