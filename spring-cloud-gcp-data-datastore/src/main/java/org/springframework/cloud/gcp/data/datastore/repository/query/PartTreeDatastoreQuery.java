@@ -53,6 +53,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.Part;
@@ -117,9 +118,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		List parts = this.tree.get().collect(Collectors.toList());
+		List<OrPart> parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
-			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
+			if (parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");
 			}
@@ -319,11 +320,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
 		Filter[] filters = this.filterParts.stream().map((part) -> {
-			DatastorePersistentProperty persistentProperty = (DatastorePersistentProperty) this.datastorePersistentEntity
-					.getPersistentProperty(part.getProperty().getSegment());
+			//build properties chain for nested properties
+			//if the property is not nested, the list would contain only one property
+			List<DatastorePersistentProperty> propertiesChain = getPropertiesChain(part);
+
+			String fieldName = propertiesChain.stream().map(DatastorePersistentProperty::getFieldName)
+					.collect(Collectors.joining("."));
 
 			if (part.getType() == Part.Type.IS_NULL) {
-				return PropertyFilter.isNull(persistentProperty.getFieldName());
+				return PropertyFilter.isNull(fieldName);
 			}
 
 			BiFunction<String, Value, PropertyFilter> filterFactory = FILTER_FACTORIES.get(part.getType());
@@ -335,15 +340,26 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						"Too few parameters are provided for query method: " + getQueryMethod().getName());
 			}
 
-			Value convertedValue = convertParam(persistentProperty, it.next());
+			Value convertedValue = convertParam(propertiesChain.get(propertiesChain.size() - 1), it.next());
 
-			return filterFactory.apply(persistentProperty.getFieldName(), convertedValue);
+			return filterFactory.apply(fieldName, convertedValue);
 		}).toArray(Filter[]::new);
 
 		builder.setFilter(
 				(filters.length > 1)
 						? CompositeFilter.and(filters[0], Arrays.copyOfRange(filters, 1, filters.length))
 						: filters[0]);
+	}
+
+	private List<DatastorePersistentProperty> getPropertiesChain(Part part) {
+		Iterable<PropertyPath> iterable = () -> part.getProperty().iterator();
+
+		return StreamSupport.stream(iterable.spliterator(), false)
+				.map(propertyPath ->
+						this.datastoreMappingContext
+								.getPersistentEntity(propertyPath.getOwningType())
+								.getPersistentProperty(propertyPath.getSegment())
+				).collect(Collectors.toList());
 	}
 
 	private Value convertParam(DatastorePersistentProperty persistentProperty, Object val) {

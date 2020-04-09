@@ -179,7 +179,7 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 				.stream(iterable.spliterator(), false)
 				.map(propertyPath -> {
 					FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(propertyPath.getOwningType());
-					return persistentEntity.getPersistentProperty(propertyPath.getSegment()).getPropertyName();
+					return persistentEntity.getPersistentProperty(propertyPath.getSegment()).getFieldName();
 				})
 				.collect(Collectors.joining("."));
 	}

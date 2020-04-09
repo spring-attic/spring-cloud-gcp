@@ -107,9 +107,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityB = new TestEntity(2L, "blue", 2L, Shape.CIRCLE, null);
 
-	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
+	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null, new EmbeddedEntity("c"));
 
-	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
+	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null, new EmbeddedEntity("d"));
 
 	private final List<TestEntity> allTestEntities;
 
@@ -318,6 +318,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("c")).containsExactly(this.testEntityC);
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("d")).containsExactly(this.testEntityD);
+
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
