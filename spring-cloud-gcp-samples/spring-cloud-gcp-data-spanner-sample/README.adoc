@@ -9,35 +9,17 @@ Data Cloud Spanner module link:../../spring-cloud-gcp-starters/spring-cloud-gcp-
 . Create a new Cloud Spanner instance named "spring-demo".
 The example application will create the database and tables if they do not already exist.
 
-You can use https://cloud.google.com/spanner/docs/emulator[Cloud Spanner emulator] to run the sample locally.
-To install the Cloud Spanner emulator:
+If you would like to run the sample locally using Cloud Spanner emulator, please follow https://cloud.google.com/spanner/docs/emulator[this steps] to set up and start the emulator.
 
-Install the Google Cloud SDK.
-
-For Windows and MacOS users, the emulator requires Docker to be installed on your system and available on the system path.
-
-Update your gcloud command-line tool installation to get the latest features:
+After that, you would need to create an instance using this command:
 ----
-gcloud components update beta
-----
-
-Start the emulator
-----
-$ gcloud beta emulators spanner start
-----
-
-Create the emulator config
-----
-$ gcloud config configurations create emulator
-$ gcloud config set auth/disable_credentials true
-$ gcloud config set project your-project-id
-$ gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
-----
-
-Switch to emulator config and create the instance with gcloud
-----
-$ gcloud config configurations activate emulator
 $ gcloud spanner instances create spring-demo --config=emulator-config --description="Test Instance" --nodes=1
+----
+
+Note that you need to set the SPANNER_EMULATOR_HOST environment variable to use the emulator.
+
+----
+$ export SPANNER_EMULATOR_HOST=localhost:9010
 ----
 
 [start=2]
