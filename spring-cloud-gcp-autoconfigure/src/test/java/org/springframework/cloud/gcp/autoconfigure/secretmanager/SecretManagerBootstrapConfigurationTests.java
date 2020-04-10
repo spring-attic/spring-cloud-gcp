@@ -46,11 +46,11 @@ public class SecretManagerBootstrapConfigurationTests {
 
 	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
-	private SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(
-			TestBootstrapConfiguration.class)
-			.child(GcpSecretManagerBootstrapConfiguration.class)
-			.child(TestConfiguration.class)
-			.web(WebApplicationType.NONE);
+	private SpringApplicationBuilder applicationBuilder =
+			new SpringApplicationBuilder(TestBootstrapConfiguration.class)
+					.child(GcpSecretManagerBootstrapConfiguration.class)
+					.child(TestConfiguration.class)
+					.web(WebApplicationType.NONE);
 
 	@Test
 	public void test() {
