@@ -43,7 +43,7 @@ If you have any other ideas, suggestions or bug reports, please use our https://
 We would love to hear from you.
 
 If you want to collaborate in the project, we would also love to get your Pull Requests.
-Before you start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
+Before you start working on one, please take a look at our link:CONTRIBUTING.md[collaboration manual].
 
 == Spring Initializr
 
