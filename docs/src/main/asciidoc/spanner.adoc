@@ -1426,7 +1426,7 @@ This command can be used to create Cloud Spanner instances:
 $ gcloud spanner instances create <instance-name> --config=emulator-config --description="<description>" --nodes=1
 ----
 
-Remember that you need to set the SPANNER_EMULATOR_HOST environment variable to use the emulator:
+Remember that you need to set the `SPANNER_EMULATOR_HOST` environment variable to use the emulator:
 
 ----
 $ export SPANNER_EMULATOR_HOST=localhost:9010
