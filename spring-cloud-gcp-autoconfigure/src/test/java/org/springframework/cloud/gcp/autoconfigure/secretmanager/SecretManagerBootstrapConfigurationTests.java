@@ -26,9 +26,12 @@ import com.google.protobuf.ByteString;
 import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,19 +46,19 @@ public class SecretManagerBootstrapConfigurationTests {
 
 	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpSecretManagerBootstrapConfiguration.class))
-			.withUserConfiguration(TestConfiguration.class);
-
+	private SpringApplicationBuilder applicationBuilder = new SpringApplicationBuilder(
+			TestBootstrapConfiguration.class)
+			.child(GcpSecretManagerBootstrapConfiguration.class)
+			.child(TestConfiguration.class)
+			.web(WebApplicationType.NONE);
 
 	@Test
-	public void test() throws Exception {
-
-		this.contextRunner.run((context) -> {
-			String secret = context.getEnvironment().getProperty("gcp-secret/my-secret");
-			// String secret = context.getBean("secret", String.class);
+	public void test() {
+		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
+			String secret = c.getEnvironment().getProperty("sm://my-secret");
+			// String secret = c.getBean("secret", String.class);
 			assertThat(secret).isEqualTo("hello");
-		});
+		}
 	}
 
 	@Configuration
@@ -68,6 +71,10 @@ public class SecretManagerBootstrapConfigurationTests {
 		public String secret() {
 			return secret;
 		}
+	}
+
+	@Configuration
+	static class TestBootstrapConfiguration {
 
 		@Bean
 		public static SecretManagerServiceClient secretManagerClient() throws Exception {
