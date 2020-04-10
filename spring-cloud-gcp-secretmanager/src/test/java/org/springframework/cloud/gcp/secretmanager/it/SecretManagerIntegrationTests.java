@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.secretmanager.it;
+package org.springframework.cloud.gcp.secretmanager.it;
 
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +39,6 @@ import org.junit.Test;
 
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -72,7 +70,7 @@ public class SecretManagerIntegrationTests {
 	@Before
 	public void setupSecretManager() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.child(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
@@ -89,7 +87,7 @@ public class SecretManagerIntegrationTests {
 		createSecret(TEST_SECRET_ID, "the secret data.");
 
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.child(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
@@ -102,27 +100,13 @@ public class SecretManagerIntegrationTests {
 	}
 
 	@Test
-	public void testConfigurationDisabled() {
-		createSecret(TEST_SECRET_ID, "the secret data.");
-
-		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.enabled=false")
-				.run();
-
-		assertThat(context.getEnvironment().getProperty(
-				"sm://" + TEST_SECRET_ID, String.class)).isNull();
-	}
-
-	@Test
 	public void testSecretsWithSpecificVersion() {
 		createSecret(VERSIONED_SECRET_ID, "the secret data");
 		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
 		createSecret(VERSIONED_SECRET_ID, "the secret data v3");
 
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.sources(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
@@ -136,7 +120,7 @@ public class SecretManagerIntegrationTests {
 		createSecret(VERSIONED_SECRET_ID, "the secret data");
 
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.sources(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 

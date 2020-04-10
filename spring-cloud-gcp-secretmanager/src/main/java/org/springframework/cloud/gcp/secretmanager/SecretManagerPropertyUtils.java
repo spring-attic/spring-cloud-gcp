@@ -20,7 +20,6 @@ import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Utilities for parsing Secret Manager properties.
@@ -81,17 +80,14 @@ final class SecretManagerPropertyUtils {
 					"Unrecognized format for specifying a GCP Secret Manager secret: " + input);
 		}
 
-		Assert.isTrue(
-				!StringUtils.isEmpty(secretId),
-				"The GCP Secret Manager secret id must not be empty: " + input);
+		Assert.hasText(
+				secretId, "The GCP Secret Manager secret id must not be empty: " + input);
 
-		Assert.isTrue(
-				!StringUtils.isEmpty(projectId),
-				"The GCP Secret Manager project id must not be empty: " + input);
+		Assert.hasText(
+				projectId, "The GCP Secret Manager project id must not be empty: " + input);
 
-		Assert.isTrue(
-				!StringUtils.isEmpty(version),
-				"The GCP Secret Manager secret version must not be empty: " + input);
+		Assert.hasText(
+				version, "The GCP Secret Manager secret version must not be empty: " + input);
 
 		return SecretVersionName.newBuilder()
 				.setProject(projectId)
