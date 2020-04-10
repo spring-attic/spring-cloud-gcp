@@ -38,7 +38,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		classes = SecretManagerApplication.class,
-		properties = {"spring.cloud.gcp.secretmanager.bootstrap.enabled=true"})
+		properties = {"spring.cloud.gcp.secretmanager.enabled=true"})
 public class SecretManagerSampleTests {
 
 	@Autowired

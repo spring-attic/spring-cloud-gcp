@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -39,17 +36,6 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String projectId;
 
-	/**
-	 * Defines a prefix String that will be prepended to the environment property names
-	 * of secrets in Secret Manager.
-	 */
-	private String secretNamePrefix = "";
-
-	/**
-	 * Defines versions for specific secret-ids.
-	 */
-	private Map<String, String> versions = new HashMap<>();
-
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -60,21 +46,5 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
-	}
-
-	public String getSecretNamePrefix() {
-		return secretNamePrefix;
-	}
-
-	public void setSecretNamePrefix(String secretNamePrefix) {
-		this.secretNamePrefix = secretNamePrefix;
-	}
-
-	public Map<String, String> getVersions() {
-		return versions;
-	}
-
-	public void setVersions(Map<String, String> versions) {
-		this.versions = versions;
 	}
 }

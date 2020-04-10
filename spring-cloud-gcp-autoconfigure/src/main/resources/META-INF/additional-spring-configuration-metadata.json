@@ -55,7 +55,7 @@
       "defaultValue": true
     },
     {
-      "name": "spring.cloud.gcp.secretmanager.bootstrap.enabled",
+      "name": "spring.cloud.gcp.secretmanager.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure GCP Secret Manager support components.",
       "defaultValue": true

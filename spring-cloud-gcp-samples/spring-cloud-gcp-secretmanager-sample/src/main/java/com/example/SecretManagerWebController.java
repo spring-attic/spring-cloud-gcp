@@ -42,12 +42,13 @@ public class SecretManagerWebController {
 	// Application secrets can be accessed using @Value and passing in the secret name.
 	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
 	// bootstrap.properties.
-	@Value("${secrets.application-secret}")
-	private String applicationSecretValue;
+	@Value("${sm://application-secret}")
+	private String appSecret;
 
-	// Application secret is set into the properties file and get here using @Value
-	@Value("${my-application-secret}")
-	private String myApplicationSecretValue;
+	// Multiple ways of loading the application-secret are demonstrated in bootstrap.properties.
+	// Try it with my-app-secret-1 or my-app-secret-2
+	@Value("${my-app-secret-1}")
+	private String myAppSecret;
 
 	// Another way to access your secrets is to @Autowire a @ConfigurationProperties-annotated class.
 	@Autowired
@@ -56,8 +57,8 @@ public class SecretManagerWebController {
 
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
-		map.put("applicationSecret", this.applicationSecretValue);
-		map.put("myApplicationSecret", this.myApplicationSecretValue);
+		map.put("applicationSecret", this.appSecret);
+		map.put("myApplicationSecret", this.myAppSecret);
 		return new ModelAndView("index.html", map);
 	}
 
@@ -75,11 +76,12 @@ public class SecretManagerWebController {
 
 		String secretPayload;
 		if (StringUtils.isEmpty(projectId)) {
-			secretPayload = this.secretManagerTemplate.getSecretString(secretId, version);
+			secretPayload = this.secretManagerTemplate.getSecretString(
+					"sm://" + secretId + "/" + version);
 		}
 		else {
-			secretPayload =
-					this.secretManagerTemplate.getSecretByteString(secretId, version, projectId).toStringUtf8();
+			secretPayload = this.secretManagerTemplate.getSecretString(
+					"sm://" + projectId + "/" + secretId + "/" + version);
 		}
 
 		return "Secret ID: " + secretId + " | Value: " + secretPayload
@@ -100,8 +102,8 @@ public class SecretManagerWebController {
 			this.secretManagerTemplate.createSecret(secretId, secretPayload.getBytes(), projectId);
 		}
 
-		map.put("applicationSecret", this.applicationSecretValue);
-		map.put("myApplicationSecret", this.myApplicationSecretValue);
+		map.put("applicationSecret", this.appSecret);
+		map.put("myApplicationSecret", this.myAppSecret);
 		map.put("message", "Secret created!");
 		return new ModelAndView("index.html", map);
 	}
