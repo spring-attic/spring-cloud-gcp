@@ -70,7 +70,7 @@ public class SecretManagerPropertySourceIntegrationTests {
 	@Before
 	public void setupSecretManager() {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.child(SecretManagerTestConfiguration.class)
+				.sources(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
@@ -87,7 +87,7 @@ public class SecretManagerPropertySourceIntegrationTests {
 		createSecret(TEST_SECRET_ID, "the secret data.");
 
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
-				.child(SecretManagerTestConfiguration.class)
+				.sources(SecretManagerTestConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.run();
 
