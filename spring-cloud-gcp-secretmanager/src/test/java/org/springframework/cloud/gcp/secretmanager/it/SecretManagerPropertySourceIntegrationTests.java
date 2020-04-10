@@ -47,9 +47,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
-public class SecretManagerIntegrationTests {
+public class SecretManagerPropertySourceIntegrationTests {
 
-	private static final Log LOGGER = LogFactory.getLog(SecretManagerIntegrationTests.class);
+	private static final Log LOGGER = LogFactory.getLog(SecretManagerPropertySourceIntegrationTests.class);
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
 
