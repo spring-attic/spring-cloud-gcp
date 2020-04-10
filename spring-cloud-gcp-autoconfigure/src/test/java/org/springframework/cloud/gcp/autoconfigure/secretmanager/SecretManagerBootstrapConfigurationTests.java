@@ -50,6 +50,7 @@ public class SecretManagerBootstrapConfigurationTests {
 			new SpringApplicationBuilder(TestBootstrapConfiguration.class)
 					.child(GcpSecretManagerBootstrapConfiguration.class)
 					.child(TestConfiguration.class)
+					.properties("spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME)
 					.web(WebApplicationType.NONE);
 
 	@Test
@@ -97,11 +98,5 @@ public class SecretManagerBootstrapConfigurationTests {
 		public static CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
-
-		@Bean
-		public static GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> PROJECT_NAME;
-		}
 	}
-
 }
