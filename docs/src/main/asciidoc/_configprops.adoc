@@ -80,7 +80,7 @@
 |spring.cloud.gcp.pubsub.subscriber.retry.retry-delay-multiplier |  | RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.
 |spring.cloud.gcp.pubsub.subscriber.retry.rpc-timeout-multiplier |  | RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.
 |spring.cloud.gcp.pubsub.subscriber.retry.total-timeout-seconds |  | TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be attempted.
-|spring.cloud.gcp.secretmanager.bootstrap.enabled | true | Auto-configure GCP Secret Manager support components.
+|spring.cloud.gcp.secretmanager.enabled | true | Auto-configure GCP Secret Manager support components.
 |spring.cloud.gcp.secretmanager.credentials.encoded-key |  | 
 |spring.cloud.gcp.secretmanager.credentials.location |  | 
 |spring.cloud.gcp.secretmanager.credentials.scopes |  | 

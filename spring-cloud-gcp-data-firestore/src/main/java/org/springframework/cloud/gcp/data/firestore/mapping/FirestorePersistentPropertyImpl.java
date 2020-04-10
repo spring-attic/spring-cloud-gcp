@@ -60,7 +60,7 @@ public class FirestorePersistentPropertyImpl
 		return findAnnotation(DocumentId.class) != null;
 	}
 
-	public String getPropertyName() {
+	public String getFieldName() {
 		PropertyName annotation = findAnnotation(PropertyName.class);
 		return annotation != null ? annotation.value() : super.getName();
 	}

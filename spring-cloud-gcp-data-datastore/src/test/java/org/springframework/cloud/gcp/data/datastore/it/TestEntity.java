@@ -42,12 +42,26 @@ public class TestEntity {
 
 	private Blob blobField;
 
+	EmbeddedEntity embeddedEntity;
+
+	public TestEntity() {
+	}
+
 	public TestEntity(Long id, String color, Long size, Shape shape, Blob blobField) {
 		this.id = id;
 		this.color = color;
 		this.size = size;
 		this.shape = shape;
 		this.blobField = blobField;
+	}
+
+	public TestEntity(Long id, String color, Long size, Shape shape, Blob blobField, EmbeddedEntity embeddedEntity) {
+		this.id = id;
+		this.color = color;
+		this.size = size;
+		this.shape = shape;
+		this.blobField = blobField;
+		this.embeddedEntity = embeddedEntity;
 	}
 
 	public Shape getShape() {
@@ -121,11 +135,12 @@ public class TestEntity {
 	@Override
 	public String toString() {
 		return "TestEntity{" +
-				"id=" + this.id +
-				", color='" + this.color + '\'' +
-				", size=" + this.size +
-				", shape=" + this.shape +
-				", blobField=" + this.blobField +
+				"id=" + id +
+				", color='" + color + '\'' +
+				", size=" + size +
+				", shape=" + shape +
+				", blobField=" + blobField +
+				", embeddedEntity=" + embeddedEntity +
 				'}';
 	}
 }

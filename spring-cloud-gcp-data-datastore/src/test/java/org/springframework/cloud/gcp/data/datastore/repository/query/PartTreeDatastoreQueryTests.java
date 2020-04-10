@@ -49,6 +49,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConvers
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.cloud.gcp.data.datastore.it.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
@@ -141,13 +142,15 @@ public class PartTreeDatastoreQueryTests {
 
 	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
-		queryWithMockResult("findTop333ByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
-				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class));
+		queryWithMockResult("findTop333ByActionAndSymbolAndPriceLessThan"
+						+ "AndPriceGreaterThanEqual"
+						+ "AndEmbeddedEntityStringFieldEquals"
+						+ "AndIdIsNullOrderByIdDesc", null,
+				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class, String.class));
 
 		Object[] params = new Object[] { "BUY", "abcd",
 				// this int param requires custom conversion
-				8, 3.33 };
+				8, 3.33, "abc" };
 
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
@@ -157,6 +160,7 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8L),
 							PropertyFilter.ge("price", 3.33),
+							PropertyFilter.eq("embeddedEntity.stringField", "abc"),
 							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(333).build();
@@ -861,6 +865,10 @@ public class PartTreeDatastoreQueryTests {
 		return null;
 	}
 
+	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater, String embeddedProperty) {
+		return null;
+	}
+
 	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater) {
 		return null;
 	}
@@ -901,6 +909,8 @@ public class PartTreeDatastoreQueryTests {
 
 		@Field(name = "trader_id")
 		String traderId;
+
+		EmbeddedEntity embeddedEntity;
 	}
 
 }

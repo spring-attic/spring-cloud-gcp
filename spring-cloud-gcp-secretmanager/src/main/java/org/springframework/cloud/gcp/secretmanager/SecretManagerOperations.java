@@ -16,10 +16,26 @@
 
 package org.springframework.cloud.gcp.secretmanager;
 
-import com.google.protobuf.ByteString;
-
 /**
  * Describes supported operations that one can perform on the Secret Manager API.
+ *
+ * <p>For some methods you may specify the secret from GCP Secret Manager by URI string.
+ * The following secret URI syntax is supported:
+ *
+ * 1. Long form - specify the project ID, secret ID, and version
+ * sm://projects/{project-id}/secrets/{secret-id}/versions/{version-id}
+ *
+ * 2.  Long form - specify project ID, secret ID, and use latest version
+ * sm://projects/{project-id}/secrets/{secret-id}
+ *
+ * 3. Short form - specify project ID, secret ID, and version
+ * sm://{project-id}/{secret-id}/{version-id}
+ *
+ * 4. Short form - specify secret and version, use default GCP project configured
+ * sm://{secret-id}/{version}
+ *
+ * 5. Shortest form - specify secret ID, use default project and latest version.
+ * sm://{secret-id}
  *
  * @author Daniel Zou
  * @since 1.2.2
@@ -70,65 +86,36 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload, String projectId);
 
 	/**
-	 * Gets the secret payload of the specified {@code secretId} at the latest version.
+	 * Gets the secret payload of the specified {@code secretIdentifier} secret.
 	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
+	 * <p>The {@code secretIdentifier} must either be a secret ID or a fully qualified
+	 * `sm://` protocol string which specifies the secret (see javadocs of
+	 * {@link SecretManagerOperations} for the protocol format).
+	 *
+	 * If the secret ID string is passed in, then this will return the payload of the secret for
+	 * the default project at the latest version.
+	 *
+	 * @param secretIdentifier the GCP secret ID of the secret or an sm:// formatted
+	 * 		string specifying the secret.
 	 * @return The secret payload as String
 	 */
-	String getSecretString(String secretId);
+	String getSecretString(String secretIdentifier);
 
 	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName}.
+	 * Gets the secret payload of the specified {@code secretIdentifier} secret.
 	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @return The secret payload as String
-	 */
-	String getSecretString(String secretId, String versionName);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at the latest version.
+	 * <p>The {@code secretIdentifier} must either be a secret ID or a fully qualified
+	 * `sm://` protocol string which specifies the secret (see javadocs of
+	 * {@link SecretManagerOperations} for the protocol format).
 	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @return The secret payload as byte[]
-	 */
-	byte[] getSecretBytes(String secretId);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName}.
+	 * If the secret ID string is passed in, then this will return the payload of the secret for
+	 * the default project at the latest version.
 	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @return The secret payload as byte[]
+	 * @param secretIdentifier the GCP secret ID of the secret or an sm:// formatted
+	 * 		string specifying the secret.
+	 * @return The secret payload as byte array
 	 */
-	byte[] getSecretBytes(String secretId, String versionName);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @return The secret payload as {@link ByteString}
-	 */
-	ByteString getSecretByteString(String secretId, String versionName);
-
-	/**
-	 * Gets the secret payload of the specified {@code secretId} at version
-	 * {@code versionName} for a specific {@code projectId}.
-	 *
-	 * @param secretId unique identifier of your secret in Secret Manager.
-	 * @param versionName which version of the secret to load. The version can be a version
-	 *     number as a string (e.g. "5") or an alias (e.g. "latest").
-	 * @param projectId unique identifier of your project.
-	 * @return The secret payload as {@link ByteString}
-	 */
-	ByteString getSecretByteString(String secretId, String versionName, String projectId);
+	byte[] getSecretBytes(String secretIdentifier);
 
 	/**
 	 * Returns true if there already exists a secret under the GCP project with the
