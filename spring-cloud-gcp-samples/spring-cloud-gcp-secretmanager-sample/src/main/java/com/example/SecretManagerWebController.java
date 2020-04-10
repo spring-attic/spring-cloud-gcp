@@ -74,11 +74,11 @@ public class SecretManagerWebController {
 
 		String secretPayload;
 		if (StringUtils.isEmpty(projectId)) {
-			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
+			secretPayload = this.secretManagerTemplate.getSecretString(
 					"sm://" + secretId + "/" + version);
 		}
 		else {
-			secretPayload = this.secretManagerTemplate.getSecretStringByUri(
+			secretPayload = this.secretManagerTemplate.getSecretString(
 					"sm://" + projectId + "/" + secretId + "/" + version);
 		}
 

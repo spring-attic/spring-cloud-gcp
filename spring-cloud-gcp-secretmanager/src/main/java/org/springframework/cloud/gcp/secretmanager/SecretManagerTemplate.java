@@ -30,7 +30,6 @@ import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.util.Assert;
 
 /**
  * Offers convenience methods for performing common operations on Secret Manager including
@@ -74,29 +73,13 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 
 	@Override
-	public String getSecretString(String secretId) {
-		SecretVersionName secretVersionName = getDefaultSecretVersionName(secretId);
-		return getSecretByteString(secretVersionName).toStringUtf8();
+	public String getSecretString(String secretIdentifier) {
+		return getSecretByteString(secretIdentifier).toStringUtf8();
 	}
 
 	@Override
-	public String getSecretStringByUri(String secretUri) {
-		SecretVersionName secretVersionName = SecretManagerPropertyUtils.getSecretVersionName(secretUri, projectIdProvider);
-		Assert.notNull(secretVersionName, "Secret URI was malformed: " + secretUri);
-		return getSecretByteString(secretVersionName).toStringUtf8();
-	}
-
-	@Override
-	public byte[] getSecretBytes(String secretId) {
-		SecretVersionName secretVersionName = getDefaultSecretVersionName(secretId);
-		return getSecretByteString(secretVersionName).toByteArray();
-	}
-
-	@Override
-	public byte[] getSecretBytesByUri(String secretUri) {
-		SecretVersionName secretVersionName = SecretManagerPropertyUtils.getSecretVersionName(secretUri, projectIdProvider);
-		Assert.notNull(secretVersionName, "Secret URI was malformed: " + secretUri);
-		return getSecretByteString(secretVersionName).toByteArray();
+	public byte[] getSecretBytes(String secretIdentifier) {
+		return getSecretByteString(secretIdentifier).toByteArray();
 	}
 
 	@Override
@@ -117,8 +100,20 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		return true;
 	}
 
-	public ByteString getSecretByteString(SecretVersionName secretVersionName) {
-		AccessSecretVersionResponse response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
+	ByteString getSecretByteString(String secretIdentifier) {
+		SecretVersionName secretVersionName =
+				SecretManagerPropertyUtils.getSecretVersionName(secretIdentifier, projectIdProvider);
+
+		if (secretVersionName == null) {
+			secretVersionName = getDefaultSecretVersionName(secretIdentifier);
+		}
+
+		return getSecretByteString(secretVersionName);
+	}
+
+	ByteString getSecretByteString(SecretVersionName secretVersionName) {
+		AccessSecretVersionResponse response =
+				secretManagerServiceClient.accessSecretVersion(secretVersionName);
 		return response.getPayload().getData();
 	}
 

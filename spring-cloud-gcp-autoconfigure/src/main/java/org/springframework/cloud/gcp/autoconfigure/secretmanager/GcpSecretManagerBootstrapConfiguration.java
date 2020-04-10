@@ -85,13 +85,6 @@ public class GcpSecretManagerBootstrapConfiguration {
 	}
 
 	@Bean
-	public PropertySourceLocator secretManagerPropertySourceLocator(SecretManagerServiceClient client) {
-		SecretManagerPropertySourceLocator propertySourceLocator =
-				new SecretManagerPropertySourceLocator(client, this.gcpProjectIdProvider);
-		return propertySourceLocator;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean
 	public SecretManagerServiceClient secretManagerClient() throws IOException {
 		SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
@@ -106,5 +99,14 @@ public class GcpSecretManagerBootstrapConfiguration {
 	@ConditionalOnMissingBean
 	public SecretManagerTemplate secretManagerTemplate(SecretManagerServiceClient client) {
 		return new SecretManagerTemplate(client, this.gcpProjectIdProvider);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public PropertySourceLocator secretManagerPropertySourceLocator(
+			SecretManagerTemplate secretManagerTemplate) {
+		SecretManagerPropertySourceLocator propertySourceLocator =
+				new SecretManagerPropertySourceLocator(secretManagerTemplate, this.gcpProjectIdProvider);
+		return propertySourceLocator;
 	}
 }

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.secretmanager;
 
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.Environment;
@@ -35,14 +33,14 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 
 	private static final String SECRET_MANAGER_NAME = "spring-cloud-gcp-secret-manager";
 
-	private final SecretManagerServiceClient client;
+	private final SecretManagerTemplate template;
 
 	private final GcpProjectIdProvider projectIdProvider;
 
 	public SecretManagerPropertySourceLocator(
-			SecretManagerServiceClient client,
+			SecretManagerTemplate template,
 			GcpProjectIdProvider projectIdProvider) {
-		this.client = client;
+		this.template = template;
 		this.projectIdProvider = projectIdProvider;
 	}
 
@@ -50,7 +48,7 @@ public class SecretManagerPropertySourceLocator implements PropertySourceLocator
 	public PropertySource<?> locate(Environment environment) {
 		return new SecretManagerPropertySource(
 				SECRET_MANAGER_NAME,
-				this.client,
+				this.template,
 				this.projectIdProvider);
 	}
 }

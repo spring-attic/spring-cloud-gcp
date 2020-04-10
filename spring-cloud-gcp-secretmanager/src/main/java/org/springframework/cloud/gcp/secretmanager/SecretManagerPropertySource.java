@@ -16,10 +16,7 @@
 
 package org.springframework.cloud.gcp.secretmanager;
 
-import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
 import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
-import com.google.protobuf.ByteString;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -31,15 +28,15 @@ import org.springframework.core.env.EnumerablePropertySource;
  * @author Eddú Meléndez
  * @since 1.2.2
  */
-public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerServiceClient> {
+public class SecretManagerPropertySource extends EnumerablePropertySource<SecretManagerTemplate> {
 
 	private final GcpProjectIdProvider projectIdProvider;
 
 	public SecretManagerPropertySource(
 			String propertySourceName,
-			SecretManagerServiceClient client,
+			SecretManagerTemplate secretManagerTemplate,
 			GcpProjectIdProvider projectIdProvider) {
-		super(propertySourceName, client);
+		super(propertySourceName, secretManagerTemplate);
 
 		this.projectIdProvider = projectIdProvider;
 	}
@@ -50,7 +47,7 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 				SecretManagerPropertyUtils.getSecretVersionName(name, this.projectIdProvider);
 
 		if (secretIdentifier != null) {
-			return getSecretPayload(secretIdentifier);
+			return getSource().getSecretByteString(secretIdentifier);
 		}
 		else {
 			return null;
@@ -64,10 +61,5 @@ public class SecretManagerPropertySource extends EnumerablePropertySource<Secret
 	@Override
 	public String[] getPropertyNames() {
 		return new String[0];
-	}
-
-	private ByteString getSecretPayload(SecretVersionName secretIdentifier) {
-		AccessSecretVersionResponse response = getSource().accessSecretVersion(secretIdentifier);
-		return response.getPayload().getData();
 	}
 }
