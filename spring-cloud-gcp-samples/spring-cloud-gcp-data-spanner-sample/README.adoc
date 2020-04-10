@@ -16,7 +16,7 @@ After that, you would need to create an instance using this command:
 $ gcloud spanner instances create spring-demo --config=emulator-config --description="Test Instance" --nodes=1
 ----
 
-Note that you need to set the SPANNER_EMULATOR_HOST environment variable to use the emulator.
+Note that you need to set the `SPANNER_EMULATOR_HOST` environment variable to use the emulator.
 
 ----
 $ export SPANNER_EMULATOR_HOST=localhost:9010
