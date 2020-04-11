@@ -27,10 +27,7 @@ import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +37,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * Unit tests for {@link GcpSecretManagerBootstrapConfiguration}.
+ *
  * @author Mike Eltsufin
+ * @author Daniel Zou
  */
 public class SecretManagerBootstrapConfigurationTests {
 
@@ -54,10 +54,17 @@ public class SecretManagerBootstrapConfigurationTests {
 					.web(WebApplicationType.NONE);
 
 	@Test
-	public void test() {
+	public void testGetProperty() {
 		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
 			String secret = c.getEnvironment().getProperty("sm://my-secret");
-			// String secret = c.getBean("secret", String.class);
+			assertThat(secret).isEqualTo("hello");
+		}
+	}
+
+	@Test
+	public void testValueAnnotation() {
+		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
+			String secret = c.getBean("secret", String.class);
 			assertThat(secret).isEqualTo("hello");
 		}
 	}
@@ -65,7 +72,7 @@ public class SecretManagerBootstrapConfigurationTests {
 	@Configuration
 	static class TestConfiguration {
 
-		@Value("${secret-manager/test-spring/images/spring.png}")
+		@Value("${sm://my-secret}")
 		private String secret;
 
 		@Bean
