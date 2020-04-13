@@ -1413,7 +1413,25 @@ Database administrative operations, such as creating tables using `SpannerDataba
 
 If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for `Supplier<DatabaseClient>`.
 
-=== Sample
 
+=== Cloud Spanner Emulator
+
+The https://cloud.google.com/sdk[Cloud SDK] provides a local, in-memory emulator for Cloud Spanner, which you can use to develop and test your application. As the emulator stores data only in memory, it will not persist data across runs. It is intended to help you use Cloud Spanner for local development and testing, not for production deployments.
+
+In order to set up and start the emulator, you can follow https://cloud.google.com/spanner/docs/emulator[these steps].
+
+This command can be used to create Cloud Spanner instances:
+
+----
+$ gcloud spanner instances create <instance-name> --config=emulator-config --description="<description>" --nodes=1
+----
+
+Remember that you need to set the `SPANNER_EMULATOR_HOST` environment variable to use the emulator:
+
+----
+$ export SPANNER_EMULATOR_HOST=localhost:9010
+----
+
+=== Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
