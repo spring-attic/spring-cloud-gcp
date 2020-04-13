@@ -76,7 +76,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private final String databasePath;
 
-	private final FirestoreMappingContext mappingContext = new FirestoreMappingContext();
+	private final FirestoreMappingContext mappingContext;
 
 	private Duration writeBufferTimeout = Duration.ofMillis(500);
 
@@ -88,12 +88,15 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * @param parent the parent resource. For example:
 	 *     projects/{project_id}/databases/{database_id}/documents or
 	 * @param classMapper a {@link FirestoreClassMapper} used for conversion
+	 * @param mappingContext Mapping Context
 	 */
-	public FirestoreTemplate(FirestoreStub firestore, String parent, FirestoreClassMapper classMapper) {
+	public FirestoreTemplate(FirestoreStub firestore, String parent, FirestoreClassMapper classMapper,
+			FirestoreMappingContext mappingContext) {
 		this.firestore = firestore;
 		this.parent = parent;
 		this.databasePath = Util.extractDatabasePath(parent);
 		this.classMapper = classMapper;
+		this.mappingContext = mappingContext;
 	}
 
 	/**
