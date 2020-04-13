@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
@@ -199,7 +198,7 @@ public class FirebaseJwtTokenDecoderTests {
 		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", validator);
 		assertThatExceptionOfType(JwtException.class)
 				.isThrownBy(() -> decoder.decode(signedJWT.serialize()))
-				.withMessageStartingWith("An error occurred while attempting to decode the Jwt: This iss claim is not equal to the configured issuer");
+				.withMessageStartingWith("An error occurred while attempting to decode the Jwt: The iss claim is not valid");
 	}
 
 	@Test

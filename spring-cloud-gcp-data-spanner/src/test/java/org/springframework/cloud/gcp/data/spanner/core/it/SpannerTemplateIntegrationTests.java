@@ -77,7 +77,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 
-		Trade trade = Trade.aTrade(null, true);
+		Trade trade = Trade.aTrade(null, 1);
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 
@@ -93,7 +93,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		assertThat(trades).containsExactly(trade);
 
-		Trade trade2 = Trade.aTrade(null, true);
+		Trade trade2 = Trade.aTrade(null, 1);
 		this.spannerOperations.insert(trade2);
 
 		trades = this.spannerOperations.read(Trade.class, KeySet.newBuilder().addKey(Key.of(trade.getId(), trade.getTraderId()))

@@ -25,12 +25,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 
 /**
  * A test domain object using many features.
@@ -68,6 +71,7 @@ public class Trade {
 	private List<Instant> executionTimes;
 
 	@Interleaved
+	@Where("disabled = false")
 	private List<SubTrade> subTrades = Collections.emptyList();
 
 	/**
@@ -81,10 +85,10 @@ public class Trade {
 	}
 
 	public static Trade aTrade() {
-		return aTrade(null, false);
+		return aTrade(null, 0);
 	}
 
-	public static Trade aTrade(String customTraderId, boolean addSubtrade) {
+	public static Trade aTrade(String customTraderId, int subTrades) {
 		Trade t = new Trade("ABCD", new ArrayList<>());
 		String tradeId = UUID.randomUUID().toString();
 		String traderId = customTraderId == null ? UUID.randomUUID().toString() : customTraderId;
@@ -99,8 +103,11 @@ public class Trade {
 		t.tradeDate = Date.from(t.tradeTime);
 		t.tradeLocalDate = LocalDate.of(2015, 1, 1);
 		t.tradeLocalDateTime = LocalDateTime.of(2015, 1, 1, 2, 3, 4, 5);
-		if (addSubtrade) {
-			t.subTrades = Collections.singletonList(new SubTrade(t.getTradeDetail().getId(), t.getTraderId(), "subTrade"));
+		if (subTrades > 0) {
+			t.setSubTrades(
+					IntStream.range(0, subTrades)
+							.mapToObj(i -> new SubTrade(t.getTradeDetail().getId(), t.getTraderId(), "subTrade" + i))
+							.collect(Collectors.toList()));
 		}
 		t.tradeDetail.price = 100.0;
 		t.tradeDetail.shares = 12345.6;

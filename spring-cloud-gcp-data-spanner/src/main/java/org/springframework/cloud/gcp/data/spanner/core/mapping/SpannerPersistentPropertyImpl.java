@@ -42,6 +42,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -168,6 +169,17 @@ public class SpannerPersistentPropertyImpl
 	public boolean isCommitTimestamp() {
 		Column annotation = findAnnotation(Column.class);
 		return annotation != null && annotation.spannerCommitTimestamp();
+	}
+
+	@Override
+	public String getWhere() {
+		Where annotation = findAnnotation(Where.class);
+		return annotation != null ? annotation.value() : "";
+	}
+
+	@Override
+	public boolean hasWhere() {
+		return !getWhere().isEmpty();
 	}
 
 	@Override

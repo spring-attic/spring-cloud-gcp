@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Mike Eltsufin
  * @author Doug Hoard
  * @author Chengyuan Zhao
+ * @author Maurice Zeijen
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -222,13 +223,16 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			Boolean returnImmediately) {
 		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
 
-		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscription(
-						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString());
-
-		if (maxMessages != null) {
-			pullRequestBuilder.setMaxMessages(maxMessages);
+		if (maxMessages == null) {
+			maxMessages = Integer.MAX_VALUE;
 		}
+		Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+
+		PullRequest.Builder pullRequestBuilder =
+				PullRequest.newBuilder()
+						.setSubscription(
+								PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId).toString())
+						.setMaxMessages(maxMessages);
 
 		if (returnImmediately != null) {
 			pullRequestBuilder.setReturnImmediately(returnImmediately);

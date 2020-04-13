@@ -1,4 +1,4 @@
-== Google Cloud BigQuery
+== BigQuery
 
 https://cloud.google.com/bigquery[Google Cloud BigQuery] is a fully managed, petabyte scale, low cost analytics data warehouse.
 
@@ -26,9 +26,17 @@ dependencies {
 }
 ----
 
-=== BigQuery Autoconfiguration
+=== Configuration
 
-Adding the `spring-cloud-gcp-bigquery-starter` dependency to the POM will enable autoconfiguration of the client objects needed to interface with BigQuery.
+The following application properties may be configured with Spring Cloud GCP BigQuery libraries.
+
+|===========================================================================
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.bigquery.datasetName` | The BigQuery dataset that the `BigQueryTemplate` and `BigQueryFileMessageHandler` is scoped to. | Yes |
+| `spring.cloud.gcp.bigquery.enabled` | Enables or disables Spring Cloud GCP BigQuery autoconfiguration. | No | `true`
+| `spring.cloud.gcp.bigquery.project-id` | GCP project ID of the project using BigQuery APIs, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>. | No | Project ID is typically inferred from https://cloud.google.com/sdk/gcloud/reference/config/set[`gcloud`] configuration.
+| `spring.cloud.gcp.bigquery.credentials.location` | Credentials file location for authenticating with the Google Cloud BigQuery APIs, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No | Inferred from https://cloud.google.com/docs/authentication/production[Application Default Credentials], typically set by https://cloud.google.com/sdk/gcloud/reference/auth/application-default[`gcloud`].
+|===========================================================================
 
 ==== BigQuery Client Object
 
@@ -143,14 +151,7 @@ If the handler is run in synchronous mode with `setSync(true)`, then the handler
 NOTE: If you decide to use Spring Integration Gateways and you wish to receive `ListenableFuture<Job>` as a reply object in the Gateway, you will have to call `.setAsyncExecutor(null)` on your `GatewayProxyFactoryBean`.
 This is needed to indicate that you wish to reply on the built-in async support rather than rely on async handling of the gateway.
 
-=== Configuration
+=== Sample
 
-The following application properties may be configured with Spring Cloud GCP BigQuery libraries.
+A BigQuery https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-bigquery-sample[sample application] is available.
 
-|===========================================================================
-| Name | Description | Required | Default value
-| `spring.cloud.gcp.bigquery.datasetName` | The BigQuery dataset that the `BigQueryTemplate` and `BigQueryFileMessageHandler` is scoped to. | Yes |
-| `spring.cloud.gcp.bigquery.enabled` | Enables or disables Spring Cloud GCP BigQuery autoconfiguration. | No | `true`
-| `spring.cloud.gcp.bigquery.project-id` | GCP project ID of the project using BigQuery APIs, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>. | No | Project ID is typically inferred from https://cloud.google.com/sdk/gcloud/reference/config/set[`gcloud`] configuration.
-| `spring.cloud.gcp.bigquery.credentials.location` | Credentials file location for authenticating with the Google Cloud BigQuery APIs, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No | Inferred from https://cloud.google.com/docs/authentication/production[Application Default Credentials], typically set by https://cloud.google.com/sdk/gcloud/reference/auth/application-default[`gcloud`].
-|===========================================================================

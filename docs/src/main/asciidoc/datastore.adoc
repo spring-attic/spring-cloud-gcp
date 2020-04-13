@@ -951,6 +951,8 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 
 In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
+NOTE: You can refer to nested fields using https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-property-expressions[Spring Data JPA Property Expressions]
+
 Cloud Datastore only supports filter components joined by AND, and the following operations:
 
 * `equals`

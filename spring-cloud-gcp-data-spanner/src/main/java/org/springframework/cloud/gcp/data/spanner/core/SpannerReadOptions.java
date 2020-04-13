@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 import java.util.Set;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.TimestampBound;
 
@@ -90,6 +91,29 @@ public class SpannerReadOptions extends AbstractSpannerRequestOptions<ReadOption
 	@Deprecated
 	public ReadOption[] getReadOptions() {
 		return this.getOptions();
+	}
+
+	/**
+	 * In many cases a {@link SpannerReadOptions} class instance could be compatible with {@link SpannerQueryOptions}.
+	 * The method executes such conversion or throws an exception if it's impossible.
+	 * @return query-parameters
+	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}.
+	 */
+	public SpannerQueryOptions toQueryOptions() {
+		SpannerQueryOptions query = new SpannerQueryOptions();
+		query.setAllowPartialRead(this.isAllowPartialRead());
+		query.setIncludeProperties(this.getIncludeProperties());
+		query.setTimestampBound(this.getTimestampBound());
+
+		for (ReadOption ro : this.getOptions()) {
+			if (ro instanceof Options.ReadAndQueryOption) {
+				query.addQueryOption((Options.ReadAndQueryOption) ro);
+			}
+			else {
+				throw new IllegalArgumentException(String.format("Can't convert %s to SpannerQueryOptions ", this));
+			}
+		}
+		return query;
 	}
 
 }

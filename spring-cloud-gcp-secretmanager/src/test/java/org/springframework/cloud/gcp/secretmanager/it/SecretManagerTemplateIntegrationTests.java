@@ -28,6 +28,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+/**
+ * Integration tests for {@link SecretManagerTemplate}.
+ *
+ * @author Daniel Zou
+ * @author Mike Eltsufin
+ */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SecretManagerTestConfiguration.class })
 public class SecretManagerTemplateIntegrationTests {
@@ -52,6 +58,11 @@ public class SecretManagerTemplateIntegrationTests {
 
 		byte[] secretBytes = secretManagerTemplate.getSecretBytes("test-secret-1234");
 		assertThat(secretBytes).isEqualTo("1234".getBytes());
+	}
+
+	@Test(expected = com.google.api.gax.rpc.NotFoundException.class)
+	public void testReadMissingSecret() {
+		secretManagerTemplate.getSecretBytes("test-NON-EXISTING-secret");
 	}
 
 	@Test

@@ -14,19 +14,36 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore.mapping;
+package org.springframework.cloud.gcp.data.datastore.it;
 
-import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
- * Persistent property for Google Cloud Firestore.
+ * A test entity for Datastore integration tests.
  *
  * @author Dmitry Solomakha
- *
- * @since 1.2
  */
-public interface FirestorePersistentProperty
-		extends PersistentProperty<FirestorePersistentProperty> {
-	String getFieldName();
+@Entity
+public class EmbeddedEntity {
 
+	private String stringField;
+
+	public EmbeddedEntity(String stringField) {
+		this.stringField = stringField;
+	}
+
+	public String getStringField() {
+		return stringField;
+	}
+
+	public void setStringField(String stringField) {
+		this.stringField = stringField;
+	}
+
+	@Override
+	public String toString() {
+		return "EmbeddedEntity{" +
+				"stringField='" + stringField + '\'' +
+				'}';
+	}
 }

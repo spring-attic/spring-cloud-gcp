@@ -36,12 +36,6 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 	 */
 	private String projectId;
 
-	/**
-	 * Defines a prefix String that will be prepended to the environment property names
-	 * of secrets in Secret Manager.
-	 */
-	private String secretNamePrefix = "";
-
 	public Credentials getCredentials() {
 		return credentials;
 	}
@@ -52,13 +46,5 @@ public class GcpSecretManagerProperties implements CredentialsSupplier {
 
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
-	}
-
-	public String getSecretNamePrefix() {
-		return secretNamePrefix;
-	}
-
-	public void setSecretNamePrefix(String secretNamePrefix) {
-		this.secretNamePrefix = secretNamePrefix;
 	}
 }

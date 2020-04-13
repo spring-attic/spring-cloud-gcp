@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 
 package org.springframework.cloud.gcp.pubsub.reactive;
 
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.api.gax.rpc.DeadlineExceededException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
@@ -33,7 +36,13 @@ import org.springframework.util.Assert;
 /**
  * A factory for procuring {@link Flux} instances backed by GCP Pub/Sub Subscriptions.
  *
+ * The {@link Scheduler}, that is given to the constructor,
+ * is used for regularly polling the subscription,
+ * when the demand is unlimited.
+ * The scheduler is not used when there is a specific demand (a.k.a backpressure).
+ *
  * @author Elena Felder
+ * @author Maurice Zeijen
  *
  * @since 1.2
  */
@@ -77,116 +86,62 @@ public final class PubSubReactiveFactory {
 	public Flux<AcknowledgeablePubsubMessage> poll(String subscriptionName, long pollingPeriodMs) {
 
 		return Flux.create(sink -> {
-
-			Scheduler.Worker subscriptionWorker = this.scheduler.createWorker();
-
 			sink.onRequest((numRequested) -> {
 				if (numRequested == Long.MAX_VALUE) {
-					// unlimited demand
-					subscriptionWorker.schedulePeriodically(
-							new NonBlockingUnlimitedDemandPullTask(subscriptionName, sink), 0, pollingPeriodMs, TimeUnit.MILLISECONDS);
+					pollingPull(subscriptionName, pollingPeriodMs, sink);
 				}
 				else {
-					subscriptionWorker.schedule(new BlockingLimitedDemandPullTask(subscriptionName, numRequested, sink));
+					backpressurePull(subscriptionName, numRequested, sink);
 				}
 			});
-
-			sink.onDispose(subscriptionWorker);
-
 		});
 	}
 
-	private abstract class PubSubPullTask implements Runnable {
+	private void pollingPull(String subscriptionName, long pollingPeriodMs,
+			FluxSink<AcknowledgeablePubsubMessage> sink) {
+		Disposable disposable = Flux
+				.interval(Duration.ZERO, Duration.ofMillis(pollingPeriodMs), scheduler)
+				.flatMap(ignore -> pullAll(subscriptionName))
+				.subscribe(sink::next, sink::error);
 
-		protected final String subscriptionName;
-
-		protected final FluxSink<AcknowledgeablePubsubMessage> sink;
-
-		PubSubPullTask(String subscriptionName, FluxSink<AcknowledgeablePubsubMessage> sink) {
-			this.subscriptionName = subscriptionName;
-			this.sink = sink;
-		}
-
-		/**
-		 * Retrieve up to a specified number of messages, sending them to the subscription.
-		 * @param demand maximum number of messages to retrieve
-		 * @param block whether to wait for the first message to become available
-		 * @return number of messages retrieved
-		 */
-		protected int pullToSink(int demand, boolean block) {
-
-			List<AcknowledgeablePubsubMessage> messages =
-					PubSubReactiveFactory.this.subscriberOperations.pull(this.subscriptionName, demand, !block);
-
-			if (!this.sink.isCancelled()) {
-				messages.forEach(sink::next);
-			}
-
-			return messages.size();
-		}
-
+		sink.onDispose(disposable);
 	}
 
-	/**
-	 * Runnable task issuing blocking Pub/Sub Pull requests until the specified number of
-	 * messages has been retrieved.
-	 */
-	private class BlockingLimitedDemandPullTask extends PubSubPullTask {
+	private Flux<AcknowledgeablePubsubMessage> pullAll(String subscriptionName) {
+		CompletableFuture<List<AcknowledgeablePubsubMessage>> pullResponseFuture = this.subscriberOperations
+				.pullAsync(subscriptionName, Integer.MAX_VALUE, true).completable();
 
-		private final long initialDemand;
+		return Mono.fromFuture(pullResponseFuture).flatMapMany(Flux::fromIterable);
+	}
 
-		BlockingLimitedDemandPullTask(String subscriptionName, long initialDemand, FluxSink<AcknowledgeablePubsubMessage> sink) {
-			super(subscriptionName, sink);
-			this.initialDemand = initialDemand;
-		}
-
-		@Override
-		public void run() {
-			try {
-				long demand = this.initialDemand;
-				List<AcknowledgeablePubsubMessage> messages;
-
-				while (demand > 0 && !this.sink.isCancelled()) {
-					try {
-						int intDemand = demand > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) demand;
-						demand -= pullToSink(intDemand, true);
+	private void backpressurePull(String subscriptionName, long numRequested,
+			FluxSink<AcknowledgeablePubsubMessage> sink) {
+		int intDemand = numRequested > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) numRequested;
+		this.subscriberOperations.pullAsync(subscriptionName, intDemand, false).addCallback(
+				messages -> {
+					if (!sink.isCancelled()) {
+						messages.forEach(sink::next);
 					}
-					catch (DeadlineExceededException e) {
-						if (LOGGER.isTraceEnabled()) {
-							LOGGER.trace("Blocking pull timed out due to empty subscription "
-									+ this.subscriptionName
-									+ "; retrying.");
+					if (!sink.isCancelled()) {
+						long numToPull = numRequested - messages.size();
+						if (numToPull > 0) {
+							backpressurePull(subscriptionName, numToPull, sink);
 						}
 					}
-				}
-			}
-			catch (RuntimeException e) {
-				sink.error(e);
-			}
-		}
+				},
+				exception -> {
+					if (exception instanceof DeadlineExceededException) {
+						if (LOGGER.isTraceEnabled()) {
+							LOGGER.trace("Blocking pull timed out due to empty subscription "
+									+ subscriptionName
+									+ "; retrying.");
+						}
+						backpressurePull(subscriptionName, numRequested, sink);
+					}
+					else {
+						sink.error(exception);
+					}
+				});
 
 	}
-
-	/**
-	 * Runnable task issuing a single Pub/Sub Pull request for all available messages.
-	 * Terminates immediately if no messages are available.
-	 */
-	private class NonBlockingUnlimitedDemandPullTask extends PubSubPullTask {
-
-		NonBlockingUnlimitedDemandPullTask(String subscriptionName, FluxSink<AcknowledgeablePubsubMessage> sink) {
-			super(subscriptionName, sink);
-		}
-
-		@Override
-		public void run() {
-			try {
-				pullToSink(Integer.MAX_VALUE, false);
-			}
-			catch (RuntimeException e) {
-				sink.error(e);
-			}
-		}
-
-	}
-
 }

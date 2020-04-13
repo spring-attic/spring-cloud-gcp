@@ -420,6 +420,34 @@ If a property marked for lazy fetching is never retrieved, then it is also skipp
 
 If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.
 
+===== Declarative Filtering with `@Where`
+The `@Where` annotation could be applied to an entity class or to an interleaved property.
+This annotation provides an SQL where clause that will be applied at the fetching of interleaved collections or the entity itself.
+
+Let's say we have an `Agreement` with a list of `Participants` which could be assigned to it.
+We would like to fetch a list of currently active participants.
+For security reasons, all records should remain in the database forever, even if participants become inactive.
+That can be easily achieved with the `@Where` annotation, which is demonstrated by this example:
+
+[source, java]
+----
+@Table(name = "participants")
+public class Participant {
+  //...
+  boolean active;
+  //...
+}
+
+@Table(name = "agreements")
+public class Agreement {
+  //...
+  @Interleaved
+  @Where("active = true")
+  List<Participant> participants;
+  Person person;
+  //...
+}
+----
 
 ==== Supported Types
 
@@ -1385,7 +1413,25 @@ Database administrative operations, such as creating tables using `SpannerDataba
 
 If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for `Supplier<DatabaseClient>`.
 
-=== Sample
 
+=== Cloud Spanner Emulator
+
+The https://cloud.google.com/sdk[Cloud SDK] provides a local, in-memory emulator for Cloud Spanner, which you can use to develop and test your application. As the emulator stores data only in memory, it will not persist data across runs. It is intended to help you use Cloud Spanner for local development and testing, not for production deployments.
+
+In order to set up and start the emulator, you can follow https://cloud.google.com/spanner/docs/emulator[these steps].
+
+This command can be used to create Cloud Spanner instances:
+
+----
+$ gcloud spanner instances create <instance-name> --config=emulator-config --description="<description>" --nodes=1
+----
+
+Remember that you need to set the `SPANNER_EMULATOR_HOST` environment variable to use the emulator:
+
+----
+$ export SPANNER_EMULATOR_HOST=localhost:9010
+----
+
+=== Sample
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.

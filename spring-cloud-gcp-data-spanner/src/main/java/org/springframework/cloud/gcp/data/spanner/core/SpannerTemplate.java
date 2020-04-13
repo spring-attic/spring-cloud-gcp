@@ -45,6 +45,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -76,6 +77,7 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author Ray Tsang
  * @author Mike Eltsufin
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -191,13 +193,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> read(Class<T> entityClass, KeySet keys,
-			SpannerReadOptions options) {
-		SpannerPersistentEntity<T> persistentEntity = (SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
+	public <T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) {
+		SpannerPersistentEntity<T> persistentEntity =
+				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
 		List<T> entities;
-
-		if (isEligibleForEagerFetch(keys, options, persistentEntity)) {
-			entities = executeReadQueryAndResolveChildren(keys, persistentEntity);
+		if (persistentEntity.hasEagerlyLoadedProperties() || persistentEntity.hasWhere()) {
+			entities = executeReadQueryAndResolveChildren(keys, persistentEntity,
+					toQueryOption(keys, options), options != null ? options.getIndex() : null);
 		}
 		else {
 			entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
@@ -209,14 +211,23 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return entities;
 	}
 
-	private <T> boolean isEligibleForEagerFetch(KeySet keys, SpannerReadOptions options,
-			SpannerPersistentEntity<T> persistentEntity) {
-		//an entity is eligible if all of the following true:
-		//1. entity has eager loaded properties
-		//2. there are no read options, as they can't be applied to a query
-		//3. key set does not have ranges, as they can't be used in a query
-		return persistentEntity.hasEagerlyLoadedProperties() &&
-				options == null && !keys.getRanges().iterator().hasNext();
+	/**
+	 * In many cases {@link KeySet} with {@link SpannerReadOptions} are compatible with
+	 * {@link SpannerReadOptions}. The method throws exception when it is impossible.
+	 * @param options read-parameters
+	 * @return query-parameters
+	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}
+	 * 	or {@code keys} have "ranges".
+	 * @see SpannerReadOptions#toQueryOptions()
+	 */
+	private static SpannerQueryOptions toQueryOption(KeySet keys, SpannerReadOptions options) throws IllegalArgumentException {
+		if (keys != null && keys.getRanges().iterator().hasNext()) {
+			throw new IllegalArgumentException(String.format("KeySet %s has ranges", keys));
+		}
+		if (options == null) {
+			return new SpannerQueryOptions();
+		}
+		return options.toQueryOptions();
 	}
 
 	@Override
@@ -233,11 +244,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> query(Class<T> entityClass, Statement statement,
-			SpannerQueryOptions options) {
-		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
-		maybeEmitEvent(new AfterQueryEvent(entitites, statement, options));
-		return entitites;
+	public <T> List<T> query(Class<T> entityClass, Statement statement, SpannerQueryOptions options) {
+		List<T> entities = queryAndResolveChildren(entityClass, statement, options);
+		maybeEmitEvent(new AfterQueryEvent(entities, statement, options));
+		return entities;
 	}
 
 	@Override
@@ -253,10 +263,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> entity = this.mappingContext.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity, this.mappingContext, true) + " FROM " + persistentEntity.tableName();
+				entity, this.mappingContext, true)
+				+ " FROM " + entity.tableName() + SpannerStatementQueryExecutor.buildWhere(entity);
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
@@ -473,12 +483,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		return resultSet;
 	}
 
-	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity) {
+	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity,
+			SpannerQueryOptions options, String index) {
 		Statement statement = SpannerStatementQueryExecutor.buildQuery(keys, persistentEntity,
 				this.spannerEntityProcessor.getWriteConverter(),
-				this.mappingContext);
+				this.mappingContext, index);
 
-		return resolveChildEntities(query(persistentEntity.getType(), statement, null), null);
+		return resolveChildEntities(query(persistentEntity.getType(), statement, options), options.getIncludeProperties());
 	}
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
@@ -486,22 +497,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
-		ResultSet resultSet;
-
 		ReadContext readContext = (options != null && options.getTimestampBound() != null)
 				? getReadContext(options.getTimestampBound())
 				: getReadContext();
 
-		if (options == null) {
-			resultSet = readContext.read(tableName, keys, columns);
-		}
-		else if (options.getIndex() != null) {
-			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getOptions());
-		}
-		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
-		}
+		final ResultSet resultSet = options != null && options.getIndex() != null
+				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
+				: readContext.read(tableName, keys, columns, options == null ? ArrayUtils.toArray() : options.getOptions());
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
@@ -590,13 +592,11 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 						return;
 					}
 					Class<?> childType = spannerPersistentProperty.getColumnInnerType();
-					SpannerPersistentEntity<?> childPersistentEntity = this.mappingContext
-							.getPersistentEntity(childType);
 
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter(),
+									spannerPersistentProperty, this.spannerEntityProcessor.getWriteConverter(),
 									this.mappingContext),
 							null);
 

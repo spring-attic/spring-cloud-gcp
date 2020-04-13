@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.firestore.it;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.User.Address;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
@@ -68,7 +68,7 @@ public class FirestoreRepositoryIntegrationTests {
 	ReactiveFirestoreTransactionManager transactionManager;
 
 	@BeforeClass
-	public static void checkToRun() throws IOException {
+	public static void checkToRun() {
 		assumeThat("Firestore-sample tests are disabled. "
 				+ "Please use '-Dit.firestore=true' to enable them. ",
 				System.getProperty("it.firestore"), is("true"));
@@ -145,14 +145,18 @@ public class FirestoreRepositoryIntegrationTests {
 	@Test
 	//tag::repository_part_tree[]
 	public void partTreeRepositoryMethodTest() {
-		User u1 = new User("Cloud", 22);
-		User u2 = new User("Squall", 17);
+		User u1 = new User("Cloud", 22, null, null, new Address("1 First st., NYC", "USA"));
+		u1.favoriteDrink = "tea";
+		User u2 = new User("Squall", 17, null, null, new Address("2 Second st., London", "UK"));
+		u2.favoriteDrink = "wine";
 		Flux<User> users = Flux.fromArray(new User[] {u1, u2});
 
 		this.userRepository.saveAll(users).blockLast();
 
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByHomeAddressCountry("USA").collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByFavoriteDrink("wine").collectList().block()).containsExactly(u2);
 		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
 				.containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,

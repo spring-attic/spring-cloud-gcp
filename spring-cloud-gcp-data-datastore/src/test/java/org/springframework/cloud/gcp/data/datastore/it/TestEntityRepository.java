@@ -72,6 +72,8 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	List<TestEntity> findByShape(Shape shape);
 
+	List<TestEntity> findByEmbeddedEntityStringField(String val);
+
 	@Query("select * from test_entities_ci where shape = @enum_val")
 	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
 

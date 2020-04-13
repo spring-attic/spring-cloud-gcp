@@ -94,6 +94,33 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void queryMethodsTest() {
+		final int subTrades = 42;
+		Trade trade = Trade.aTrade(null, subTrades);
+		this.spannerOperations.insert(trade);
+
+		final String identifier = trade.getTradeDetail().getId();
+		final String traderId = trade.getTraderId();
+
+		long count = subTradeRepository.countBy(identifier, traderId);
+		assertThat(count)
+				.isEqualTo(subTrades);
+
+		List<SubTrade> list = subTradeRepository.getList(
+				identifier, traderId, Sort.by(Order.desc("subTradeId")));
+		assertThat(list)
+				.hasSize(subTrades);
+		assertThat(list.get(subTrades - 1))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		List<SubTrade> page = subTradeRepository.getPage(
+				identifier, traderId, PageRequest.of(0, 1024, Sort.by(Order.asc("subTradeId"))));
+		assertThat(page)
+				.hasSize(subTrades);
+		assertThat(page.get(0))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		this.tradeRepository.deleteAll();
+
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
 		List<Trade> trader1SellTrades = insertTrades("trader1", "SELL", 2);
 		List<Trade> trader2Trades = insertTrades("trader2", "SELL", 3);
@@ -293,8 +320,22 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.subTradeRepository.count()).isEqualTo(0);
 
 		this.tradeRepository.deleteAll();
-		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
+		this.tradeRepositoryTransactionalService.testTransactionalAnnotation(3);
 		assertThat(this.tradeRepository.count()).isEqualTo(1L);
+
+		List<Trade> trades = (List) tradeRepository.findAll();
+		someTrade = trades.get(0);
+		assertThat(someTrade.getSubTrades()).hasSize(3);
+		SubTrade someSubTrade = trades.get(0).getSubTrades().get(0);
+		someSubTrade.setDisabled(true); // a soft-delete
+		subTradeRepository.save(someSubTrade);
+
+		someTrade = this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		assertThat(someTrade.getSubTrades())
+				.doesNotContain(someSubTrade) // "someSubTrade" was soft-deleted
+				.hasSize(2);
+
 	}
 
 	@Test
@@ -338,7 +379,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade(traderId, false);
+			Trade t = Trade.aTrade(traderId, 0);
 			t.setAction(action);
 			t.setSymbol("ABCD");
 			trades.add(t);
@@ -356,10 +397,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		TradeRepository tradeRepository;
 
 		@Transactional
-		public void testTransactionalAnnotation() {
-			Trade trade = Trade.aTrade();
+		public void testTransactionalAnnotation(int numSubTrades) {
+			Trade trade = Trade.aTrade(null, numSubTrades);
 			this.tradeRepository.save(trade);
-
 			// because the insert happens within the same transaction, this count is still
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);

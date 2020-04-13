@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author Maurice Zeijen
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
@@ -159,9 +160,21 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<List<AcknowledgeablePubsubMessage>> pullAsync(String subscription, Integer maxMessages,
+																			Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pullAsync(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
 	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
+	}
+
+	@Override
+	public <T> ListenableFuture<List<ConvertedAcknowledgeablePubsubMessage<T>>> pullAndConvertAsync(String subscription,
+			Integer maxMessages, Boolean returnImmediately, Class<T> payloadType) {
+		return this.pubSubSubscriberTemplate.pullAndConvertAsync(subscription, maxMessages, returnImmediately, payloadType);
 	}
 
 	@Override
@@ -171,8 +184,18 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<List<PubsubMessage>> pullAndAckAsync(String subscription, Integer maxMessages, Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pullAndAckAsync(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
 	public PubsubMessage pullNext(String subscription) {
 		return this.pubSubSubscriberTemplate.pullNext(subscription);
+	}
+
+	@Override
+	public ListenableFuture<PubsubMessage> pullNextAsync(String subscription) {
+		return this.pubSubSubscriberTemplate.pullNextAsync(subscription);
 	}
 
 	@Override

@@ -14,6 +14,31 @@
     <packaging>pom</packaging>
     <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
 
+    <properties>
+        <spring-cloud-config.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-config.version>
+    </properties>
+
+    <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-gcp-dependencies</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-config-dependencies</artifactId>
+                <version>${spring-cloud-config.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <modules>
         <module>spring-cloud-gcp-pubsub-bus-config-sample-client</module>
         <module>spring-cloud-gcp-pubsub-bus-config-sample-server-local</module>

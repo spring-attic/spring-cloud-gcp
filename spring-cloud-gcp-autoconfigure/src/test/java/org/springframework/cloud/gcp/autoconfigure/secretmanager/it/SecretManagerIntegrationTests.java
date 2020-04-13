@@ -16,19 +16,23 @@
 
 package org.springframework.cloud.gcp.autoconfigure.secretmanager.it;
 
-import java.util.stream.StreamSupport;
+import java.util.concurrent.TimeUnit;
 
+import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient.ListSecretsPagedResponse;
 import com.google.cloud.secretmanager.v1beta1.SecretName;
 import com.google.cloud.secretmanager.v1beta1.SecretPayload;
+import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
 import com.google.protobuf.ByteString;
-import org.junit.After;
+import io.grpc.StatusRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,13 +45,17 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.awaitility.Awaitility.await;
 
 public class SecretManagerIntegrationTests {
 
-	private static final String TEST_SECRET_ID = "my-secret";
+	private static final Log LOGGER = LogFactory.getLog(SecretManagerIntegrationTests.class);
 
-	private ConfigurableApplicationContext context;
+	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
+
+	private static final String VERSIONED_SECRET_ID = "spring-cloud-gcp-it-versioned-secret";
 
 	private GcpProjectIdProvider projectIdProvider;
 
@@ -63,53 +71,88 @@ public class SecretManagerIntegrationTests {
 
 	@Before
 	public void setupSecretManager() {
-		this.context = new SpringApplicationBuilder()
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.secretmanager.bootstrap.enabled=true")
 				.run();
 
-		this.projectIdProvider = this.context.getBeanFactory().getBean(GcpProjectIdProvider.class);
-		this.client = this.context.getBeanFactory().getBean(SecretManagerServiceClient.class);
+		this.projectIdProvider = context.getBeanFactory().getBean(GcpProjectIdProvider.class);
+		this.client = context.getBeanFactory().getBean(SecretManagerServiceClient.class);
 
-		createSecret(TEST_SECRET_ID, "the secret data");
-	}
-
-	@After
-	public void close() {
-		if (this.context != null) {
-			this.context.close();
-		}
+		// Clean up the test secrets in the project from prior runs.
+		deleteSecret(TEST_SECRET_ID);
+		deleteSecret(VERSIONED_SECRET_ID);
 	}
 
 	@Test
 	public void testConfiguration() {
-		assertThat(this.context.getEnvironment().getProperty("my-secret"))
+		createSecret(TEST_SECRET_ID, "the secret data.");
+
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.run();
+
+		assertThat(context.getEnvironment().getProperty("sm://" + TEST_SECRET_ID))
 				.isEqualTo("the secret data.");
 
-		byte[] byteArraySecret = this.context.getEnvironment().getProperty("my-secret", byte[].class);
+		byte[] byteArraySecret = context.getEnvironment().getProperty(
+				"sm://" + TEST_SECRET_ID + "/latest", byte[].class);
 		assertThat(byteArraySecret).isEqualTo("the secret data.".getBytes());
 	}
 
 	@Test
 	public void testConfigurationDisabled() {
+		createSecret(TEST_SECRET_ID, "the secret data.");
+
 		ConfigurableApplicationContext context = new SpringApplicationBuilder()
 				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.secretmanager.enabled=false")
 				.run();
 
-		assertThat(context.getEnvironment()
-				.getProperty("spring-cloud-gcp.secrets.my-secret")).isNull();
+		assertThat(context.getEnvironment().getProperty(
+				"sm://" + TEST_SECRET_ID, String.class)).isNull();
 	}
 
+	@Test
+	public void testSecretsWithSpecificVersion() {
+		createSecret(VERSIONED_SECRET_ID, "the secret data");
+		createSecret(VERSIONED_SECRET_ID, "the secret data v2");
+		createSecret(VERSIONED_SECRET_ID, "the secret data v3");
+
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.run();
+
+		String versionedSecret = context.getEnvironment().getProperty(
+				"sm://" + VERSIONED_SECRET_ID + "/2", String.class);
+		assertThat(versionedSecret).isEqualTo("the secret data v2");
+	}
+
+	@Test
+	public void testMissingSecret() {
+		createSecret(VERSIONED_SECRET_ID, "the secret data");
+
+		ConfigurableApplicationContext context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.run();
+
+		assertThatThrownBy(() ->
+				context.getEnvironment().getProperty("sm://" + VERSIONED_SECRET_ID + "/2", String.class))
+				.hasCauseInstanceOf(StatusRuntimeException.class)
+				.hasMessageContaining("NOT_FOUND");
+	}
 	/**
 	 * Creates the secret with the specified payload if the secret does not already exist.
+	 * Otherwise creates a new version of the secret under the existing {@code secretId}.
 	 */
 	private void createSecret(String secretId, String payload) {
-		if (!secretExists(secretId)) {
-			ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
+		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
 
+		if (!secretExists(secretId)) {
 			// Creates the secret.
 			Secret secret = Secret.newBuilder()
 					.setReplication(
@@ -123,24 +166,51 @@ public class SecretManagerIntegrationTests {
 					.setSecret(secret)
 					.build();
 			client.createSecret(request);
-
-			// Create the secret payload.
-			SecretName name = SecretName.of(projectIdProvider.getProjectId(), TEST_SECRET_ID);
-			SecretPayload payloadObject = SecretPayload.newBuilder()
-					.setData(ByteString.copyFromUtf8("the secret data."))
-					.build();
-			AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
-					.setParent(name.toString())
-					.setPayload(payloadObject)
-					.build();
-			client.addSecretVersion(payloadRequest);
 		}
+
+		createSecretPayload(secretId, payload);
+	}
+
+	private void createSecretPayload(String secretId, String data) {
+		// Create the secret payload.
+		SecretName name = SecretName.of(projectIdProvider.getProjectId(), secretId);
+		SecretPayload payloadObject = SecretPayload.newBuilder()
+				.setData(ByteString.copyFromUtf8(data))
+				.build();
+		AddSecretVersionRequest payloadRequest = AddSecretVersionRequest.newBuilder()
+				.setParent(name.toString())
+				.setPayload(payloadObject)
+				.build();
+		client.addSecretVersion(payloadRequest);
 	}
 
 	private boolean secretExists(String secretId) {
-		ProjectName projectName = ProjectName.of(projectIdProvider.getProjectId());
-		ListSecretsPagedResponse listSecretsResponse = this.client.listSecrets(projectName);
-		return StreamSupport.stream(listSecretsResponse.iterateAll().spliterator(), false)
-				.anyMatch(secret -> secret.getName().contains(secretId));
+		try {
+			SecretVersionName secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject(projectIdProvider.getProjectId())
+							.setSecret(secretId)
+							.setSecretVersion("latest")
+							.build();
+			this.client.accessSecretVersion(secretVersionName);
+		}
+		catch (NotFoundException e) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private void deleteSecret(String secretId) {
+		try {
+			this.client.deleteSecret(SecretName.of(this.projectIdProvider.getProjectId(), secretId));
+
+			// Wait for the secret to be successfully removed from the project in the backend.
+			await().pollInterval(Duration.ONE_SECOND)
+					.atMost(20, TimeUnit.SECONDS).until(() -> !secretExists(secretId));
+		}
+		catch (NotFoundException e) {
+			LOGGER.debug("Skipped deleting " + secretId + " because it does not exist.");
+		}
 	}
 }

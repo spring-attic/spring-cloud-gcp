@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,15 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- *
+ * @author Elena Felder
+ * @author Maurice Zeijen
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GcpPubSubReactiveAutoConfigurationTest {
@@ -105,17 +107,13 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 
 	@Test
 	public void defaultSchedulerUsedWhenNoneProvided() {
-
-		setUpThreadPrefixVerification("pubSubReactiveScheduler");
+		setUpThreadPrefixVerification("parallel");
 
 		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 				.withBean(PubSubSubscriberOperations.class, () -> mockSubscriberTemplate)
 				.withConfiguration(AutoConfigurations.of(GcpPubSubReactiveAutoConfiguration.class));
 
-		contextRunner.run(ctx -> {
-			pollAndVerify(ctx);
-		});
-
+		contextRunner.run(this::pollAndVerify);
 	}
 
 	@Test
@@ -128,17 +126,15 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 				.withConfiguration(AutoConfigurations.of(GcpPubSubReactiveAutoConfiguration.class))
 				.withUserConfiguration(TestConfigWithOverriddenScheduler.class);
 
-		contextRunner.run(ctx -> {
-			pollAndVerify(ctx);
-		});
+		contextRunner.run(this::pollAndVerify);
 	}
 
 	private void setUpThreadPrefixVerification(String threadPrefix) {
-		when(mockSubscriberTemplate.pull("testSubscription", 3, false))
+		when(mockSubscriberTemplate.pullAsync("testSubscription", Integer.MAX_VALUE, true))
 				.then(arg -> {
 					assertThat(Thread.currentThread().getName()).startsWith(threadPrefix);
 
-					return Arrays.asList(mockMessage, mockMessage, mockMessage);
+					return AsyncResult.forValue(Arrays.asList(mockMessage, mockMessage, mockMessage));
 				});
 	}
 
@@ -146,10 +142,10 @@ public class GcpPubSubReactiveAutoConfigurationTest {
 		PubSubReactiveFactory reactiveFactory = ctx.getBean(PubSubReactiveFactory.class);
 
 		StepVerifier.create(
-				reactiveFactory.poll("testSubscription", 2)
-						.limitRequest(3))
+				reactiveFactory.poll("testSubscription", 2))
 				.expectNext(mockMessage, mockMessage, mockMessage)
-				.verifyComplete();
+				.thenCancel()
+				.verify();
 	}
 
 

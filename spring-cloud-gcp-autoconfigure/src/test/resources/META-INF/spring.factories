@@ -1,0 +1,2 @@
+org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+org.springframework.cloud.gcp.autoconfigure.secretmanager.SecretManagerBootstrapConfigurationTests.TestBootstrapConfiguration

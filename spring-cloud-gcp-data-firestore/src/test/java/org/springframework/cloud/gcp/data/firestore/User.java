@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.PropertyName;
 
 /**
  * Sample entity for integration tests.
@@ -31,6 +32,12 @@ import com.google.cloud.firestore.annotation.DocumentId;
 //tag::embedded_class_collections[]
 @Document(collectionName = "usersCollection")
 public class User {
+	/**
+	 * Used to test @PropertyName annotation on a field.
+	 */
+	@PropertyName("drink")
+	public String favoriteDrink;
+
 	@DocumentId
 	private String name;
 
@@ -102,10 +109,12 @@ public class User {
 		this.addresses = addresses;
 	}
 
+	@PropertyName("address")
 	public Address getHomeAddress() {
 		return this.homeAddress;
 	}
 
+	@PropertyName("address")
 	public void setHomeAddress(Address homeAddress) {
 		this.homeAddress = homeAddress;
 	}

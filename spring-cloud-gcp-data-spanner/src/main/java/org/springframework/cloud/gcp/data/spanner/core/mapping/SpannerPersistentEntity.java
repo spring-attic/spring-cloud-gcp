@@ -31,6 +31,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @param <T> the underlying persistent entity type
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -114,5 +115,29 @@ public interface SpannerPersistentEntity<T> extends
 	 */
 	String getPrimaryKeyColumnName();
 
+	/**
+	 * Returns true if the entity has at least one eagerly load interleaved property.
+	 *
+	 * @return true if the entity has at least one eagerly load interleaved property
+	 * @see Interleaved#lazy()
+	 */
 	boolean hasEagerlyLoadedProperties();
+
+	/**
+	 * Returns the value of the {@link Where} annotation from the entity's class or inherited from parents
+	 * or an empty string when no annotation found.
+	 *
+	 * @return the value of the {@link Where} from the entity's class or inherited from parents
+	 *     or an empty string when no annotation found.
+	 * @see #hasWhere()
+	 */
+	String getWhere();
+
+	/**
+	 * Returns true when the entity has an annotation {@link Where} with a non-empty value.
+	 *
+	 * @return true when the entity has an annotation {@link Where} with a non-empty value.
+	 * @see #getWhere()
+	 */
+	boolean hasWhere();
 }
