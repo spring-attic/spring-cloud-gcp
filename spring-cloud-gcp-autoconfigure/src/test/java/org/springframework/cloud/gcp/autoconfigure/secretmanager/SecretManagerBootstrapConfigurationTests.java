@@ -66,6 +66,9 @@ public class SecretManagerBootstrapConfigurationTests {
 		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
 			String secret = c.getBean("secret", String.class);
 			assertThat(secret).isEqualTo("hello");
+
+			secret = c.getBean("fullyQualifiedSecret", String.class);
+			assertThat(secret).isEqualTo("hello");
 		}
 	}
 
@@ -75,8 +78,16 @@ public class SecretManagerBootstrapConfigurationTests {
 		@Value("${sm://my-secret}")
 		private String secret;
 
+		@Value("${sm://" + PROJECT_NAME + "/my-secret/latest}")
+		private String fullyQualifiedSecret;
+
 		@Bean
 		public String secret() {
+			return secret;
+		}
+
+		@Bean
+		public String fullyQualifiedSecret() {
 			return secret;
 		}
 	}
@@ -85,7 +96,7 @@ public class SecretManagerBootstrapConfigurationTests {
 	static class TestBootstrapConfiguration {
 
 		@Bean
-		public static SecretManagerServiceClient secretManagerClient() throws Exception {
+		public static SecretManagerServiceClient secretManagerClient() {
 			SecretManagerServiceClient client = mock(SecretManagerServiceClient.class);
 			SecretVersionName secretVersionName =
 					SecretVersionName.newBuilder()
