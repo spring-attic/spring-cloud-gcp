@@ -61,6 +61,15 @@ public class SecretManagerBootstrapConfigurationTests {
 	}
 
 	@Test
+	public void testGetProperty_otherVersion() {
+		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
+			String secret = c.getEnvironment().getProperty(
+					"sm://my-secret/1");
+			assertThat(secret).isEqualTo("hello v1");
+		}
+	}
+
+	@Test
 	public void testGetProperty_otherProject() {
 		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
 			String secret = c.getEnvironment().getProperty(
@@ -128,6 +137,18 @@ public class SecretManagerBootstrapConfigurationTests {
 			when(client.accessSecretVersion(secretVersionName)).thenReturn(
 					AccessSecretVersionResponse.newBuilder()
 							.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello")))
+							.build());
+
+			secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject(PROJECT_NAME)
+							.setSecret("my-secret")
+							.setSecretVersion("1")
+							.build();
+
+			when(client.accessSecretVersion(secretVersionName)).thenReturn(
+					AccessSecretVersionResponse.newBuilder()
+							.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello v1")))
 							.build());
 
 			secretVersionName =
