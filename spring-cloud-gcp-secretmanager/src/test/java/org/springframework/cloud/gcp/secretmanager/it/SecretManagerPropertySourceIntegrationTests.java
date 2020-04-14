@@ -42,19 +42,21 @@ public class SecretManagerPropertySourceIntegrationTests {
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
 
-	private SecretManagerTemplate template;
-
 	@BeforeClass
 	public static void prepare() {
 		assumeThat(System.getProperty("it.secretmanager"))
 				.as("Secret manager integration tests are disabled. "
 						+ "Please use '-Dit.secretmanager=true' to enable them.")
 				.isEqualTo("true");
-	}
 
-	@Before
-	public void setupSecretManager() {
-		this.template = context.getBeanFactory().getBean(SecretManagerTemplate.class);
+    // Create the test secret if it does not already currently exist.
+		ConfigurableApplicationContext setupContext =
+				new SpringApplicationBuilder(SecretManagerTestConfiguration.class)
+						.web(WebApplicationType.NONE)
+						.run();
+
+		SecretManagerTemplate template =
+				setupContext.getBeanFactory().getBean(SecretManagerTemplate.class);
 		if (!template.secretExists(TEST_SECRET_ID)) {
 			template.createSecret(TEST_SECRET_ID, "the secret data.");
 		}
