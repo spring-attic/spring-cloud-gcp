@@ -20,12 +20,14 @@ import java.util.function.Consumer;
 
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.boot.test.system.OutputCaptureRule;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -61,6 +63,10 @@ public class PubSubInboundChannelAdapterTests {
 	PubSubInboundChannelAdapter adapter;
 
 	static final String EXCEPTION_MESSAGE = "Simulated downstream message processing failure";
+
+	/** Output capture for validating warning messages. */
+	@Rule
+	public OutputCaptureRule output = new OutputCaptureRule();
 
 	@Mock
 	PubSubSubscriberOperations mockPubSubSubscriberOperations;
@@ -110,27 +116,29 @@ public class PubSubInboundChannelAdapterTests {
 		this.adapter.setAckMode(AckMode.AUTO);
 		this.adapter.setOutputChannel(this.mockMessageChannel);
 
-		assertThatThrownBy(() -> {
-			this.adapter.start();
-		}).hasMessageContaining(EXCEPTION_MESSAGE);
+		this.adapter.start();
 
 		verify(mockAcknowledgeableMessage).nack();
+
+		assertThat(output.getOut()).contains("failed; message nacked automatically");
+		assertThat(output.getOut()).contains(EXCEPTION_MESSAGE);
 	}
 
 	@Test
-	public void testAckModeAutoAck_nacksWhenDownstreamProcessingFails() {
+	public void testAckModeAutoAck_neitherAcksNorNacksWhenMessageProcessingFails() {
 
 		when(this.mockMessageChannel.send(any())).thenThrow(new RuntimeException(EXCEPTION_MESSAGE));
 
 		this.adapter.setAckMode(AckMode.AUTO_ACK);
 
-		assertThatThrownBy(() -> {
-			this.adapter.start();
-		}).hasMessageContaining(EXCEPTION_MESSAGE);
+		this.adapter.start();
 
 		// When exception thrown, verify that neither ack() nor nack() is called.
 		verify(mockAcknowledgeableMessage, times(0)).ack();
 		verify(mockAcknowledgeableMessage, times(0)).nack();
+
+		assertThat(output.getOut()).contains("failed; message neither acked nor nacked");
+		assertThat(output.getOut()).contains(EXCEPTION_MESSAGE);
 	}
 
 	@Test
