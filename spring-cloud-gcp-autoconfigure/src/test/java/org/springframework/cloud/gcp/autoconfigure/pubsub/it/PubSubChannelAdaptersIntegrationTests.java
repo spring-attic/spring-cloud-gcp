@@ -239,12 +239,12 @@ public class PubSubChannelAdaptersIntegrationTests {
 						.until(() -> numReceivedMessages.get() > 0);
 				assertThat(numReceivedMessages.get()).isEqualTo(1);
 
-				// Expect redelivery within 2 minutes:
+				// Expect redelivery after at least 10 seconds but within 1.5 minutes:
 				// 10 seconds subscription ackDeadline
 				// + 60 seconds https://github.com/googleapis/java-pubsub/issues/141
 				// + 20 seconds anti-flake buffer
 				Awaitility.await()
-						.atLeast(10, TimeUnit.SECONDS)
+						.atLeast(9, TimeUnit.SECONDS)
 						.atMost(90, TimeUnit.SECONDS)
 						.until(() -> numReceivedMessages.get() > 1);
 				assertThat(numReceivedMessages.get()).isEqualTo(2);
