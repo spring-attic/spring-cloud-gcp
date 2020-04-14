@@ -240,10 +240,12 @@ public class PubSubChannelAdaptersIntegrationTests {
 				assertThat(numReceivedMessages.get()).isEqualTo(1);
 
 				// Expect redelivery within 2 minutes:
-				// 30 seconds subscription ackDeadline
+				// 10 seconds subscription ackDeadline
 				// + 60 seconds https://github.com/googleapis/java-pubsub/issues/141
-				// + 30 seconds anti-flake buffer
-				Awaitility.await().atMost(120, TimeUnit.SECONDS)
+				// + 20 seconds anti-flake buffer
+				Awaitility.await()
+						.atLeast(10, TimeUnit.SECONDS)
+						.atMost(90, TimeUnit.SECONDS)
 						.until(() -> numReceivedMessages.get() > 1);
 				assertThat(numReceivedMessages.get()).isEqualTo(2);
 			}
@@ -390,7 +392,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
-				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName, 30);
+				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName, 10);
 			}
 
 			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
