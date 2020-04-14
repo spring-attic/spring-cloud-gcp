@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 public class SecretManagerPropertySourceIntegrationTests {
 
 	private ConfigurableApplicationContext context =
-			new SpringApplicationBuilder(TestConfiguration.class, SecretManagerTestConfiguration.class)
+			new SpringApplicationBuilder(TestConfiguration.class)
 					.web(WebApplicationType.NONE)
 					.run();
 
