@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.secretmanager.it;
 
 import io.grpc.StatusRuntimeException;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
