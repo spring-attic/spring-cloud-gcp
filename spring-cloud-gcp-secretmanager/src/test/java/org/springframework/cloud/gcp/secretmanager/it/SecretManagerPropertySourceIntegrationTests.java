@@ -48,7 +48,7 @@ public class SecretManagerPropertySourceIntegrationTests {
 						+ "Please use '-Dit.secretmanager=true' to enable them.")
 				.isEqualTo("true");
 
-    // Create the test secret if it does not already currently exist.
+		// Create the test secret if it does not already currently exist.
 		ConfigurableApplicationContext setupContext =
 				new SpringApplicationBuilder(SecretManagerTestConfiguration.class)
 						.web(WebApplicationType.NONE)
