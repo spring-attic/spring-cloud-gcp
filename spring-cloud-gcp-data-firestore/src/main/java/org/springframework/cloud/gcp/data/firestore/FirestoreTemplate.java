@@ -284,15 +284,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
-	private WriteRequest buildDeleteRequest(
+	// Visible for Testing
+	WriteRequest buildDeleteRequest(
 			List<String> documentIds, WriteResponse writeResponse) {
 
-		WriteRequest.Builder writeRequestBuilder =
-				WriteRequest.newBuilder()
-						.setStreamId(writeResponse.getStreamId());
+		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
 
 		if (isUsingStreamTokens()) {
-			writeRequestBuilder.setStreamToken(writeResponse.getStreamToken());
+			writeRequestBuilder
+					.setStreamId(writeResponse.getStreamId())
+					.setStreamToken(writeResponse.getStreamToken());
 		}
 
 		documentIds.stream().map(this::createDeleteWrite).forEach(writeRequestBuilder::addWrites);
@@ -371,14 +372,14 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return requestStreamObserver;
 	}
 
-	private <T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
-		WriteRequest.Builder writeRequestBuilder =
-				WriteRequest.newBuilder()
-						.setStreamId(writeResponse.getStreamId());
+	// Visible for Testing
+	<T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
+		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
 
 		if (isUsingStreamTokens()) {
-			writeRequestBuilder.setStreamToken(writeResponse.getStreamToken());
-
+			writeRequestBuilder
+					.setStreamId(writeResponse.getStreamId())
+					.setStreamToken(writeResponse.getStreamToken());
 		}
 
 		entityList.stream().map(this::createUpdateWrite).forEach(writeRequestBuilder::addWrites);
