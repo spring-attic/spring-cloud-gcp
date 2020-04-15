@@ -82,6 +82,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private int writeBufferSize = FIRESTORE_WRITE_MAX_SIZE;
 
+	private boolean usingStreamTokens = true;
+
 	/**
 	 * Constructor for FirestoreTemplate.
 	 * @param firestore Firestore gRPC stub
@@ -127,6 +129,24 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	public int getWriteBufferSize() {
 		return this.writeBufferSize;
+	}
+
+	/**
+	 * Sets whether the {@link FirestoreTemplate} should attach stream resume tokens to write
+	 * requests.
+	 *
+	 * <p>Note that this should always be set to true unless you are using the
+	 * Firestore emulator in which case it should be set to false because the emulator
+	 * does not support using resume tokens.
+	 *
+	 * @param usingStreamTokens whether the template
+	 */
+	public void setUsingStreamTokens(boolean usingStreamTokens) {
+		this.usingStreamTokens = usingStreamTokens;
+	}
+
+	public boolean isUsingStreamTokens() {
+		return usingStreamTokens;
 	}
 
 	@Override
@@ -269,8 +289,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 		WriteRequest.Builder writeRequestBuilder =
 				WriteRequest.newBuilder()
-						.setStreamId(writeResponse.getStreamId())
-						.setStreamToken(writeResponse.getStreamToken());
+						.setStreamId(writeResponse.getStreamId());
+
+		if (isUsingStreamTokens()) {
+			writeRequestBuilder.setStreamToken(writeResponse.getStreamToken());
+		}
 
 		documentIds.stream().map(this::createDeleteWrite).forEach(writeRequestBuilder::addWrites);
 
@@ -351,8 +374,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private <T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
 		WriteRequest.Builder writeRequestBuilder =
 				WriteRequest.newBuilder()
-						.setStreamId(writeResponse.getStreamId())
-						.setStreamToken(writeResponse.getStreamToken());
+						.setStreamId(writeResponse.getStreamId());
+
+		if (isUsingStreamTokens()) {
+			writeRequestBuilder.setStreamToken(writeResponse.getStreamToken());
+
+		}
 
 		entityList.stream().map(this::createUpdateWrite).forEach(writeRequestBuilder::addWrites);
 

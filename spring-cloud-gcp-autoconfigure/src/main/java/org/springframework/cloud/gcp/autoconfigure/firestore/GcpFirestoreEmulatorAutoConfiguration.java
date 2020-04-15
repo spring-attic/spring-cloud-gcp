@@ -1,29 +1,45 @@
+/*
+ * Copyright 2019-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.cloud.gcp.autoconfigure.firestore;
 
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.auth.Credentials;
-import com.google.cloud.firestore.FirestoreOptions;
-import com.google.firestore.v1.FirestoreGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.auth.MoreCallCredentials;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.auth.Credentials;
+import com.google.cloud.firestore.FirestoreOptions;
+import com.google.firestore.v1.FirestoreGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.auth.MoreCallCredentials;
+
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.firestore.GcpFirestoreAutoConfiguration.FirestoreReactiveAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
+import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,15 +56,20 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreEmulatorAutoConfiguration {
 
+	private static final String ROOT_PATH_FORMAT = "projects/%s/databases/(default)/documents";
+
 	private final String projectId;
 
 	private final String hostPort;
+
+	private final String firestoreRootPath;
 
 	GcpFirestoreEmulatorAutoConfiguration(
 			GcpFirestoreProperties properties,
 			GcpProjectIdProvider projectIdProvider) throws IOException {
 		this.projectId = projectIdProvider.getProjectId();
 		this.hostPort = properties.getHostPort();
+		this.firestoreRootPath = String.format(ROOT_PATH_FORMAT, this.projectId);
 	}
 
 	@Bean
@@ -69,7 +90,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 	@ConditionalOnMissingBean
 	public FirestoreGrpc.FirestoreStub firestoreGrpcStub() throws IOException {
 		ManagedChannel channel = ManagedChannelBuilder
-				.forAddress("localhost", 8080)
+				.forTarget(this.hostPort)
 				.usePlaintext()
 				.build();
 
@@ -77,6 +98,17 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				.withCallCredentials(MoreCallCredentials.from(fakeCredentials()))
 				.withExecutor(Runnable::run);
 	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+			FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
+		FirestoreTemplate template = new FirestoreTemplate(
+				firestoreStub, this.firestoreRootPath, classMapper, firestoreMappingContext);
+		template.setUsingStreamTokens(false);
+		return template;
+	}
+
 
 	private static Credentials fakeCredentials() {
 		final Map<String, List<String>> headerMap = new HashMap<>();
