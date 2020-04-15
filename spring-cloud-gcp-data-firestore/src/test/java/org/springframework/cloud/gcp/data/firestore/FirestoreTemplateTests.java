@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import com.google.firestore.v1.WriteRequest;
-import com.google.firestore.v1.WriteResponse;
-import com.google.protobuf.ByteString;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +29,9 @@ import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
+import com.google.firestore.v1.WriteRequest;
+import com.google.firestore.v1.WriteResponse;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
