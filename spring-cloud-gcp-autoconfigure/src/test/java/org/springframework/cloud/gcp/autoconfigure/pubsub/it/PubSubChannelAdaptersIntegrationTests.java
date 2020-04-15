@@ -16,44 +16,37 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.system.OutputCaptureRule;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
+import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
-import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
-import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
-import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -70,7 +63,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -80,20 +72,23 @@ import static org.mockito.Mockito.verify;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Elena Felder
  */
 public class PubSubChannelAdaptersIntegrationTests {
 
 	private static final int RECEIVE_TIMEOUT_MS = 10000;
 
-	private static PrintStream systemOut;
+	static PubSubAdmin pubSubAdmin;
 
-	private static ByteArrayOutputStream baos;
+	/** Capture output for verification. */
+	@Rule
+	public OutputCaptureRule outputCaptureRule = new OutputCaptureRule();
 
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(
-					GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class))
-			.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class);
+	String topicName;
+
+	String subscriptionName;
+
+	ApplicationContextRunner contextRunner;
 
 	@BeforeClass
 	public static void enableTests() {
@@ -101,82 +96,96 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@BeforeClass
-	public static void captureStdout() {
-		systemOut = System.out;
-		baos = new ByteArrayOutputStream();
-		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
-		System.setOut(new PrintStream(out));
+	public static void initializePubSubAdmin() throws Exception {
+		pubSubAdmin = new PubSubAdmin(
+				new DefaultGcpProjectIdProvider(),
+				new DefaultCredentialsProvider(() -> new Credentials())
+		);
 	}
 
-	@AfterClass
-	public static void resetStdout() {
-		System.setOut(systemOut);
+	@Before
+	public void setUpPubSubResources() {
+		this.topicName = "desafinado-" + UUID.randomUUID();
+		this.subscriptionName = "doralice-" + UUID.randomUUID();
+
+		if (pubSubAdmin.getTopic(this.topicName) == null) {
+			pubSubAdmin.createTopic(this.topicName);
+		}
+
+		if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
+			pubSubAdmin.createSubscription(this.subscriptionName, this.topicName, 10);
+		}
+
+		this.contextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(
+						GcpContextAutoConfiguration.class,
+						GcpPubSubAutoConfiguration.class))
+				.withBean("topicName", String.class, this.topicName)
+				.withBean("subscriptionName", String.class, this.subscriptionName);
+	}
+
+	@After
+	public void tearDownPubSubResources() {
+		pubSubAdmin.deleteSubscription(this.subscriptionName);
+		pubSubAdmin.deleteTopic(this.topicName);
 	}
 
 	@Test
 	public void sendAndReceiveMessageAsString() {
-		this.contextRunner.run((context) -> {
-			try {
-				Map<String, Object> headers = new HashMap<>();
-				// Only String values for now..
-				headers.put("storm", "lift your skinny fists");
-				headers.put("static", "lift your skinny fists");
-				headers.put("sleep", "lift your skinny fists");
+		this.contextRunner
+				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
+				.run((context) -> {
+			Map<String, Object> headers = new HashMap<>();
+			// Only String values for now..
+			headers.put("storm", "lift your skinny fists");
+			headers.put("static", "lift your skinny fists");
+			headers.put("sleep", "lift your skinny fists");
 
-				Message originalMessage = MessageBuilder.createMessage("I am a message.".getBytes(),
-						new MessageHeaders(headers));
-				context.getBean("inputChannel", MessageChannel.class).send(originalMessage);
+			Message originalMessage = MessageBuilder.createMessage("I am a message (sendAndReceiveMessageAsString).".getBytes(),
+					new MessageHeaders(headers));
+			context.getBean("inputChannel", MessageChannel.class).send(originalMessage);
 
-				Message<?> message =
-						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
-				assertThat(message).isNotNull();
-				assertThat(message.getPayload()).isInstanceOf(byte[].class);
-				String payload = new String((byte[]) message.getPayload());
-				assertThat(payload).isEqualTo("I am a message.");
+			Message<?> message =
+					context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
+			assertThat(message).isNotNull();
+			assertThat(message.getPayload()).isInstanceOf(byte[].class);
+			String payload = new String((byte[]) message.getPayload());
+			assertThat(payload).isEqualTo("I am a message (sendAndReceiveMessageAsString).");
 
-				assertThat(message.getHeaders().size()).isEqualTo(6);
-				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
-				assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNotNull();
-			}
-			finally {
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
+			assertThat(message.getHeaders().size()).isEqualTo(6);
+			assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
+			assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
+			assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNotNull();
 		});
 	}
 
 	@Test
 	public void sendAndReceiveMessage() {
-		this.contextRunner.run((context) -> {
-			try {
+		this.contextRunner
+				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
+				.run((context) -> {
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.".getBytes()).build());
+						MessageBuilder.withPayload("I am a message (sendAndReceiveMessage).".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
 				String stringPayload = new String((byte[]) message.getPayload());
-				assertThat(stringPayload).isEqualTo("I am a message.");
-			}
-			finally {
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
+				assertThat(stringPayload).isEqualTo("I am a message (sendAndReceiveMessage).");
 		});
 	}
 
 	@Test
 	public void sendAndReceiveMessageManualAck() {
-		this.contextRunner.run((context) -> {
-			try {
+		this.contextRunner
+				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
+				.run((context) -> {
+
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.".getBytes()).build());
+						MessageBuilder.withPayload("I am a message (sendAndReceiveMessageManualAck).".getBytes()).build());
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
@@ -196,12 +205,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNull();
-			}
-			finally {
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
 		});
 	}
 
@@ -213,14 +216,11 @@ public class PubSubChannelAdaptersIntegrationTests {
 	// making minimum redelivery time is ackDeadline + 60.
 	@Test
 	public void sendAndReceiveMessageAutoAckWithFailure() {
-		ApplicationContextRunner customContextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(
-						GcpContextAutoConfiguration.class,
-						GcpPubSubAutoConfiguration.class))
-				.withUserConfiguration(SubscribableConfiguration.class, CommonConfiguration.class);
 
-		customContextRunner.run((context) -> {
-			try {
+		this.contextRunner
+				.withUserConfiguration(SubscribableConfiguration.class, CommonConfiguration.class)
+				.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
+				.run((context) -> {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.AUTO_ACK);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("This message is in trouble.".getBytes()).build());
@@ -248,24 +248,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 						.atMost(90, TimeUnit.SECONDS)
 						.until(() -> numReceivedMessages.get() > 1);
 				assertThat(numReceivedMessages.get()).isEqualTo(2);
-			}
-			finally {
-				context.getBean(PubSubInboundChannelAdapter.class).stop();
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
 		});
 	}
 
 	@Test
 	@SuppressWarnings("deprecation")
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
-		this.contextRunner.run((context) -> {
-			try {
+		this.contextRunner
+				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
+				.run((context) -> {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.".getBytes()).build());
+						MessageBuilder.withPayload("I am a message (sendAndReceiveMessageManualAckThroughAcknowledgementHeader).".getBytes()).build());
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
@@ -279,37 +273,16 @@ public class PubSubChannelAdaptersIntegrationTests {
 				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNull();
 
-				validateOutput("ACKNOWLEDGEMENT header is deprecated");
-			}
-			finally {
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
+				assertThat(this.outputCaptureRule.getOut()).contains("ACKNOWLEDGEMENT header is deprecated");
 		});
-	}
-
-	private void validateOutput(String expectedText) {
-		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains(expectedText)) {
-				return;
-			}
-			try {
-				Thread.sleep(100);
-			}
-			catch (InterruptedException ex) {
-				ex.printStackTrace();
-				fail("Interrupted while waiting for text.");
-			}
-		}
-		fail("Did not find expected text on STDOUT: " + expectedText);
 	}
 
 	@Test
 	public void sendAndReceiveMessagePublishCallback() {
-		this.contextRunner.run((context) -> {
-			try {
-				ListenableFutureCallback<String> callbackSpy = Mockito.spy(
+		this.contextRunner
+				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
+				.run((context) -> {
+					ListenableFutureCallback<String> callbackSpy = Mockito.spy(
 						new ListenableFutureCallback<String>() {
 							@Override
 							public void onFailure(Throwable ex) {
@@ -323,18 +296,13 @@ public class PubSubChannelAdaptersIntegrationTests {
 						});
 				context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.".getBytes()).build());
+						MessageBuilder.withPayload("I am a message (sendAndReceiveMessagePublishCallback).".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
-				verify(callbackSpy, times(1)).onSuccess(any());
-			}
-			finally {
-				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
-				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
-				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
-			}
+				Awaitility.await().atMost(1, TimeUnit.SECONDS)
+						.untilAsserted(() -> verify(callbackSpy, times(1)).onSuccess(any()));
 		});
 	}
 
@@ -363,16 +331,13 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@EnableIntegration
 	static class CommonConfiguration {
 
-		public String topicName = "desafinado-" + UUID.randomUUID();
-
-		public String subscriptionName = "doralice-" + UUID.randomUUID();
-
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
 				PubSubTemplate pubSubTemplate,
-				@Qualifier("outputChannel") MessageChannel outputChannel) {
+				@Qualifier("outputChannel") MessageChannel outputChannel,
+				@Qualifier("subscriptionName") String subscriptionName) {
 			PubSubInboundChannelAdapter inboundChannelAdapter =
-					new PubSubInboundChannelAdapter(pubSubTemplate, this.subscriptionName);
+					new PubSubInboundChannelAdapter(pubSubTemplate, subscriptionName);
 			inboundChannelAdapter.setOutputChannel(outputChannel);
 
 			return inboundChannelAdapter;
@@ -380,60 +345,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 		@Bean
 		@ServiceActivator(inputChannel = "inputChannel")
-		public PubSubMessageHandler outboundChannelAdapter(PubSubTemplate pubSubTemplate) {
-			return new PubSubMessageHandler(pubSubTemplate, this.topicName);
-		}
-
-		@Bean
-		public SubscriberFactory defaultSubscriberFactory(
-				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
-				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin,
-				GcpProjectIdProvider projectIdProvider,
-				CredentialsProvider credentialsProvider) {
-			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
-				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName, 10);
-			}
-
-			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
-			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider);
-			factory.setHeaderProvider(
-					new UserAgentHeaderProvider(GcpPubSubAutoConfiguration.class));
-			factory.setChannelProvider(transportChannelProvider);
-			factory.setMaxAckExtensionPeriod(Duration.ZERO);
-
-			return factory;
-		}
-
-		@Bean
-		public PublisherFactory defaultPublisherFactory(
-				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin,
-				GcpProjectIdProvider projectIdProvider,
-				CredentialsProvider credentialsProvider) {
-			if (pubSubAdmin.getTopic(this.topicName) == null) {
-				pubSubAdmin.createTopic(this.topicName);
-			}
-
-			DefaultPublisherFactory factory = new DefaultPublisherFactory(projectIdProvider);
-			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider);
-			factory.setHeaderProvider(
-					new UserAgentHeaderProvider(GcpPubSubAutoConfiguration.class));
-			factory.setChannelProvider(transportChannelProvider);
-			return factory;
-		}
-
-		@Bean
-		public String topicName() {
-			return this.topicName;
-		}
-
-		@Bean
-		public String subscriptionName() {
-			return this.subscriptionName;
+		public PubSubMessageHandler outboundChannelAdapter(
+				PubSubTemplate pubSubTemplate, @Qualifier("topicName") String topicName) {
+			return new PubSubMessageHandler(pubSubTemplate, topicName);
 		}
 	}
 }
