@@ -23,7 +23,6 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -158,8 +157,13 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				message.nack();
+				LOGGER.warn("Sending Spring message [" + message.getPubsubMessage().getMessageId()
+						+ "] failed; message nacked automatically.", re);
 			}
-			throw new PubSubException("Sending Spring message failed.", re);
+			else {
+				LOGGER.warn("Sending Spring message [" + message.getPubsubMessage().getMessageId()
+						+ "] failed; message neither acked nor nacked.", re);
+			}
 		}
 	}
 

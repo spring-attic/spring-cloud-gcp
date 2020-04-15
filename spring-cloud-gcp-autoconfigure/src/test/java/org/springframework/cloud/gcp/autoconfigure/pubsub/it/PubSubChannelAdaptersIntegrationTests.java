@@ -21,18 +21,21 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.threeten.bp.Duration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -54,12 +57,14 @@ import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -88,8 +93,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			.withConfiguration(AutoConfigurations.of(
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
-			.withUserConfiguration(
-					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
+			.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class);
 
 	@BeforeClass
 	public static void enableTests() {
@@ -201,6 +205,59 @@ public class PubSubChannelAdaptersIntegrationTests {
 		});
 	}
 
+	// If this test flakes, delete it.
+	// It verifies that in AUTO_ACK mode, the message is neither acked nor nacked, and that
+	// redelivery happens after subscription's ackDeadline passes.
+	// There is also a client library bug (https://github.com/googleapis/java-pubsub/issues/141) that
+	// results in ackDeadline being extended by 60 seconds even when maxAckExtensionPeriod is zero,
+	// making minimum redelivery time is ackDeadline + 60.
+	@Test
+	public void sendAndReceiveMessageAutoAckWithFailure() {
+		ApplicationContextRunner customContextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(
+						GcpContextAutoConfiguration.class,
+						GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(SubscribableConfiguration.class, CommonConfiguration.class);
+
+		customContextRunner.run((context) -> {
+			try {
+				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.AUTO_ACK);
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.withPayload("This message is in trouble.".getBytes()).build());
+
+				SubscribableChannel channel = context.getBean("outputChannel", SubscribableChannel.class);
+
+				AtomicInteger numReceivedMessages = new AtomicInteger(0);
+				channel.subscribe(msg -> {
+					if (numReceivedMessages.incrementAndGet() == 1) {
+						throw new RuntimeException("BOOM!");
+					}
+				});
+
+				// wait for initial delivery
+				Awaitility.await().atMost(10, TimeUnit.SECONDS)
+						.until(() -> numReceivedMessages.get() > 0);
+				assertThat(numReceivedMessages.get()).isEqualTo(1);
+
+				// Expect redelivery after at least 10 seconds but within 1.5 minutes:
+				// 10 seconds subscription ackDeadline
+				// + 60 seconds https://github.com/googleapis/java-pubsub/issues/141
+				// + 20 seconds anti-flake buffer
+				Awaitility.await()
+						.atLeast(9, TimeUnit.SECONDS)
+						.atMost(90, TimeUnit.SECONDS)
+						.until(() -> numReceivedMessages.get() > 1);
+				assertThat(numReceivedMessages.get()).isEqualTo(2);
+			}
+			finally {
+				context.getBean(PubSubInboundChannelAdapter.class).stop();
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
+		});
+	}
+
 	@Test
 	@SuppressWarnings("deprecation")
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
@@ -285,21 +342,37 @@ public class PubSubChannelAdaptersIntegrationTests {
 	 * Spring Boot config for tests.
 	 */
 	@Configuration
+	static class PollableConfiguration {
+
+		@Bean
+		public MessageChannel outputChannel() {
+			return new QueueChannel();
+		}
+	}
+
+	@Configuration
+	static class SubscribableConfiguration {
+
+		@Bean
+		public MessageChannel outputChannel() {
+			return new PublishSubscribeChannel();
+		}
+	}
+
+	@Configuration
 	@EnableIntegration
-	static class IntegrationConfiguration {
+	static class CommonConfiguration {
 
 		public String topicName = "desafinado-" + UUID.randomUUID();
 
 		public String subscriptionName = "doralice-" + UUID.randomUUID();
 
-		@Autowired
-		private PubSubTemplate pubSubTemplate;
-
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
+				PubSubTemplate pubSubTemplate,
 				@Qualifier("outputChannel") MessageChannel outputChannel) {
 			PubSubInboundChannelAdapter inboundChannelAdapter =
-					new PubSubInboundChannelAdapter(this.pubSubTemplate, this.subscriptionName);
+					new PubSubInboundChannelAdapter(pubSubTemplate, this.subscriptionName);
 			inboundChannelAdapter.setOutputChannel(outputChannel);
 
 			return inboundChannelAdapter;
@@ -307,13 +380,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 		@Bean
 		@ServiceActivator(inputChannel = "inputChannel")
-		public PubSubMessageHandler outboundChannelAdapter() {
-			return new PubSubMessageHandler(this.pubSubTemplate, this.topicName);
-		}
-
-		@Bean
-		public MessageChannel outputChannel() {
-			return new QueueChannel();
+		public PubSubMessageHandler outboundChannelAdapter(PubSubTemplate pubSubTemplate) {
+			return new PubSubMessageHandler(pubSubTemplate, this.topicName);
 		}
 
 		@Bean
@@ -324,7 +392,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
-				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName);
+				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName, 10);
 			}
 
 			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
@@ -333,6 +401,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			factory.setHeaderProvider(
 					new UserAgentHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
+			factory.setMaxAckExtensionPeriod(Duration.ZERO);
 
 			return factory;
 		}
