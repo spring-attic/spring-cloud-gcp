@@ -789,19 +789,6 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
 	}
 
-
-	@Test
-	public void nonCollectionReturnTypeNoResults() throws NoSuchMethodException {
-		this.expectedException.expectMessage("Expecting at least 1 result, but none found");
-
-		queryWithMockResult("findByAction", Collections.emptyList(),
-				getClass().getMethod("findByAction", String.class), true);
-
-
-		Object[] params = new Object[] { "BUY", };
-		this.partTreeDatastoreQuery.execute(params);
-	}
-
 	@Test
 	public void nonCollectionReturnTypeNoResultsNullable() throws NoSuchMethodException {
 		queryWithMockResult("findByAction", Collections.emptyList(),

@@ -50,6 +50,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
@@ -323,7 +324,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
+
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
+		assertThatThrownBy(() -> this.testEntityRepository.findByColor("green"))
+				.isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageMatching("Result must not be null!");
+
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
 		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
