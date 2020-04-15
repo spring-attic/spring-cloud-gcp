@@ -47,9 +47,8 @@ public class SecretManagerBootstrapConfigurationTests {
 	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
 	private SpringApplicationBuilder applicationBuilder =
-			new SpringApplicationBuilder(TestBootstrapConfiguration.class)
-					.child(GcpSecretManagerBootstrapConfiguration.class)
-					.child(TestConfiguration.class)
+			new SpringApplicationBuilder(
+					TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 					.properties("spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME)
 					.web(WebApplicationType.NONE);
 
@@ -58,6 +57,24 @@ public class SecretManagerBootstrapConfigurationTests {
 		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
 			String secret = c.getEnvironment().getProperty("sm://my-secret");
 			assertThat(secret).isEqualTo("hello");
+		}
+	}
+
+	@Test
+	public void testGetProperty_otherVersion() {
+		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
+			String secret = c.getEnvironment().getProperty(
+					"sm://my-secret/1");
+			assertThat(secret).isEqualTo("hello v1");
+		}
+	}
+
+	@Test
+	public void testGetProperty_otherProject() {
+		try (ConfigurableApplicationContext c = applicationBuilder.run()) {
+			String secret = c.getEnvironment().getProperty(
+					"sm://projects/other-project/secrets/other-secret/versions/3");
+			assertThat(secret).isEqualTo("goodbye");
 		}
 	}
 
@@ -72,8 +89,23 @@ public class SecretManagerBootstrapConfigurationTests {
 		}
 	}
 
+	@Test
+	public void configurationDisabled() {
+		SpringApplicationBuilder disabledConfigurationApp =
+				new SpringApplicationBuilder(
+						TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
+						.properties("spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME)
+						.properties("spring.cloud.gcp.secretmanager.enabled=false")
+						.web(WebApplicationType.NONE);
+
+		try (ConfigurableApplicationContext c = disabledConfigurationApp.run()) {
+			String secret = c.getEnvironment().getProperty("sm://my-secret");
+			assertThat(secret).isEqualTo(null);
+		}
+	}
+
 	@Configuration
-	static class TestConfiguration {
+	static class TestBootstrapConfiguration {
 
 		@Value("${sm://my-secret}")
 		private String secret;
@@ -90,23 +122,46 @@ public class SecretManagerBootstrapConfigurationTests {
 		public String fullyQualifiedSecret() {
 			return secret;
 		}
-	}
-
-	@Configuration
-	static class TestBootstrapConfiguration {
 
 		@Bean
 		public static SecretManagerServiceClient secretManagerClient() {
 			SecretManagerServiceClient client = mock(SecretManagerServiceClient.class);
+
 			SecretVersionName secretVersionName =
 					SecretVersionName.newBuilder()
 							.setProject(PROJECT_NAME)
 							.setSecret("my-secret")
 							.setSecretVersion("latest")
 							.build();
+
 			when(client.accessSecretVersion(secretVersionName)).thenReturn(
 					AccessSecretVersionResponse.newBuilder()
 							.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello")))
+							.build());
+
+			secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject(PROJECT_NAME)
+							.setSecret("my-secret")
+							.setSecretVersion("1")
+							.build();
+
+			when(client.accessSecretVersion(secretVersionName)).thenReturn(
+					AccessSecretVersionResponse.newBuilder()
+							.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("hello v1")))
+							.build());
+
+			secretVersionName =
+					SecretVersionName.newBuilder()
+							.setProject("other-project")
+							.setSecret("other-secret")
+							.setSecretVersion("3")
+							.build();
+
+			when(client.accessSecretVersion(secretVersionName)).thenReturn(
+					AccessSecretVersionResponse.newBuilder()
+							.setPayload(
+									SecretPayload.newBuilder().setData(ByteString.copyFromUtf8("goodbye")))
 							.build());
 
 			return client;
