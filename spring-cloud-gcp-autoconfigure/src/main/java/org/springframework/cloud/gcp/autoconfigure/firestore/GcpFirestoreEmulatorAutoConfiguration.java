@@ -87,36 +87,6 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				.build();
 	}
 
-	/**
-	 * Reactive Firestore autoconfiguration to enable emulator use.
-	 */
-	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class, Flux.class })
-	@AutoConfigureBefore({ FirestoreReactiveAutoConfiguration.class })
-	class ReactiveFirestoreEmulatorAutoConfiguration {
-		@Bean
-		@ConditionalOnMissingBean
-		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
-				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
-			FirestoreTemplate template = new FirestoreTemplate(
-					firestoreStub, firestoreRootPath, classMapper, firestoreMappingContext);
-			template.setUsingStreamTokens(false);
-			return template;
-		}
-
-		@Bean
-		@ConditionalOnMissingBean
-		public FirestoreGrpc.FirestoreStub firestoreGrpcStub() throws IOException {
-			ManagedChannel channel = ManagedChannelBuilder
-					.forTarget(hostPort)
-					.usePlaintext()
-					.build();
-
-			return FirestoreGrpc.newStub(channel)
-					.withCallCredentials(MoreCallCredentials.from(emulatorCredentials()))
-					.withExecutor(Runnable::run);
-		}
-	}
-
 	private static Credentials emulatorCredentials() {
 		final Map<String, List<String>> headerMap = new HashMap<>();
 		headerMap.put("Authorization", Collections.singletonList("Bearer owner"));
@@ -148,5 +118,35 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				// no-op
 			}
 		};
+	}
+
+	/**
+	 * Reactive Firestore autoconfiguration to enable emulator use.
+	 */
+	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class, Flux.class })
+	@AutoConfigureBefore({ FirestoreReactiveAutoConfiguration.class })
+	class ReactiveFirestoreEmulatorAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
+			FirestoreTemplate template = new FirestoreTemplate(
+					firestoreStub, firestoreRootPath, classMapper, firestoreMappingContext);
+			template.setUsingStreamTokens(false);
+			return template;
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public FirestoreGrpc.FirestoreStub firestoreGrpcStub() throws IOException {
+			ManagedChannel channel = ManagedChannelBuilder
+					.forTarget(hostPort)
+					.usePlaintext()
+					.build();
+
+			return FirestoreGrpc.newStub(channel)
+					.withCallCredentials(MoreCallCredentials.from(emulatorCredentials()))
+					.withExecutor(Runnable::run);
+		}
 	}
 }
