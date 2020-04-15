@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Daniel Zou
  */
 @Configuration
-@ConditionalOnProperty("spring.cloud.gcp.firestore.emulator.enabled")
+@ConditionalOnProperty("spring.cloud.gcp.firestore.host-port")
 @AutoConfigureBefore({GcpFirestoreAutoConfiguration.class})
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreEmulatorAutoConfiguration {
@@ -77,7 +77,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 	@ConditionalOnMissingBean
 	public FirestoreOptions firestoreOptions() {
 		return FirestoreOptions.newBuilder()
-				.setCredentials(fakeCredentials())
+				.setCredentials(emulatorCredentials())
 				.setProjectId(this.projectId)
 				.setChannelProvider(
 						InstantiatingGrpcChannelProvider.newBuilder()
@@ -112,12 +112,12 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 					.build();
 
 			return FirestoreGrpc.newStub(channel)
-					.withCallCredentials(MoreCallCredentials.from(fakeCredentials()))
+					.withCallCredentials(MoreCallCredentials.from(emulatorCredentials()))
 					.withExecutor(Runnable::run);
 		}
 	}
 
-	private static Credentials fakeCredentials() {
+	private static Credentials emulatorCredentials() {
 		final Map<String, List<String>> headerMap = new HashMap<>();
 		headerMap.put("Authorization", Collections.singletonList("Bearer owner"));
 		headerMap.put("google-cloud-resource-prefix", Collections.singletonList("projects/my-project/databases/(default)"));

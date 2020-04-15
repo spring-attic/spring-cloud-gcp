@@ -54,6 +54,7 @@ The Spring Boot starter for Google Cloud Firestore provides the following config
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.firestore.enabled` | Enables or disables Firestore auto-configuration | No | `true`
 | `spring.cloud.gcp.firestore.project-id` | GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.firestore.host-port` | The host and port of the Firestore service; can be overridden to specify connecting to an emulator instance. | No | `firestore.googleapis.com:443` (the host/port of official Firestore service)
 | `spring.cloud.gcp.firestore.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.firestore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Firestore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.firestore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Firestore credentials | No | https://www.googleapis.com/auth/datastore
