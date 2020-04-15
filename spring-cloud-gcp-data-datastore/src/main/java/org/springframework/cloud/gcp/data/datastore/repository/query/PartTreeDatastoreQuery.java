@@ -169,10 +169,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		result = result instanceof PartTreeDatastoreQuery.ExecutionResult ? ((ExecutionResult) result).getPayload()
 				: result;
-		if (result == null) {
-			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
-				return Optional.empty();
-			}
+		if (result == null && ((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
+			return Optional.empty();
 		}
 		return result;
 	}
