@@ -50,10 +50,6 @@ public class SecretManagerWebController {
 	@Value("${my-app-secret-1}")
 	private String myAppSecret;
 
-	// Another way to access your secrets is to @Autowire a @ConfigurationProperties-annotated class.
-	@Autowired
-	private MyAppProperties properties;
-
 
 	@GetMapping("/")
 	public ModelAndView renderIndex(ModelMap map) {
