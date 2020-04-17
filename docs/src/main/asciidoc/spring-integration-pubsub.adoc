@@ -71,6 +71,7 @@ Then, we declare a `PubSubInboundChannelAdapter` bean.
 It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber` objects from the Google Cloud Java Client for Pub/Sub.
 The Spring Boot starter for GCP Pub/Sub provides a configured `PubSubSubscriberOperations` object.
 
+===== Acknowledging messages and handling failures
 The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value:
 
 * Automatic acking and nacking (`AckMode.AUTO`)
@@ -79,7 +80,7 @@ The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `Ac
 
 ===== Acking
 
-In `AUTO` and `AUTO_ACK` modes, a message acknowledgement is automatically sent to Cloud Pub/Sub if the message was successfully sent into the Spring Integration channel and processed with no exceptions.
+In `AUTO` and `AUTO_ACK` modes, a message acknowledgement is automatically sent to Cloud Pub/Sub if the message was successfully processed with no exceptions.
 
 In `MANUAL` mode, your application logic needs to manually acknowledge each message.
 If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
