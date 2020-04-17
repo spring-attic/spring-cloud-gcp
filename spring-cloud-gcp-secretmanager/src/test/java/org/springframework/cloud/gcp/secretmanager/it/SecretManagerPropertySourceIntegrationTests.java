@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.secretmanager.it;
 
 import io.grpc.StatusRuntimeException;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -36,13 +35,11 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 public class SecretManagerPropertySourceIntegrationTests {
 
 	private ConfigurableApplicationContext context =
-			new SpringApplicationBuilder(TestConfiguration.class, SecretManagerTestConfiguration.class)
+			new SpringApplicationBuilder(TestConfiguration.class)
 					.web(WebApplicationType.NONE)
 					.run();
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";
-
-	private SecretManagerTemplate template;
 
 	@BeforeClass
 	public static void prepare() {
@@ -50,11 +47,15 @@ public class SecretManagerPropertySourceIntegrationTests {
 				.as("Secret manager integration tests are disabled. "
 						+ "Please use '-Dit.secretmanager=true' to enable them.")
 				.isEqualTo("true");
-	}
 
-	@Before
-	public void setupSecretManager() {
-		this.template = context.getBeanFactory().getBean(SecretManagerTemplate.class);
+		// Create the test secret if it does not already currently exist.
+		ConfigurableApplicationContext setupContext =
+				new SpringApplicationBuilder(SecretManagerTestConfiguration.class)
+						.web(WebApplicationType.NONE)
+						.run();
+
+		SecretManagerTemplate template =
+				setupContext.getBeanFactory().getBean(SecretManagerTemplate.class);
 		if (!template.secretExists(TEST_SECRET_ID)) {
 			template.createSecret(TEST_SECRET_ID, "the secret data.");
 		}
