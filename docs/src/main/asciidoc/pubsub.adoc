@@ -51,6 +51,27 @@ Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count`|
+Maximum number of outstanding elements to keep in memory before enforcing flow control.|No | unlimited
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes`|
+Maximum number of outstanding bytes to keep in memory before enforcing flow control.|No | unlimited
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior`|
+The behavior when the specified limits are exceeded.|No | Block
+| `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|
+The element count threshold to use for batching.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
+The request byte threshold to use for batching.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
+The delay threshold to use for batching.
+After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
+Enables batching.|No | false
+|===
+
+The following properties are available to control retry in case of fixable failures during the gRPC call to Cloud Pub/Sub server.
+They do *not* control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.
+
+|===
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
 TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
 The higher the total timeout, the more retries can be attempted. |No | 0
@@ -76,21 +97,6 @@ The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to ca
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds`|
 MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
 can't increase the RPC timeout higher than this amount.|No | 0
-| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count`|
-Maximum number of outstanding elements to keep in memory before enforcing flow control.|No | unlimited
-| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes`|
-Maximum number of outstanding bytes to keep in memory before enforcing flow control.|No | unlimited
-| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior`|
-The behavior when the specified limits are exceeded.|No | Block
-| `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|
-The element count threshold to use for batching.|No | unset (threshold does not apply)
-| `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
-The request byte threshold to use for batching.|No | unset (threshold does not apply)
-| `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
-The delay threshold to use for batching.
-After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
-| `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
-Enables batching.|No | false
 |===
 
 === Spring Boot Actuator Support

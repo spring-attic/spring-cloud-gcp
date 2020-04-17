@@ -74,20 +74,25 @@ The Spring Boot starter for GCP Pub/Sub provides a configured `PubSubSubscriberO
 ===== Acknowledging messages and handling failures
 The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value:
 
-* Automatic acking and nacking (`AckMode.AUTO`)
-* Automatic acking only (`AckMode.AUTO_ACK`)
-* Manual acking and nacking (`AckMode.MANUAL`)
+* Automatic acking and nacking (`AckMode.AUTO`) +
+If the message was successfully processed with no exceptions, an acknowledgement is automatically sent to Cloud Pub/Sub.
+In case of processing failure, a nack (request for immediate redelivery) is automatically sent to Cloud Pub/Sub.
 
-===== Acking
-
-In `AUTO` and `AUTO_ACK` modes, a message acknowledgement is automatically sent to Cloud Pub/Sub if the message was successfully processed with no exceptions.
-
-In `MANUAL` mode, your application logic needs to manually acknowledge each message.
+* Automatic acking only (`AckMode.AUTO_ACK`) +
+If the message was successfully processed with no exceptions, an acknowledgement is automatically sent to Cloud Pub/Sub.
+In case of processing failure, the adapter neither acks nor nacks the message, resulting in the same behavior as `MANUAL` mode.
 If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
 
+* Manual acking and nacking (`AckMode.MANUAL`) +
+Your application logic needs to manually acknowledge each message.
+If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
++
+NOTE: The Pub/Sub client library this adapter is based on will attempt to extend the acknowledgement deadline for an hour by default.
+To override this behavior, use the `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` property.
++
 The adapter attaches a `BasicAcknowledgeablePubsubMessage` object to the `Message` headers.
 Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to ack (or nack) a message.
-
++
 [source,java]
 ----
 @Bean
@@ -102,7 +107,7 @@ public MessageHandler messageReceiver() {
 }
 ----
 
-===== Nacking
+====== Nacking
 In the context of Cloud Pub/Sub, nacking simply means instructing the message to be redelivered immediately.
 This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.
 
@@ -119,7 +124,8 @@ This is useful when using the subscription's ack deadline timeout as a retry del
 
 If you want to have more control over message processing in case of an error, you need to associate the `PubSubInboundChannelAdapter` with a Spring Integration error channel and specify the behavior to be invoked with `@ServiceActivator`.
 
-If you don't explicitly ack or nack the message in `AUTO_ACK` and `MANUAL` modes, the message will get redelivered after its `ackDeadline` passes.
+NOTE: In order to activate default (neither acking nor nacking) behavior in `AUTO_ACK` and `MANUAL` modes, your error handler has to throw an exception.
+Otherwise, the adapter will assume that processing completed successfully and will ack the message.
 
 [source,java]
 ----
@@ -143,12 +149,13 @@ public PubSubInboundChannelAdapter messageChannelAdapter(
 
 @ServiceActivator(inputChannel =  "pubsubErrors")
 public void pubsubErrorHandler(Message<MessagingException> message) {
-	LOGGER.warn("This message is neither acked nor nacked; ack deadline will determine redelivery");
+	LOGGER.warn("This message will be automatically acked because error handler completes successfully");
 }
 ----
 
 If you would prefer to manually ack or nack the message, you can do it by retrieving the header of exception payload:
 
+[source,java]
 ----
 
 @ServiceActivator(inputChannel =  "pubsubErrors")
@@ -159,6 +166,10 @@ public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
 	    .getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 
 	originalMessage.nack();
+
+    // retrow to let the adapter know something went wrong.
+    // this will prevent the message from being automatically acknowledged.
+    throw message.getPayload();
 }
 ----
 
