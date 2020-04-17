@@ -52,8 +52,8 @@ import org.springframework.context.annotation.Configuration;
  * @author Daniel Zou
  */
 @Configuration
-@ConditionalOnProperty("spring.cloud.gcp.firestore.host-port")
-@AutoConfigureBefore({GcpFirestoreAutoConfiguration.class})
+@ConditionalOnProperty("spring.cloud.gcp.firestore.emulator.enabled")
+@AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreEmulatorAutoConfiguration {
 
@@ -87,10 +87,12 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				.build();
 	}
 
-	private static Credentials emulatorCredentials() {
+	private Credentials emulatorCredentials() {
 		final Map<String, List<String>> headerMap = new HashMap<>();
 		headerMap.put("Authorization", Collections.singletonList("Bearer owner"));
-		headerMap.put("google-cloud-resource-prefix", Collections.singletonList("projects/my-project/databases/(default)"));
+		headerMap.put(
+				"google-cloud-resource-prefix",
+				Collections.singletonList("projects/" + projectId + "/databases/(default)"));
 
 		return new Credentials() {
 			@Override
@@ -124,14 +126,17 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 	 * Reactive Firestore autoconfiguration to enable emulator use.
 	 */
 	@ConditionalOnClass({ FirestoreGrpc.FirestoreStub.class, Flux.class })
-	@AutoConfigureBefore({ FirestoreReactiveAutoConfiguration.class })
+	@AutoConfigureBefore(FirestoreReactiveAutoConfiguration.class)
 	class ReactiveFirestoreEmulatorAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
 				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
 			FirestoreTemplate template = new FirestoreTemplate(
-					firestoreStub, firestoreRootPath, classMapper, firestoreMappingContext);
+					firestoreStub,
+					GcpFirestoreEmulatorAutoConfiguration.this.firestoreRootPath,
+					classMapper,
+					firestoreMappingContext);
 			template.setUsingStreamTokens(false);
 			return template;
 		}
@@ -140,7 +145,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 		@ConditionalOnMissingBean
 		public FirestoreGrpc.FirestoreStub firestoreGrpcStub() throws IOException {
 			ManagedChannel channel = ManagedChannelBuilder
-					.forTarget(hostPort)
+					.forTarget(GcpFirestoreEmulatorAutoConfiguration.this.hostPort)
 					.usePlaintext()
 					.build();
 
