@@ -985,22 +985,22 @@ If a method's return type is `org.springframework.data.domain.Page`, the returne
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
-==== Null Handling of Repository Methods
+==== Empty result handling in repository methods
 Java `java.util.Optional` can be used to indicate the potential absence of a return value.
 
 Alternatively, query methods can return the result without a wrapper.
 In that case the absence of a query result is indicated by returning `null`.
-Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty representation.
+Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty collection.
 
 ==== Nullability Annotations
 You can express nullability constraints for repository methods by using https://docs.spring.io/spring/docs/5.2.5.RELEASE/spring-framework-reference/core.html#null-safety[Spring Framework’s nullability annotations].
-They provide an opt-in null checks during runtime, as follows:
+They enable null checks during runtime, as follows:
 
  . `@NonNullApi`: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce null values.
 
  . `@NonNull`: Used on a parameter or return value that must not be null.
 
- . `@Nullable`: Used on a parameter or return value that can be `null` (not needed on a parameter and return value where @NonNullApi applies).
+ . `@Nullable`: Used on a parameter or return value that can be `null` (not needed on a parameter and return value where `@NonNullApi` applies).
 
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
 
