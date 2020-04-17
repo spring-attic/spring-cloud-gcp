@@ -72,6 +72,10 @@ It requires the channel we just created and a `SubscriberFactory`, which creates
 The Spring Boot starter for GCP Pub/Sub provides a configured `PubSubSubscriberOperations` object.
 
 ===== Acknowledging messages and handling failures
+When working with Cloud Pub/Sub, it is important to understand the concept of `ackDeadline` -- the amount of time Cloud Pub/Sub will wait until attempting redelivery of an outstanding message.
+While acknowledging (acking) a message removes it from Pub/Sub's known outstanding messages, nacking a message simply means resetting its acknowledgement deadline to 0, forcing immediate redelivery.
+A global `ackDeadline` exists on each subscription. Additionally, the Cloud Pub/Sub client library can extend each streamed message's `ackDeadline` up to `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` seconds (in `spring-cloud-gcp`, this is set to 0, which prevents automatic deadline extension, but in a standalone client library, the default is 60 minutes).
+
 The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value:
 
 * Automatic acking and nacking (`AckMode.AUTO`) +
