@@ -47,6 +47,7 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.SymbolAction;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -56,6 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -349,6 +351,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.existsById(key)).isTrue();
 		this.tradeRepository.delete(trade);
 		assertThat(this.tradeRepository.existsById(key)).isFalse();
+	}
+
+	@Test
+	public void testNonNull() {
+		assertThatThrownBy(() -> this.tradeRepository.getByAction("non-existing-action"))
+				.isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageMatching("Result must not be null!");
 	}
 
 	@Test

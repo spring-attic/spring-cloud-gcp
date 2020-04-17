@@ -992,15 +992,17 @@ Alternatively, query methods can return the result without a wrapper.
 In that case the absence of a query result is indicated by returning `null`.
 Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty collection.
 
-==== Nullability Annotations
+===== Nullability Annotations
 You can express nullability constraints for repository methods by using https://docs.spring.io/spring/docs/5.2.5.RELEASE/spring-framework-reference/core.html#null-safety[Spring Framework’s nullability annotations].
 They enable null checks during runtime, as follows:
 
  . `@NonNullApi`: Used on the package level to declare that the default behavior for parameters and return values is to not accept or produce null values.
 
- . `@NonNull`: Used on a parameter or return value that must not be null.
+ . `@NonNull`: Used on a return value that must not be null (the repository class has to be annotated with `@javax.annotation.Nonnull`).
 
- . `@Nullable`: Used on a parameter or return value that can be `null` (not needed on a parameter and return value where `@NonNullApi` applies).
+ . `@Nullable`: Used on a return value that can be `null` (useful if you enable `@NonNullApi`, but still want some methods renurn values or parameters to be null).
+
+NOTE: `@NonNull` and `@Nullable` can be used on parameters as well.
 
 To enable runtime checking of nullability constraints for query methods, you need to activate non-nullability on the package level by using Spring’s `@NonNullApi` in `package-info.java`, as shown in the following example:
 
@@ -1013,7 +1015,6 @@ To enable runtime checking of nullability constraints for query methods, you nee
 Once the checking is enabled, repository query method invocations get validated at runtime for nullability constraints.
 If a query execution result is `null` but it is declared as non-nullable, an exception is thrown.
 In case you want to allow some methods to return `null`, you can use `@Nullable` on individual methods.
-
 
 ==== Query by example
 Query by Example is an alternative querying technique.
