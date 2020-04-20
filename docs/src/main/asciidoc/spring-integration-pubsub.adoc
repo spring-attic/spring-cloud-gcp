@@ -80,7 +80,7 @@ The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `Ac
 
 * Automatic acking and nacking (`AckMode.AUTO`) +
 If the message was successfully processed with no exceptions, an acknowledgement is automatically sent to Cloud Pub/Sub.
-In case of processing failure, a nack (request for immediate redelivery) is automatically sent to Cloud Pub/Sub.
+In case of a processing failure, a nack (request for immediate redelivery) is automatically sent to Cloud Pub/Sub.
 
 * Automatic acking only (`AckMode.AUTO_ACK`) +
 If the message was successfully processed with no exceptions, an acknowledgement is automatically sent to Cloud Pub/Sub.
