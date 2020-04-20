@@ -139,7 +139,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * Firestore emulator in which case it should be set to false because the emulator
 	 * does not support using resume tokens.
 	 *
-	 * @param usingStreamTokens whether the template
+	 * @param usingStreamTokens whether the template should use stream tokens
+   * @since 1.2.3
 	 */
 	public void setUsingStreamTokens(boolean usingStreamTokens) {
 		this.usingStreamTokens = usingStreamTokens;

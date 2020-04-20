@@ -255,9 +255,6 @@ Now when you call the methods annotated with `@Transactional` on your service ob
 If an error occurs during the execution of a method annotated with `@Transactional`, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
-=== Reactive Repository Sample
-
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[sample application] is available.
 
 === Cloud Firestore Spring Boot Starter
 
@@ -300,6 +297,26 @@ include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/
 include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
 ----
 
-==== Sample
+=== Emulator Usage
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[sample application] is available.
+The Google Cloud Firebase SDK provides a local, in-memory emulator for Cloud Firestore, which you can use to develop and test your application.
+
+First follow https://firebase.google.com/docs/emulator-suite/install_and_configure[the Firebase emulator installation steps] to install, configure, and run the emulator.
+
+NOTE: By default, the emulator is configured to run on port 8080; you will need to ensure that the emulator does not run on the same port as your Spring application.
+
+Once the Firestore emulator is running, ensure that the following properties are set in your `application.properties` of your Spring application:
+
+----
+spring.cloud.gcp.firestore.emulator.enabled=true
+spring.cloud.gcp.firestore.host-port=${EMULATOR_HOSTPORT}
+----
+
+From this point onward, your application will connect to your locally running emulator instance instead of the real Firestore service.
+
+=== Samples
+
+Spring Cloud GCP provides Firestore sample applications to demonstrate API usage:
+
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[Reactive Firestore Repository sample application]:
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[Firestore Client Library sample application]

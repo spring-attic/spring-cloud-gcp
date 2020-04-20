@@ -38,7 +38,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.firestore.GcpFirestoreAutoConfiguration.FirestoreReactiveAutoConfiguration;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
@@ -57,20 +56,14 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreEmulatorAutoConfiguration {
 
-	private static final String ROOT_PATH_FORMAT = "projects/%s/databases/(default)/documents";
+	private static final String EMULATOR_PROJECT_ID = "unused";
 
-	private final String projectId;
+	private static final String ROOT_PATH = "projects/unused/databases/(default)";
 
 	private final String hostPort;
 
-	private final String firestoreRootPath;
-
-	GcpFirestoreEmulatorAutoConfiguration(
-			GcpFirestoreProperties properties,
-			GcpProjectIdProvider projectIdProvider) throws IOException {
-		this.projectId = projectIdProvider.getProjectId();
+	GcpFirestoreEmulatorAutoConfiguration(GcpFirestoreProperties properties) {
 		this.hostPort = properties.getHostPort();
-		this.firestoreRootPath = String.format(ROOT_PATH_FORMAT, this.projectId);
 	}
 
 	@Bean
@@ -78,7 +71,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 	public FirestoreOptions firestoreOptions() {
 		return FirestoreOptions.newBuilder()
 				.setCredentials(emulatorCredentials())
-				.setProjectId(this.projectId)
+				.setProjectId(EMULATOR_PROJECT_ID)
 				.setChannelProvider(
 						InstantiatingGrpcChannelProvider.newBuilder()
 								.setEndpoint(this.hostPort)
@@ -91,8 +84,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 		final Map<String, List<String>> headerMap = new HashMap<>();
 		headerMap.put("Authorization", Collections.singletonList("Bearer owner"));
 		headerMap.put(
-				"google-cloud-resource-prefix",
-				Collections.singletonList("projects/" + projectId + "/databases/(default)"));
+				"google-cloud-resource-prefix", Collections.singletonList(ROOT_PATH));
 
 		return new Credentials() {
 			@Override
@@ -134,7 +126,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
 			FirestoreTemplate template = new FirestoreTemplate(
 					firestoreStub,
-					GcpFirestoreEmulatorAutoConfiguration.this.firestoreRootPath,
+					ROOT_PATH + "/documents",
 					classMapper,
 					firestoreMappingContext);
 			template.setUsingStreamTokens(false);
