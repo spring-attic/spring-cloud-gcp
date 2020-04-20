@@ -78,7 +78,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	private final String host;
 
-	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
+	public GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
 
