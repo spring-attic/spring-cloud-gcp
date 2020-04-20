@@ -91,8 +91,8 @@ If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/
 Your application logic needs to manually acknowledge each message.
 If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
 +
-NOTE: The Pub/Sub client library this adapter is based on will attempt to extend the acknowledgement deadline for an hour by default.
-To override this behavior, use the `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` property.
+NOTE: While the Pub/Sub client library by default attempts to extend the acknowledgement deadline for an hour, Spring Cloud GCP disables the auto-extension behavior.
+Use the `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` property to re-enable auto-extending acknowledgement deadline until the message processing completes, fails or until the extension period elapses.
 +
 The adapter attaches a `BasicAcknowledgeablePubsubMessage` object to the `Message` headers.
 Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to ack (or nack) a message.
