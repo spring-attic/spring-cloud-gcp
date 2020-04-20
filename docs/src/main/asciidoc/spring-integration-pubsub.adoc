@@ -84,7 +84,7 @@ In case of a processing failure, a nack (request for immediate redelivery) is au
 
 * Automatic acking only (`AckMode.AUTO_ACK`) +
 If the message was successfully processed with no exceptions, an acknowledgement is automatically sent to Cloud Pub/Sub.
-In case of processing failure, the adapter neither acks nor nacks the message, resulting in the same behavior as `MANUAL` mode.
+In case of a processing failure, the adapter neither acks nor nacks the message, resulting in the same behavior as `MANUAL` mode, where the the application logic can decide to nack manually or allow for eventual redelivery.
 If a message is not acknowledged within the applicable `ackDeadline`, Cloud Pub/Sub will attempt redelivery.
 
 * Manual acking and nacking (`AckMode.MANUAL`) +
