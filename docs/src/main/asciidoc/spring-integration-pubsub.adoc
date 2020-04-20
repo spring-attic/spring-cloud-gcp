@@ -115,7 +115,7 @@ public MessageHandler messageReceiver() {
 In the context of Cloud Pub/Sub, nacking simply means instructing the message to be redelivered immediately.
 This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.
 
-In `AUTO` mode, a message is nacked if processing causes any unchecked exceptions.
+In `AUTO` mode, a message is nacked if processing causes any unhandled exceptions.
 
 In `AUTO_ACK` and `MANUAL` modes, behavior depends on whether an error channel was configured on the `PubSubInboundChannelAdapter`:
 
