@@ -985,6 +985,15 @@ If a method's return type is `org.springframework.data.domain.Page`, the returne
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
+==== Empty result handling in repository methods
+Java `java.util.Optional` can be used to indicate the potential absence of a return value.
+
+Alternatively, query methods can return the result without a wrapper.
+In that case the absence of a query result is indicated by returning `null`.
+Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty collection.
+
+NOTE: You can enable nullability checks. For more details please see https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#null-safety[Spring Framework’s nullability docs].
+
 ==== Query by example
 Query by Example is an alternative querying technique.
 It enables dynamic query generation based on a user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.

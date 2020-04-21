@@ -47,7 +47,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -170,14 +169,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		result = result instanceof PartTreeDatastoreQuery.ExecutionResult ? ((ExecutionResult) result).getPayload()
 				: result;
-		if (result == null) {
-			if (((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
-				return Optional.empty();
-			}
-
-			if (!((DatastoreQueryMethod) getQueryMethod()).isNullable()) {
-				throw new EmptyResultDataAccessException("Expecting at least 1 result, but none found", 1);
-			}
+		if (result == null && ((DatastoreQueryMethod) getQueryMethod()).isOptionalReturnType()) {
+			return Optional.empty();
 		}
 		return result;
 	}

@@ -1256,6 +1256,15 @@ If using custom SQL queries, you can further restrict the columns retrieved from
 Properties of projection types defined using SpEL use the fixed name `target` for the underlying domain object.
 As a result accessing underlying properties take the form `target.<property-name>`.
 
+==== Empty result handling in repository methods
+Java `java.util.Optional` can be used to indicate the potential absence of a return value.
+
+Alternatively, query methods can return the result without a wrapper.
+In that case the absence of a query result is indicated by returning `null`.
+Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty collection.
+
+NOTE: You can enable nullability checks. For more details please see https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#null-safety[Spring Framework’s nullability docs].
+
 ==== REST Repositories
 
 When running with Spring Boot, repositories can be exposed as REST services by simply adding this dependency to your pom file:
