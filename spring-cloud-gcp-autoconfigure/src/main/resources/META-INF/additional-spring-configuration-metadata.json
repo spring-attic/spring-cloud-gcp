@@ -25,6 +25,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.firestore.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables autoconfiguration to use the Firestore emulator.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.cloud.gcp.logging.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",
