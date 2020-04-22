@@ -112,7 +112,7 @@ The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `Ac
 {empty}* <no action> means that the message will be neither acked nor nacked.
 Cloud Pub/Sub will attempt redelivery according to subscription `ackDeadline` setting and the `max-ack-extension-period` client library setting.
 
-{empty}** For the adapter, "success" means the full Spring Integration flow processed without raising an exception, so successful message processing and the successful completion of an error handler both result in the same behavior (message will be acknowledged).
+{empty}** For the adapter, "success" means the Spring Integration flow processed without raising an exception, so successful message processing and the successful completion of an error handler both result in the same behavior (message will be acknowledged).
 To trigger default error behavior (nacking in `AUTO` mode; neither acking nor nacking in `AUTO_ACK` mode), propagate the error back to the adapter by throwing an exception from the error handler.
 
 ===== Manual acking/nacking
