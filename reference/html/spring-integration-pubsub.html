@@ -108,7 +108,7 @@ $(addBlockSwitches);
 This enables messaging between different processes, applications or micro-services backed up by Google Cloud Pub/Sub.</p>
 </div>
 <div class="paragraph">
-<p>The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the <code>spring-cloud-gcp-pubsub</code> module.</p>
+<p>The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the <code>spring-cloud-gcp-pubsub</code> module and can be autoconfigured by using the <code>spring-cloud-gcp-starter-pubsub</code> module in combination with a Spring Integration dependency.</p>
 </div>
 <div class="paragraph">
 <p>Maven coordinates, using <a href="getting-started.html#_bill_of_materials">Spring Cloud GCP BOM</a>:</p>
@@ -117,7 +117,7 @@ This enables messaging between different processes, applications or micro-servic
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
-    &lt;artifactId&gt;spring-cloud-gcp-pubsub&lt;/artifactId&gt;
+    &lt;artifactId&gt;spring-cloud-gcp-starter-pubsub&lt;/artifactId&gt;
 &lt;/dependency&gt;
 &lt;dependency&gt;
     &lt;groupId&gt;org.springframework.integration&lt;/groupId&gt;
@@ -131,7 +131,7 @@ This enables messaging between different processes, applications or micro-servic
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub'
     compile group: 'org.springframework.integration', name: 'spring-integration-core'
 }</code></pre>
 </div>
@@ -181,44 +181,90 @@ Depending on your use case, you might want to use a <code>MessageChannel</code> 
 It requires the channel we just created and a <code>SubscriberFactory</code>, which creates <code>Subscriber</code> objects from the Google Cloud Java Client for Pub/Sub.
 The Spring Boot starter for GCP Pub/Sub provides a configured <code>PubSubSubscriberOperations</code> object.</p>
 </div>
+<div class="sect4">
+<h5 id="_acknowledging_messages_and_handling_failures"><a class="link" href="#_acknowledging_messages_and_handling_failures">Acknowledging messages and handling failures</a></h5>
 <div class="paragraph">
-<p>The <code>PubSubInboundChannelAdapter</code> supports three acknowledgement modes, with <code>AckMode.AUTO</code> being the default value;</p>
+<p>When working with Cloud Pub/Sub, it is important to understand the concept of <code>ackDeadline</code>&#8201;&#8212;&#8201;the amount of time Cloud Pub/Sub will wait until attempting redelivery of an outstanding message.
+Each subscription has a default <code>ackDeadline</code> applied to all messages sent to it.
+Additionally, the Cloud Pub/Sub client library can extend each streamed message&#8217;s <code>ackDeadline</code> until the message processing completes, fails or until the maximum extension period elapses.</p>
 </div>
-<div class="paragraph">
-<p>Automatic acking (<code>AckMode.AUTO</code>)</p>
-</div>
-<div class="paragraph">
-<p>A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.</p>
-</div>
-<div class="paragraph">
-<p>If a <code>RuntimeException</code> is thrown while the message is processed, then the message is handled in the following way:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>If an error channel is configured for the adapter (<code>pubSubInboundChannelAdapater.getErrorChannel() != null</code>) then the message will be acked and forwarded with the error to the error channel.</p>
-</li>
-<li>
-<p>If no error channel is configured for the adapter, then the message is nacked.</p>
-</li>
-</ul>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In Pub/Sub client library, default maximum extension period is an hour. However, Spring Cloud GCP disables this auto-extension behavior.
+Use the <code>spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period</code> property to re-enable it.
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Automatic acking OK (<code>AckMode.AUTO_ACK</code>)</p>
+<p>Acknowledging (acking) a message removes it from Pub/Sub&#8217;s known outstanding messages. Nacking a message resets its acknowledgement deadline to 0, forcing immediate redelivery.
+This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.</p>
 </div>
 <div class="paragraph">
-<p>A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
-If a <code>RuntimeException</code> is thrown while the message is processed, then the message is neither acked / nor nacked.</p>
+<p>The <code>PubSubInboundChannelAdapter</code> supports three acknowledgement modes, with <code>AckMode.AUTO</code> being the default value: <code>AckMode.AUTO</code> (automatic acking and nacking), <code>AckMode.AUTO_ACK</code> (automatic acking only) and <code>AckMode.MANUAL</code> (manual acking and nacking).</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Acknowledgement mode behavior</caption>
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top">AUTO</th>
+<th class="tableblock halign-left valign-top">AUTO_ACK</th>
+<th class="tableblock halign-left valign-top">MANUAL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Message processing completes successfully</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ack, no redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ack, no redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Message processing fails, but error handler completes successfully**</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ack, no redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ack, no redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Message processing fails; no error handler present</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">nack, immediate redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Message processing fails, and error handler throws an exception</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">nack, immediate redelivery</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;no action&gt;*</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>* &lt;no action&gt; means that the message will be neither acked nor nacked.
+Cloud Pub/Sub will attempt redelivery according to subscription <code>ackDeadline</code> setting and the <code>max-ack-extension-period</code> client library setting.</p>
 </div>
 <div class="paragraph">
-<p>This is useful when using the subscription&#8217;s ack deadline timeout as a retry delivery backoff mechanism.</p>
+<p>** For the adapter, "success" means the Spring Integration flow processed without raising an exception, so successful message processing and the successful completion of an error handler both result in the same behavior (message will be acknowledged).
+To trigger default error behavior (nacking in <code>AUTO</code> mode; neither acking nor nacking in <code>AUTO_ACK</code> mode), propagate the error back to the adapter by throwing an exception from the error handler.</p>
 </div>
-<div class="paragraph">
-<p>Manually acking (<code>AckMode.MANUAL</code>)</p>
 </div>
+<div class="sect4">
+<h5 id="_manual_ackingnacking"><a class="link" href="#_manual_ackingnacking">Manual acking/nacking</a></h5>
 <div class="paragraph">
 <p>The adapter attaches a <code>BasicAcknowledgeablePubsubMessage</code> object to the <code>Message</code> headers.
-Users can extract the <code>BasicAcknowledgeablePubsubMessage</code> using the <code>GcpPubSubHeaders.ORIGINAL_MESSAGE</code> key and use it to (n)ack a message.</p>
+Users can extract the <code>BasicAcknowledgeablePubsubMessage</code> using the <code>GcpPubSubHeaders.ORIGINAL_MESSAGE</code> key and use it to ack (or nack) a message.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -232,6 +278,72 @@ public MessageHandler messageReceiver() {
         originalMessage.ack();
     };
 }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_error_handling"><a class="link" href="#_error_handling">Error Handling</a></h5>
+<div class="paragraph">
+<p>If you want to have more control over message processing in case of an error, you need to associate the <code>PubSubInboundChannelAdapter</code> with a Spring Integration error channel and specify the behavior to be invoked with <code>@ServiceActivator</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In order to activate the default behavior (nacking in <code>AUTO</code> mode; neither acking nor nacking in <code>AUTO_ACK</code> mode), your error handler has to throw an exception.
+Otherwise, the adapter will assume that processing completed successfully and will ack the message.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Bean
+public MessageChannel pubsubInputChannel() {
+    return new PublishSubscribeChannel();
+}
+
+@Bean
+public PubSubInboundChannelAdapter messageChannelAdapter(
+    @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
+    SubscriberFactory subscriberFactory) {
+    PubSubInboundChannelAdapter adapter =
+        new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
+    adapter.setOutputChannel(inputChannel);
+    adapter.setAckMode(AckMode.AUTO_ACK);
+    adapter.setErrorChannelName("pubsubErrors");
+
+    return adapter;
+}
+
+@ServiceActivator(inputChannel =  "pubsubErrors")
+public void pubsubErrorHandler(Message&lt;MessagingException&gt; message) {
+	LOGGER.warn("This message will be automatically acked because error handler completes successfully");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you would prefer to manually ack or nack the message, you can do it by retrieving the header of exception payload:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@ServiceActivator(inputChannel =  "pubsubErrors")
+public void pubsubErrorHandler(Message&lt;MessagingException&gt; exceptionMessage) {
+
+	BasicAcknowledgeablePubsubMessage originalMessage =
+	  (BasicAcknowledgeablePubsubMessage)exceptionMessage.getPayload().getFailedMessage()
+	    .getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+
+	originalMessage.nack();
+
+    // retrow to let the adapter know something went wrong.
+    // this will prevent the message from being automatically acknowledged.
+    throw message.getPayload();
+}</code></pre>
+</div>
 </div>
 </div>
 </div>

@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Google Cloud Vision</title>
+<title>Cloud Vision</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -95,12 +95,12 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_google_cloud_vision">Google Cloud Vision</a>
+<li><a href="#_cloud_vision">Cloud Vision</a>
 <ul class="sectlevel2">
 <li><a href="#_dependency_setup">Dependency Setup</a></li>
+<li><a href="#_configuration">Configuration</a></li>
 <li><a href="#_image_analysis">Image Analysis</a></li>
 <li><a href="#_document_ocr_template">Document OCR Template</a></li>
-<li><a href="#_configuration">Configuration</a></li>
 <li><a href="#_sample">Sample</a></li>
 </ul>
 </li>
@@ -109,7 +109,7 @@ $(addBlockSwitches);
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_google_cloud_vision"><a class="link" href="#_google_cloud_vision">Google Cloud Vision</a></h2>
+<h2 id="_cloud_vision"><a class="link" href="#_cloud_vision">Cloud Vision</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://cloud.google.com/vision/">Google Cloud Vision API</a> allows users to leverage machine learning algorithms for processing images and documents including: image classification, face detection, text extraction, optical character recognition, and others.</p>
@@ -166,6 +166,46 @@ $(addBlockSwitches);
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
+<div class="paragraph">
+<p>The following options may be configured with Spring Cloud GCP Vision libraries.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Cloud Vision autoconfiguration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.executors-threads-count</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used during document OCR processing for waiting on long-running OCR operations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.json-output-batch-size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of document pages to include in each OCR output file.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
+</tr>
+</tbody>
+</table>
 <div class="sect3">
 <h4 id="_cloud_vision_ocr_dependencies"><a class="link" href="#_cloud_vision_ocr_dependencies">Cloud Vision OCR Dependencies</a></h4>
 <div class="paragraph">
@@ -382,46 +422,6 @@ public void parseSingleOutputFile() {
 </div>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_configuration"><a class="link" href="#_configuration">Configuration</a></h3>
-<div class="paragraph">
-<p>The following options may be configured with Spring Cloud GCP Vision libraries.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Cloud Vision autoconfiguration</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.executors-threads-count</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used during document OCR processing for waiting on long-running OCR operations</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.vision.json-output-batch-size</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of document pages to include in each OCR output file.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">20</p></td>
-</tr>
-</tbody>
-</table>
 </div>
 <div class="sect2">
 <h3 id="_sample"><a class="link" href="#_sample">Sample</a></h3>

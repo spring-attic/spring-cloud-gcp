@@ -106,6 +106,7 @@ $(addBlockSwitches);
 <li><a href="#_events">Events</a></li>
 <li><a href="#_auditing">Auditing</a></li>
 <li><a href="#_multi_instance_usage">Multi-Instance Usage</a></li>
+<li><a href="#_cloud_spanner_emulator">Cloud Spanner Emulator</a></li>
 <li><a href="#_sample">Sample</a></li>
 </ul>
 </li>
@@ -689,6 +690,39 @@ If a property marked for lazy fetching is never retrieved, then it is also skipp
 </div>
 <div class="paragraph">
 <p>If used inside a transaction, subsequent operations on lazily-fetched properties use the same transaction context as that of the original parent entity.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_declarative_filtering_with_where"><a class="link" href="#_declarative_filtering_with_where">Declarative Filtering with <code>@Where</code></a></h5>
+<div class="paragraph">
+<p>The <code>@Where</code> annotation could be applied to an entity class or to an interleaved property.
+This annotation provides an SQL where clause that will be applied at the fetching of interleaved collections or the entity itself.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s say we have an <code>Agreement</code> with a list of <code>Participants</code> which could be assigned to it.
+We would like to fetch a list of currently active participants.
+For security reasons, all records should remain in the database forever, even if participants become inactive.
+That can be easily achieved with the <code>@Where</code> annotation, which is demonstrated by this example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Table(name = "participants")
+public class Participant {
+  //...
+  boolean active;
+  //...
+}
+
+@Table(name = "agreements")
+public class Agreement {
+  //...
+  @Interleaved
+  @Where("active = true")
+  List&lt;Participant&gt; participants;
+  Person person;
+  //...
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1674,15 +1708,24 @@ The delete operation happens in a single transaction.</p>
 <p>The names of the tags of the SQL correspond to the <code>@Param</code> annotated names of the method parameters.</p>
 </div>
 <div class="paragraph">
-<p>Custom SQL query methods can accept a single <code>Sort</code> or <code>Pageable</code> parameter that is applied on top of any paging but will override any sorting in the SQL:</p>
+<p>Interleaved properties are loaded eagerly, unless they are annotated with <code>@Interleaved(lazy = true)</code>.</p>
+</div>
+<div class="paragraph">
+<p>Custom SQL query methods can accept a single <code>Sort</code> or <code>Pageable</code> parameter that is applied on top of the specified custom query.
+It is the recommended way to control the sort order of the results, which is not guaranteed by the <code>ORDER BY</code> clause in the SQL query.
+This is due to the fact that the user-provided query is used as a sub-query, and Cloud Spanner doesn&#8217;t preserve order in subquery results.</p>
+</div>
+<div class="paragraph">
+<p>You might want to use <code>ORDER BY</code> with <code>LIMIT</code> to obtain the top records, according to a specified order.
+However, to ensure the correct sort order of the final result set, sort options have to be passed in with a <code>Pageable</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">	@Query("SELECT * FROM trades ORDER BY action DESC")
-	List&lt;Trade&gt; sortedTrades(Pageable pageable);
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">	@Query("SELECT * FROM trades")
+	List&lt;Trade&gt; fetchTrades(Pageable pageable);
 
-	@Query("SELECT * FROM trades ORDER BY action DESC LIMIT 1")
- 	Trade sortedTopTrade(Pageable pageable);</code></pre>
+	@Query("SELECT * FROM trades ORDER BY price DESC LIMIT 1")
+ 	Trade topTrade(Pageable pageable);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1690,7 +1733,7 @@ The delete operation happens in a single transaction.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">	List&lt;Trade&gt; customSortedTrades = tradeRepository.sortedTrades(PageRequest
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">	List&lt;Trade&gt; customSortedTrades = tradeRepository.fetchTrades(PageRequest
   				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));</code></pre>
 </div>
 </div>
@@ -1825,6 +1868,29 @@ If using custom SQL queries, you can further restrict the columns retrieved from
 <div class="paragraph">
 <p>Properties of projection types defined using SpEL use the fixed name <code>target</code> for the underlying domain object.
 As a result accessing underlying properties take the form <code>target.&lt;property-name&gt;</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_empty_result_handling_in_repository_methods"><a class="link" href="#_empty_result_handling_in_repository_methods">Empty result handling in repository methods</a></h4>
+<div class="paragraph">
+<p>Java <code>java.util.Optional</code> can be used to indicate the potential absence of a return value.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, query methods can return the result without a wrapper.
+In that case the absence of a query result is indicated by returning <code>null</code>.
+Repository methods returning collections are guaranteed never to return <code>null</code> but rather the corresponding empty collection.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can enable nullability checks. For more details please see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#null-safety">Spring Framework’s nullability docs</a>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -2059,6 +2125,31 @@ By providing a custom implementation of this bean (for example, supplying a thre
 </div>
 <div class="paragraph">
 <p>If you would like to configure every aspect of each connection (such as pool size and retry settings), you can supply a bean for <code>Supplier&lt;DatabaseClient&gt;</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cloud_spanner_emulator"><a class="link" href="#_cloud_spanner_emulator">Cloud Spanner Emulator</a></h3>
+<div class="paragraph">
+<p>The <a href="https://cloud.google.com/sdk">Cloud SDK</a> provides a local, in-memory emulator for Cloud Spanner, which you can use to develop and test your application. As the emulator stores data only in memory, it will not persist data across runs. It is intended to help you use Cloud Spanner for local development and testing, not for production deployments.</p>
+</div>
+<div class="paragraph">
+<p>In order to set up and start the emulator, you can follow <a href="https://cloud.google.com/spanner/docs/emulator">these steps</a>.</p>
+</div>
+<div class="paragraph">
+<p>This command can be used to create Cloud Spanner instances:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ gcloud spanner instances create &lt;instance-name&gt; --config=emulator-config --description="&lt;description&gt;" --nodes=1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember that you need to set the <code>SPANNER_EMULATOR_HOST</code> environment variable to use the emulator:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ export SPANNER_EMULATOR_HOST=localhost:9010</pre>
+</div>
 </div>
 </div>
 <div class="sect2">

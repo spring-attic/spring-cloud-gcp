@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Spring Cloud Config</title>
+<title>Cloud Runtime Configuration API</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -95,7 +95,7 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_spring_cloud_config">Spring Cloud Config</a>
+<li><a href="#_cloud_runtime_configuration_api">Cloud Runtime Configuration API</a>
 <ul class="sectlevel2">
 <li><a href="#_configuration">Configuration</a></li>
 <li><a href="#_quick_start">Quick start</a></li>
@@ -108,26 +108,26 @@ $(addBlockSwitches);
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_spring_cloud_config"><a class="link" href="#_spring_cloud_config">Spring Cloud Config</a></h2>
+<h2 id="_cloud_runtime_configuration_api"><a class="link" href="#_cloud_runtime_configuration_api">Cloud Runtime Configuration API</a></h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Spring Cloud GCP makes it possible to use the <a href="https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/">Google Runtime Configuration API</a> as a <a href="https://cloud.spring.io/spring-cloud-config/">Spring Cloud Config</a> server to remotely store your application configuration data.</p>
-</div>
-<div class="paragraph">
-<p>The Spring Cloud GCP Config support is provided via its own Spring Boot starter.
-It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration properties.</p>
-</div>
-<div class="admonitionblock note">
+<div class="admonitionblock warning">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-note" title="Note"></i>
+<i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
 The Google Cloud Runtime Configuration service is in <strong>Beta</strong> status, and is only available in snapshot and milestone versions of the project. It&#8217;s also not available in the Spring Cloud GCP BOM, unlike other modules.
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>Spring Cloud GCP makes it possible to use the <a href="https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/">Google Runtime Configuration API</a> as a <a href="https://cloud.spring.io/spring-cloud-config/">Spring Cloud Config</a> server to remotely store your application configuration data.</p>
+</div>
+<div class="paragraph">
+<p>The Spring Cloud GCP Config support is provided via its own Spring Boot starter.
+It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration properties.</p>
 </div>
 <div class="paragraph">
 <p>Maven coordinates:</p>
@@ -137,7 +137,7 @@ The Google Cloud Runtime Configuration service is in <strong>Beta</strong> statu
 <pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
     &lt;artifactId&gt;spring-cloud-gcp-starter-config&lt;/artifactId&gt;
-    &lt;version&gt;1.3.0.BUILD-SNAPSHOT&lt;/version&gt;
+    &lt;version&gt;1.2.3.BUILD-SNAPSHOT&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -149,7 +149,7 @@ The Google Cloud Runtime Configuration service is in <strong>Beta</strong> statu
 <pre class="highlightjs highlight"><code>dependencies {
     compile group: 'org.springframework.cloud',
     name: 'spring-cloud-gcp-starter-config',
-    version: '1.3.0.BUILD-SNAPSHOT'
+    version: '1.2.3.BUILD-SNAPSHOT'
 }</code></pre>
 </div>
 </div>

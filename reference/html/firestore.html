@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Spring Data Reactive Repositories for Cloud Firestore</title>
+<title>Spring Data Cloud Firestore</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -95,15 +95,16 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_spring_data_reactive_repositories_for_cloud_firestore">Spring Data Reactive Repositories for Cloud Firestore</a>
+<li><a href="#_spring_data_cloud_firestore">Spring Data Cloud Firestore</a>
 <ul class="sectlevel2">
 <li><a href="#_configuration">Configuration</a></li>
 <li><a href="#_object_mapping">Object Mapping</a></li>
 <li><a href="#_reactive_repositories">Reactive Repositories</a></li>
 <li><a href="#_query_methods_by_convention">Query methods by convention</a></li>
 <li><a href="#_transactions">Transactions</a></li>
-<li><a href="#_reactive_repository_sample">Reactive Repository Sample</a></li>
 <li><a href="#_cloud_firestore_spring_boot_starter">Cloud Firestore Spring Boot Starter</a></li>
+<li><a href="#_emulator_usage">Emulator Usage</a></li>
+<li><a href="#_samples">Samples</a></li>
 </ul>
 </li>
 </ul>
@@ -111,7 +112,7 @@ $(addBlockSwitches);
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_spring_data_reactive_repositories_for_cloud_firestore"><a class="link" href="#_spring_data_reactive_repositories_for_cloud_firestore">Spring Data Reactive Repositories for Cloud Firestore</a></h2>
+<h2 id="_spring_data_cloud_firestore"><a class="link" href="#_spring_data_cloud_firestore">Spring Data Cloud Firestore</a></h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -127,7 +128,7 @@ Currently some features are not supported: transactions, sorting, query by examp
 </div>
 <div class="paragraph">
 <p><a href="https://projects.spring.io/spring-data/">Spring Data</a> is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode, providing reactive template and repositories support.
+Spring Cloud GCP adds Spring Data Reactive Repositories support for <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode, providing reactive template and repositories support.
 To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code> artifact to your project.</p>
 </div>
 <div class="paragraph">
@@ -195,7 +196,7 @@ To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Firestore auto-configuration</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
 </tr>
@@ -204,6 +205,18 @@ To begin using this library, add the <code>spring-cloud-gcp-data-firestore</code
 <td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Firestore API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.emulator.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables the usage of an emulator. If this is set to true, then you should set the <code>spring.cloud.gcp.firestore.host-port</code> to the host:port of your locally running emulator instance</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.host-port</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The host and port of the Firestore service; can be overridden to specify connecting to an already-running <a href="https://firebase.google.com/docs/emulator-suite/install_and_configure">Firestore emulator</a> instance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>firestore.googleapis.com:443</code> (the host/port of official Firestore service)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.firestore.credentials.location</code></p></td>
@@ -313,15 +326,40 @@ It is not required to add it to any other class, unless there is a need to overr
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.springframework.data.annotation.Id;
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 @Document(collectionName = "usersCollection")
 public class User {
+	/**
+	 * Used to test @PropertyName annotation on a field.
+	 */
+	@PropertyName("drink")
+	public String favoriteDrink;
+
 	@DocumentId
 	private String name;
 
 	private Integer age;
+
+	public User() {
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getAge() {
+		return this.age;
+	}
+
+	public void setAge(Integer age) {
+		this.age = age;
+	}
 }</code></pre>
 </div>
 </div>
@@ -344,6 +382,74 @@ Internally we use Firestore client library object mapping. See <a href="https://
 </tr>
 </table>
 </div>
+<div class="sect3">
+<h4 id="_embedded_entities_and_lists"><a class="link" href="#_embedded_entities_and_lists">Embedded entities and lists</a></h4>
+<div class="paragraph">
+<p>Spring Data Cloud Firestore supports embedded properties of custom types and lists.
+Given a custom POJO definition, you can have properties of this type or lists of this type in your entities.
+They are stored as embedded documents (or arrays, correspondingly) in the Cloud Firestore.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Document(collectionName = "usersCollection")
+public class User {
+	/**
+	 * Used to test @PropertyName annotation on a field.
+	 */
+	@PropertyName("drink")
+	public String favoriteDrink;
+
+	@DocumentId
+	private String name;
+
+	private Integer age;
+
+	private List&lt;String&gt; pets;
+
+	private List&lt;Address&gt; addresses;
+
+	private Address homeAddress;
+
+	public List&lt;String&gt; getPets() {
+		return this.pets;
+	}
+
+	public void setPets(List&lt;String&gt; pets) {
+		this.pets = pets;
+	}
+
+	public List&lt;Address&gt; getAddresses() {
+		return this.addresses;
+	}
+
+	public void setAddresses(List&lt;Address&gt; addresses) {
+		this.addresses = addresses;
+	}
+
+	@PropertyName("address")
+	public Address getHomeAddress() {
+		return this.homeAddress;
+	}
+
+	@PropertyName("address")
+	public void setHomeAddress(Address homeAddress) {
+		this.homeAddress = homeAddress;
+	}
+
+	public static class Address {
+		String streetAddress;
+		String country;
+
+		public Address() {
+		}
+	}
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_reactive_repositories"><a class="link" href="#_reactive_repositories">Reactive Repositories</a></h3>
@@ -357,6 +463,10 @@ Internally we use Firestore client library object mapping. See <a href="https://
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserRepository extends FirestoreReactiveRepository&lt;User&gt; {
 	Flux&lt;User&gt; findByAge(Integer age);
+
+	Flux&lt;User&gt; findByHomeAddressCountry(String country);
+
+	Flux&lt;User&gt; findByFavoriteDrink(String drink);
 
 	Flux&lt;User&gt; findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
 
@@ -382,6 +492,18 @@ Internally we use Firestore client library object mapping. See <a href="https://
 <div class="paragraph">
 <p>The <code>User</code> type parameter to <code>FirestoreReactiveRepository</code> refers to the underlying domain type.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can refer to nested fields using <a href="https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-property-expressions">Spring Data JPA Property Expressions</a>
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
@@ -390,7 +512,10 @@ Internally we use Firestore client library object mapping. See <a href="https://
 	UserRepository userRepository;
 
 	public void writeReadDeleteTest() {
-		User alice = new User("Alice", 29);
+		List&lt;User.Address&gt; addresses = Arrays.asList(new User.Address("123 Alice st", "US"),
+				new User.Address("1 Alice ave", "US"));
+		User.Address homeAddress = new User.Address("10 Alice blvd", "UK");
+		User alice = new User("Alice", 29, null, addresses, homeAddress);
 		User bob = new User("Bob", 60);
 
 		this.userRepository.save(alice).block();
@@ -399,6 +524,10 @@ Internally we use Firestore client library object mapping. See <a href="https://
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findAll().map(User::getName).collectList().block())
 				.containsExactlyInAnyOrder("Alice", "Bob");
+
+		User aliceLoaded = this.userRepository.findById("Alice").block();
+		assertThat(aliceLoaded.getAddresses()).isEqualTo(addresses);
+		assertThat(aliceLoaded.getHomeAddress()).isEqualTo(homeAddress);
 	}
 }</code></pre>
 </div>
@@ -425,14 +554,18 @@ Custom queries with <code>@Query</code> annotation are not supported since there
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public class MyApplication {
 	public void partTreeRepositoryMethodTest() {
-		User u1 = new User("Cloud", 22);
-		User u2 = new User("Squall", 17);
+		User u1 = new User("Cloud", 22, null, null, new Address("1 First st., NYC", "USA"));
+		u1.favoriteDrink = "tea";
+		User u2 = new User("Squall", 17, null, null, new Address("2 Second st., London", "UK"));
+		u2.favoriteDrink = "wine";
 		Flux&lt;User&gt; users = Flux.fromArray(new User[] {u1, u2});
 
 		this.userRepository.saveAll(users).blockLast();
 
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByHomeAddressCountry("USA").collectList().block()).containsExactly(u1);
+		assertThat(this.userRepository.findByFavoriteDrink("wine").collectList().block()).containsExactly(u2);
 		assertThat(this.userRepository.findByAgeGreaterThanAndAgeLessThan(20, 30).collectList().block())
 				.containsExactly(u1);
 		assertThat(this.userRepository.findByAgeGreaterThan(10).collectList().block()).containsExactlyInAnyOrder(u1,
@@ -630,12 +763,6 @@ If no error occurs, the transaction will be committed.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reactive_repository_sample"><a class="link" href="#_reactive_repository_sample">Reactive Repository Sample</a></h3>
-<div class="paragraph">
-<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample">sample application</a> is available.</p>
-</div>
-</div>
-<div class="sect2">
 <h3 id="_cloud_firestore_spring_boot_starter"><a class="link" href="#_cloud_firestore_spring_boot_starter">Cloud Firestore Spring Boot Starter</a></h3>
 <div class="paragraph">
 <p>If you prefer using Firestore client only, Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using <a href="https://cloud.google.com/firestore/">Google Cloud Firestore</a> in native mode.</p>
@@ -703,11 +830,54 @@ User readDocumentToObject() throws ExecutionException, InterruptedException {
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_sample"><a class="link" href="#_sample">Sample</a></h4>
-<div class="paragraph">
-<p>A <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">sample application</a> is available.</p>
 </div>
+<div class="sect2">
+<h3 id="_emulator_usage"><a class="link" href="#_emulator_usage">Emulator Usage</a></h3>
+<div class="paragraph">
+<p>The Google Cloud Firebase SDK provides a local, in-memory emulator for Cloud Firestore, which you can use to develop and test your application.</p>
+</div>
+<div class="paragraph">
+<p>First follow <a href="https://firebase.google.com/docs/emulator-suite/install_and_configure">the Firebase emulator installation steps</a> to install, configure, and run the emulator.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+By default, the emulator is configured to run on port 8080; you will need to ensure that the emulator does not run on the same port as your Spring application.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Once the Firestore emulator is running, ensure that the following properties are set in your <code>application.properties</code> of your Spring application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>spring.cloud.gcp.firestore.emulator.enabled=true
+spring.cloud.gcp.firestore.host-port=${EMULATOR_HOSTPORT}</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>From this point onward, your application will connect to your locally running emulator instance instead of the real Firestore service.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_samples"><a class="link" href="#_samples">Samples</a></h3>
+<div class="paragraph">
+<p>Spring Cloud GCP provides Firestore sample applications to demonstrate API usage:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample">Reactive Firestore Repository sample application</a>:</p>
+</li>
+<li>
+<p><a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample">Firestore Client Library sample application</a></p>
+</li>
+</ul>
 </div>
 </div>
 </div>

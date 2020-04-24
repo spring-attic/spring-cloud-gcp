@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Google Cloud Pub/Sub</title>
+<title>Cloud Pub/Sub</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -95,13 +95,14 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_google_cloud_pubsub">Google Cloud Pub/Sub</a>
+<li><a href="#_cloud_pubsub">Cloud Pub/Sub</a>
 <ul class="sectlevel2">
-<li><a href="#_sample">Sample</a></li>
+<li><a href="#pubsub-configuration">Configuration</a></li>
+<li><a href="#_spring_boot_actuator_support">Spring Boot Actuator Support</a></li>
 <li><a href="#_pubsub_operations_template">Pub/Sub Operations &amp; Template</a></li>
 <li><a href="#_reactive_stream_subscription">Reactive Stream Subscription</a></li>
 <li><a href="#_pubsub_management">Pub/Sub management</a></li>
-<li><a href="#pubsub-configuration">Configuration</a></li>
+<li><a href="#_sample">Sample</a></li>
 </ul>
 </li>
 </ul>
@@ -109,7 +110,7 @@ $(addBlockSwitches);
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_google_cloud_pubsub"><a class="link" href="#_google_cloud_pubsub">Google Cloud Pub/Sub</a></h2>
+<h2 id="_cloud_pubsub"><a class="link" href="#_cloud_pubsub">Cloud Pub/Sub</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Spring Cloud GCP provides an abstraction layer to publish to and subscribe from Google Cloud Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.</p>
@@ -142,9 +143,239 @@ $(addBlockSwitches);
 <p>This starter is also available from <a href="https://start.spring.io">Spring Initializr</a> through the <code>GCP Messaging</code> entry.</p>
 </div>
 <div class="sect2">
-<h3 id="_sample"><a class="link" href="#_sample">Sample</a></h3>
+<h3 id="pubsub-configuration"><a class="link" href="#pubsub-configuration">Configuration</a></h3>
 <div class="paragraph">
-<p>Sample applications for <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample">using the template</a> and <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample">using a subscription-backed reactive stream</a> are available.</p>
+<p>The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.project-id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.location</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the
+Google Cloud Pub/Sub API, if different from the ones in the
+<a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.emulator-host</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The host and port of the local running emulator.
+If provided, this will setup the client to connect against a running <a href="https://cloud.google.com/pubsub/docs/emulator">Google Cloud Pub/Sub Emulator</a>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.encoded-key</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded contents of OAuth2 account private key for authenticating with the
+Google Cloud Pub/Sub API, if different from the ones in the
+<a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.scopes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP
+Pub/Sub credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/pubsub" class="bare">https://www.googleapis.com/auth/pubsub</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.keepAliveIntervalMinutes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Determines frequency of keepalive gRPC ping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5 minutes</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.parallel-pull-count</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The number of pull workers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The maximum period a message ack deadline will be extended, in seconds</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.pull-endpoint</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The endpoint for synchronous pulling messages</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pubsub.googleapis.com:443</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by <code>Subscriber</code> instances created by <code>SubscriberFactory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of outstanding elements to keep in memory before enforcing flow control.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unlimited</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of outstanding bytes to keep in memory before enforcing flow control.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unlimited</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The behavior when the specified limits are exceeded.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Block</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The element count threshold to use for batching.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The request byte threshold to use for batching.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The delay threshold to use for batching.
+After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables batching.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The following properties are available to control retry in case of fixable failures during the gRPC call to Cloud Pub/Sub server.
+They do <strong>not</strong> control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
+The higher the total timeout, the more retries can be attempted.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">InitialRetryDelay controls the delay before the first retry.
+Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.retry-delay-multiplier</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RetryDelayMultiplier controls the change in retry delay.
+The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-retry-delay-seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
+can&#8217;t increase the retry delay higher than this amount.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-attempts</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MaxAttempts defines the maximum number of attempts to perform.
+If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jitter determines if the delay time should be randomized.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-rpc-timeout-seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">InitialRpcTimeout controls the timeout for the initial RPC.
+Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.rpc-timeout-multiplier</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RpcTimeoutMultiplier controls the change in RPC timeout.
+The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
+can&#8217;t increase the RPC timeout higher than this amount.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_spring_boot_actuator_support"><a class="link" href="#_spring_boot_actuator_support">Spring Boot Actuator Support</a></h3>
+<div class="sect3">
+<h4 id="_cloud_pubsub_health_indicator"><a class="link" href="#_cloud_pubsub_health_indicator">Cloud Pub/Sub Health Indicator</a></h4>
+<div class="paragraph">
+<p>If you are using Spring Boot Actuator, you can take advantage of the Cloud Pub/Sub health indicator called <code>pubsub</code>.
+The health indicator will verify whether Cloud Pub/Sub is up and accessible by your application.
+To enable it, all you need to do is add the <a href="https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready">Spring Boot Actuator</a> to your project.
+To disable the Cloud Pub/Sub indicator, set <code>management.health.pubsub.enabled</code> to <code>false</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>pubsub</code> indicator will then roll up to the overall application status visible at <a href="http://localhost:8080/actuator/health" class="bare">http://localhost:8080/actuator/health</a> (use the <code>management.endpoint.health.show-details</code> property to view per-indicator details).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -277,6 +508,8 @@ messages.forEach(message -&gt; logger.info(message.getPubsubMessage().getData().
        			Boolean returnImmediately)</p></th>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Pulls a number of messages from a subscription, allowing for the retry settings to be configured.
        			Any messages received by <code>pull()</code> are not automatically acknowledged. See <a href="#_acknowledging_messages">Acknowledging messages</a>.</p>
+<p class="tableblock">				The <code>maxMessages</code> parameter is the maximum limit of how many messages to pull from a subscription in a single call; this value <strong>must</strong> be greater than 0.
+				You may omit this parameter by passing in <code>null</code>; this means there will be no limit on the number of messages pulled (<code>maxMessages</code> will be <code>Integer.MAX_INTEGER</code>).</p>
 <p class="tableblock">       			If <code>returnImmediately</code> is <code>true</code>, the system will respond immediately even if it there are no messages available to return in the <code>Pull</code> response. Otherwise, the system may wait (for a bounded amount of time) until at least one message is available, rather than returning no messages.</p></td>
 </tr>
 <tr>
@@ -440,6 +673,10 @@ Flux&lt;AcknowledgeablePubsubMessage&gt; flux
 For unlimited demand, the Pub/Sub subscription will be polled regularly, at intervals determined by <code>pollingPeriodMs</code> parameter passed in when creating the <code>Flux</code>.
 For bounded demand, the <code>pollingPeriodMs</code> parameter is unused.
 Instead, as many messages as possible (up to the requested number) are delivered immediately, with the remaining messages delivered as they become available.</p>
+</div>
+<div class="paragraph">
+<p>Any exceptions thrown by the underlying message retrieval logic will be passed as an error to the stream.
+The error handling operators (<code>Flux#retry()</code>, <code>Flux#onErrorResume()</code> etc.) can be used to recover.</p>
 </div>
 <div class="paragraph">
 <p>The full range of Project Reactor operations can be applied to the stream.
@@ -634,203 +871,10 @@ If <code>pushEndpoint</code> isn’t specified, the subscription uses message pu
 </div>
 </div>
 <div class="sect2">
-<h3 id="pubsub-configuration"><a class="link" href="#pubsub-configuration">Configuration</a></h3>
+<h3 id="_sample"><a class="link" href="#_sample">Sample</a></h3>
 <div class="paragraph">
-<p>The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:</p>
+<p>Sample applications for <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample">using the template</a> and <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample">using a subscription-backed reactive stream</a> are available.</p>
 </div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables or disables Pub/Sub auto-configuration</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>true</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.project-id</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.location</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OAuth2 credentials for authenticating with the
-Google Cloud Pub/Sub API, if different from the ones in the
-<a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.emulator-host</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The host and port of the local running emulator.
-If provided, this will setup the client to connect against a running <a href="https://cloud.google.com/pubsub/docs/emulator">Google Cloud Pub/Sub Emulator</a>.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.encoded-key</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Base64-encoded contents of OAuth2 account private key for authenticating with the
-Google Cloud Pub/Sub API, if different from the ones in the
-<a href="#spring-cloud-gcp-core">Spring Cloud GCP Core Module</a></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.credentials.scopes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://developers.google.com/identity/protocols/googlescopes">OAuth2 scope</a> for Spring Cloud GCP
-Pub/Sub credentials</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/pubsub" class="bare">https://www.googleapis.com/auth/pubsub</a></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.keepAliveIntervalMinutes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Determines frequency of keepalive gRPC ping</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5 minutes</code></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.parallel-pull-count</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The number of pull workers</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The maximum period a message ack deadline will be extended, in seconds</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.pull-endpoint</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The endpoint for synchronous pulling messages</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">pubsub.googleapis.com:443</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Number of threads used by <code>Subscriber</code> instances created by <code>SubscriberFactory</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
-The higher the total timeout, the more retries can be attempted.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">InitialRetryDelay controls the delay before the first retry.
-Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.retry-delay-multiplier</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">RetryDelayMultiplier controls the change in retry delay.
-The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-retry-delay-seconds</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
-can&#8217;t increase the retry delay higher than this amount.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-attempts</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">MaxAttempts defines the maximum number of attempts to perform.
-If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Jitter determines if the delay time should be randomized.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-rpc-timeout-seconds</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">InitialRpcTimeout controls the timeout for the initial RPC.
-Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.rpc-timeout-multiplier</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">RpcTimeoutMultiplier controls the change in RPC timeout.
-The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
-can&#8217;t increase the RPC timeout higher than this amount.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of outstanding elements to keep in memory before enforcing flow control.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unlimited</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Maximum number of outstanding bytes to keep in memory before enforcing flow control.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unlimited</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The behavior when the specified limits are exceeded.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Block</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The element count threshold to use for batching.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The request byte threshold to use for batching.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The delay threshold to use for batching.
-After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unset (threshold does not apply)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.publisher.batching.enabled</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Enables batching.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">false</p></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>

@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.8">
-<title>Spring Cloud Sleuth</title>
+<title>Stackdriver Trace</title>
 <link rel="stylesheet" href="css/spring.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -95,7 +95,7 @@ $(addBlockSwitches);
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_spring_cloud_sleuth">Spring Cloud Sleuth</a>
+<li><a href="#_stackdriver_trace">Stackdriver Trace</a>
 <ul class="sectlevel2">
 <li><a href="#_tracing">Tracing</a></li>
 <li><a href="#_spring_boot_starter_for_stackdriver_trace">Spring Boot Starter for Stackdriver Trace</a></li>
@@ -110,15 +110,14 @@ $(addBlockSwitches);
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_spring_cloud_sleuth"><a class="link" href="#_spring_cloud_sleuth">Spring Cloud Sleuth</a></h2>
+<h2 id="_stackdriver_trace"><a class="link" href="#_stackdriver_trace">Stackdriver Trace</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><a href="https://cloud.spring.io/spring-cloud-sleuth/">Spring Cloud Sleuth</a> is an instrumentation framework for Spring Boot applications.
-It captures trace information and can forward traces to services like Zipkin for storage and analysis.</p>
+<p>Google Cloud Platform provides a managed distributed tracing service called <a href="https://cloud.google.com/trace/">Stackdriver Trace</a>, and <a href="https://cloud.spring.io/spring-cloud-sleuth/">Spring Cloud Sleuth</a> can be used with it to easily instrument Spring Boot applications for observability.</p>
 </div>
 <div class="paragraph">
-<p>Google Cloud Platform provides its own managed distributed tracing service called <a href="https://cloud.google.com/trace/">Stackdriver Trace</a>.
-Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.</p>
+<p>Typically, Spring Cloud Sleuth captures trace information and forwards traces to services like Zipkin for storage and analysis.
+However, on GCP, instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.</p>
 </div>
 <div class="paragraph">
 <p>This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.</p>
@@ -325,7 +324,7 @@ spring.sleuth.scheduled.enabled=false                   # disable executor 'asyn
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which causes many traces with the name <code>async</code> to appear in Stackdriver Trace. This is especially a problem because our starter comes with an executor. To avoid this noise, please disable automatic instrumentation of executors via <code>spring.sleuth.scheduled.enabled=false</code> in your application configuration.
+By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which may cause recurring traces with the name <code>async</code> to appear in Stackdriver Trace if your application or one of its dependencies introduces scheduler beans into Spring application context. To avoid this noise, please disable automatic instrumentation of executors via <code>spring.sleuth.scheduled.enabled=false</code> in your application configuration.
 </td>
 </tr>
 </table>
