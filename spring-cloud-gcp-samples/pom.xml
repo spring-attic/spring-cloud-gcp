@@ -21,6 +21,8 @@
 	<properties>
 		<main.basedir>${basedir}/..</main.basedir>
 		<spring-cloud-build-tools.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-build-tools.version>
+		<puppycrawl-tools-checkstyle.version>8.18</puppycrawl-tools-checkstyle.version>
+		<maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
 	</properties>
 
 	<modules>
@@ -63,12 +65,12 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>3.0.0</version>
+						<version>${maven-checkstyle-plugin.version}</version>
 						<dependencies>
 							<dependency>
 								<groupId>com.puppycrawl.tools</groupId>
 								<artifactId>checkstyle</artifactId>
-								<version>8.18</version>
+								<version>${puppycrawl-tools-checkstyle.version}</version>
 							</dependency>
 							<dependency>
 								<groupId>io.spring.javaformat</groupId>
