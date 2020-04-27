@@ -31,3 +31,4 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 public interface PubSubOperations extends PubSubPublisherOperations, PubSubSubscriberOperations {
 
 }
+
