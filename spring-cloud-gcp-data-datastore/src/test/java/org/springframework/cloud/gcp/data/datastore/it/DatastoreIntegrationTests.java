@@ -40,7 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -72,6 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -481,6 +482,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
+	public void projectionTest() {
+		reset(datastoreTemplate);
+		assertThat(this.testEntityRepository.findBySize(2L).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
+	}
+
+	@Test
 	public void embeddedEntitiesTest() {
 		EmbeddableTreeNode treeNode10 = new EmbeddableTreeNode(10, null, null);
 		EmbeddableTreeNode treeNode8 = new EmbeddableTreeNode(8, null, null);
@@ -834,16 +849,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		// Verifies that the projection method call works.
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
 
-		ProjectionEntityQuery.Builder projectionEntityQueryBuilder =
-				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder();
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
 
-		projectionEntityQueryBuilder.addProjection("color");
-		projectionEntityQueryBuilder.setFilter(PropertyFilter.eq("size", 2L));
-		projectionEntityQueryBuilder.setKind("test_entities_ci");
-		projectionEntityQueryBuilder.setLimit(1);
-
-		verify(datastoreTemplate)
-				.queryKeysOrEntities(Mockito.eq(projectionEntityQueryBuilder.build()), Mockito.any());
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
 	}
 
 	@Test
