@@ -29,7 +29,7 @@ import org.awaitility.Awaitility;
 public abstract class AbstractDatastoreIntegrationTests {
 
 	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+	private static final int QUERY_WAIT_INTERVAL_SECONDS = 20;
 
 	protected long waitUntilTrue(Supplier<Boolean> condition) {
 		long startTime = System.currentTimeMillis();

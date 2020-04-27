@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +29,9 @@ import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Value;
+import com.google.firestore.v1.WriteRequest;
+import com.google.firestore.v1.WriteResponse;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +42,7 @@ import reactor.test.StepVerifier;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -61,6 +66,44 @@ public class FirestoreTemplateTests {
 	public void setup() {
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent,
 				new FirestoreDefaultClassMapper(), new FirestoreMappingContext());
+	}
+
+	@Test
+	public void excludeStreamTokensTest() {
+		firestoreTemplate.setUsingStreamTokens(false);
+
+		WriteResponse writeResponse =
+				WriteResponse.newBuilder()
+						.setStreamId("test-stream")
+						.setStreamToken(ByteString.copyFromUtf8("the-token"))
+						.build();
+
+		WriteRequest request = firestoreTemplate.buildWriteRequest(
+				Arrays.asList(new TestEntity("e1", 100L)), writeResponse);
+		assertThat(request.getStreamId()).isEmpty();
+		assertThat(request.getStreamToken().toStringUtf8()).isEmpty();
+
+		request = firestoreTemplate.buildDeleteRequest(Arrays.asList("hello"), writeResponse);
+		assertThat(request.getStreamId()).isEmpty();
+		assertThat(request.getStreamToken().toStringUtf8()).isEmpty();
+	}
+
+	@Test
+	public void includeStreamTokensTest() {
+		WriteResponse writeResponse =
+				WriteResponse.newBuilder()
+						.setStreamId("test-stream")
+						.setStreamToken(ByteString.copyFromUtf8("the-token"))
+						.build();
+
+		WriteRequest request = firestoreTemplate.buildWriteRequest(
+				Arrays.asList(new TestEntity("e1", 100L)), writeResponse);
+		assertThat(request.getStreamId()).isEqualTo("test-stream");
+		assertThat(request.getStreamToken().toStringUtf8()).isEqualTo("the-token");
+
+		request = firestoreTemplate.buildDeleteRequest(Arrays.asList("hello"), writeResponse);
+		assertThat(request.getStreamId()).isEqualTo("test-stream");
+		assertThat(request.getStreamToken().toStringUtf8()).isEqualTo("the-token");
 	}
 
 	@Test
