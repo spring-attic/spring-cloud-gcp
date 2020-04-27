@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -107,7 +106,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreTemplate used to execute the given query.
 	 * @param datastoreMappingContext used to provide metadata for mapping results to objects.
 	 * @param entityType the result domain type.
-	 * @param projectionFactory the projection factory.
+	 * @param projectionFactory the projection factory that is used to get projection information.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
 			DatastoreTemplate datastoreTemplate,
@@ -186,7 +185,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
-		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
 		Function<T, ?> mapper = Function.identity();
 
 		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedElementType)
@@ -195,25 +193,31 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isCountingQuery = this.tree.isCountProjection()
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
-		Collector<?, ?, ?> collector = Collectors.toList();
+		Collector<?, ?, ?> collector  = Collectors.toList();
+		StructuredQuery.Builder<?> structuredQueryBuilder = null;
+
 		if (isCountingQuery && !this.tree.isDelete()) {
+			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
+			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
 			collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
 		}
 		else if (!returnedTypeIsNumber) {
-			queryBuilderSupplier = getQueryBuilderSupplier(parameters);
+			structuredQueryBuilder = getEntityOrProjectionQueryBuilder();
 			mapper = this::processRawObjectForProjection;
 		}
 
-		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
-		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
+		structuredQueryBuilder =
+				structuredQueryBuilder != null ? structuredQueryBuilder : StructuredQuery.newKeyQueryBuilder();
+
+		structuredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
 		boolean singularResult = (!isCountingQuery && collectionType == null) && !this.tree.isDelete();
 		DatastoreResultsIterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(
-						applyQueryBody(parameters, structredQueryBuilder, total, singularResult, null),
+						applyQueryBody(parameters, structuredQueryBuilder, total, singularResult, null),
 						this.entityType);
 
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
@@ -233,8 +237,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 	}
 
-	private Supplier<Builder<?>> getQueryBuilderSupplier(Object[] parameters) {
-		Supplier<Builder<?>> queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
+	/**
+	 * In case the return type is a closed projection (only the projection fields are necessary
+	 * to construct an entity object), this method returns a {@link ProjectionEntityQuery.Builder}
+	 * with projection fields only.
+	 * Otherwise returns a {@link EntityQuery.Builder}.
+	 */
+	private Builder<?> getEntityOrProjectionQueryBuilder() {
 		ProjectionInformation projectionInformation =
 				this.projectionFactory.getProjectionInformation(this.queryMethod.getReturnedObjectType());
 
@@ -245,9 +254,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			projectionInformation.getInputProperties().forEach(propertyDescriptor -> {
 				projectionEntityQueryBuilder.addProjection(mapToFieldName(propertyDescriptor));
 			});
-			queryBuilderSupplier = () -> projectionEntityQueryBuilder;
+			return projectionEntityQueryBuilder;
 		}
-		return queryBuilderSupplier;
+		return StructuredQuery.newEntityQueryBuilder();
 	}
 
 
@@ -259,7 +268,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
-		StructuredQuery.Builder builder = getQueryBuilderSupplier(parameters).get()
+		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
 		DatastoreResultsIterable<?> resultList = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
