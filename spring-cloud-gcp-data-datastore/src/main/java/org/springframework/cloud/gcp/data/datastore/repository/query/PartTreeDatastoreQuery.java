@@ -234,8 +234,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Supplier<Builder<?>> getQueryBuilderSupplier(Object[] parameters) {
-		Supplier<Builder<?>> queryBuilderSupplier;
-		queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
+		Supplier<Builder<?>> queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
 		ProjectionInformation projectionInformation =
 				this.projectionFactory.getProjectionInformation(this.queryMethod.getReturnedObjectType());
 
