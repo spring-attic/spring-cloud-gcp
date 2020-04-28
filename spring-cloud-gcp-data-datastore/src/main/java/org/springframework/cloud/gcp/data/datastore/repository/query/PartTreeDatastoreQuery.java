@@ -185,32 +185,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
-		Function<T, ?> mapper = Function.identity();
-
 		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedElementType)
 				|| returnedElementType == int.class || returnedElementType == long.class;
 
 		boolean isCountingQuery = this.tree.isCountProjection()
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
-		Collector<?, ?, ?> collector  = Collectors.toList();
-		StructuredQuery.Builder<?> structuredQueryBuilder = null;
-
-		if (isCountingQuery && !this.tree.isDelete()) {
-			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
-			collector = Collectors.counting();
-		}
-		else if (this.tree.isExistsProjection()) {
-			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
-			collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
-		}
-		else if (!returnedTypeIsNumber) {
-			structuredQueryBuilder = getEntityOrProjectionQueryBuilder();
-			mapper = this::processRawObjectForProjection;
-		}
-
-		structuredQueryBuilder =
-				structuredQueryBuilder != null ? structuredQueryBuilder : StructuredQuery.newKeyQueryBuilder();
+		StructuredQuery.Builder<?> structuredQueryBuilder =
+				!((isCountingQuery && !this.tree.isDelete()) || this.tree.isExistsProjection())
+						&& !returnedTypeIsNumber
+						? getEntityOrProjectionQueryBuilder()
+						: StructuredQuery.newKeyQueryBuilder();
 
 		structuredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
@@ -220,7 +205,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						applyQueryBody(parameters, structuredQueryBuilder, total, singularResult, null),
 						this.entityType);
 
-		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
+		Object result = StreamSupport.stream(rawResults.spliterator(), false)
+				.map(returnedTypeIsNumber ? Function.identity() : this::processRawObjectForProjection)
+				.collect(getCollector(isCountingQuery));
 
 		if (this.tree.isDelete()) {
 			deleteFoundEntities(returnedTypeIsNumber, (Iterable) result);
@@ -235,6 +222,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		else {
 			return result;
 		}
+	}
+
+	private Collector<?, ?, ?> getCollector(boolean isCountingQuery) {
+		Collector<?, ?, ?> collector  = Collectors.toList();
+		if (isCountingQuery && !this.tree.isDelete()) {
+			collector = Collectors.counting();
+		}
+		else if (this.tree.isExistsProjection()) {
+			collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
+		}
+		return collector;
 	}
 
 	/**
