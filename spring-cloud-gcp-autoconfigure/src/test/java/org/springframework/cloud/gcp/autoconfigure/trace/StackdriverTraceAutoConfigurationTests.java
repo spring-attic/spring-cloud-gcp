@@ -57,7 +57,6 @@ import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -86,7 +85,6 @@ public class StackdriverTraceAutoConfigurationTests {
 					StackdriverTraceAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					TraceAutoConfiguration.class,
-					SleuthLogAutoConfiguration.class,
 					RefreshAutoConfiguration.class))
 			.withUserConfiguration(StackdriverTraceAutoConfigurationTests.MockConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.project-id=proj",
