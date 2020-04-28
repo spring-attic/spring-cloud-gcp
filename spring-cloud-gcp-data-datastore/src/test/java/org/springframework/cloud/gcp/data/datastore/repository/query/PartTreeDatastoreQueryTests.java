@@ -134,7 +134,7 @@ public class PartTreeDatastoreQueryTests {
 	private PartTreeDatastoreQuery<Trade> createQuery(boolean isPageQuery, boolean isSliceQuery,
 			ProjectionInformation projectionInformation) {
 		ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
-		doReturn(projectionInformation).when(projectionFactory).getProjectionInformation(any());
+		doReturn(projectionInformation != null ? projectionInformation : getProjectionInformationMock()).when(projectionFactory).getProjectionInformation(any());
 
 		PartTreeDatastoreQuery<Trade> tradePartTreeDatastoreQuery = new PartTreeDatastoreQuery<>(this.queryMethod,
 				this.datastoreTemplate,
@@ -146,6 +146,12 @@ public class PartTreeDatastoreQueryTests {
 		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), isNotNull());
 
 		return spy;
+	}
+
+	private ProjectionInformation getProjectionInformationMock() {
+		ProjectionInformation mock = mock(ProjectionInformation.class);
+		doReturn(Trade.class).when(mock).getType();
+		return mock;
 	}
 
 	@Test
