@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -32,6 +32,8 @@ import java.util.stream.StreamSupport;
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.KeyValue;
+import com.google.cloud.datastore.ProjectionEntityQuery;
+import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -53,6 +55,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.Part;
@@ -60,6 +64,7 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 
+import static com.google.cloud.datastore.Query.newEntityQueryBuilder;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
@@ -82,6 +87,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private final DatastorePersistentEntity datastorePersistentEntity;
 
+	private final ProjectionFactory projectionFactory;
+
 	private List<Part> filterParts;
 
 	private  static final Map<Part.Type, BiFunction<String, Value, PropertyFilter>> FILTER_FACTORIES =
@@ -99,15 +106,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreTemplate used to execute the given query.
 	 * @param datastoreMappingContext used to provide metadata for mapping results to objects.
 	 * @param entityType the result domain type.
+	 * @param projectionFactory the projection factory that is used to get projection information.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
 			DatastoreTemplate datastoreTemplate,
-			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
+			DatastoreMappingContext datastoreMappingContext, Class<T> entityType, ProjectionFactory projectionFactory) {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, entityType);
 		this.tree = new PartTree(queryMethod.getName(), entityType);
 		this.datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(this.entityType);
 
+		this.projectionFactory = projectionFactory;
 		validateAndSetFilterParts();
 	}
 
@@ -176,7 +185,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
-		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
 		Function<T, ?> mapper = Function.identity();
 
 		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedElementType)
@@ -185,25 +193,31 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isCountingQuery = this.tree.isCountProjection()
 				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
-		Collector<?, ?, ?> collector = Collectors.toList();
+		Collector<?, ?, ?> collector  = Collectors.toList();
+		StructuredQuery.Builder<?> structuredQueryBuilder = null;
+
 		if (isCountingQuery && !this.tree.isDelete()) {
+			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
+			structuredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
 			collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
 		}
 		else if (!returnedTypeIsNumber) {
-			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
+			structuredQueryBuilder = getEntityOrProjectionQueryBuilder();
 			mapper = this::processRawObjectForProjection;
 		}
 
-		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
-		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
+		structuredQueryBuilder =
+				structuredQueryBuilder != null ? structuredQueryBuilder : StructuredQuery.newKeyQueryBuilder();
+
+		structuredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
 		boolean singularResult = (!isCountingQuery && collectionType == null) && !this.tree.isDelete();
 		DatastoreResultsIterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(
-						applyQueryBody(parameters, structredQueryBuilder, total, singularResult, null),
+						applyQueryBody(parameters, structuredQueryBuilder, total, singularResult, null),
 						this.entityType);
 
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
@@ -223,8 +237,38 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 	}
 
+	/**
+	 * In case the return type is a closed projection (only the projection fields are necessary
+	 * to construct an entity object), this method returns a {@link ProjectionEntityQuery.Builder}
+	 * with projection fields only.
+	 * Otherwise returns a {@link EntityQuery.Builder}.
+	 */
+	private Builder<?> getEntityOrProjectionQueryBuilder() {
+		ProjectionInformation projectionInformation =
+				this.projectionFactory.getProjectionInformation(this.queryMethod.getReturnedObjectType());
+
+		if (projectionInformation != null &&
+				projectionInformation.getType() != this.entityType
+				&& projectionInformation.isClosed()) {
+			ProjectionEntityQuery.Builder projectionEntityQueryBuilder = Query.newProjectionEntityQueryBuilder();
+			projectionInformation.getInputProperties().forEach(propertyDescriptor -> {
+				projectionEntityQueryBuilder.addProjection(mapToFieldName(propertyDescriptor));
+			});
+			return projectionEntityQueryBuilder;
+		}
+		return StructuredQuery.newEntityQueryBuilder();
+	}
+
+
+	private String mapToFieldName(PropertyDescriptor propertyDescriptor) {
+		String name = propertyDescriptor.getName();
+		DatastorePersistentProperty persistentProperty =
+				(DatastorePersistentProperty) this.datastorePersistentEntity.getPersistentProperty(name);
+		return persistentProperty.getFieldName();
+	}
+
 	private Slice executeSliceQuery(Object[] parameters) {
-		EntityQuery.Builder builder = StructuredQuery.newEntityQueryBuilder()
+		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
 		DatastoreResultsIterable<?> resultList = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
@@ -233,8 +277,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
 
-		EntityQuery.Builder builderNext = StructuredQuery.newEntityQueryBuilder()
-				.setKind(this.datastorePersistentEntity.kindName());
+		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
 		List datastoreResultsList = this.datastoreTemplate.query(queryNext, x -> x);
 

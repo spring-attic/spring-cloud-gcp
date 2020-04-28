@@ -61,8 +61,8 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 
 	@Override
 	public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata,
-			ProjectionFactory factory, NamedQueries namedQueries) {
-		DatastoreQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
+			ProjectionFactory projectionFactory, NamedQueries namedQueries) {
+		DatastoreQueryMethod queryMethod = createQueryMethod(method, metadata, projectionFactory);
 		Class<?> entityType = getEntityType(queryMethod);
 
 		if (queryMethod.hasAnnotatedQuery()) {
@@ -75,7 +75,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		}
 
 		return new PartTreeDatastoreQuery<>(queryMethod, this.datastoreTemplate,
-				this.datastoreMappingContext, entityType);
+				this.datastoreMappingContext, entityType, projectionFactory);
 	}
 
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,

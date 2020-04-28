@@ -115,6 +115,8 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query("select * from  test_entities_ci where size = @size")
 	TestEntityProjection getBySize(@Param("size") long size);
 
+	TestEntityProjection findBySize(long size);
+
 	@Query("select * from test_entities_ci where size = @size")
 	Slice<TestEntityProjection> getBySizeSlice(@Param("size") long size, Pageable pageable);
 
