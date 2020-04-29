@@ -29,10 +29,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.data.firestore.User;
-import org.springframework.cloud.gcp.data.firestore.User.Address;
+import org.springframework.cloud.gcp.data.firestore.entities.User;
+import org.springframework.cloud.gcp.data.firestore.entities.User.Address;
+import org.springframework.cloud.gcp.data.firestore.entities.UserRepository;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -170,13 +173,30 @@ public class FirestoreRepositoryIntegrationTests {
 				.map(n -> new User("blah-person" + n, n));
 		this.userRepository.saveAll(users).blockLast();
 
-		PageRequest pageRequest = PageRequest.of(2, 2);
+		PageRequest pageRequest = PageRequest.of(2, 3, Sort.by(Order.desc("age")));
 		List<String> pagedUsers = this.userRepository.findByAgeGreaterThan(0, pageRequest)
 				.map(User::getName)
 				.collectList()
 				.block();
 
-		assertThat(pagedUsers).containsExactlyInAnyOrder("blah-person5", "blah-person6");
+		assertThat(pagedUsers).containsExactlyInAnyOrder(
+				"blah-person4", "blah-person3", "blah-person2");
+	}
+
+	@Test
+	public void sortQueryTest() {
+		Flux<User> users = Flux.fromStream(IntStream.range(1, 11).boxed())
+				.map(n -> new User("blah-person" + n, n));
+		this.userRepository.saveAll(users).blockLast();
+
+		List<String> pagedUsers = this.userRepository
+				.findByAgeGreaterThan(7, Sort.by(Order.asc("age")))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder(
+				"blah-person8", "blah-person9", "blah-person10");
 	}
 
 	@Test

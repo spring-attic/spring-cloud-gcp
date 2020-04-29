@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore.it;
+package org.springframework.cloud.gcp.data.firestore.entities;
 
 import java.util.List;
 
@@ -22,8 +22,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveRepository;
-import org.springframework.cloud.gcp.data.firestore.User;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * A test custom repository.
@@ -41,6 +41,8 @@ public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
 
 	Flux<User> findByAgeGreaterThan(Integer age);
+
+	Flux<User> findByAgeGreaterThan(Integer age, Sort sort);
 
 	Flux<User> findByAgeGreaterThan(Integer age, Pageable pageable);
 
