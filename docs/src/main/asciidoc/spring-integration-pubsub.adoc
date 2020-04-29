@@ -82,7 +82,7 @@ Use the `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` property t
 Acknowledging (acking) a message removes it from Pub/Sub's known outstanding messages. Nacking a message resets its acknowledgement deadline to 0, forcing immediate redelivery.
 This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.
 
-The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value: `AckMode.AUTO` (automatic acking and nacking), `AckMode.AUTO_ACK` (automatic acking only) and `AckMode.MANUAL` (manual acking and nacking).
+The `PubSubInboundChannelAdapter` supports three acknowledgement modes: the default `AckMode.AUTO` (automatic acking on processing success and nacking on exception), as well as two modes for additional manual control: AckMode.AUTO_ACK (automatic acking on success but no action on exception) and AckMode.MANUAL (no automatic actions at all; both acking and nacking have to be done manually).
 
 .Acknowledgement mode behavior
 |===
@@ -180,10 +180,6 @@ public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
 	    .getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 
 	originalMessage.nack();
-
-    // retrow to let the adapter know something went wrong.
-    // this will prevent the message from being automatically acknowledged.
-    throw message.getPayload();
 }
 ----
 
@@ -194,7 +190,7 @@ public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
 While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
 This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually.
 It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
-For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
+For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#streamingpull_dealing_with_large_backlogs_of_small_messages[GCP Pub/Sub documentation].
 
 In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
 
