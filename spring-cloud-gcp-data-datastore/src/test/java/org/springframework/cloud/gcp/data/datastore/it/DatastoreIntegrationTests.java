@@ -31,6 +31,8 @@ import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.ProjectionEntityQuery;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,6 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
@@ -68,6 +71,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 /**
  * Integration tests for Datastore that use many features.
@@ -92,7 +99,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Autowired
 	private DogRepository dogRepository;
 
-	@Autowired
+	@SpyBean
 	private DatastoreTemplate datastoreTemplate;
 
 	@Autowired
@@ -475,6 +482,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
+	public void projectionTest() {
+		reset(datastoreTemplate);
+		assertThat(this.testEntityRepository.findBySize(2L).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
+	}
+
+	@Test
 	public void embeddedEntitiesTest() {
 		EmbeddableTreeNode treeNode10 = new EmbeddableTreeNode(10, null, null);
 		EmbeddableTreeNode treeNode8 = new EmbeddableTreeNode(8, null, null);
@@ -814,6 +835,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSlicedEntityProjections() {
+		reset(datastoreTemplate);
 		Slice<TestEntityProjection> testEntityProjectionSlice =
 				this.testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
 
@@ -826,6 +848,14 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// Verifies that the projection method call works.
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
 	}
 
 	@Test

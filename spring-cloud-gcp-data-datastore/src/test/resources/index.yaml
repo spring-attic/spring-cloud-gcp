@@ -2,5 +2,8 @@ indexes:
 
 - kind: test_entities_ci
   properties:
-  - name: size
+  - name: embeddedEntity.stringField
+  - name: blobField
   - name: color
+  - name: shape
+  - name: size
