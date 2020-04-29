@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -91,12 +92,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 	ApplicationContextRunner contextRunner;
 
 	@BeforeClass
-	public static void enableTests() {
+	public static void enableTests() throws IOException {
 		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
-	}
 
-	@BeforeClass
-	public static void initializePubSubAdmin() throws Exception {
 		pubSubAdmin = new PubSubAdmin(
 				new DefaultGcpProjectIdProvider(),
 				new DefaultCredentialsProvider(() -> new Credentials())
