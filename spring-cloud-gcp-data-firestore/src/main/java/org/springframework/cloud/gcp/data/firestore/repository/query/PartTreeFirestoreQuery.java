@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore.repository.query;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.firestore.v1.StructuredQuery;
+import com.google.firestore.v1.StructuredQuery.FieldReference;
 import com.google.protobuf.Int32Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
@@ -33,6 +35,9 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestorePersistentEntity;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -53,6 +58,7 @@ import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_
 /**
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  *
  * @since 1.2
  */
@@ -128,6 +134,11 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 				builder.setOffset((int) Math.min(Integer.MAX_VALUE, pageable.getOffset()));
 				builder.setLimit(Int32Value.newBuilder().setValue(pageable.getPageSize()));
 			}
+
+			Sort sort = paramAccessor.getSort();
+			if (sort != null) {
+				builder.addAllOrderBy(createFirestoreSortOrders(sort));
+			}
 		}
 
 		if (this.tree.isCountProjection()) {
@@ -136,6 +147,39 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 		else {
 			return this.reactiveOperations.execute(builder, this.persistentEntity.getType());
 		}
+	}
+
+	/**
+	 * This method converts {@link org.springframework.data.domain.Sort.Order}
+	 * to {@link StructuredQuery.Order} for Firestore.
+	 */
+	private List<StructuredQuery.Order> createFirestoreSortOrders(Sort sort) {
+		List<StructuredQuery.Order> sortOrders = new ArrayList<>();
+
+		for (Order order : sort) {
+			if (order.isIgnoreCase()) {
+				throw new IllegalArgumentException("Datastore does not support ignore case sort orders.");
+			}
+
+			// Get the name of the field to sort on
+			String fieldName =
+					this.persistentEntity.getPersistentProperty(order.getProperty()).getFieldName();
+
+			StructuredQuery.Direction dir =
+					order.getDirection() == Direction.DESC
+							? StructuredQuery.Direction.DESCENDING : StructuredQuery.Direction.ASCENDING;
+
+			FieldReference ref = FieldReference.newBuilder().setFieldPath(fieldName).build();
+			com.google.firestore.v1.StructuredQuery.Order firestoreOrder =
+					com.google.firestore.v1.StructuredQuery.Order.newBuilder()
+							.setField(ref)
+							.setDirection(dir)
+							.build();
+
+			sortOrders.add(firestoreOrder);
+		}
+
+		return sortOrders;
 	}
 
 	private StructuredQuery.Builder createBuilderWithFilter(Object[] parameters) {

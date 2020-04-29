@@ -21,7 +21,8 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
-import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.entities.User;
+import org.springframework.cloud.gcp.data.firestore.entities.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
