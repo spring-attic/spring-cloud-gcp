@@ -76,13 +76,13 @@ When working with Cloud Pub/Sub, it is important to understand the concept of `a
 Each subscription has a default `ackDeadline` applied to all messages sent to it.
 Additionally, the Cloud Pub/Sub client library can extend each streamed message's `ackDeadline` until the message processing completes, fails or until the maximum extension period elapses.
 
-NOTE: In Pub/Sub client library, default maximum extension period is an hour. However, Spring Cloud GCP disables this auto-extension behavior.
+NOTE: In the Pub/Sub client library, default maximum extension period is an hour. However, Spring Cloud GCP disables this auto-extension behavior.
 Use the `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` property to re-enable it.
 
 Acknowledging (acking) a message removes it from Pub/Sub's known outstanding messages. Nacking a message resets its acknowledgement deadline to 0, forcing immediate redelivery.
 This could be useful in a load balanced architecture, where one of the subscribers is having issues but others are available to process messages.
 
-The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value: `AckMode.AUTO` (automatic acking and nacking), `AckMode.AUTO_ACK` (automatic acking only) and `AckMode.MANUAL` (manual acking and nacking).
+The `PubSubInboundChannelAdapter` supports three acknowledgement modes: the default `AckMode.AUTO` (automatic acking on processing success and nacking on exception), as well as two modes for additional manual control: AckMode.AUTO_ACK (automatic acking on success but no action on exception) and AckMode.MANUAL (no automatic actions at all; both acking and nacking have to be done manually).
 
 .Acknowledgement mode behavior
 |===
@@ -113,9 +113,9 @@ The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `Ac
 Cloud Pub/Sub will attempt redelivery according to subscription `ackDeadline` setting and the `max-ack-extension-period` client library setting.
 
 {empty}** For the adapter, "success" means the Spring Integration flow processed without raising an exception, so successful message processing and the successful completion of an error handler both result in the same behavior (message will be acknowledged).
-To trigger default error behavior (nacking in `AUTO` mode; neither acking nor nacking in `AUTO_ACK` mode), propagate the error back to the adapter by throwing an exception from the error handler.
+To trigger default error behavior (nacking in `AUTO` mode; neither acking nor nacking in `AUTO_ACK` mode), propagate the error back to the adapter by throwing an exception from the <<Error Handling,Error Handling flow>>.
 
-===== Manual acking/nacking
+====== Manual acking/nacking
 
 The adapter attaches a `BasicAcknowledgeablePubsubMessage` object to the `Message` headers.
 Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to ack (or nack) a message.
@@ -134,7 +134,7 @@ public MessageHandler messageReceiver() {
 }
 ----
 
-===== Error Handling
+====== Error Handling
 
 If you want to have more control over message processing in case of an error, you need to associate the `PubSubInboundChannelAdapter` with a Spring Integration error channel and specify the behavior to be invoked with `@ServiceActivator`.
 
@@ -167,7 +167,7 @@ public void pubsubErrorHandler(Message<MessagingException> message) {
 }
 ----
 
-If you would prefer to manually ack or nack the message, you can do it by retrieving the header of exception payload:
+If you would prefer to manually ack or nack the message, you can do it by retrieving the header of the exception payload:
 
 [source,java]
 ----
@@ -180,10 +180,6 @@ public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
 	    .getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 
 	originalMessage.nack();
-
-    // retrow to let the adapter know something went wrong.
-    // this will prevent the message from being automatically acknowledged.
-    throw message.getPayload();
 }
 ----
 
@@ -194,7 +190,7 @@ public void pubsubErrorHandler(Message<MessagingException> exceptionMessage) {
 While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
 This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually.
 It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
-For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
+For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#streamingpull_dealing_with_large_backlogs_of_small_messages[GCP Pub/Sub documentation].
 
 In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
 
