@@ -9,11 +9,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <!-- TODO: Remove after resolving Jenkins build? -->
-        <surefire.useFile>false</surefire.useFile>
-    </properties>
-
     <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
     <name>Spring Cloud GCP Autoconfigure Module</name>
 
