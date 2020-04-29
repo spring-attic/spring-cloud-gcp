@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.firestore;
 
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.cloud.firestore.FirestoreOptions;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -26,6 +27,8 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for Firestore Emulator autoconfiguration.
@@ -40,6 +43,13 @@ public class GcpFirestoreEmulatorAutoConfigurationTests {
 							GcpFirestoreEmulatorAutoConfiguration.class,
 							GcpContextAutoConfiguration.class,
 							GcpFirestoreAutoConfiguration.class));
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat("Firestore emulator integration tests are disabled. "
+						+ "Please use '-Dit.firestore=true' to enable them. ",
+				System.getProperty("it.firestore"), is("true"));
+	}
 
 	@Test
 	public void testAutoConfigurationEnabled() {
