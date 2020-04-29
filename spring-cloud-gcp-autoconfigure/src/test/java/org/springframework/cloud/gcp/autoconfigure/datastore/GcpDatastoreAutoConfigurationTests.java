@@ -56,6 +56,9 @@ import static org.mockito.Mockito.mock;
  */
 public class GcpDatastoreAutoConfigurationTests {
 
+	/** Mock datastore for use in configuration. */
+	public static Datastore MOCK_CLIENT = mock(Datastore.class);
+
 	/**
 	 * used to check exception messages and types.
 	 */
@@ -86,7 +89,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		runner.run(context -> {
 			assertThat(getDatastoreBean(context))
-					.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT);
+					.isSameAs(MOCK_CLIENT);
 		});
 	}
 
@@ -191,8 +194,6 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Configuration
 	static class TestConfigurationWithDatastoreBean {
 
-		public static Datastore MOCK_CLIENT = mock(Datastore.class);
-
 		@Bean
 		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
@@ -214,8 +215,6 @@ public class GcpDatastoreAutoConfigurationTests {
 	 */
 	@Configuration
 	static class TestConfigurationWithDatastoreBeanNamespaceProvider {
-
-		public static Datastore MOCK_CLIENT = mock(Datastore.class);
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
