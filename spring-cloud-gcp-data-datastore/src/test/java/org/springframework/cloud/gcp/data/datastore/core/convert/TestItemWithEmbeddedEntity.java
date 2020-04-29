@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItem.Color;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
 
 /**
  * A test entity focused on holding embedded entities.
@@ -46,15 +48,17 @@ public class TestItemWithEmbeddedEntity {
 
 	private Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps;
 
-	Map<TestDatastoreItem.Color, String> mapEnumKeys;
+	private CustomMap customMap;
 
-	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
+	private Map<TestDatastoreItem.Color, String> mapEnumKeys;
+
+	TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
 			List<EmbeddedEntity> listOfEmbeddedEntities,
 			Map<String, String> embeddedMapSimpleValues,
 			Map<String, String[]> embeddedMapListOfValues,
 			Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity,
 			Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities,
-			Map<TestDatastoreItem.Color, String> mapEnumKeys) {
+			Map<Color, String> mapEnumKeys, CustomMap customMap) {
 		this.intField = intField;
 		this.embeddedEntityField = embeddedEntityField;
 		this.listOfEmbeddedEntities = listOfEmbeddedEntities;
@@ -63,6 +67,7 @@ public class TestItemWithEmbeddedEntity {
 		this.embeddedEntityMapEmbeddedEntity = embeddedEntityMapEmbeddedEntity;
 		this.embeddedEntityMapListOfEmbeddedEntities = embeddedEntityMapListOfEmbeddedEntities;
 		this.mapEnumKeys = mapEnumKeys;
+		this.customMap = customMap;
 	}
 
 	@Override
@@ -73,7 +78,7 @@ public class TestItemWithEmbeddedEntity {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		TestItemWithEmbeddedEntity item = (TestItemWithEmbeddedEntity) o;
+		TestItemWithEmbeddedEntity that = (TestItemWithEmbeddedEntity) o;
 
 		boolean mapListValuesEquals = true;
 		boolean mapListEmbeddedEntitiesEquals = true;
@@ -81,31 +86,48 @@ public class TestItemWithEmbeddedEntity {
 		for (String key : this.embeddedMapListOfValues.keySet()) {
 			mapListValuesEquals = mapListValuesEquals
 					&& Arrays.equals(this.embeddedMapListOfValues.get(key),
-							item.embeddedMapListOfValues.get(key));
+							that.embeddedMapListOfValues.get(key));
 		}
 
 		for (String key : this.embeddedEntityMapListOfEmbeddedEntities.keySet()) {
 			mapListEmbeddedEntitiesEquals = mapListEmbeddedEntitiesEquals && Objects
 					.equals(this.embeddedEntityMapListOfEmbeddedEntities.get(key),
-							item.embeddedEntityMapListOfEmbeddedEntities.get(key));
+							that.embeddedEntityMapListOfEmbeddedEntities.get(key));
 		}
 
-		return this.intField == item.intField &&
-				Objects.equals(this.embeddedEntityField, item.embeddedEntityField) &&
-				Objects.equals(this.listOfEmbeddedEntities, item.listOfEmbeddedEntities)
-				&& this.embeddedMapSimpleValues.equals(item.embeddedMapSimpleValues)
-				&& this.embeddedEntityMapEmbeddedEntity
-						.equals(item.embeddedEntityMapEmbeddedEntity)
-				&& mapListValuesEquals && mapListEmbeddedEntitiesEquals;
+		return this.intField == that.intField &&
+				Objects.equals(this.embeddedEntityField, that.embeddedEntityField) &&
+				Objects.equals(this.listOfEmbeddedEntities, that.listOfEmbeddedEntities)
+				&& this.embeddedMapSimpleValues.equals(that.embeddedMapSimpleValues)
+				&& this.embeddedEntityMapEmbeddedEntity.equals(that.embeddedEntityMapEmbeddedEntity)
+				&& Objects.equals(mapEnumKeys, that.mapEnumKeys)
+				&& this.customMap.equals(that.customMap);
 	}
 
 	@Override
 	public int hashCode() {
-
-		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
+		return Objects.hash(intField, embeddedEntityField, listOfEmbeddedEntities,
+				embeddedMapSimpleValues, embeddedMapListOfValues, embeddedEntityMapEmbeddedEntity,
+				embeddedEntityMapListOfEmbeddedEntities, nestedEmbeddedMaps, customMap, mapEnumKeys);
 	}
 
-	public Map<String, Map<Long, Map<String, String>>> getNestedEmbeddedMaps() {
+	@Override
+	public String toString() {
+		return "TestItemWithEmbeddedEntity{" +
+				"intField=" + intField +
+				", embeddedEntityField=" + embeddedEntityField +
+				", listOfEmbeddedEntities=" + listOfEmbeddedEntities +
+				", embeddedMapSimpleValues=" + embeddedMapSimpleValues +
+				", embeddedMapListOfValues=" + embeddedMapListOfValues +
+				", embeddedEntityMapEmbeddedEntity=" + embeddedEntityMapEmbeddedEntity +
+				", embeddedEntityMapListOfEmbeddedEntities=" + embeddedEntityMapListOfEmbeddedEntities +
+				", nestedEmbeddedMaps=" + nestedEmbeddedMaps +
+				", conf=" + customMap +
+				", mapEnumKeys=" + mapEnumKeys +
+				'}';
+	}
+
+	Map<String, Map<Long, Map<String, String>>> getNestedEmbeddedMaps() {
 		return this.nestedEmbeddedMaps;
 	}
 

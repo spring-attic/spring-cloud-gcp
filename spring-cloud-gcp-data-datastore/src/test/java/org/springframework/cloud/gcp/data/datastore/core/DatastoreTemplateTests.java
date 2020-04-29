@@ -88,6 +88,7 @@ import org.springframework.data.util.ClassTypeInformation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
@@ -1174,7 +1175,7 @@ public class DatastoreTemplateTests {
 
 		this.datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
 		verify(this.datastoreEntityConverter, times(1))
-				.readAsMap(eq(String.class), eq(ClassTypeInformation.from(Long.class)), eq(datastoreEntity));
+				.readAsMap(eq(String.class), eq(ClassTypeInformation.from(Long.class)), eq(datastoreEntity), isNull());
 	}
 
 	@Test

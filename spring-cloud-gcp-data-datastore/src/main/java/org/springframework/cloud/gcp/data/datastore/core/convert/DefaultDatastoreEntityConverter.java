@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,11 +81,23 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	@Override
 	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
-			BaseEntity entity) {
+			BaseEntity entity, TypeInformation typeInformation) {
 		if (entity == null) {
 			return null;
 		}
-		Map<T, R> result = new HashMap<>();
+		Object customMap = null;
+		if (typeInformation != null && !typeInformation.getType().isInterface()) {
+			try {
+				customMap = ((Constructor<?>) typeInformation.getType().getConstructor()).newInstance();
+			}
+			catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+				throw new DatastoreDataException("Unable to create an instance of a custom map type: "
+						+ typeInformation.getType()
+						+ " (make sure the class is public and has a public no-args constructor)", e);
+			}
+		}
+
+		Map<T, R> result = customMap != null ? (Map<T, R>) customMap : new HashMap<>();
 		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
 				entity, this.conversions);
 		Set<String> fieldNames = entity.getNames();
