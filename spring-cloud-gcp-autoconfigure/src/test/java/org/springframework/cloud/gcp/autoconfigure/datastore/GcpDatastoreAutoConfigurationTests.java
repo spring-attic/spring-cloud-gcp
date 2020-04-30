@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
@@ -184,7 +183,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 	}
 
@@ -196,7 +195,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean
@@ -218,7 +217,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean
