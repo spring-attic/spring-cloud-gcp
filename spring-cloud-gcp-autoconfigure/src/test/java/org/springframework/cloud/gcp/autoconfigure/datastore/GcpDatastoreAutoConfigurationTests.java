@@ -184,7 +184,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 	}
 
@@ -196,7 +196,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean
@@ -218,7 +218,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean
