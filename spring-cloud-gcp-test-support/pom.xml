@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>spring-cloud-gcp</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <version>1.2.3.BUILD-SNAPSHOT</version>
+    </parent>
+
+
+    <artifactId>spring-cloud-gcp-test-support</artifactId>
+    <name>Spring Cloud GCP Test Support</name>
+    <description>Provides tools for testing Spring Cloud GCP projects</description>
+    <dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jcl</artifactId>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.stream.binder.pubsub;
+package org.springframework.cloud.gcp.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,10 +33,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.rules.ExternalResource;
-
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
@@ -87,7 +86,7 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws IOException, InterruptedException {
 
-		assumeTrue("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.", this.enableTests);
+		Assume.assumeTrue("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.", this.enableTests);
 
 		startEmulator();
 		determineHostPort();
@@ -178,7 +177,7 @@ public class PubSubEmulator extends ExternalResource {
 					.start();
 		}
 		catch (IOException ex) {
-			fail("Gcloud not found; leaving host/port uninitialized.");
+			Assert.fail("Gcloud not found; leaving host/port uninitialized.");
 		}
 
 		if (configPresent) {
@@ -219,7 +218,7 @@ public class PubSubEmulator extends ExternalResource {
 			Thread.sleep(1000);
 		}
 		if (attempts < 0) {
-			fail(
+			Assert.fail(
 					"Emulator could not be configured due to missing env.yaml. Are PubSub and beta tools installed?");
 		}
 	}
@@ -247,7 +246,7 @@ public class PubSubEmulator extends ExternalResource {
 			}
 		}
 
-		fail("Configuration file update could not be detected");
+		Assert.fail("Configuration file update could not be detected");
 	}
 
 	/**
