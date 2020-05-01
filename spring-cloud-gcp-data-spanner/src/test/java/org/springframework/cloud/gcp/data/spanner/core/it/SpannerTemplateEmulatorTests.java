@@ -21,14 +21,20 @@ import java.util.List;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
+import org.springframework.cloud.gcp.test.PubSubEmulatorRule;
+import org.springframework.cloud.gcp.test.SpannerEmulatorRule;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,43 +49,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SpannerTemplateEmulatorTests extends AbstractSpannerIntegrationTest {
 
 	/**
-	 * used for checking exception messages and types.
+	 * The emulator instance, shared across tests.
 	 */
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
+	@ClassRule
+	public static SpannerEmulatorRule emulator = new SpannerEmulatorRule();
 
 	@Test
-	public void insertAndDeleteSequence() {
-
-		this.spannerOperations.delete(Trade.class, KeySet.all());
-
-		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
+	public void insertSingleRow() {
 
 		Trade trade = Trade.aTrade(null, 1);
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
-
-		List<Trade> trades = this.spannerOperations.queryAll(Trade.class, new SpannerPageableQueryOptions());
-
-		assertThat(trades).containsExactly(trade);
-
-		Trade retrievedTrade = this.spannerOperations.read(Trade.class,
-				Key.of(trade.getId(), trade.getTraderId()));
-		assertThat(retrievedTrade).isEqualTo(trade);
-
-		trades = this.spannerOperations.readAll(Trade.class);
-
-		assertThat(trades).containsExactly(trade);
-
-		Trade trade2 = Trade.aTrade(null, 1);
-		this.spannerOperations.insert(trade2);
-
-		trades = this.spannerOperations.read(Trade.class, KeySet.newBuilder().addKey(Key.of(trade.getId(), trade.getTraderId()))
-				.addKey(Key.of(trade2.getId(), trade2.getTraderId())).build());
-
-		assertThat(trades).containsExactlyInAnyOrder(trade, trade2);
-
-		this.spannerOperations.deleteAll(Arrays.asList(trade, trade2));
-		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 	}
 }

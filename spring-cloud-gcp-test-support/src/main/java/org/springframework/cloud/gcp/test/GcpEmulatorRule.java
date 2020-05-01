@@ -171,7 +171,7 @@ abstract class GcpEmulatorRule extends ExternalResource {
 					.start();
 		}
 		catch (IOException ex) {
-			Assert.fail("Gcloud not found; leaving host/port uninitialized.");
+			throw new RuntimeException("Gcloud not found; leaving host/port uninitialized.", ex);
 		}
 
 		if (configPresent) {
@@ -194,17 +194,23 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	 * @throws IOException for IO errors
 	 * @throws InterruptedException for interruption errors
 	 */
-	private void determineHostPort() throws IOException, InterruptedException {
+	private void determineHostPort() {
 		ProcessOutcome processOutcome = runSystemCommand(new String[] { "gcloud", "beta", "emulators", getEmulatorName(), "env-init" });
 		if ( processOutcome.getOutput().size() < 1 ) {
-			Assert.fail("env-init command did not produce output");
+			throw new RuntimeException("env-init command did not produce output");
 		}
 		String emulatorInitString = processOutcome.getOutput().get(0);
 		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
 	}
 
-	private ProcessOutcome runSystemCommand(String[] command) throws IOException, InterruptedException {
-		Process envInitProcess = new ProcessBuilder(command).start();
+	protected ProcessOutcome runSystemCommand(String[] command) {
+
+		Process envInitProcess = null;
+		try {
+			envInitProcess = new ProcessBuilder(command).start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
 		try (BufferedReader brInput = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()));
 			 BufferedReader brError = new BufferedReader(new InputStreamReader(envInitProcess.getErrorStream()))
@@ -213,12 +219,15 @@ abstract class GcpEmulatorRule extends ExternalResource {
 					brError.lines().collect(Collectors.toList()),
 					envInitProcess.waitFor());
 			if (processOutcome.status != 0) {
-				Assert.fail("Command execution failed: " + String.join(" ", command)
+				throw new RuntimeException("Command execution failed: " + String.join(" ", command)
 						+ "; output: " + processOutcome.getOutput()
 						+ "; error: " + processOutcome.getErrors());
 
 			}
 			return processOutcome;
+		} catch (IOException|InterruptedException e) {
+			// Allow the rule to fail.
+			throw new RuntimeException(e);
 		}
 	}
 
