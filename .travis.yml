@@ -7,8 +7,6 @@ dist: trusty
 branches:
   only:
     - master
-    - 1.0.x
-    - 1.1.x
     - test
 cache:
   directories:
@@ -35,7 +33,7 @@ install:
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -Dspring.profiles.active=spring -P full-checkstyle -B -V
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+      openssl aes-256-cbc -K $encrypted_3c7171117694_key -iv $encrypted_3c7171117694_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
       export INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
           -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true -Dit.kotlin=true -Dit.vision=true -Dit.firestore=true -Dit.bigquery=true -Dit.secretmanager=true
