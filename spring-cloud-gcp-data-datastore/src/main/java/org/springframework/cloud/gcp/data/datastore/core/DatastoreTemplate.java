@@ -399,7 +399,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		Assert.notNull(valueType, "A non-null valueType is required.");
 
 		Entity entity = getDatastoreReadWriter().get(key);
-		return this.datastoreEntityConverter.readAsMap(String.class, ClassTypeInformation.from(valueType), entity, null);
+		return this.datastoreEntityConverter.readAsMap(String.class, ClassTypeInformation.from(valueType), entity);
 	}
 
 	@Override

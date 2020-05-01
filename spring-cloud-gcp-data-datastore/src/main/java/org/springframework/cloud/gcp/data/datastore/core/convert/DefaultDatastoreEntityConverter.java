@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,9 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.Assert;
+
+import static org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType.NOT_EMBEDDED;
 
 /**
  * A class for object to entity and entity to object conversions.
@@ -80,34 +82,46 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	}
 
 	@Override
-	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
-			BaseEntity entity, TypeInformation typeInformation) {
+	public <T, R> Map<T, R> readAsMap(BaseEntity entity, TypeInformation mapTypeInformation) {
+		Assert.notNull(mapTypeInformation, "mapTypeInformation can't be null");
 		if (entity == null) {
 			return null;
 		}
-		Object customMap = null;
-		if (typeInformation != null && !typeInformation.getType().isInterface()) {
+		Map<T, R> result;
+		if (!mapTypeInformation.getType().isInterface()) {
 			try {
-				customMap = ((Constructor<?>) typeInformation.getType().getConstructor()).newInstance();
+				result = (Map<T, R>) ((Constructor<?>) mapTypeInformation.getType().getConstructor()).newInstance();
 			}
-			catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+			catch (Exception e) {
 				throw new DatastoreDataException("Unable to create an instance of a custom map type: "
-						+ typeInformation.getType()
+						+ mapTypeInformation.getType()
 						+ " (make sure the class is public and has a public no-args constructor)", e);
 			}
 		}
+		else {
+			result = new HashMap<>();
+		}
 
-		Map<T, R> result = customMap != null ? (Map<T, R>) customMap : new HashMap<>();
 		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
 				entity, this.conversions);
 		Set<String> fieldNames = entity.getNames();
 		for (String field : fieldNames) {
-			result.put(this.conversions.convertOnRead(field, null, keyType),
+			result.put(this.conversions.convertOnRead(field, NOT_EMBEDDED, mapTypeInformation.getComponentType()),
 					propertyValueProvider.getPropertyValue(field,
-							EmbeddedType.of(componentType),
-							componentType));
+							EmbeddedType.of(mapTypeInformation.getMapValueType()),
+							mapTypeInformation.getMapValueType()));
 		}
 		return result;
+	}
+
+	@Override
+	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
+			BaseEntity entity) {
+		if (entity == null) {
+			return null;
+		}
+		Map<T, R> result = new HashMap<>();
+		return readAsMap(entity, ClassTypeInformation.from(result.getClass()));
 	}
 
 	@Override
@@ -170,7 +184,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	private boolean isDiscriminationFieldMatch(DatastorePersistentEntity entity,
 			EntityPropertyValueProvider propertyValueProvider) {
 		return ((String[]) propertyValueProvider.getPropertyValue(entity.getDiscriminationFieldName(),
-				EmbeddedType.NOT_EMBEDDED,
+				NOT_EMBEDDED,
 				ClassTypeInformation.from(String[].class)))[0].equals(entity.getDiscriminatorValue());
 	}
 

@@ -175,8 +175,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			Class<T> keyType, TypeInformation<R> targetComponentType, TypeInformation componentType) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
-			return this.datastoreEntityConverter.readAsMap(keyType, targetComponentType,
-					(BaseEntity) value, componentType);
+			return this.datastoreEntityConverter.readAsMap((BaseEntity) value, componentType);
 		}
 		throw new DatastoreDataException(
 				"Embedded entity was expected, but " + value.getClass() + " found");
