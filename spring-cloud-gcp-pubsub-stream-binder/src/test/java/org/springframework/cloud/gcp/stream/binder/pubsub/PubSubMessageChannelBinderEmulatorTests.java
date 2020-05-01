@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
+import org.springframework.cloud.gcp.test.PubSubEmulatorRule;
 import org.springframework.cloud.stream.binder.AbstractBinderTests;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
@@ -42,7 +43,7 @@ public class PubSubMessageChannelBinderEmulatorTests extends
 	 * The emulator instance, shared across tests.
 	 */
 	@ClassRule
-	public static PubSubEmulator emulator = new PubSubEmulator();
+	public static PubSubEmulatorRule emulator = new PubSubEmulatorRule();
 
 	@Override
 	protected PubSubTestBinder getBinder() {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.stream.binder.pubsub;
+package org.springframework.cloud.gcp.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,10 +33,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.awaitility.Awaitility;
+import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.rules.ExternalResource;
-
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
@@ -48,16 +48,16 @@ import static org.junit.Assume.assumeTrue;
  *
  * @since 1.1
  */
-public class PubSubEmulator extends ExternalResource {
+abstract class GcpEmulatorRule extends ExternalResource {
 
-	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
-			Paths.get(".config", "gcloud", "emulators", "pubsub"));
+	private final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
+			Paths.get(".config", "gcloud", "emulators", getEmulatorName()));
 
 	private static final String ENV_FILE_NAME = "env.yaml";
 
-	private static final Path EMULATOR_CONFIG_PATH = EMULATOR_CONFIG_DIR.resolve(ENV_FILE_NAME);
+	private final Path EMULATOR_CONFIG_PATH = EMULATOR_CONFIG_DIR.resolve(ENV_FILE_NAME);
 
-	private static final Log LOGGER = LogFactory.getLog(PubSubEmulator.class);
+	private static final Log LOGGER = LogFactory.getLog(GcpEmulatorRule.class);
 
 	// Reference to emulator instance, for cleanup.
 	private Process emulatorProcess;
@@ -65,17 +65,7 @@ public class PubSubEmulator extends ExternalResource {
 	// Hostname for cleanup, should always be localhost.
 	private String emulatorHostPort;
 
-	// Conditional rule execution based on an environmental flag.
-	private boolean enableTests;
-
-	public PubSubEmulator() {
-		if ("true".equals(System.getProperty("it.pubsub-emulator"))) {
-			this.enableTests = true;
-		}
-		else {
-			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.");
-		}
-	}
+	abstract String getGatingPropertyName();
 
 	/**
 	 * Launch an instance of pubsub emulator or skip all tests.
@@ -87,7 +77,8 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws IOException, InterruptedException {
 
-		assumeTrue("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.", this.enableTests);
+		Assume.assumeTrue("Emulator rule disabled. Please enable with -D" + getGatingPropertyName() + ".",
+				"true".equals(System.getProperty(getGatingPropertyName())));
 
 		startEmulator();
 		determineHostPort();
@@ -174,11 +165,11 @@ public class PubSubEmulator extends ExternalResource {
 		}
 
 		try {
-			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
+			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", getEmulatorName(), "start")
 					.start();
 		}
 		catch (IOException ex) {
-			fail("Gcloud not found; leaving host/port uninitialized.");
+			Assert.fail("Gcloud not found; leaving host/port uninitialized.");
 		}
 
 		if (configPresent) {
@@ -186,7 +177,7 @@ public class PubSubEmulator extends ExternalResource {
 			watchService.close();
 		}
 		else {
-			createConfig();
+			waitForConfigCreation();
 		}
 
 	}
@@ -197,7 +188,7 @@ public class PubSubEmulator extends ExternalResource {
 	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() throws IOException, InterruptedException {
-		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
+		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", getEmulatorName(), "env-init").start();
 
 
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))) {
@@ -207,21 +198,19 @@ public class PubSubEmulator extends ExternalResource {
 		}
 	}
 
+	abstract String getEmulatorName();
+
 	/**
 	 * Wait until a PubSub emulator configuration file is present.
 	 * Fail if the file does not appear after 10 seconds.
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private void createConfig() throws InterruptedException {
-		int attempts = 10;
-		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
-			Thread.sleep(1000);
-		}
-		if (attempts < 0) {
-			fail(
-					"Emulator could not be configured due to missing env.yaml. Are PubSub and beta tools installed?");
-		}
+	private void waitForConfigCreation() throws InterruptedException {
+		Awaitility.await("Emulator could not be configured due to missing env.yaml. Is the emulator installed?")
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> Files.exists(EMULATOR_CONFIG_PATH));
 	}
 
 	/**
@@ -232,22 +221,21 @@ public class PubSubEmulator extends ExternalResource {
 	 * to fail the test.
 	 */
 	private void updateConfig(WatchService watchService) throws InterruptedException {
-		int attempts = 10;
-		while (--attempts >= 0) {
-			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
+		Awaitility.await("Configuration file update could not be detected")
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> {
+					WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
 
-			if (key != null) {
-				Optional<Path> configFilePath = key.pollEvents().stream()
-						.map((event) -> (Path) event.context())
-						.filter((path) -> ENV_FILE_NAME.equals(path.toString()))
-						.findAny();
-				if (configFilePath.isPresent()) {
-					return;
-				}
-			}
-		}
-
-		fail("Configuration file update could not be detected");
+					if (key != null) {
+						Optional<Path> configFilePath = key.pollEvents().stream()
+								.map((event) -> (Path) event.context())
+								.filter((path) -> ENV_FILE_NAME.equals(path.toString()))
+								.findAny();
+						return configFilePath.isPresent();
+					}
+					return false;
+				});
 	}
 
 	/**
