@@ -18,11 +18,11 @@ addons:
   sonarcloud:
     organization: "spring-cloud-gcp"
     token:
-      secure: "eTxYYXrExigaf4ELiNf87NjK//bu49tss5k8+l1+kKgyhsfGTP5aOE24ICJ9K7waBK5MV+P520s7oPhhMPjLJDxququDyTxoPV5xO9TAwVSqSSZwYfwRCPsGvlylP9NE/MCc211l6CihFrpJDb5pfJjndG64n3MBG691snTY5HXoWoZ0HarIAJc4KwhovFwqImL2+u5HOXogb+0y/kJsI/6qV+K16rC5Z5tNY3gIR9mrHvJvRgFzeZsZffCxJD1tJjNVsLoFBcTa2blpDlXd66dfCghGUlU30h7zm4WxD5J3R4hhrOvDzXdk4FFt2TPFz3TNbSf/MOEs/AMVSZH1SMH9ZXiBeBS86dGGWv+dFO5cxbP9Cg/lcL5JPupGYh0KSuZ4B2j6nbr65x9owD2+bBhi6qcP1Es01YVEa3WqsQI+/dbvOi6IChBDrrc9J6CL1RVBTzQVKeVlIEDkx7Mw/ivkL6DKKOeFRklz6bbYNAw4Z5gDkPZ3LezYW1gfpbUs5sUAcm/QYLDAFN37GhYMedCqeMbbxyMm9aTWob2qWShOCuytvHbseLP7r3VrvPfoUucDNF6T9oNLdSQ3OpyUl12LD7TgPikOqd3OqoRmb1/p/mCNmf8vX5USAp4L7G9edK4TzjZSwBcbRGZGqLrNvinwtCECP4wHJWPIzV33K90="
+      secure: "rrofLH3LbPAoubHN8RnWmV3USAxEkNPvqOcgVA5tNqZHwjc2qxgUPY+0ql0OkEIE81pUbqWpwE0XRosfGk744cpzXXP8Jeu+aszzfWFWEk97qvM5vSgHMMYd+Xzrc1oJSIXSw4U+eFRjLiOhvsF3wXeagS7KN97yvvRKm/TCHPcn0++9O8t3ykCqsGGGXkupF5GFKsPXwUg25mg/aIHZonylaOg9M5HonSwaB/5uMgXOEai8SwrxzXZDqtxQDHQfAFwAANvcAZ0tdPdfl/adnZq4PCMAd5O3R9qOR1QFGxutrM3UMSLdR8Df1Z1TvMeatKHka9KmQftQVhZ/mQjdLTPUSsgwwV5Mk2+DXpEZCryDK3rMOzHtRkMAty0tCZKCeg5Zx9a/kniv84XjiEnUdiuMxOY2GtYlzQ+kCET2ydhOAS4fhhvHTmcYtuTn+/TSPIsXppygpQ/SGdGzlzjIQWAg+g6ASB7vxqZBTTc1n468EVRnypCBUqbMlMy3v+GrZj0pytH3Yu/q6xIYCz/yyZ5UFNeBWbbPw3cxVX1n8x8PclRp+jN6XUPSTdNuuwgz0sF541i5Iv5gqGcVbq/zjUtuT0LC4NOmucNTTuOJZvdYW+Z6UWi45FL7qjwtZLZcybj0v4X72FTP9HKgJccwJ3I95KA0/d37Z1y4cbMZTik="
 script:
   # run unit tests
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP;
+      ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP-2;
     else
       ./mvnw test -B -P codecov -Dit.pubsub-emulator;
     fi;
