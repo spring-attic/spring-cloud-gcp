@@ -26,10 +26,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.List;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -180,6 +182,11 @@ abstract class GcpEmulatorRule extends ExternalResource {
 			waitForConfigCreation();
 		}
 
+		afterEmulatorStart();
+	}
+
+	protected void afterEmulatorStart(){
+		//does nothing by default
 	}
 
 	/**
@@ -188,13 +195,30 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() throws IOException, InterruptedException {
-		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", getEmulatorName(), "env-init").start();
+		ProcessOutcome processOutcome = runSystemCommand(new String[] { "gcloud", "beta", "emulators", getEmulatorName(), "env-init" });
+		if ( processOutcome.getOutput().size() < 1 ) {
+			Assert.fail("env-init command did not produce output");
+		}
+		String emulatorInitString = processOutcome.getOutput().get(0);
+		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+	}
 
+	private ProcessOutcome runSystemCommand(String[] command) throws IOException, InterruptedException {
+		Process envInitProcess = new ProcessBuilder(command).start();
 
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))) {
-			String emulatorInitString = br.readLine();
-			envInitProcess.waitFor();
-			this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+		try (BufferedReader brInput = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()));
+			 BufferedReader brError = new BufferedReader(new InputStreamReader(envInitProcess.getErrorStream()))
+		) {
+			ProcessOutcome processOutcome = new ProcessOutcome(brInput.lines().collect(Collectors.toList()),
+					brError.lines().collect(Collectors.toList()),
+					envInitProcess.waitFor());
+			if (processOutcome.status != 0) {
+				Assert.fail("Command execution failed: " + String.join(" ", command)
+						+ "; output: " + processOutcome.getOutput()
+						+ "; error: " + processOutcome.getErrors());
+
+			}
+			return processOutcome;
 		}
 	}
 
@@ -249,6 +273,32 @@ abstract class GcpEmulatorRule extends ExternalResource {
 		}
 		catch (IOException ex) {
 			LOGGER.warn("Failed to clean up PID " + pid);
+		}
+	}
+
+	static class ProcessOutcome {
+		private List<String> output;
+
+		private List<String> errors;
+
+		private int status;
+
+		public ProcessOutcome(List<String> output, List<String> errors, int status) {
+			this.output = output;
+			this.errors = errors;
+			this.status = status;
+		}
+
+		public List<String> getOutput() {
+			return output;
+		}
+
+		public List<String> getErrors() {
+			return errors;
+		}
+
+		public int getStatus() {
+			return status;
 		}
 	}
 }
