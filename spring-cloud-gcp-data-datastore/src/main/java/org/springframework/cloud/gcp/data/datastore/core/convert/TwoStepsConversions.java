@@ -138,8 +138,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		switch (embeddedType) {
 		case EMBEDDED_MAP:
 			readConverter = (x, typeInformation) -> convertOnReadSingleEmbeddedMap(x,
-					typeInformation.getTypeArguments().get(0).getType(),
-					typeInformation.getTypeArguments().get(1));
+					typeInformation.getComponentType().getType(),
+					typeInformation.getMapValueType(), targetComponentType);
 			break;
 		case EMBEDDED_ENTITY:
 			readConverter = this::convertOnReadSingleEmbedded;
@@ -172,11 +172,10 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private <T, R> Map<T, R> convertOnReadSingleEmbeddedMap(Object value,
-			Class<T> keyType, TypeInformation<R> targetComponentType) {
+			Class<T> keyType, TypeInformation<R> targetComponentType, TypeInformation componentType) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
-			return this.datastoreEntityConverter.readAsMap(keyType, targetComponentType,
-					(BaseEntity) value);
+			return this.datastoreEntityConverter.readAsMap((BaseEntity) value, componentType);
 		}
 		throw new DatastoreDataException(
 				"Embedded entity was expected, but " + value.getClass() + " found");
@@ -258,7 +257,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			switch (embeddedType) {
 			case EMBEDDED_MAP:
 				writeConverter = (x) -> convertOnWriteSingleEmbeddedMap(x, fieldName,
-						(TypeInformation) typeInformation.getTypeArguments().get(1));
+						(TypeInformation) typeInformation.getMapValueType());
 				break;
 			case EMBEDDED_ENTITY:
 				writeConverter = (x) -> convertOnWriteSingleEmbedded(x, fieldName);

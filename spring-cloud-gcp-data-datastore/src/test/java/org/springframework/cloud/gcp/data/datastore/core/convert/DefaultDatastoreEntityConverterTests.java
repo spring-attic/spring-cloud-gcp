@@ -51,12 +51,14 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
+import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.annotation.Id;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Tests for the entity converter.
@@ -675,10 +677,13 @@ public class DefaultDatastoreEntityConverterTests {
 		enumKeysMap.put(TestDatastoreItem.Color.BLACK, "black");
 		enumKeysMap.put(TestDatastoreItem.Color.WHITE, "white");
 
+		CustomMap customMap = new CustomMap();
+		customMap.put("key1", "val1");
+
 		TestItemWithEmbeddedEntity item = new TestItemWithEmbeddedEntity(123,
 				new EmbeddedEntity("abc"), embeddedEntities, mapSimpleValues,
 				mapListValues, embeddedEntityMapEmbeddedEntity,
-				embeddedEntityMapListOfEmbeddedEntities, enumKeysMap);
+				embeddedEntityMapListOfEmbeddedEntities, enumKeysMap, customMap);
 
 		item.setNestedEmbeddedMaps(nestedEmbeddedMap);
 
@@ -739,7 +744,31 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a")).isEqualTo("valueA");
 		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b")).isEqualTo("valueB");
 
+		assertThat(entity.getEntity("customMap").getString("key1"))
+				.isEqualTo("val1");
+
 		assertThat(read).as("read objects equals the original one").isEqualTo(item);
+	}
+
+	@Test
+	public void PrivateCustomMapExceptionTest() {
+		ServiceConfigurationPrivateCustomMap config =
+				new ServiceConfigurationPrivateCustomMap("a", new PrivateCustomMap());
+		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
+				new DatastoreMappingContext(),
+				new DatastoreServiceObjectToKeyFactory(() -> this.datastore));
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(config, builder);
+		Entity entity = builder.build();
+
+		assertThatThrownBy(() -> {
+			entityConverter.read(ServiceConfigurationPrivateCustomMap.class, entity);
+		}).isInstanceOf(DatastoreDataException.class).hasMessageContaining(
+				"Unable to create an instance of a custom map type: "
+						+ "class org.springframework.cloud.gcp.data.datastore.core.convert."
+						+ "DefaultDatastoreEntityConverterTests$PrivateCustomMap "
+						+ "(make sure the class is public and has a public no-args constructor)");
 	}
 
 	@Test
@@ -831,4 +860,21 @@ public class DefaultDatastoreEntityConverterTests {
 	private static class DiscrimEntityC extends DiscrimEntityY {
 		int intField;
 	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity
+	public class ServiceConfigurationPrivateCustomMap {
+		@Id
+		private String serviceName;
+
+		private PrivateCustomMap customMap;
+
+		public ServiceConfigurationPrivateCustomMap(String serviceName, PrivateCustomMap customMap) {
+			this.serviceName = serviceName;
+			this.customMap = customMap;
+		}
+	}
+
+	private class PrivateCustomMap extends HashMap<String, Object> {
+	}
+
 }
