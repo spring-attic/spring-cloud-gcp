@@ -95,6 +95,6 @@ public MessageHandler outboundChannelAdapter(Storage gcs) {
 }
 ----
 
-==== Samples
+==== Sample
 
 See the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-storage-sample[Spring Integration with Google Cloud Storage Sample Code].
