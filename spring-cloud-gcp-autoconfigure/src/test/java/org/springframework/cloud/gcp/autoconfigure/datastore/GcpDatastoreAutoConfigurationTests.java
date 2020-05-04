@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.auth.Credentials;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
@@ -56,6 +55,9 @@ import static org.mockito.Mockito.mock;
  */
 public class GcpDatastoreAutoConfigurationTests {
 
+	/** Mock datastore for use in configuration. */
+	public static Datastore MOCK_CLIENT = mock(Datastore.class);
+
 	/**
 	 * used to check exception messages and types.
 	 */
@@ -86,7 +88,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		runner.run(context -> {
 			assertThat(getDatastoreBean(context))
-					.isSameAs(TestConfigurationWithDatastoreBean.MOCK_CLIENT);
+					.isSameAs(MOCK_CLIENT);
 		});
 	}
 
@@ -181,7 +183,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 	}
 
@@ -191,11 +193,9 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Configuration
 	static class TestConfigurationWithDatastoreBean {
 
-		public static Datastore MOCK_CLIENT = mock(Datastore.class);
-
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean
@@ -215,11 +215,9 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Configuration
 	static class TestConfigurationWithDatastoreBeanNamespaceProvider {
 
-		public static Datastore MOCK_CLIENT = mock(Datastore.class);
-
 		@Bean
 		public CredentialsProvider credentialsProvider() {
-			return () -> mock(Credentials.class);
+			return () -> NoCredentials.getInstance();
 		}
 
 		@Bean

@@ -50,6 +50,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorFi
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
+import org.springframework.cloud.gcp.data.datastore.entities.ServiceConfiguration;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
@@ -794,6 +796,24 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		Collection<Event> events = this.datastoreTemplate.findAll(Event.class);
 
 		assertThat(events).containsExactlyInAnyOrder(event1, event2);
+	}
+
+	@Test
+	public void mapSubclass() {
+		CustomMap customMap1 = new CustomMap();
+		customMap1.put("key1", "val1");
+		ServiceConfiguration service1 = new ServiceConfiguration("service1", customMap1);
+		CustomMap customMap2 = new CustomMap();
+		customMap2.put("key2", "val2");
+		ServiceConfiguration service2 = new ServiceConfiguration("service2", customMap2);
+
+		this.datastoreTemplate.saveAll(Arrays.asList(service1, service2));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(ServiceConfiguration.class) == 2);
+
+		Collection<ServiceConfiguration> events = this.datastoreTemplate.findAll(ServiceConfiguration.class);
+
+		assertThat(events).containsExactlyInAnyOrder(service1, service2);
 	}
 
 	@Test
