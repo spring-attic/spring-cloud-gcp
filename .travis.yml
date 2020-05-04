@@ -16,9 +16,9 @@ addons:
   sonarcloud:
     organization: "spring-cloud-gcp"
     token:
-      secure: "rrofLH3LbPAoubHN8RnWmV3USAxEkNPvqOcgVA5tNqZHwjc2qxgUPY+0ql0OkEIE81pUbqWpwE0XRosfGk744cpzXXP8Jeu+aszzfWFWEk97qvM5vSgHMMYd+Xzrc1oJSIXSw4U+eFRjLiOhvsF3wXeagS7KN97yvvRKm/TCHPcn0++9O8t3ykCqsGGGXkupF5GFKsPXwUg25mg/aIHZonylaOg9M5HonSwaB/5uMgXOEai8SwrxzXZDqtxQDHQfAFwAANvcAZ0tdPdfl/adnZq4PCMAd5O3R9qOR1QFGxutrM3UMSLdR8Df1Z1TvMeatKHka9KmQftQVhZ/mQjdLTPUSsgwwV5Mk2+DXpEZCryDK3rMOzHtRkMAty0tCZKCeg5Zx9a/kniv84XjiEnUdiuMxOY2GtYlzQ+kCET2ydhOAS4fhhvHTmcYtuTn+/TSPIsXppygpQ/SGdGzlzjIQWAg+g6ASB7vxqZBTTc1n468EVRnypCBUqbMlMy3v+GrZj0pytH3Yu/q6xIYCz/yyZ5UFNeBWbbPw3cxVX1n8x8PclRp+jN6XUPSTdNuuwgz0sF541i5Iv5gqGcVbq/zjUtuT0LC4NOmucNTTuOJZvdYW+Z6UWi45FL7qjwtZLZcybj0v4X72FTP9HKgJccwJ3I95KA0/d37Z1y4cbMZTik="
+      secure: "felzNXKZep7xs8SVxn+bTEOwnk7Wr52AOP+N8IQqlIGpNryw9RfvWN95o9xP0Z8QAuKxaG3OB90q5/ePb0Ml65ot5o/Dw4Mj4CsUOSpjm/438rLTKW2PcMhD1JWXtKPO76vahtqw/YGVKPpjV/95RXPGAAa4JGU1XvoLhFOipq8EiAdJVWiMHYS3kRLQuH7vZmGQVArXgrenSx70c8GQGTQhMvMYEnkQmnYdNovwA9Rpw51CT/Bk1C5Bhs4ipUCesoUagG8dZs+chLU1+1LPiuYryIHRdFeMm4kYsTLpSLfRZwNMI3ReByxSkDVP8xKH9FHmi+ET/0pQ2Y4e4PydONuDHlzHy/eFfO9zwoHlfa5nLZwpuOFre/vZ21ZOUZgeWrJiGUVR7sFlKIfPTgjUkzAT0HLZuf9DcB0vI9RZe+uFEMJZfuIsMIRGbv3aGuXkBpRR32MYyKgWMTNF2qGiRlUZ1ZiU7Bnq3OpnlzxTZrYtEZbO0G8hd+NDKcqQsQBpOQf6PVCBgLGkbl579dH0teDnL3XmYGK4/PIav1coXWtoC2eVc30ZbErj8P7sxKXBTziC/A4Se1W08cMiqKE9VGAIWs74yeJPzyAl8VRRGu5CapVWkVXr0pAhJC33EcaYEA5g2P6MvaCbSspqSidDMjmsSeVYXqjG+jGMpDfCweM="
 script:
-  # run unit tests
+  # run local tests
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
       ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP-2;
     else
@@ -33,7 +33,7 @@ install:
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -Dspring.profiles.active=spring -P full-checkstyle -B -V
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      openssl aes-256-cbc -K $encrypted_3c7171117694_key -iv $encrypted_3c7171117694_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+      openssl aes-256-cbc -K $encrypted_ad13726c9b2f_key -iv $encrypted_ad13726c9b2f_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
       export INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
           -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true -Dit.kotlin=true -Dit.vision=true -Dit.firestore=true -Dit.bigquery=true -Dit.secretmanager=true
