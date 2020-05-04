@@ -10,7 +10,7 @@
     </parent>
 
 
-    <artifactId>spring-cloud-gcp-test-support</artifactId>
+    <artifactId>spring-cloud-gcp-test</artifactId>
     <name>Spring Cloud GCP Test Support</name>
     <description>Provides tools for testing Spring Cloud GCP projects</description>
     <dependencies>

@@ -193,7 +193,7 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-test-support</artifactId>
+				<artifactId>spring-cloud-gcp-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

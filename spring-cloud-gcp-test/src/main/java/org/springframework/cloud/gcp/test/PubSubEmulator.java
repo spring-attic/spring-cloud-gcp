@@ -187,7 +187,6 @@ public class PubSubEmulator extends ExternalResource {
 		else {
 			createConfig();
 		}
-
 	}
 
 	/**
@@ -213,7 +212,7 @@ public class PubSubEmulator extends ExternalResource {
 	 * to fail the test.
 	 */
 	private void createConfig() throws InterruptedException {
-		int attempts = 10;
+		int attempts = 100;
 		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
 			Thread.sleep(1000);
 		}
@@ -233,7 +232,7 @@ public class PubSubEmulator extends ExternalResource {
 	private void updateConfig(WatchService watchService) throws InterruptedException {
 		int attempts = 10;
 		while (--attempts >= 0) {
-			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
+			WatchKey key = watchService.poll(1, TimeUnit.SECONDS);
 
 			if (key != null) {
 				Optional<Path> configFilePath = key.pollEvents().stream()
