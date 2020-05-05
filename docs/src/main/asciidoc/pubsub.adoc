@@ -28,7 +28,11 @@ This starter is also available from https://start.spring.io[Spring Initializr] t
 [#pubsub-configuration]
 === Configuration
 
-The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:
+The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options.
+
+==== Spring Cloud GCP Pub/Sub API Configuration
+
+This section describes options for enabling the integration, specifying the GCP project and credentials, and setting whether the APIs should connect to an emulator for local testing.
 
 |===
 | Name | Description | Required | Default value
@@ -46,57 +50,71 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
-| `spring.cloud.gcp.pubsub.keepAliveIntervalMinutes` | Determines frequency of keepalive gRPC ping | No | `5 minutes`
+|===
+
+==== Publisher/Subscriber Configuration
+
+This section describes configuration options to customize the behavior of the application's Pub/Sub publishers and subscribers.
+
+|===
+| Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | 1
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
 | `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count`|
-Maximum number of outstanding elements to keep in memory before enforcing flow control.|No | unlimited
+Maximum number of outstanding elements to keep in memory before enforcing flow control. | No | unlimited
 | `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes`|
-Maximum number of outstanding bytes to keep in memory before enforcing flow control.|No | unlimited
+Maximum number of outstanding bytes to keep in memory before enforcing flow control. | No | unlimited
 | `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior`|
-The behavior when the specified limits are exceeded.|No | Block
+The behavior when the specified limits are exceeded. | No | Block
 | `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|
-The element count threshold to use for batching.|No | unset (threshold does not apply)
+The element count threshold to use for batching. | No | unset (threshold does not apply)
 | `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
-The request byte threshold to use for batching.|No | unset (threshold does not apply)
+The request byte threshold to use for batching. | No | unset (threshold does not apply)
 | `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
 The delay threshold to use for batching.
-After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
+After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent. | No | unset (threshold does not apply)
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
-Enables batching.|No | false
+Enables batching. | No | false
 |===
 
-The following properties are available to control retry in case of fixable failures during the gRPC call to Cloud Pub/Sub server.
+==== GRPC Connection Settings
+
+The Pub/Sub API uses the https://cloud.google.com/pubsub/docs/reference/service_apis_overview#grpc_api[GRPC] protocol to send API requests to the Pub/Sub service.
+This section describes configuration options for customizing the GRPC behavior.
+
+NOTE: The properties that refer to `retry` control the RPC retries for transient failures during the gRPC call to Cloud Pub/Sub server.
 They do *not* control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.
 
 |===
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.pubsub.keepAliveIntervalMinutes` | Determines frequency of keepalive gRPC ping | No | `5 minutes`
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
 TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
-The higher the total timeout, the more retries can be attempted. |No | 0
+The higher the total timeout, the more retries can be attempted. | No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second`|
 InitialRetryDelay controls the delay before the first retry.
-Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.|No | 0
+Subsequent retries will use this value adjusted according to the RetryDelayMultiplier. | No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.retry-delay-multiplier`|
 RetryDelayMultiplier controls the change in retry delay.
-The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.|No | 1
+The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call. | No | 1
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-retry-delay-seconds`|
 MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
-can't increase the retry delay higher than this amount.|No | 0
+can't increase the retry delay higher than this amount. | No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-attempts`|
 MaxAttempts defines the maximum number of attempts to perform.
-If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.|No | 0
-| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered`|Jitter determines if the delay time should be randomized.|No | true
+If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout. | No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered`|Jitter determines if the delay time should be randomized. | No | true
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-rpc-timeout-seconds`|
 InitialRpcTimeout controls the timeout for the initial RPC.
-Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.|No |0
+Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier. | No |0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.rpc-timeout-multiplier`|
 RpcTimeoutMultiplier controls the change in RPC timeout.
-The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call. |No | 1
+The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call. | No | 1
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds`|
 MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
-can't increase the RPC timeout higher than this amount.|No | 0
+can't increase the RPC timeout higher than this amount. | No | 0
 |===
 
 === Spring Boot Actuator Support
