@@ -16,25 +16,13 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
-import java.util.Arrays;
-import java.util.List;
-
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.KeySet;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
-import org.springframework.cloud.gcp.test.PubSubEmulatorRule;
-import org.springframework.cloud.gcp.test.SpannerEmulatorRule;
+import org.springframework.cloud.gcp.test.SpannerEmulatorSpringConfiguration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,13 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {SpannerEmulatorSpringConfiguration.class})
 public class SpannerTemplateEmulatorTests extends AbstractSpannerIntegrationTest {
-
-	/**
-	 * The emulator instance, shared across tests.
-	 */
-	@ClassRule
-	public static SpannerEmulatorRule emulator = new SpannerEmulatorRule();
 
 	@Test
 	public void insertSingleRow() {
@@ -61,4 +44,5 @@ public class SpannerTemplateEmulatorTests extends AbstractSpannerIntegrationTest
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 	}
+
 }
