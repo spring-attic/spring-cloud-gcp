@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.test;
 
+import java.util.stream.Collectors;
+import org.junit.Assume;
+
 /**
  * TODO: send users to https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator
  */
@@ -29,16 +32,29 @@ public class SpannerEmulatorRule extends GcpEmulatorRule {
 	}
 
 	@Override
+	protected void beforeEmulatorStart() {
+		String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+		Assume.assumeFalse(
+				"Run this command prior to running an emulator test:\n$(gcloud beta emulators spanner env-init)",
+				emulatorHost == null || emulatorHost.isEmpty());
+	}
+
+	@Override
 	protected void afterEmulatorStart() {
 		ProcessOutcome switchToEmulator = runSystemCommand(new String[] {
 				"gcloud", "config", "configurations", "activate", "emulator"});
 
 		ProcessOutcome processOutcome = runSystemCommand(new String[] {
-				"gcloud", "spanner", "instances", "create", "integration-instance", "--config=emulator-config", "--description=\"Test Instance\"", "--nodes=1" });
+				"gcloud", "spanner", "instances", "create", "integration-instance", "--config=emulator-config", "--description=\"Test Instance\"", "--nodes=1" },
+				false);
 
+		if (processOutcome.getStatus() != 0) {
+			// don't set breakpoint here
+			this.killByCommand("cloud_spanner_emulator/emulator_main");
+			throw new RuntimeException("Creating instance failed: "
+					+ String.join("\n", processOutcome.getErrors()));
+		}
 
-		// TODO: check for System.getenv("SPANNER_EMULATOR_HOST"); -- if it does not exist, bail on the emulator rule
-		// because otherwise users would connect to real spanner
 
 		// TODO: don't forget to kill the 2 spanner processes
 	}

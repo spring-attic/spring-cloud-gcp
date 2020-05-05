@@ -82,7 +82,9 @@ abstract class GcpEmulatorRule extends ExternalResource {
 		Assume.assumeTrue("Emulator rule disabled. Please enable with -D" + getGatingPropertyName() + ".",
 				"true".equals(System.getProperty(getGatingPropertyName())));
 
+		beforeEmulatorStart();
 		startEmulator();
+		afterEmulatorStart();
 		determineHostPort();
 	}
 
@@ -97,6 +99,11 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	@Override
 	protected void after() {
 		findAndDestroyEmulator();
+		afterEmulatorDestroyed();
+	}
+
+	protected void afterEmulatorDestroyed() {
+		// does nothing by default.
 	}
 
 	private void findAndDestroyEmulator() {
@@ -107,44 +114,31 @@ abstract class GcpEmulatorRule extends ExternalResource {
 		else {
 			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
 		}
+	}
 
-		// find destory emulator process spawned by gcloud
-		if (this.emulatorHostPort == null) {
-			LOGGER.warn("Host/port null after the test.");
+	protected void killByCommand(String command) {
+		AtomicBoolean foundProcess = new AtomicBoolean(false);
+
+		try {
+			Process psProcess = new ProcessBuilder("ps", "-vx").start();
+
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
+				br.lines()
+						.filter((psLine) -> psLine.contains(command))
+						.map((psLine) -> new StringTokenizer(psLine).nextToken())
+						.forEach((p) -> {
+							LOGGER.info("Found " + command + " process to kill: " + p);
+							this.killProcess(p);
+							foundProcess.set(true);
+						});
+			}
+
+			if (!foundProcess.get()) {
+				LOGGER.warn("Did not find the emualtor process to kill based on: " + command);
+			}
 		}
-		else {
-			int portSeparatorIndex = this.emulatorHostPort.lastIndexOf(":");
-			if (portSeparatorIndex < 0) {
-				LOGGER.warn("Malformed host: " + this.emulatorHostPort);
-				return;
-			}
-
-			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
-			String emulatorPort = this.emulatorHostPort.substring(portSeparatorIndex + 1);
-
-			AtomicBoolean foundEmulatorProcess = new AtomicBoolean(false);
-			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
-			try {
-				Process psProcess = new ProcessBuilder("ps", "-vx").start();
-
-				try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
-					br.lines()
-							.filter((psLine) -> psLine.contains(hostPortParams))
-							.map((psLine) -> new StringTokenizer(psLine).nextToken())
-							.forEach((p) -> {
-								LOGGER.info("Found emulator process to kill: " + p);
-								this.killProcess(p);
-								foundEmulatorProcess.set(true);
-							});
-				}
-
-				if (!foundEmulatorProcess.get()) {
-					LOGGER.warn("Did not find the emualtor process to kill based on: " + hostPortParams);
-				}
-			}
-			catch (IOException ex) {
-				LOGGER.warn("Failed to cleanup: ", ex);
-			}
+		catch (IOException ex) {
+			LOGGER.warn("Failed to cleanup: ", ex);
 		}
 	}
 
@@ -182,7 +176,11 @@ abstract class GcpEmulatorRule extends ExternalResource {
 			waitForConfigCreation();
 		}
 
-		afterEmulatorStart();
+
+	}
+
+	protected void beforeEmulatorStart(){
+		//does nothing by default
 	}
 
 	protected void afterEmulatorStart(){
@@ -204,6 +202,10 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	}
 
 	protected ProcessOutcome runSystemCommand(String[] command) {
+		return runSystemCommand(command, true);
+	}
+
+	protected ProcessOutcome runSystemCommand(String[] command, boolean failOnError) {
 
 		Process envInitProcess = null;
 		try {
@@ -215,10 +217,12 @@ abstract class GcpEmulatorRule extends ExternalResource {
 		try (BufferedReader brInput = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()));
 			 BufferedReader brError = new BufferedReader(new InputStreamReader(envInitProcess.getErrorStream()))
 		) {
-			ProcessOutcome processOutcome = new ProcessOutcome(brInput.lines().collect(Collectors.toList()),
+			ProcessOutcome processOutcome = new ProcessOutcome(command,
+					brInput.lines().collect(Collectors.toList()),
 					brError.lines().collect(Collectors.toList()),
 					envInitProcess.waitFor());
-			if (processOutcome.status != 0) {
+
+			if (failOnError && processOutcome.status != 0) {
 				throw new RuntimeException("Command execution failed: " + String.join(" ", command)
 						+ "; output: " + processOutcome.getOutput()
 						+ "; error: " + processOutcome.getErrors());
@@ -276,9 +280,9 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
 	 * @param pid presumably a valid PID. No checking done to validate.
 	 */
-	private void killProcess(String pid) {
+	protected void killProcess(String pid) {
 		try {
-			new ProcessBuilder("kill", pid).start();
+			new ProcessBuilder("kill", "-9", pid).start();
 		}
 		catch (IOException ex) {
 			LOGGER.warn("Failed to clean up PID " + pid);
@@ -286,13 +290,16 @@ abstract class GcpEmulatorRule extends ExternalResource {
 	}
 
 	static class ProcessOutcome {
+		private String[] command;
+
 		private List<String> output;
 
 		private List<String> errors;
 
 		private int status;
 
-		public ProcessOutcome(List<String> output, List<String> errors, int status) {
+		public ProcessOutcome(String[] command, List<String> output, List<String> errors, int status) {
+			this.command = command;
 			this.output = output;
 			this.errors = errors;
 			this.status = status;
@@ -308,6 +315,10 @@ abstract class GcpEmulatorRule extends ExternalResource {
 
 		public int getStatus() {
 			return status;
+		}
+
+		public String getCommandString() {
+			return String.join(" ", command);
 		}
 	}
 }
