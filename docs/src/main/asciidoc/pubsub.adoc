@@ -84,7 +84,7 @@ Enables batching. | No | false
 The Pub/Sub API uses the https://cloud.google.com/pubsub/docs/reference/service_apis_overview#grpc_api[GRPC] protocol to send API requests to the Pub/Sub service.
 This section describes configuration options for customizing the GRPC behavior.
 
-NOTE: The properties that refer to `retry` are available to control retry in case of fixable failures during the gRPC call to Cloud Pub/Sub server.
+NOTE: The properties that refer to `retry` control the RPC retries for transient failures during the gRPC call to Cloud Pub/Sub server.
 They do *not* control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.
 
 |===
