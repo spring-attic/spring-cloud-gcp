@@ -309,10 +309,10 @@ The first patterns have precedence over the following ones.
 In the previous example, the `"*"` pattern means every header is mapped.
 However, because it comes last in the list, https://docs.spring.io/spring-integration/api/org/springframework/integration/util/PatternMatchUtils.html#smartMatch-java.lang.String-java.lang.String...-[the previous patterns take precedence].
 
-=== Sample
+==== Samples
 
 Available examples:
 
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[sender and receiver sample application]
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[JSON payloads sample application]
-- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[codelab]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[Sending/Receiving Messages with Channel Adapters]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub Channel Adapters with JSON payloads]
+- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[Spring Integration and Pub/Sub Codelab]
