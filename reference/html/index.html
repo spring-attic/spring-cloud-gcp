@@ -1303,7 +1303,12 @@ For example, in Maven:</p>
 <div class="sect2">
 <h3 id="pubsub-configuration"><a class="anchor" href="#pubsub-configuration"></a><a class="link" href="#pubsub-configuration">6.1. Configuration</a></h3>
 <div class="paragraph">
-<p>The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:</p>
+<p>The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options.</p>
+</div>
+<div class="sect3">
+<h4 id="spring-cloud-gcp-pubsub-api-configuration"><a class="anchor" href="#spring-cloud-gcp-pubsub-api-configuration"></a><a class="link" href="#spring-cloud-gcp-pubsub-api-configuration">6.1.1. Spring Cloud GCP Pub/Sub API Configuration</a></h4>
+<div class="paragraph">
+<p>This section describes options for enabling the integration, specifying the GCP project and credentials, and setting whether the APIs should connect to an emulator for local testing.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1361,11 +1366,27 @@ Pub/Sub credentials</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://www.googleapis.com/auth/pubsub" class="bare">www.googleapis.com/auth/pubsub</a></p></td>
 </tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="publishersubscriber-configuration"><a class="anchor" href="#publishersubscriber-configuration"></a><a class="link" href="#publishersubscriber-configuration">6.1.2. Publisher/Subscriber Configuration</a></h4>
+<div class="paragraph">
+<p>This section describes configuration options to customize the behavior of the application&#8217;s Pub/Sub publishers and subscribers.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.keepAliveIntervalMinutes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Determines frequency of keepalive gRPC ping</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5 minutes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.subscriber.parallel-pull-count</code></p></td>
@@ -1436,9 +1457,25 @@ After this amount of time has elapsed (counting from the first element added), t
 </tr>
 </tbody>
 </table>
+</div>
+<div class="sect3">
+<h4 id="grpc-connection-settings"><a class="anchor" href="#grpc-connection-settings"></a><a class="link" href="#grpc-connection-settings">6.1.3. GRPC Connection Settings</a></h4>
 <div class="paragraph">
-<p>The following properties are available to control retry in case of fixable failures during the gRPC call to Cloud Pub/Sub server.
-They do <strong>not</strong> control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.</p>
+<p>The Pub/Sub API uses the <a href="https://cloud.google.com/pubsub/docs/reference/service_apis_overview#grpc_api">GRPC</a> protocol to send API requests to the Pub/Sub service.
+This section describes configuration options for customizing the GRPC behavior.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The properties that refer to <code>retry</code> control the RPC retries for transient failures during the gRPC call to Cloud Pub/Sub server.
+They do <strong>not</strong> control message redelivery; only message acknowledgement deadline can be used to extend or shorten the amount of time until Pub/Sub attempts redelivery.
+</td>
+</tr>
+</table>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1448,6 +1485,18 @@ They do <strong>not</strong> control message redelivery; only message acknowledg
 <col style="width: 25%;">
 </colgroup>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Required</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default value</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.keepAliveIntervalMinutes</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Determines frequency of keepalive gRPC ping</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>5 minutes</code></p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
@@ -1512,6 +1561,7 @@ can&#8217;t increase the RPC timeout higher than this amount.</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="spring-boot-actuator-support"><a class="anchor" href="#spring-boot-actuator-support"></a><a class="link" href="#spring-boot-actuator-support">6.2. Spring Boot Actuator Support</a></h3>
