@@ -53,6 +53,5 @@ before_install:
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
-TODO: add spanner emulator and configuration profile
   - gcloud config set project spring-cloud-gcp-ci
 
