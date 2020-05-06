@@ -20,7 +20,7 @@ import org.junit.Assume;
 import org.junit.rules.ExternalResource;
 
 /**
- * TODO: send users to https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator
+ * TODO: send users to https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator.
  */
 public class SpannerEmulatorRule extends ExternalResource {
 

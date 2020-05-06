@@ -20,7 +20,7 @@ import org.junit.rules.ExternalResource;
 
 public class PubSubEmulatorRule extends ExternalResource {
 
-  private PubSubEmulatorHelper emulatorHelper = new PubSubEmulatorHelper();
+	private PubSubEmulatorHelper emulatorHelper = new PubSubEmulatorHelper();
 
 	@Override
 	protected void before() throws Throwable {
