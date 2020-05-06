@@ -108,7 +108,6 @@ abstract class AbstractEmulatorHelper {
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
 				br.lines()
 						.filter((psLine) -> psLine.contains(command))
-						.peek(line -> System.out.println("found line after filter: " + line))
 						.map((psLine) -> new StringTokenizer(psLine).nextToken())
 						.forEach((p) -> {
 							LOGGER.info("Found " + command + " process to kill: " + p);
@@ -208,6 +207,9 @@ abstract class AbstractEmulatorHelper {
 					envInitProcess.waitFor());
 
 			if (failOnError && processOutcome.status != 0) {
+				// clean up anything that got started up first
+				this.shutdownEmulator();
+
 				throw new RuntimeException("Command execution failed: " + String.join(" ", command)
 						+ "; output: " + processOutcome.getOutput()
 						+ "; error: " + processOutcome.getErrors());

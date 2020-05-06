@@ -16,7 +16,19 @@
 
 package org.springframework.cloud.gcp.test;
 
+import org.junit.Assume;
+
 public class SpannerEmulatorHelper extends AbstractEmulatorHelper {
+	private boolean checkEnvironmentFlag = true;
+
+	public SpannerEmulatorHelper() {
+		// keep default value of checkEnvironmentFlag=true.
+	}
+
+	public SpannerEmulatorHelper(boolean checkEnvironmentFlag) {
+			this.checkEnvironmentFlag = checkEnvironmentFlag;
+	}
+
 	String getGatingPropertyName() {
 		return "it.spanner-emulator";
 	}
@@ -27,11 +39,12 @@ public class SpannerEmulatorHelper extends AbstractEmulatorHelper {
 
 	@Override
 	protected void beforeEmulatorStart() {
-		// String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-		// Assume.assumeFalse(
-		// "Run this command prior to running an emulator test and set SPANNER_EMULATOR_HOST
-		// environment variable:\ngcloud beta emulators spanner env-init",
-		// emulatorHost == null || emulatorHost.isEmpty());
+		if (this.checkEnvironmentFlag) {
+			String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+			Assume.assumeFalse(
+					"Set SPANNER_EMULATOR_HOST environment variable prior to running emulator tests; copy output of this command and run it:\ngcloud beta emulators spanner env-init",
+					emulatorHost == null || emulatorHost.isEmpty());
+		}
 	}
 
 	@Override
@@ -40,7 +53,7 @@ public class SpannerEmulatorHelper extends AbstractEmulatorHelper {
 				"gcloud", "config", "configurations", "activate", "emulator" });
 
 		ProcessOutcome processOutcome = runSystemCommand(new String[] {
-				"gcloud", "spanner", "instances", "create", "integration-instance", "--config=emulator-config",
+				"gcloud", "spanner", "instances", "create", "integration-instance", "--config=emulator",
 				"--description=\"Test Instance\"", "--nodes=1" },
 				false);
 
@@ -50,18 +63,18 @@ public class SpannerEmulatorHelper extends AbstractEmulatorHelper {
 			throw new RuntimeException("Creating instance failed: "
 					+ String.join("\n", processOutcome.getErrors()));
 		}
-
-		// TODO: don't forget to kill the 2 spanner processes
 	}
 
 	@Override
 	protected void afterEmulatorDestroyed() {
 		cleanupSpannerEmulator();
+		runSystemCommand(new String[] {
+				"gcloud", "config", "configurations", "activate", "default" });
 	}
 
 	private void cleanupSpannerEmulator() {
 		this.killByCommand("cloud_spanner_emulator/emulator_main");
-		// this.killByCommand("cloud_spanner_emulator/emulator_gateway");
+		this.killByCommand("cloud_spanner_emulator/gateway_main");
 	}
 
 }

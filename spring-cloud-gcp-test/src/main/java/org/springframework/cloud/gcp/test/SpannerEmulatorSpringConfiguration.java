@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.test;
 
+import com.google.cloud.ServiceOptions;
 import java.io.IOException;
 
 import com.google.cloud.NoCredentials;
@@ -32,19 +33,23 @@ import org.springframework.core.annotation.Order;
 @Order(-1000)
 public class SpannerEmulatorSpringConfiguration {
 
-	private SpannerEmulatorHelper emulatorHelper = new SpannerEmulatorHelper();
+	private SpannerEmulatorHelper emulatorHelper = new SpannerEmulatorHelper(false);
 
 	@Bean
-	public SpannerOptions spannerOptions() {
+	public SpannerOptions spannerOptions() throws IOException, InterruptedException {
+		// starting the emulator will change the default project ID to that of the emulator config.
+		emulatorHelper.startEmulator();
 		return SpannerOptions.newBuilder()
+				.setProjectId(ServiceOptions.getDefaultProjectId())
 				.setCredentials(NoCredentials.getInstance())
 				.setEmulatorHost("localhost:9010")
 				.build();
 	}
 
+	// the real destroy method would attempt to connect the already-shutdown emulator instance,
+	// causing tests to fail.
 	@Bean(destroyMethod = "")
-	public Spanner spanner(SpannerOptions spannerOptions) throws IOException, InterruptedException {
-		emulatorHelper.startEmulator();
+	public Spanner spanner(SpannerOptions spannerOptions) {
 		return spannerOptions.getService();
 	}
 
