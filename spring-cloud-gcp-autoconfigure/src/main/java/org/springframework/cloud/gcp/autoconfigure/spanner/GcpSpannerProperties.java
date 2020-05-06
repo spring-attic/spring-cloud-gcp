@@ -26,6 +26,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * Settings for Spring Data Cloud Spanner.
  * @author Chengyuan Zhao
  * @author Ray Tsang
+ * @author Eddú Meléndez
  */
 @ConfigurationProperties("spring.cloud.gcp.spanner")
 public class GcpSpannerProperties implements CredentialsSupplier {
@@ -69,6 +70,8 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	// When {@code true}, if all sessions are in use, fail the request by throwing an exception.
 	// Otherwise, by default, block until a session becomes available.
 	private boolean failIfPoolExhausted = false;
+
+	private String emulatorHost;
 
 	public Credentials getCredentials() {
 		return this.credentials;
@@ -170,5 +173,13 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	public void setFailIfPoolExhausted(boolean failIfPoolExhausted) {
 		this.failIfPoolExhausted = failIfPoolExhausted;
+	}
+
+	public String getEmulatorHost() {
+		return this.emulatorHost;
+	}
+
+	public void setEmulatorHost(String emulatorHost) {
+		this.emulatorHost = emulatorHost;
 	}
 }
