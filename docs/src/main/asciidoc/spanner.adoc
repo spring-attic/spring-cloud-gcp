@@ -88,6 +88,8 @@ The schema for the tables will be "ON DELETE NO ACTION" if `false`. | No | `true
 | `spring.cloud.gcp.spanner.writeSessionsFraction` | Fraction of sessions to be kept prepared for write transactions | No | 0.2 - Determined by Cloud Spanner client library
 | `spring.cloud.gcp.spanner.keepAliveIntervalMinutes` | How long to keep idle sessions alive | No | 30 - Determined by Cloud Spanner client library
 | `spring.cloud.gcp.spanner.failIfPoolExhausted` |  If all sessions are in use, fail the request by throwing an exception. Otherwise, by default, block until a session becomes available. | No | `false`
+| `spring.cloud.gcp.spanner.emulator.enabled` |  Enables the usage of an emulator. If this is set to true, then you should set the `spring.cloud.gcp.spanner.emulator-host` to the host:port of your locally running emulator instance. | No | `false`
+| `spring.cloud.gcp.spanner.emulator-host` |  The host and port of the Spanner emulator; can be overridden to specify connecting to an already-running https://cloud.google.com/spanner/docs/emulator#installing_and_running_the_emulator[Spanner emulator] instance. | No | `localhost:9010`
 |===
 
 ==== Repository settings
@@ -1435,10 +1437,11 @@ This command can be used to create Cloud Spanner instances:
 $ gcloud spanner instances create <instance-name> --config=emulator-config --description="<description>" --nodes=1
 ----
 
-Remember that you need to set the `SPANNER_EMULATOR_HOST` environment variable to use the emulator:
+Once the Spanner emulator is running, ensure that the following properties are set in your `application.properties` of your Spring application:
 
 ----
-$ export SPANNER_EMULATOR_HOST=localhost:9010
+spring.cloud.gcp.spanner.emulator.enabled=true
+spring.cloud.gcp.spanner.emulator-host=${EMULATOR_HOSTPORT}
 ----
 
 === Sample

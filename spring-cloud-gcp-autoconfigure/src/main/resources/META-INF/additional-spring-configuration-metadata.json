@@ -55,6 +55,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.spanner.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables auto-configuration to use the Spanner emulator.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.cloud.gcp.sql.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud SQL support components.",
