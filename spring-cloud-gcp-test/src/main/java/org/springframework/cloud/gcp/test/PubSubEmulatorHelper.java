@@ -30,11 +30,18 @@ public class PubSubEmulatorHelper extends AbstractEmulatorHelper {
 		return "pubsub";
 	}
 
+	/**
+	 * Shut down the emulator process.
+	 * java process is identified and shut down through shell commands. There
+	 * should normally be only one process with that host/port combination, but if there are
+	 * more, they will be cleaned up as well. Any failure is logged and ignored since it's not
+	 * critical to the tests' operation.
+	 */
 	@Override
 	protected void afterEmulatorDestroyed() {
 		String hostPort = getEmulatorHostPort();
 
-		// find destory emulator process spawned by gcloud
+		// find and destory emulator process spawned by gcloud
 		if (hostPort == null) {
 			LOGGER.warn("Host/port null after the test.");
 		}

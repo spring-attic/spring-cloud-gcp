@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.awaitility.Awaitility;
 
 abstract class AbstractEmulatorHelper {
-
+	//Path to the directory that should contain env file
 	private final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
 			Paths.get(".config", "gcloud", "emulators", getEmulatorName()));
 
@@ -56,38 +56,19 @@ abstract class AbstractEmulatorHelper {
 
 	abstract String getGatingPropertyName();
 
-	/**
-	 * Launch an instance of pubsub emulator or skip all tests. If it.pubsub-emulator
-	 * environmental property is off, all tests will be skipped through the failed assumption.
-	 * If the property is on, any setup failure will trigger test failure. Failures during
-	 * teardown are merely logged.
-	 * @throws IOException if config file creation or directory watcher on existing file
-	 *     fails.
-	 * @throws InterruptedException if process is stopped while waiting to retry.
-	 */
 	public void startEmulator() throws IOException, InterruptedException {
-
 		beforeEmulatorStart();
 		doStartEmulator();
 		afterEmulatorStart();
 		determineHostPort();
 	}
 
-	/**
-	 * Shut down the two emulator processes. gcloud command is shut down through the direct
-	 * process handle. java process is identified and shut down through shell commands. There
-	 * should normally be only one process with that host/port combination, but if there are
-	 * more, they will be cleaned up as well. Any failure is logged and ignored since it's not
-	 * critical to the tests' operation.
-	 */
 	public void shutdownEmulator() {
 		findAndDestroyEmulator();
 		afterEmulatorDestroyed();
 	}
 
-	protected void afterEmulatorDestroyed() {
-		// does nothing by default.
-	}
+	protected abstract void afterEmulatorDestroyed();
 
 	private void findAndDestroyEmulator() {
 		// destroy gcloud process
@@ -95,7 +76,7 @@ abstract class AbstractEmulatorHelper {
 			this.emulatorProcess.destroy();
 		}
 		else {
-			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
+			LOGGER.warn("Emulator process is null after tests; nothing to terminate.");
 		}
 	}
 
@@ -134,7 +115,7 @@ abstract class AbstractEmulatorHelper {
 		return this.emulatorHostPort;
 	}
 
-	private void doStartEmulator() throws IOException, InterruptedException {
+	private void doStartEmulator() throws IOException {
 		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
 		WatchService watchService = null;
 
@@ -172,8 +153,6 @@ abstract class AbstractEmulatorHelper {
 	/**
 	 * Extract host/port from output of env-init command: "export
 	 * PUBSUB_EMULATOR_HOST=localhost:8085".
-	 * @throws IOException for IO errors
-	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() {
 		ProcessOutcome processOutcome = runSystemCommand(
@@ -225,12 +204,10 @@ abstract class AbstractEmulatorHelper {
 	abstract String getEmulatorName();
 
 	/**
-	 * Wait until a PubSub emulator configuration file is present. Fail if the file does not
+	 * Wait until the emulator configuration file is present. Fail if the file does not
 	 * appear after 10 seconds.
-	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
-	 *     to fail the test.
 	 */
-	private void waitForConfigCreation() throws InterruptedException {
+	private void waitForConfigCreation() {
 		Awaitility.await("Emulator could not be configured due to missing env.yaml. Is the emulator installed?")
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
@@ -238,13 +215,11 @@ abstract class AbstractEmulatorHelper {
 	}
 
 	/**
-	 * Wait until a PubSub emulator configuration file is updated. Fail if the file does not
-	 * update after 1 second.
+	 * Wait until the emulator configuration file is updated. Fail if the file does not
+	 * update after 10 second.
 	 * @param watchService the watch-service to poll
-	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
-	 *     to fail the test.
 	 */
-	private void updateConfig(WatchService watchService) throws InterruptedException {
+	private void updateConfig(WatchService watchService) {
 		Awaitility.await("Configuration file update could not be detected")
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)

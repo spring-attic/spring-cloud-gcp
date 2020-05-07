@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.test;
 
-import com.google.cloud.ServiceOptions;
 import java.io.IOException;
 
 import com.google.cloud.NoCredentials;
+import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 

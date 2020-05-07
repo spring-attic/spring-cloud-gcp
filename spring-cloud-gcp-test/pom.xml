@@ -25,7 +25,6 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-jcl</artifactId>
-				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.awaitility</groupId>
