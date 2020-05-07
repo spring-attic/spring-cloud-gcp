@@ -37,11 +37,20 @@ public class GcpSpannerEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testEmulatorAutoConfigurationEnabled() {
-		this.contextRunner.withPropertyValues("spring.cloud.gcp.spanner.emulator.enabled=true",
-				"spring.cloud.gcp.spanner.host-port=localhost:9010")
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.spanner.emulator.enabled=true")
 				.run(context -> {
 					SpannerOptions spannerOptions = context.getBean(SpannerOptions.class);
 					assertThat(spannerOptions.getEndpoint()).isEqualTo("localhost:9010");
+				});
+	}
+
+	@Test
+	public void testEmulatorAutoConfigurationEnabledCustomHostPort() {
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.spanner.emulator.enabled=true",
+				"spring.cloud.gcp.spanner.emulator-host=localhost:9090")
+				.run(context -> {
+					SpannerOptions spannerOptions = context.getBean(SpannerOptions.class);
+					assertThat(spannerOptions.getEndpoint()).isEqualTo("localhost:9090");
 				});
 	}
 

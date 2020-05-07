@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * @author Chengyuan Zhao
  * @author Ray Tsang
  * @author Eddú Meléndez
+ * @author Mike Eltsufin
  */
 @ConfigurationProperties("spring.cloud.gcp.spanner")
 public class GcpSpannerProperties implements CredentialsSupplier {
@@ -71,8 +72,8 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	// Otherwise, by default, block until a session becomes available.
 	private boolean failIfPoolExhausted = false;
 
-	// If set, it is used to connect to the emulator.
-	private String hostPort;
+	// Host:port used to connect to the emulator, when the emulator is enabled.
+	private String emulatorHost = "localhost:9010";
 
 	public Credentials getCredentials() {
 		return this.credentials;
@@ -176,11 +177,11 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 		this.failIfPoolExhausted = failIfPoolExhausted;
 	}
 
-	public String getHostPort() {
-		return this.hostPort;
+	public String getEmulatorHost() {
+		return this.emulatorHost;
 	}
 
-	public void setHostPort(String hostPort) {
-		this.hostPort = hostPort;
+	public void setEmulatorHost(String emulatorHost) {
+		this.emulatorHost = emulatorHost;
 	}
 }

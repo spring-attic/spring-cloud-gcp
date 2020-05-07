@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  * Provides auto-configuration to use the Spanner emulator if enabled.
  *
  * @author Eddú Meléndez
- * @since 1.3
+ * @since 1.2.3
  */
 @Configuration
 @AutoConfigureBefore(GcpSpannerAutoConfiguration.class)
@@ -48,10 +48,10 @@ public class GcpSpannerEmulatorAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SpannerOptions spannerOptions() {
-		Assert.notNull(this.properties.getHostPort(), "`spring.cloud.gcp.spanner.host-port` must be set.");
+		Assert.notNull(this.properties.getEmulatorHost(), "`spring.cloud.gcp.spanner.emulator-host` must be set.");
 		return SpannerOptions.newBuilder()
 				.setProjectId(this.properties.getProjectId())
 				.setCredentials(NoCredentials.getInstance())
-				.setEmulatorHost(this.properties.getHostPort()).build();
+				.setEmulatorHost(this.properties.getEmulatorHost()).build();
 	}
 }
