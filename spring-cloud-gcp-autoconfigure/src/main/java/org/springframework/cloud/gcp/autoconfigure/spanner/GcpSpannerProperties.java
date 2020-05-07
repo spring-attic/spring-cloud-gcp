@@ -71,6 +71,7 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	// Otherwise, by default, block until a session becomes available.
 	private boolean failIfPoolExhausted = false;
 
+	// If set, it is used to connect to the emulator.
 	private String hostPort;
 
 	public Credentials getCredentials() {

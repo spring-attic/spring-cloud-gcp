@@ -31,6 +31,7 @@ import org.springframework.util.Assert;
  * Provides auto-configuration to use the Spanner emulator if enabled.
  *
  * @author Eddú Meléndez
+ * @since 1.3
  */
 @Configuration
 @AutoConfigureBefore(GcpSpannerAutoConfiguration.class)
