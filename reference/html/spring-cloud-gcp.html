@@ -3806,6 +3806,18 @@ The schema for the tables will be "ON DELETE NO ACTION" if <code>false</code>.</
 <td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.spanner.emulator.enabled</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables the usage of an emulator. If this is set to true, then you should set the <code>spring.cloud.gcp.spanner.emulator-host</code> to the host:port of your locally running emulator instance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>false</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>spring.cloud.gcp.spanner.emulator-host</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The host and port of the Spanner emulator; can be overridden to specify connecting to an already-running <a href="https://cloud.google.com/spanner/docs/emulator#installing_and_running_the_emulator">Spanner emulator</a> instance.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>localhost:9010</code></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -5648,11 +5660,12 @@ By providing a custom implementation of this bean (for example, supplying a thre
 </div>
 </div>
 <div class="paragraph">
-<p>Remember that you need to set the <code>SPANNER_EMULATOR_HOST</code> environment variable to use the emulator:</p>
+<p>Once the Spanner emulator is running, ensure that the following properties are set in your <code>application.properties</code> of your Spring application:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>$ export SPANNER_EMULATOR_HOST=localhost:9010</pre>
+<pre>spring.cloud.gcp.spanner.emulator.enabled=true
+spring.cloud.gcp.spanner.emulator-host=${EMULATOR_HOSTPORT}</pre>
 </div>
 </div>
 </div>
