@@ -71,7 +71,7 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	// Otherwise, by default, block until a session becomes available.
 	private boolean failIfPoolExhausted = false;
 
-	private String emulatorHost;
+	private String hostPort;
 
 	public Credentials getCredentials() {
 		return this.credentials;
@@ -175,11 +175,11 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 		this.failIfPoolExhausted = failIfPoolExhausted;
 	}
 
-	public String getEmulatorHost() {
-		return this.emulatorHost;
+	public String getHostPort() {
+		return this.hostPort;
 	}
 
-	public void setEmulatorHost(String emulatorHost) {
-		this.emulatorHost = emulatorHost;
+	public void setHostPort(String hostPort) {
+		this.hostPort = hostPort;
 	}
 }

@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 /**
  * Provides auto-configuration to use the Spanner emulator if enabled.
@@ -46,12 +47,10 @@ public class GcpSpannerEmulatorAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SpannerOptions spannerOptions() {
-		SpannerOptions.Builder builder = SpannerOptions.newBuilder()
+		Assert.notNull(this.properties.getHostPort(), "`spring.cloud.gcp.spanner.host-port` must be set.");
+		return SpannerOptions.newBuilder()
 				.setProjectId(this.properties.getProjectId())
-				.setCredentials(NoCredentials.getInstance());
-		if (this.properties.getEmulatorHost() != null) {
-			builder.setEmulatorHost(this.properties.getEmulatorHost());
-		}
-		return builder.build();
+				.setCredentials(NoCredentials.getInstance())
+				.setEmulatorHost(this.properties.getHostPort()).build();
 	}
 }
