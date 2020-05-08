@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Integration tests that use many features of the Spanner Template.
@@ -36,6 +38,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = {SpannerEmulatorSpringConfiguration.class})
 public class SpannerTemplateEmulatorTests extends AbstractSpannerIntegrationTest {
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(System.getProperty("it.spanner-emulator"))
+				.as("Spanner emulator tests are disabled. "
+						+ "Please use '-Dit.spanner-emulator=true' to enable them. ")
+				.isEqualTo("true");
+	}
 
 	@Test
 	public void insertSingleRow() {
