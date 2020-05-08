@@ -49,7 +49,7 @@ public class SpannerEmulatorHelper extends AbstractEmulatorHelper {
 
 	@Override
 	protected void afterEmulatorStart() {
-		ProcessOutcome switchToEmulator = runSystemCommand(new String[] {
+		runSystemCommand(new String[] {
 				"gcloud", "config", "configurations", "activate", "emulator" });
 
 		ProcessOutcome processOutcome = runSystemCommand(new String[] {

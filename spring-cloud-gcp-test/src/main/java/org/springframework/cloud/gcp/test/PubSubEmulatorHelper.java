@@ -46,7 +46,7 @@ public class PubSubEmulatorHelper extends AbstractEmulatorHelper {
 			LOGGER.warn("Host/port null after the test.");
 		}
 		else {
-			int portSeparatorIndex = hostPort.lastIndexOf(":");
+			int portSeparatorIndex = hostPort.lastIndexOf(':');
 			if (portSeparatorIndex < 0) {
 				LOGGER.warn("Malformed host: " + hostPort);
 				return;

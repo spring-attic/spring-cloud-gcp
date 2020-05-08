@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
@@ -39,12 +38,12 @@ import org.awaitility.Awaitility;
 
 abstract class AbstractEmulatorHelper {
 	//Path to the directory that should contain env file
-	private final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
+	private final Path emulatorConfigDir = Paths.get(System.getProperty("user.home")).resolve(
 			Paths.get(".config", "gcloud", "emulators", getEmulatorName()));
 
 	private static final String ENV_FILE_NAME = "env.yaml";
 
-	private final Path EMULATOR_CONFIG_PATH = EMULATOR_CONFIG_DIR.resolve(ENV_FILE_NAME);
+	private final Path emulatorConfigPath = emulatorConfigDir.resolve(ENV_FILE_NAME);
 
 	private static final Log LOGGER = LogFactory.getLog(AbstractEmulatorHelper.class);
 
@@ -56,7 +55,7 @@ abstract class AbstractEmulatorHelper {
 
 	abstract String getGatingPropertyName();
 
-	public void startEmulator() throws IOException, InterruptedException {
+	public void startEmulator() throws IOException {
 		beforeEmulatorStart();
 		doStartEmulator();
 		afterEmulatorStart();
@@ -116,12 +115,12 @@ abstract class AbstractEmulatorHelper {
 	}
 
 	private void doStartEmulator() throws IOException {
-		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
+		boolean configPresent = emulatorConfigPath.toFile().exists();
 		WatchService watchService = null;
 
 		if (configPresent) {
 			watchService = FileSystems.getDefault().newWatchService();
-			EMULATOR_CONFIG_DIR.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+			emulatorConfigDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 		}
 
 		try {
@@ -157,7 +156,7 @@ abstract class AbstractEmulatorHelper {
 	private void determineHostPort() {
 		ProcessOutcome processOutcome = runSystemCommand(
 				new String[] { "gcloud", "beta", "emulators", getEmulatorName(), "env-init" });
-		if (processOutcome.getOutput().size() < 1) {
+		if (processOutcome.getOutput().isEmpty()) {
 			throw new RuntimeException("env-init command did not produce output");
 		}
 		String emulatorInitString = processOutcome.getOutput().get(0);
@@ -211,7 +210,7 @@ abstract class AbstractEmulatorHelper {
 		Awaitility.await("Emulator could not be configured due to missing env.yaml. Is the emulator installed?")
 				.atMost(10, TimeUnit.SECONDS)
 				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> Files.exists(EMULATOR_CONFIG_PATH));
+				.until(() -> emulatorConfigPath.toFile().exists());
 	}
 
 	/**

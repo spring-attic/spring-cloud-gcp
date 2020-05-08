@@ -51,7 +51,7 @@ If you prefer controlling the emulator manually, you can use PubSubEmulatorHelpe
 === Cloud Spanner Emulator
 In order to use our Cloud Spanner Emulator helper tools, you would need to install the emulator first.
 Follow the https://cloud.google.com/spanner/docs/emulator[installation instructions].
-Make sure you create an emulator configuration and call it `emulator`.
+Make sure you also create an https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator[emulator configuration] and call it `emulator`.
 
 ==== Spring Configuration
 If you are testing your Spring application, you can use our configuration class.
