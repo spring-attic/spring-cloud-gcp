@@ -14,34 +14,23 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.test;
+package org.springframework.cloud.gcp.test.pubsub;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PubSubEmulatorHelper extends AbstractEmulatorHelper {
-	private static final Log LOGGER = LogFactory.getLog(PubSubEmulatorHelper.class);
+import org.springframework.cloud.gcp.test.Emulator;
 
-	String getGatingPropertyName() {
-		return "it.pubsub-emulator";
-	}
+public class PubSubEmulator implements Emulator {
+	private static final Log LOGGER = LogFactory.getLog(PubSubEmulator.class);
 
-	String getEmulatorName() {
+	public String getName() {
 		return "pubsub";
 	}
 
-	/**
-	 * Shut down the emulator process.
-	 * java process is identified and shut down through shell commands. There
-	 * should normally be only one process with that host/port combination, but if there are
-	 * more, they will be cleaned up as well. Any failure is logged and ignored since it's not
-	 * critical to the tests' operation.
-	 */
-	@Override
-	protected void afterEmulatorDestroyed() {
-		String hostPort = getEmulatorHostPort();
+	public String[] getKillCommandFragments(String hostPort) {
 
-		// find and destory emulator process spawned by gcloud
+		// find and destroy emulator process spawned by gcloud
 		if (hostPort == null) {
 			LOGGER.warn("Host/port null after the test.");
 		}
@@ -49,14 +38,16 @@ public class PubSubEmulatorHelper extends AbstractEmulatorHelper {
 			int portSeparatorIndex = hostPort.lastIndexOf(':');
 			if (portSeparatorIndex < 0) {
 				LOGGER.warn("Malformed host: " + hostPort);
-				return;
 			}
 
 			String emulatorHost = hostPort.substring(0, portSeparatorIndex);
 			String emulatorPort = hostPort.substring(portSeparatorIndex + 1);
 
 			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
-			killByCommand(hostPortParams);
+
+			return new String[] { hostPortParams};
 		}
+
+		return new String[0];
 	}
 }

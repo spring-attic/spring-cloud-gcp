@@ -36,16 +36,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.awaitility.Awaitility;
 
-abstract class AbstractEmulatorHelper {
-	//Path to the directory that should contain env file
-	private final Path emulatorConfigDir = Paths.get(System.getProperty("user.home")).resolve(
-			Paths.get(".config", "gcloud", "emulators", getEmulatorName()));
-
+/**
+ * The main class used to start and stop an emulator.
+ *
+ * @author Elena Felder
+ * @author Dmitry Solomakha
+ * @author Mike Eltsufin
+ *
+ * @since 1.2.3
+ */
+public class EmulatorDriver {
 	private static final String ENV_FILE_NAME = "env.yaml";
 
-	private final Path emulatorConfigPath = emulatorConfigDir.resolve(ENV_FILE_NAME);
+	private static final Log LOGGER = LogFactory.getLog(EmulatorDriver.class);
 
-	private static final Log LOGGER = LogFactory.getLog(AbstractEmulatorHelper.class);
+	private Emulator emulator;
 
 	// Reference to emulator instance, for cleanup.
 	private Process emulatorProcess;
@@ -53,23 +58,40 @@ abstract class AbstractEmulatorHelper {
 	// Hostname for cleanup, should always be localhost.
 	private String emulatorHostPort;
 
-	abstract String getGatingPropertyName();
+	/**
+	 * Creates and emulator driver based on the emulator definition.
+	 * @param emulator An implementation of an {@link Emulator} interface.
+	 */
+	public EmulatorDriver(Emulator emulator) {
+		this.emulator = emulator;
+	}
 
+	/**
+	 * Starts the emulator.
+	 */
 	public void startEmulator() throws IOException {
-		beforeEmulatorStart();
 		doStartEmulator();
-		afterEmulatorStart();
 		determineHostPort();
 	}
 
+	/**
+	 * Stops the emulator.
+	 */
 	public void shutdownEmulator() {
-		findAndDestroyEmulator();
-		afterEmulatorDestroyed();
+		destroyGcloudEmulatorProcess();
+		executeEmulatorKillCommands();
 	}
 
-	protected abstract void afterEmulatorDestroyed();
+	/**
+	 * Return the already-started emulator's host/port combination when called from within a
+	 * JUnit method.
+	 * @return emulator host/port string or null if emulator setup failed.
+	 */
+	public String getEmulatorHostPort() {
+		return this.emulatorHostPort;
+	}
 
-	private void findAndDestroyEmulator() {
+	private void destroyGcloudEmulatorProcess() {
 		// destroy gcloud process
 		if (this.emulatorProcess != null) {
 			this.emulatorProcess.destroy();
@@ -79,7 +101,19 @@ abstract class AbstractEmulatorHelper {
 		}
 	}
 
-	protected void killByCommand(String command) {
+	private void executeEmulatorKillCommands() {
+		// pre-kill
+		for (String[] command : emulator.getPostKillCommands()) {
+			runSystemCommand(command, false);
+		}
+
+		// kill
+		for (String command : emulator.getKillCommandFragments(emulatorHostPort)) {
+			killByCommand(command);
+		}
+	}
+
+	private void killByCommand(String command) {
 		AtomicBoolean foundProcess = new AtomicBoolean(false);
 
 		try {
@@ -91,7 +125,7 @@ abstract class AbstractEmulatorHelper {
 						.map((psLine) -> new StringTokenizer(psLine).nextToken())
 						.forEach((p) -> {
 							LOGGER.info("Found " + command + " process to kill: " + p);
-							this.killProcess(p);
+							killProcess(p);
 							foundProcess.set(true);
 						});
 			}
@@ -105,16 +139,11 @@ abstract class AbstractEmulatorHelper {
 		}
 	}
 
-	/**
-	 * Return the already-started emulator's host/port combination when called from within a
-	 * JUnit method.
-	 * @return emulator host/port string or null if emulator setup failed.
-	 */
-	public String getEmulatorHostPort() {
-		return this.emulatorHostPort;
-	}
-
 	private void doStartEmulator() throws IOException {
+		Path emulatorConfigDir = Paths.get(System.getProperty("user.home")).resolve(
+				Paths.get(".config", "gcloud", "emulators", emulator.getName()));
+		Path emulatorConfigPath = emulatorConfigDir.resolve(ENV_FILE_NAME);
+
 		boolean configPresent = emulatorConfigPath.toFile().exists();
 		WatchService watchService = null;
 
@@ -124,7 +153,7 @@ abstract class AbstractEmulatorHelper {
 		}
 
 		try {
-			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", getEmulatorName(), "start")
+			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", emulator.getName(), "start")
 					.start();
 		}
 		catch (IOException ex) {
@@ -132,21 +161,24 @@ abstract class AbstractEmulatorHelper {
 		}
 
 		if (configPresent) {
-			updateConfig(watchService);
+			waitForConfigChange(watchService, ENV_FILE_NAME);
 			watchService.close();
 		}
 		else {
-			waitForConfigCreation();
+			waitForConfigCreation(emulatorConfigPath);
 		}
-
-	}
-
-	protected void beforeEmulatorStart() {
-		// does nothing by default
 	}
 
 	protected void afterEmulatorStart() {
-		// does nothing by default
+		for (String[] command : this.emulator.getPostStartCommands()) {
+			ProcessOutcome processOutcome = runSystemCommand(command, true);
+
+			if (processOutcome.getStatus() != 0) {
+				shutdownEmulator();
+				throw new RuntimeException("After emulator start command failed: "
+						+ String.join("\n", processOutcome.getErrors()));
+			}
+		}
 	}
 
 	/**
@@ -155,7 +187,7 @@ abstract class AbstractEmulatorHelper {
 	 */
 	private void determineHostPort() {
 		ProcessOutcome processOutcome = runSystemCommand(
-				new String[] { "gcloud", "beta", "emulators", getEmulatorName(), "env-init" });
+				new String[] { "gcloud", "beta", "emulators", this.emulator.getName(), "env-init" }, true);
 		if (processOutcome.getOutput().isEmpty()) {
 			throw new RuntimeException("env-init command did not produce output");
 		}
@@ -163,11 +195,67 @@ abstract class AbstractEmulatorHelper {
 		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
 	}
 
-	protected ProcessOutcome runSystemCommand(String[] command) {
-		return runSystemCommand(command, true);
+	private static ProcessOutcome runSystemCommand(String[] command, boolean failOnError) {
+		ProcessOutcome processOutcome = runSystemCommand(command);
+		if (failOnError && processOutcome.getStatus() != 0) {
+			throw new RuntimeException("Command execution failed: " + String.join(" ", command)
+					+ "; output: " + processOutcome.getOutput()
+					+ "; error: " + processOutcome.getErrors());
+
+		}
+		return processOutcome;
 	}
 
-	protected ProcessOutcome runSystemCommand(String[] command, boolean failOnError) {
+	/**
+	 * Attempt to kill a process on best effort basis. Failure is logged and ignored, as it is
+	 * not critical to the tests' functionality.
+	 * @param pid presumably a valid PID. No checking done to validate.
+	 */
+	private static void killProcess(String pid) {
+		try {
+			new ProcessBuilder("kill", "-9", pid).start();
+		}
+		catch (IOException ex) {
+			LOGGER.error("Failed to clean up PID " + pid, ex);
+		}
+	}
+
+	/**
+	 * Wait until the emulator configuration file is present. Fail if the file does not
+	 * appear after 10 seconds.
+	 */
+	private static void waitForConfigCreation(Path emulatorConfigPath) {
+		Awaitility.await("Emulator could not be configured due to missing env.yaml. Is the emulator installed?")
+				.atMost(10, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> emulatorConfigPath.toFile().exists());
+	}
+
+
+	/**
+	 * Wait until the emulator configuration file is updated. Fail if the file does not
+	 * update after 10 second.
+	 * @param watchService the watch-service to poll
+	 */
+	private static void waitForConfigChange(WatchService watchService, String envFileName) {
+		Awaitility.await("Configuration file update could not be detected")
+				.atMost(20, TimeUnit.SECONDS)
+				.pollInterval(100, TimeUnit.MILLISECONDS)
+				.until(() -> {
+					WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
+
+					if (key != null) {
+						Optional<Path> configFilePath = key.pollEvents().stream()
+								.map((event) -> (Path) event.context())
+								.filter((path) -> envFileName.equals(path.toString()))
+								.findAny();
+						return configFilePath.isPresent();
+					}
+					return false;
+				});
+	}
+
+	private static ProcessOutcome runSystemCommand(String[] command) {
 
 		Process envInitProcess = null;
 		try {
@@ -184,15 +272,6 @@ abstract class AbstractEmulatorHelper {
 					brError.lines().collect(Collectors.toList()),
 					envInitProcess.waitFor());
 
-			if (failOnError && processOutcome.status != 0) {
-				// clean up anything that got started up first
-				this.shutdownEmulator();
-
-				throw new RuntimeException("Command execution failed: " + String.join(" ", command)
-						+ "; output: " + processOutcome.getOutput()
-						+ "; error: " + processOutcome.getErrors());
-
-			}
 			return processOutcome;
 		}
 		catch (IOException | InterruptedException e) {
@@ -200,57 +279,7 @@ abstract class AbstractEmulatorHelper {
 		}
 	}
 
-	abstract String getEmulatorName();
-
-	/**
-	 * Wait until the emulator configuration file is present. Fail if the file does not
-	 * appear after 10 seconds.
-	 */
-	private void waitForConfigCreation() {
-		Awaitility.await("Emulator could not be configured due to missing env.yaml. Is the emulator installed?")
-				.atMost(10, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> emulatorConfigPath.toFile().exists());
-	}
-
-	/**
-	 * Wait until the emulator configuration file is updated. Fail if the file does not
-	 * update after 10 second.
-	 * @param watchService the watch-service to poll
-	 */
-	private void updateConfig(WatchService watchService) {
-		Awaitility.await("Configuration file update could not be detected")
-				.atMost(10, TimeUnit.SECONDS)
-				.pollInterval(100, TimeUnit.MILLISECONDS)
-				.until(() -> {
-					WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
-
-					if (key != null) {
-						Optional<Path> configFilePath = key.pollEvents().stream()
-								.map((event) -> (Path) event.context())
-								.filter((path) -> ENV_FILE_NAME.equals(path.toString()))
-								.findAny();
-						return configFilePath.isPresent();
-					}
-					return false;
-				});
-	}
-
-	/**
-	 * Attempt to kill a process on best effort basis. Failure is logged and ignored, as it is
-	 * not critical to the tests' functionality.
-	 * @param pid presumably a valid PID. No checking done to validate.
-	 */
-	protected void killProcess(String pid) {
-		try {
-			new ProcessBuilder("kill", "-9", pid).start();
-		}
-		catch (IOException ex) {
-			LOGGER.warn("Failed to clean up PID " + pid);
-		}
-	}
-
-	static class ProcessOutcome {
+	private static class ProcessOutcome {
 		private String[] command;
 
 		private List<String> output;
@@ -282,5 +311,4 @@ abstract class AbstractEmulatorHelper {
 			return String.join(" ", command);
 		}
 	}
-
 }

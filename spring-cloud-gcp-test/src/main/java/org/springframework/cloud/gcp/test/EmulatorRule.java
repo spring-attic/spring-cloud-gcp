@@ -16,25 +16,39 @@
 
 package org.springframework.cloud.gcp.test;
 
-import org.junit.Assume;
 import org.junit.rules.ExternalResource;
 
-public class SpannerEmulatorRule extends ExternalResource {
+/**
+ * @author Elena Felder
+ * @author Dmitry Solomakha
+ * @author Mike Eltsufin
+ * @since 1.2.3
+ */
+public class EmulatorRule extends ExternalResource {
 
-	private SpannerEmulatorHelper emulatorHelper = new SpannerEmulatorHelper();
+	private EmulatorDriver emulatorDriver;
+
+	public EmulatorRule(Emulator emulator) {
+		this.emulatorDriver = new EmulatorDriver(emulator);
+	}
 
 	@Override
 	protected void before() throws Throwable {
-		String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
-		Assume.assumeFalse(
-				"Run this command prior to running an emulator test and set SPANNER_EMULATOR_HOST environment variable:\ngcloud beta emulators spanner env-init",
-				emulatorHost == null || emulatorHost.isEmpty());
-		emulatorHelper.startEmulator();
+		emulatorDriver.startEmulator();
 	}
 
 	@Override
 	protected void after() {
-		emulatorHelper.shutdownEmulator();
+		emulatorDriver.shutdownEmulator();
+	}
+
+	/**
+	 * Return the already-started emulator's host/port combination when called from within a
+	 * JUnit method.
+	 * @return emulator host/port string or null if emulator setup failed.
+	 */
+	public String getEmulatorHostPort() {
+		return emulatorDriver.getEmulatorHostPort();
 	}
 
 }

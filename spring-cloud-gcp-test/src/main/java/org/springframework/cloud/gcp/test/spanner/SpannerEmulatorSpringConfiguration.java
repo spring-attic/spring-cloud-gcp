@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.test;
+package org.springframework.cloud.gcp.test.spanner;
 
 import java.io.IOException;
 
@@ -23,6 +23,7 @@ import com.google.cloud.ServiceOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 
+import org.springframework.cloud.gcp.test.EmulatorDriver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextClosedEvent;
@@ -33,12 +34,12 @@ import org.springframework.core.annotation.Order;
 @Order(-1000)
 public class SpannerEmulatorSpringConfiguration {
 
-	private SpannerEmulatorHelper emulatorHelper = new SpannerEmulatorHelper(false);
+	private EmulatorDriver emulatorDriver = new EmulatorDriver(new SpannerEmulator(false));
 
 	@Bean
 	public SpannerOptions spannerOptions() throws IOException, InterruptedException {
 		// starting the emulator will change the default project ID to that of the emulator config.
-		emulatorHelper.startEmulator();
+		emulatorDriver.startEmulator();
 		return SpannerOptions.newBuilder()
 				.setProjectId(ServiceOptions.getDefaultProjectId())
 				.setCredentials(NoCredentials.getInstance())
@@ -55,6 +56,6 @@ public class SpannerEmulatorSpringConfiguration {
 
 	@EventListener
 	public void afterCloseEvent(ContextClosedEvent event) {
-		emulatorHelper.shutdownEmulator();
+		emulatorDriver.shutdownEmulator();
 	}
 }

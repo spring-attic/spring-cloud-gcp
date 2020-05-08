@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
-import org.springframework.cloud.gcp.test.SpannerEmulatorSpringConfiguration;
+import org.springframework.cloud.gcp.test.spanner.SpannerEmulatorSpringConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
