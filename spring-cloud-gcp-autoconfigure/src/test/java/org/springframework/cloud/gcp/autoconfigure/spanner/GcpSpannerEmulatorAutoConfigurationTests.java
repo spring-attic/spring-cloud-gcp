@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import com.google.cloud.spanner.SpannerOptions;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -24,6 +25,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Eddú Meléndez
@@ -34,6 +37,14 @@ public class GcpSpannerEmulatorAutoConfigurationTests {
 			.withConfiguration(AutoConfigurations.of(GcpSpannerEmulatorAutoConfiguration.class,
 					GcpSpannerAutoConfiguration.class, GcpContextAutoConfiguration.class))
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project");
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Spanner integration tests are disabled. "
+						+ "Please use '-Dit.spanner=true' to enable them. ",
+				System.getProperty("it.spanner"), is("true"));
+	}
 
 	@Test
 	public void testEmulatorAutoConfigurationEnabled() {
