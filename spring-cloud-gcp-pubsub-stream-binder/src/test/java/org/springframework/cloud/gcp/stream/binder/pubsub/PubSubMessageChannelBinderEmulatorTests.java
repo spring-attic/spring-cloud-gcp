@@ -84,8 +84,6 @@ public class PubSubMessageChannelBinderEmulatorTests extends
 	@Test
 	@Ignore("Looks like there is no Kryo support in SCSt")
 	public void testSendPojoReceivePojoKryoWithStreamListener() {
-
 	}
-
 
 }

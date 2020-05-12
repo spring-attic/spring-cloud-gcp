@@ -71,6 +71,7 @@ public class EmulatorDriver {
 	 */
 	public void startEmulator() throws IOException {
 		doStartEmulator();
+		afterEmulatorStart();
 		determineHostPort();
 	}
 

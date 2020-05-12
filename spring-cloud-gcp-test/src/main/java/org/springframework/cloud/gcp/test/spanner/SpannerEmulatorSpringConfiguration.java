@@ -44,7 +44,7 @@ public class SpannerEmulatorSpringConfiguration {
 	private EmulatorDriver emulatorDriver = new EmulatorDriver(new SpannerEmulator(false));
 
 	@Bean
-	public SpannerOptions spannerOptions() throws IOException, InterruptedException {
+	public SpannerOptions spannerOptions() throws IOException {
 		// starting the emulator will change the default project ID to that of the emulator config.
 		emulatorDriver.startEmulator();
 		return SpannerOptions.newBuilder()
