@@ -1,0 +1,6 @@
+org.springframework.cloud.gcp.test.autoconfigure.data.spanner.AutoConfigureDataSpanner=\
+org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerEmulatorAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.SpannerTransactionManagerAutoConfiguration
