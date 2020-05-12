@@ -1,4 +1,4 @@
-== Google Cloud Storage
+== Cloud Storage
 
 https://cloud.google.com/storage/docs[Google Cloud Storage] allows storing any types of files in single or multiple regions.
 A Spring Boot starter is provided to auto-configure the various Storage components.

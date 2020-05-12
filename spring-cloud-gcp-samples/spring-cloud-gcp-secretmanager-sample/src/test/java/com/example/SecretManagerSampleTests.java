@@ -38,7 +38,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		classes = SecretManagerApplication.class,
-		properties = {"spring.cloud.gcp.secretmanager.bootstrap.enabled=true"})
+		properties = {"spring.cloud.gcp.secretmanager.enabled=true"})
 public class SecretManagerSampleTests {
 
 	@Autowired
@@ -63,6 +63,7 @@ public class SecretManagerSampleTests {
 	public void testCreateReadSecret() {
 		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
 		params.add("secretId", "secret-manager-sample-secret");
+		params.add("projectId", "");
 		params.add("secretPayload", "12345");
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
 

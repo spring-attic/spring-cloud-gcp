@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.entities.UserRepository;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
@@ -44,7 +45,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Configuration
 @PropertySource("application-test.properties")
-@EnableReactiveFirestoreRepositories
+@EnableReactiveFirestoreRepositories(basePackageClasses = UserRepository.class)
 @EnableTransactionManagement
 public class FirestoreIntegrationTestsConfiguration {
 	@Value("projects/${test.integration.firestore.project-id}/databases/(default)/documents")
@@ -63,14 +64,14 @@ public class FirestoreIntegrationTestsConfiguration {
 	}
 
 	@Bean
-	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
-			FirestoreClassMapper classMapper) {
-		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper);
+	public FirestoreMappingContext firestoreMappingContext() {
+		return new FirestoreMappingContext();
 	}
 
 	@Bean
-	public FirestoreMappingContext firestoreMappingContext() {
-		return new FirestoreMappingContext();
+	public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
+			FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
+		return new FirestoreTemplate(firestoreStub, this.defaultParent, classMapper, firestoreMappingContext);
 	}
 
 	@Bean

@@ -1,7 +1,7 @@
-== Spring JDBC
+== Cloud SQL
 
 Spring Cloud GCP adds integrations with
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC] so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spring JDBC, or other libraries that depend on it like Spring Data JPA.
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC] so you can run your MySQL or PostgreSQL databases in https://cloud.google.com/sql[Google Cloud SQL] using Spring JDBC, or other libraries that depend on it like Spring Data JPA.
 
 The Cloud SQL support is provided by Spring Cloud GCP in the form of two Spring Boot starters, one for MySQL and another one for PostgreSQL.
 The role of the starters is to read configuration from properties and assume default settings so that user experience connecting to MySQL and PostgreSQL is as simple as possible.

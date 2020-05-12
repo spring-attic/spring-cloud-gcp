@@ -31,6 +31,8 @@ import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.ProjectionEntityQuery;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,6 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
@@ -47,9 +50,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorFi
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
+import org.springframework.cloud.gcp.data.datastore.entities.ServiceConfiguration;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
@@ -67,6 +73,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 /**
  * Integration tests for Datastore that use many features.
@@ -91,7 +101,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Autowired
 	private DogRepository dogRepository;
 
-	@Autowired
+	@SpyBean
 	private DatastoreTemplate datastoreTemplate;
 
 	@Autowired
@@ -107,9 +117,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityB = new TestEntity(2L, "blue", 2L, Shape.CIRCLE, null);
 
-	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
+	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null, new EmbeddedEntity("c"));
 
-	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
+	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null, new EmbeddedEntity("d"));
 
 	private final List<TestEntity> allTestEntities;
 
@@ -318,9 +328,17 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("c")).containsExactly(this.testEntityC);
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("d")).containsExactly(this.testEntityD);
+
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
+
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
+		assertThatThrownBy(() -> this.testEntityRepository.findByColor("green"))
+				.isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageMatching("Result must not be null!");
+
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
 		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
@@ -463,6 +481,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
 		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
+	}
+
+	@Test
+	public void projectionTest() {
+		reset(datastoreTemplate);
+		assertThat(this.testEntityRepository.findBySize(2L).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
 	}
 
 	@Test
@@ -767,6 +799,24 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
+	public void mapSubclass() {
+		CustomMap customMap1 = new CustomMap();
+		customMap1.put("key1", "val1");
+		ServiceConfiguration service1 = new ServiceConfiguration("service1", customMap1);
+		CustomMap customMap2 = new CustomMap();
+		customMap2.put("key2", "val2");
+		ServiceConfiguration service2 = new ServiceConfiguration("service2", customMap2);
+
+		this.datastoreTemplate.saveAll(Arrays.asList(service1, service2));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(ServiceConfiguration.class) == 2);
+
+		Collection<ServiceConfiguration> events = this.datastoreTemplate.findAll(ServiceConfiguration.class);
+
+		assertThat(events).containsExactlyInAnyOrder(service1, service2);
+	}
+
+	@Test
 	public void readOnlySaveTest() {
 		this.expectedException.expect(TransactionSystemException.class);
 		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
@@ -805,6 +855,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSlicedEntityProjections() {
+		reset(datastoreTemplate);
 		Slice<TestEntityProjection> testEntityProjectionSlice =
 				this.testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
 
@@ -817,6 +868,14 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// Verifies that the projection method call works.
 		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
 	}
 
 	@Test

@@ -25,6 +25,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.firestore.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables autoconfiguration to use the Firestore emulator.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.cloud.gcp.logging.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",
@@ -49,13 +55,19 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.spanner.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables auto-configuration to use the Spanner emulator.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.cloud.gcp.sql.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud SQL support components.",
       "defaultValue": true
     },
     {
-      "name": "spring.cloud.gcp.secretmanager.bootstrap.enabled",
+      "name": "spring.cloud.gcp.secretmanager.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure GCP Secret Manager support components.",
       "defaultValue": true
