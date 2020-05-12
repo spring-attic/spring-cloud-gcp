@@ -25,7 +25,6 @@ import javax.annotation.PreDestroy;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import brave.propagation.ExtraFieldPropagation;
-import brave.propagation.Propagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
