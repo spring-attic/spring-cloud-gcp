@@ -12,6 +12,7 @@
   <artifactId>spring-cloud-gcp-starter-bigquery</artifactId>
   <name>Spring Cloud GCP BigQuery Starter</name>
   <description>Starter for Google Cloud BigQuery</description>
+  <url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-bigquery</url>
 
   <organization>
     <name>Pivotal Software, Inc.</name>

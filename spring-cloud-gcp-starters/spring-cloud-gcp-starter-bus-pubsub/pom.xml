@@ -8,9 +8,12 @@
     <artifactId>spring-cloud-gcp-starters</artifactId>
     <version>1.2.3.BUILD-SNAPSHOT</version>
   </parent>
+
   <artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
   <name>Spring Cloud GCP Pub/Sub Bus Starter</name>
   <description>Starter for Spring Cloud Bus using Pub/Sub</description>
+  <url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-bus-pubsub</url>
+
   <organization>
     <name>Pivotal Software, Inc.</name>
     <url>https://www.spring.io</url>

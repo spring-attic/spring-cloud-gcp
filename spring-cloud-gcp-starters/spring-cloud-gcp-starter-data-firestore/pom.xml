@@ -10,6 +10,7 @@
     <artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
     <name>Spring Cloud GCP Data Firestore Starter</name>
     <description>Starter for Google Cloud Firestore</description>
+    <url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-firestore</url>
 
     <properties>
         <main.basedir>${basedir}/../..</main.basedir>
