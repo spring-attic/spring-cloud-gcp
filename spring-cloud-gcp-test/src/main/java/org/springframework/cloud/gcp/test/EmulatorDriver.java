@@ -158,7 +158,7 @@ public class EmulatorDriver {
 					.start();
 		}
 		catch (IOException ex) {
-			throw new RuntimeException("Gcloud not found; leaving host/port uninitialized.", ex);
+			throw new EmulatorRuntimeException("Gcloud not found; leaving host/port uninitialized.", ex);
 		}
 
 		if (configPresent) {
@@ -176,7 +176,7 @@ public class EmulatorDriver {
 
 			if (processOutcome.getStatus() != 0) {
 				shutdownEmulator();
-				throw new RuntimeException("After emulator start command failed: "
+				throw new EmulatorRuntimeException("After emulator start command failed: "
 						+ String.join("\n", processOutcome.getErrors()));
 			}
 		}
@@ -190,7 +190,7 @@ public class EmulatorDriver {
 		ProcessOutcome processOutcome = runSystemCommand(
 				new String[] { "gcloud", "beta", "emulators", this.emulator.getName(), "env-init" }, true);
 		if (processOutcome.getOutput().isEmpty()) {
-			throw new RuntimeException("env-init command did not produce output");
+			throw new EmulatorRuntimeException("env-init command did not produce output");
 		}
 		String emulatorInitString = processOutcome.getOutput().get(0);
 		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
@@ -199,7 +199,7 @@ public class EmulatorDriver {
 	private static ProcessOutcome runSystemCommand(String[] command, boolean failOnError) {
 		ProcessOutcome processOutcome = runSystemCommand(command);
 		if (failOnError && processOutcome.getStatus() != 0) {
-			throw new RuntimeException("Command execution failed: " + String.join(" ", command)
+			throw new EmulatorRuntimeException("Command execution failed: " + String.join(" ", command)
 					+ "; output: " + processOutcome.getOutput()
 					+ "; error: " + processOutcome.getErrors());
 
@@ -263,25 +263,26 @@ public class EmulatorDriver {
 			envInitProcess = new ProcessBuilder(command).start();
 		}
 		catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new EmulatorRuntimeException(e);
 		}
 
 		try (BufferedReader brInput = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()));
 				BufferedReader brError = new BufferedReader(new InputStreamReader(envInitProcess.getErrorStream()))) {
-			ProcessOutcome processOutcome = new ProcessOutcome(command,
+			return new ProcessOutcome(
 					brInput.lines().collect(Collectors.toList()),
 					brError.lines().collect(Collectors.toList()),
 					envInitProcess.waitFor());
-
-			return processOutcome;
 		}
-		catch (IOException | InterruptedException e) {
-			throw new RuntimeException(e);
+		catch (IOException e) {
+			throw new EmulatorRuntimeException(e);
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new EmulatorRuntimeException(e);
 		}
 	}
 
 	private static class ProcessOutcome {
-		private String[] command;
 
 		private List<String> output;
 
@@ -289,8 +290,7 @@ public class EmulatorDriver {
 
 		private int status;
 
-		ProcessOutcome(String[] command, List<String> output, List<String> errors, int status) {
-			this.command = command;
+		ProcessOutcome(List<String> output, List<String> errors, int status) {
 			this.output = output;
 			this.errors = errors;
 			this.status = status;
@@ -306,10 +306,6 @@ public class EmulatorDriver {
 
 		public int getStatus() {
 			return status;
-		}
-
-		public String getCommandString() {
-			return String.join(" ", command);
 		}
 	}
 }
