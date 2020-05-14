@@ -84,22 +84,8 @@ public class SpannerTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public SpannerOptions spannerOptions() {
-		return SpannerOptions.newBuilder().setProjectId(getProjectId())
-				.setSessionPoolOption(SessionPoolOptions.newBuilder().setMaxSessions(10).build())
-				.setCredentials(getCredentials()).build();
-	}
-
-	@Bean
 	public DatabaseId databaseId() {
 		return DatabaseId.of(getProjectId(), this.instanceId, this.databaseName);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public Spanner spanner(SpannerOptions spannerOptions) {
-		return spannerOptions.getService();
 	}
 
 	@Bean

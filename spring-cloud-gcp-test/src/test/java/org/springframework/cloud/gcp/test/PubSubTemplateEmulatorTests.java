@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.assertj.core.api.Assumptions;
@@ -54,7 +55,7 @@ public class PubSubTemplateEmulatorTests {
 	@BeforeClass
 	public static void enableTests() {
 		Assumptions.assumeThat(System.getProperty("it.emulator"))
-				.as("Spanner emulator tests are disabled. "
+				.as("Pub/Sub emulator tests are disabled. "
 						+ "Please use '-Dit.emulator=true' to enable them. ")
 				.isEqualTo("true");
 	}
@@ -68,6 +69,9 @@ public class PubSubTemplateEmulatorTests {
 						GcpPubSubAutoConfiguration.class, GcpPubSubEmulatorAutoConfiguration.class));
 
 		contextRunner.run((context) -> {
+			TransportChannelProvider transportChannelProvider = context.getBean(TransportChannelProvider.class);
+			assertThat(transportChannelProvider.getTransportChannel().toString()).contains("target=dns:///localhost:8085");
+
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
