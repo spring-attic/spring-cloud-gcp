@@ -11,6 +11,7 @@
 
     <artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
     <name>Spring Cloud GCP Cloud SQL PostgreSQL Starter</name>
+    <url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql</url>
 
     <dependencies>
         <dependency>

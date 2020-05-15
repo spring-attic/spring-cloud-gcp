@@ -12,6 +12,7 @@
 
     <artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
     <name>Spring Cloud GCP Security IAP Starter</name>
+    <url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap</url>
 
     <dependencies>
         <dependency>

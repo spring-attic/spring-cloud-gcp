@@ -1,0 +1,11 @@
+{
+  "name": "spring-cloud-gcp-starter-firestore",
+  "name_pretty": "Spring Cloud GCP Helpers for Cloud Firestore",
+  "client_documentation": "https://spring.io/projects/spring-cloud-gcp",
+  "api_description": "Provides Autoconfiguration classes for configuring the standard Cloud Firestore client.",
+  "release_level": "ga",
+  "language": "java",
+  "repo": "spring-cloud/spring-cloud-gcp",
+  "repo_short": "spring-cloud-gcp",
+  "distribution_name": "org.springframework.cloud:spring-cloud-gcp-starter-firestore"
+}
