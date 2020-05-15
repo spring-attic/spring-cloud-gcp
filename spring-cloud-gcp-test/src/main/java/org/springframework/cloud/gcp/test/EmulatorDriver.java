@@ -55,7 +55,7 @@ public class EmulatorDriver {
 	// Reference to emulator instance, for cleanup.
 	private Process emulatorProcess;
 
-	// Hostname for cleanup, should always be localhost.
+	// Hostname and port combination for cleanup; host should always be localhost.
 	private String emulatorHostPort;
 
 	/**
