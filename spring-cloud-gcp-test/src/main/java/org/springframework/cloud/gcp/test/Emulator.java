@@ -32,12 +32,13 @@ public interface Emulator {
 
 	/**
 	 * The list of command fragments that match the emulator processes to be killed.
-	 * @param hostPort THe emulator host-port.
+	 * @param hostPort The emulator host-port.
 	 */
 	String[] getKillCommandFragments(String hostPort);
 
 	/**
 	 * Custom kill commands that need to run to stop the emulator.
+	 * Each command is expected to be a string array.
 	 */
 	default String[][] getPostKillCommands() {
 		return new String[0][0];
@@ -45,6 +46,7 @@ public interface Emulator {
 
 	/**
 	 * Custom start commands that need after the emulator is started.
+	 * Each command is expected to be a string array.
 	 */
 	default String[][] getPostStartCommands() {
 		return new String[0][0];

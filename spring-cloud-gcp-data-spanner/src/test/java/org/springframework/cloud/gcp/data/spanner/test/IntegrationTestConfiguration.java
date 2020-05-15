@@ -105,7 +105,6 @@ public class IntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public SpannerOptions spannerOptions() {
 		return SpannerOptions.newBuilder().setProjectId(getProjectId())
 				.setSessionPoolOption(SessionPoolOptions.newBuilder().setMaxSessions(10).build())
@@ -118,7 +117,6 @@ public class IntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public Spanner spanner(SpannerOptions spannerOptions) {
 		return spannerOptions.getService();
 	}

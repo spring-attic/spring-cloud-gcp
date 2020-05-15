@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
+
 /**
  * SpannerEmulatorSpringConfiguration should be used instead of JUnit class rule because spring context tries to close the connection when it is being destroyed.
  * But the rule would already shut down the emulator by that time. That causes tests to hang.

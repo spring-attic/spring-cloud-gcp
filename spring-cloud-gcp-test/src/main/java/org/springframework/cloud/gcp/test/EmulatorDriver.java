@@ -103,15 +103,16 @@ public class EmulatorDriver {
 	}
 
 	private void executeEmulatorKillCommands() {
-		// pre-kill
-		for (String[] command : emulator.getPostKillCommands()) {
-			runSystemCommand(command, false);
-		}
-
 		// kill
 		for (String command : emulator.getKillCommandFragments(emulatorHostPort)) {
 			killByCommand(command);
 		}
+
+		// post-kill
+		for (String[] command : emulator.getPostKillCommands()) {
+			runSystemCommand(command, false);
+		}
+
 	}
 
 	private void killByCommand(String command) {
