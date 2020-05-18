@@ -380,12 +380,12 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- Error prone; plugin is recommended but only works with Java 9 and newer.
-		Remove the two profiles and pull the pluginManagement contents up into the main config when the project moves off Java 8. -->
+		<!-- Error prone; plugin is recommended but only works with Java 9 - 13.
+		Update activation jdk when this issue is fixed: https://github.com/google/error-prone/issues/1106 -->
 		<profile>
 			<id>errorprone_java_9_and_up</id>
 			<activation>
-				<jdk>[9,)</jdk>
+				<jdk>[9,13]</jdk>
 			</activation>
 			<build>
 				<pluginManagement>
