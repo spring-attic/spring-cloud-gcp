@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
+import brave.baggage.BaggagePropagation;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
-import brave.propagation.ExtraFieldPropagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
@@ -218,8 +218,8 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ExtraFieldPropagation.FactoryBuilder extraFieldPropagationFactoryBuilder() {
-		return ExtraFieldPropagation.newFactoryBuilder(StackdriverTracePropagation.FACTORY);
+	public BaggagePropagation.FactoryBuilder baggagePropagationFactoryBuilder() {
+		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.FACTORY);
 	}
 
 	@PreDestroy
