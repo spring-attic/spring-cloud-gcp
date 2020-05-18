@@ -58,11 +58,9 @@ import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
-import org.springframework.cloud.sleuth.sampler.SamplerAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -81,7 +79,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
-@Import(SamplerAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverTraceAutoConfiguration.class);
