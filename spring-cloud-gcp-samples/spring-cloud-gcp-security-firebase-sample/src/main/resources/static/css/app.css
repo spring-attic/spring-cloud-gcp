@@ -1,0 +1,39 @@
+.navbar {
+    border-top: 4px solid #6db33f;
+    background-color: #34302d;
+    border-radius: 0px;
+    margin-bottom: 0px;
+    border-bottom: 0;
+    border-left: 0;
+    border-right: 0;
+}
+
+.question {
+    color: #ff0bab;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.error {
+    color: #ff0000;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.success {
+    color: #358223;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.cli {
+    background: #22191c;
+    color: #00ff00;
+    font-family: "Courier New";
+    font-size: 14px;
+    border: 3px solid #ffffff;
+    padding: 20px;
+    border-radius: 25px;
+    word-break:break-all;
+
+}

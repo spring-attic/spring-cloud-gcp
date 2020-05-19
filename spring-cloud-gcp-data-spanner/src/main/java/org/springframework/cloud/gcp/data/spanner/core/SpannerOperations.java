@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
@@ -62,6 +63,17 @@ public interface SpannerOperations {
 	<T> T read(Class<T> entityClass, Key key);
 
 	/**
+	 * Returns whether an entity with the given id exists.
+	 *
+	 * @param entityClass the type of the entity
+	 * @param key the key of the object
+	 * @param <T> the type of the object to check.
+	 * @return {@literal true} if an entity with the given key exists, {@literal false} otherwise.
+	 * @throws IllegalArgumentException if {@literal id} is {@literal null}.
+	 */
+	<T> boolean existsById(Class<T> entityClass, Key key);
+
+	/**
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.
@@ -74,14 +86,24 @@ public interface SpannerOperations {
 
 	/**
 	 * Finds objects stored from their keys.
+	 * When the entity has a {@link org.springframework.cloud.gcp.data.spanner.core.mapping.Where} class annotation
+	 * or any of the properties is eagerly interleaved, the SQL query will be performed instead of the
+	 * {@link ReadContext#read} to fetch such properties and satisfy the {@code sql where} condition.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param keys the keys of the objects to retrieve.
 	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of objects that could be found using the given keys. If no keys could be
 	 * found the list will be empty.
+	 * @throws IllegalArgumentException when a combination of provided parameters and annotations does not allow to take
+	 *  unambiguous decision about the way to perform the operation. Such algorithm is used:
+	 *  <ul>
+	 *      <li>no need for "eager" or "Where" - we call {@link ReadContext#read}</li>
+	 *      <li>we need "eager" or "Where", {@code options} and {@code keys} are compatible with {@link SpannerQueryOptions} - in this case we execute an SQL query</li>
+	 *      <li>otherwise an exception will be thrown</li>
+	 *  </ul>
 	 */
-	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options);
+	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) throws IllegalArgumentException;
 
 	/**
 	 * Finds objects stored from their keys.
@@ -149,8 +171,9 @@ public interface SpannerOperations {
 	 * Deletes an object based on a key.
 	 * @param entityClass the type of the object to delete.
 	 * @param key the key of the object to delete from storage.
+	 * @param <T> the type of the object to delete.
 	 */
-	void delete(Class entityClass, Key key);
+	<T> void delete(Class<T> entityClass, Key key);
 
 	/**
 	 * Deletes an object from storage.
@@ -162,14 +185,15 @@ public interface SpannerOperations {
 	 * Deletes objects from storage in a batch.
 	 * @param objects the objects to delete from storage.
 	 */
-	void deleteAll(Iterable objects);
+	void deleteAll(Iterable<?> objects);
 
 	/**
 	 * Deletes objects given a set of keys.
 	 * @param entityClass the type of object to delete.
 	 * @param keys the keys of the objects to delete.
+	 * @param <T> the type of the object to delete.
 	 */
-	void delete(Class entityClass, KeySet keys);
+	<T> void delete(Class<T> entityClass, KeySet keys);
 
 	/**
 	 * Insert an object into storage.
@@ -181,7 +205,7 @@ public interface SpannerOperations {
 	 * Insert objects into storage in batch.
 	 * @param objects the objects to insert.
 	 */
-	void insertAll(Iterable objects);
+	void insertAll(Iterable<?> objects);
 
 	/**
 	 * Update an object already in storage.
@@ -193,7 +217,7 @@ public interface SpannerOperations {
 	 * Update objects in batch.
 	 * @param objects the objects to update.
 	 */
-	void updateAll(Iterable objects);
+	void updateAll(Iterable<?> objects);
 
 	/**
 	 * Update an object in storage.
@@ -222,7 +246,7 @@ public interface SpannerOperations {
 	 * Update or insert objects into storage in batch.
 	 * @param objects the objects to update or insert.
 	 */
-	void upsertAll(Iterable objects);
+	void upsertAll(Iterable<?> objects);
 
 	/**
 	 * Update or insert an object into storage.
@@ -244,9 +268,10 @@ public interface SpannerOperations {
 	/**
 	 * Count how many objects are stored of the given type.
 	 * @param entityClass the type of object to count.
+	 * @param <T> the type of the object to count.
 	 * @return the number of stored objects.
 	 */
-	long count(Class entityClass);
+	<T> long count(Class<T> entityClass);
 
 	/**
 	 * Performs multiple read and write operations in a single transaction.

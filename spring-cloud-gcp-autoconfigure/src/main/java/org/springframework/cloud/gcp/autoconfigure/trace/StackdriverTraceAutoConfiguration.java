@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,16 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PreDestroy;
+
+import brave.baggage.BaggagePropagation;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
-import brave.propagation.Propagation;
+import brave.propagation.B3Propagation;
+import brave.propagation.stackdriver.StackdriverTracePropagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
@@ -33,7 +38,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import zipkin2.CheckResult;
 import zipkin2.Span;
-import zipkin2.propagation.stackdriver.StackdriverTracePropagation;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.ReporterMetrics;
@@ -55,11 +59,9 @@ import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
-import org.springframework.cloud.sleuth.sampler.SamplerAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -78,7 +80,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
-@Import(SamplerAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverTraceAutoConfiguration.class);
@@ -101,6 +102,8 @@ public class StackdriverTraceAutoConfiguration {
 
 	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
 
+	private ThreadPoolTaskScheduler defaultTraceSenderThreadPool;
+
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpTraceProperties gcpTraceProperties) throws IOException {
@@ -122,25 +125,27 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "traceSenderThreadPool")
-	public ThreadPoolTaskScheduler traceSenderThreadPool(GcpTraceProperties traceProperties) {
-		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-		scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
-		scheduler.setThreadNamePrefix("gcp-trace-sender");
-		scheduler.setDaemon(true);
-		return scheduler;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(name = "traceExecutorProvider")
-	public ExecutorProvider traceExecutorProvider(@Qualifier("traceSenderThreadPool") ThreadPoolTaskScheduler scheduler) {
+	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties, @Qualifier("traceSenderThreadPool") Optional<ThreadPoolTaskScheduler> userProvidedScheduler) {
+		ThreadPoolTaskScheduler scheduler;
+		if (userProvidedScheduler.isPresent()) {
+			scheduler = userProvidedScheduler.get();
+		}
+		else {
+			this.defaultTraceSenderThreadPool = new ThreadPoolTaskScheduler();
+			scheduler = this.defaultTraceSenderThreadPool;
+			scheduler.setPoolSize(traceProperties.getNumExecutorThreads());
+			scheduler.setThreadNamePrefix("gcp-trace-sender");
+			scheduler.setDaemon(true);
+			scheduler.initialize();
+		}
 		return FixedExecutorProvider.create(scheduler.getScheduledExecutor());
 	}
 
 	@Bean(destroyMethod = "shutdownNow")
 	@ConditionalOnMissingBean(name = "stackdriverSenderChannel")
 	public ManagedChannel stackdriverSenderChannel() {
-		return ManagedChannelBuilder.forTarget("cloudtrace.googleapis.com")
+		return ManagedChannelBuilder.forTarget("dns:///cloudtrace.googleapis.com")
 				.userAgent(this.headerProvider.getUserAgent())
 				.build();
 	}
@@ -214,8 +219,16 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Propagation.Factory stackdriverPropagation() {
-		return StackdriverTracePropagation.FACTORY;
+	public BaggagePropagation.FactoryBuilder baggagePropagationFactoryBuilder() {
+		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.newFactory(
+				B3Propagation.newFactoryBuilder().injectFormat(B3Propagation.Format.MULTI).build()));
+	}
+
+	@PreDestroy
+	public void closeScheduler() {
+		if (this.defaultTraceSenderThreadPool != null) {
+			this.defaultTraceSenderThreadPool.shutdown();
+		}
 	}
 
 	/**
@@ -242,4 +255,5 @@ public class StackdriverTraceAutoConfiguration {
 			return new StackdriverHttpServerParser();
 		}
 	}
+
 }

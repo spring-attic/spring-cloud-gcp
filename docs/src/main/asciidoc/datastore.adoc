@@ -425,6 +425,8 @@ There are three ways to represent relationships between entities that are descri
 * Embedded entities stored directly in the field of the containing entity
 * `@Descendant` annotated properties for one-to-many relationships
 * `@Reference` annotated properties for general relationships without hierarchy
+* `@LazyReference` similar to `@Reference`, but the entities are lazy-loaded when the property is accessed.
+ (Note that the keys of the children are retrieved when the parent entity is loaded.)
 
 ==== Embedded Entities
 
@@ -949,6 +951,8 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 
 In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
+NOTE: You can refer to nested fields using https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#repositories.query-methods.query-property-expressions[Spring Data JPA Property Expressions]
+
 Cloud Datastore only supports filter components joined by AND, and the following operations:
 
 * `equals`
@@ -980,6 +984,15 @@ If a method's return type is `org.springframework.data.domain.Page`, the returne
 
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
+
+==== Empty result handling in repository methods
+Java `java.util.Optional` can be used to indicate the potential absence of a return value.
+
+Alternatively, query methods can return the result without a wrapper.
+In that case the absence of a query result is indicated by returning `null`.
+Repository methods returning collections are guaranteed never to return `null` but rather the corresponding empty collection.
+
+NOTE: You can enable nullability checks. For more details please see https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#null-safety[Spring Framework’s nullability docs].
 
 ==== Query by example
 Query by Example is an alternative querying technique.

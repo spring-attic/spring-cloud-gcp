@@ -149,16 +149,16 @@ public class SpannerDatabaseAdminTemplate {
 	 */
 	public Map<String, String> getChildParentTablesMap() {
 		Map<String, String> relationships = new HashMap<>();
-		ResultSet results = this.databaseClientProvider.get().singleUse()
-				.executeQuery(TABLE_AND_PARENT_QUERY);
-		while (results.next()) {
-			Struct row = results.getCurrentRowAsStruct();
-			relationships.put(row.getString(TABLE_NAME_COL_NAME),
-					row.isNull(PARENT_TABLE_NAME_COL_NAME) ? null
-							: row.getString(PARENT_TABLE_NAME_COL_NAME));
+		try (ResultSet results = this.databaseClientProvider.get().singleUse()
+				.executeQuery(TABLE_AND_PARENT_QUERY)) {
+			while (results.next()) {
+				Struct row = results.getCurrentRowAsStruct();
+				relationships.put(row.getString(TABLE_NAME_COL_NAME),
+						row.isNull(PARENT_TABLE_NAME_COL_NAME) ? null
+								: row.getString(PARENT_TABLE_NAME_COL_NAME));
+			}
+			return relationships;
 		}
-		results.close();
-		return relationships;
 	}
 
 	/**

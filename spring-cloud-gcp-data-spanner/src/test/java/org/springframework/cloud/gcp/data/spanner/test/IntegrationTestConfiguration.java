@@ -65,6 +65,8 @@ public class IntegrationTestConfiguration {
 	@Value("${test.integration.spanner.instance}")
 	private String instanceId;
 
+	private static final String TABLE_SUFFIX = String.valueOf(System.currentTimeMillis());
+
 	@Bean
 	public String getDatabaseName() {
 		return this.databaseName;
@@ -173,5 +175,10 @@ public class IntegrationTestConfiguration {
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
 			DatabaseAdminClient databaseAdminClient, DatabaseClient databaseClient, DatabaseId databaseId) {
 		return new SpannerDatabaseAdminTemplate(databaseAdminClient, () -> databaseClient, () -> databaseId);
+	}
+
+	@Bean
+	String tableNameSuffix() {
+		return this.TABLE_SUFFIX;
 	}
 }

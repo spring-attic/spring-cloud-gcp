@@ -23,7 +23,6 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -145,24 +144,25 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			});
 		}
 
-		boolean messageNacked = false;
-
 		try {
 			sendMessage(getMessageBuilderFactory()
 					.withPayload(message.getPayload())
 					.copyHeaders(messageHeaders)
 					.build());
+
+			if (this.ackMode == AckMode.AUTO_ACK || this.ackMode == AckMode.AUTO) {
+				message.ack();
+			}
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				message.nack();
-				messageNacked = true;
+				LOGGER.warn("Sending Spring message [" + message.getPubsubMessage().getMessageId()
+						+ "] failed; message nacked automatically.", re);
 			}
-			throw new PubSubException("Sending Spring message failed.", re);
-		}
-		finally {
-			if (!messageNacked && (this.ackMode == AckMode.AUTO || this.ackMode == AckMode.AUTO_ACK)) {
-				message.ack();
+			else {
+				LOGGER.warn("Sending Spring message [" + message.getPubsubMessage().getMessageId()
+						+ "] failed; message neither acked nor nacked.", re);
 			}
 		}
 	}

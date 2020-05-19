@@ -26,7 +26,7 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
-import org.springframework.cloud.gcp.data.firestore.User;
+import org.springframework.cloud.gcp.data.firestore.entities.User;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClassMapper;
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
@@ -52,7 +52,7 @@ public class PartTreeFirestoreQueryTests {
 
 	@Test
 	public void testPartTreeQuery() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery = createPartTreeQuery("findByAgeAndNameIsNull", invocation -> {
+		PartTreeFirestoreQuery partTreeFirestoreQuery = createPartTreeQuery("findByAgeAndNameIsNullAndHomeAddress_country", invocation -> {
 			StructuredQuery.Builder actualBuilder = invocation.getArgument(0);
 			Class clazz = invocation.getArgument(1);
 
@@ -76,13 +76,21 @@ public class PartTreeFirestoreQueryTests {
 
 			compositeFilter.addFilters(filterName.build());
 
+			StructuredQuery.Filter.Builder filterAddressCountry = StructuredQuery.Filter.newBuilder();
+			filterAddressCountry.getFieldFilterBuilder().setField(StructuredQuery.FieldReference.newBuilder()
+					.setFieldPath("address.country").build())
+					.setOp(StructuredQuery.FieldFilter.Operator.EQUAL)
+					.setValue(this.classMapper.toFirestoreValue("USA"));
+
+			compositeFilter.addFilters(filterAddressCountry.build());
+
 			builder.setWhere(StructuredQuery.Filter.newBuilder().setCompositeFilter(compositeFilter.build()));
 			assertThat(actualBuilder.build()).isEqualTo(builder.build());
 
 			assertThat(clazz).isEqualTo(User.class);
 		});
 
-		partTreeFirestoreQuery.execute(new Object[]{22});
+		partTreeFirestoreQuery.execute(new Object[] { 22, "USA" });
 	}
 
 	@Test
@@ -128,20 +136,19 @@ public class PartTreeFirestoreQueryTests {
 
 	@Test
 	public void testPartTreeQueryFilterException() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery =
-				createPartTreeQuery("findByAgeBetween");
-		assertThatThrownBy(() -> partTreeFirestoreQuery.execute(new Object[]{0, 100}))
+		assertThatThrownBy(() -> createPartTreeQuery("findByAgeBetweenAndNameRegex"))
 				.isInstanceOf(FirestoreDataException.class)
-				.hasMessage("Unsupported predicate keyword: BETWEEN (2): [IsBetween, Between]");
+				.hasMessage("Unsupported predicate keywords: " +
+						"[BETWEEN (2): [IsBetween, Between], " +
+						"REGEX (1): [MatchesRegex, Matches, Regex]] " +
+						"in findByAgeBetweenAndNameRegex");
 	}
 
 	@Test
 	public void testPartTreeQueryOrException() {
-		PartTreeFirestoreQuery partTreeFirestoreQuery =
-				createPartTreeQuery("findByAgeOrName");
-		assertThatThrownBy(() -> partTreeFirestoreQuery.execute(new Object[]{0, "Abc"}))
+		assertThatThrownBy(() -> createPartTreeQuery("findByAgeOrName"))
 				.isInstanceOf(FirestoreDataException.class)
-				.hasMessage("Cloud Firestore only supports multiple filters combined with AND.");
+				.hasMessage("Cloud Firestore doesn't support 'OR' (method name: findByAgeOrName)");
 	}
 
 	private PartTreeFirestoreQuery createPartTreeQuery(String methodName) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
+import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
@@ -58,15 +59,14 @@ import static org.mockito.Mockito.when;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
-		classes = {
-				PubSubBindingsTestConfiguration.class,
-				BindingServiceConfiguration.class
-		},
-		properties = {
-				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
-				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
-		})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {
+		PubSubBindingsTestConfiguration.class,
+		BindingServiceConfiguration.class
+}, properties = {
+		"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.ack-mode=AUTO_ACK",
+		"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
+		"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
+})
 public class PubSubExtendedBindingsPropertiesTests {
 
 	@Autowired
@@ -80,6 +80,11 @@ public class PubSubExtendedBindingsPropertiesTests {
 
 		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
 		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
+
+		assertThat(binder.getExtendedConsumerProperties("custom-in").getAckMode())
+				.isEqualTo(AckMode.AUTO);
+		assertThat(binder.getExtendedConsumerProperties("input").getAckMode())
+				.isEqualTo(AckMode.AUTO_ACK);
 	}
 
 	/**
@@ -136,4 +141,3 @@ public class PubSubExtendedBindingsPropertiesTests {
 		}
 	}
 }
-

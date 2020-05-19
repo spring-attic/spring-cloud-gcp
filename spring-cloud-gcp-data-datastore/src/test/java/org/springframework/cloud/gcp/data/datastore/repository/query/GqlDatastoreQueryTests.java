@@ -316,6 +316,8 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
+		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+				.processRawObjectForProjection(any());
 
 		Slice result = (Slice) gqlDatastoreQuery.execute(paramVals);
 
@@ -378,6 +380,8 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
+		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+				.processRawObjectForProjection(any());
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
 
@@ -427,6 +431,8 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
+		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+				.processRawObjectForProjection(any());
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
 

@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.pubsub.v1.PullRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -70,4 +71,22 @@ public class DefaultSubscriberFactoryTests {
 		new DefaultSubscriberFactory(() -> null);
 	}
 
+	@Test
+	public void testCreatePullRequest_greaterThanZeroMaxMessages() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "project");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The maxMessages must be greater than 0.");
+		factory.createPullRequest("test", -1, true);
+	}
+
+	@Test
+	public void testCreatePullRequest_nonNullMaxMessages() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "project");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		PullRequest request = factory.createPullRequest("test", null, true);
+		assertThat(request.getMaxMessages()).isEqualTo(Integer.MAX_VALUE);
+	}
 }

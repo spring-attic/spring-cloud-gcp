@@ -28,8 +28,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.ProjectionEntityQuery;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,6 +42,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
@@ -46,9 +50,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorFi
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
+import org.springframework.cloud.gcp.data.datastore.entities.ServiceConfiguration;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
@@ -61,10 +68,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionSystemException;
 
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 
 /**
  * Integration tests for Datastore that use many features.
@@ -89,7 +101,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Autowired
 	private DogRepository dogRepository;
 
-	@Autowired
+	@SpyBean
 	private DatastoreTemplate datastoreTemplate;
 
 	@Autowired
@@ -105,9 +117,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityB = new TestEntity(2L, "blue", 2L, Shape.CIRCLE, null);
 
-	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
+	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null, new EmbeddedEntity("c"));
 
-	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
+	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null, new EmbeddedEntity("d"));
 
 	private final List<TestEntity> allTestEntities;
 
@@ -141,6 +153,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(Pet.class);
 		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.datastoreTemplate.deleteAll(Event.class);
+		this.datastoreTemplate.deleteAll(LazyEntity.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -315,9 +328,17 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("c")).containsExactly(this.testEntityC);
+		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("d")).containsExactly(this.testEntityD);
+
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
+
 		assertThat(this.testEntityRepository.getByColor("green")).isNull();
+		assertThatThrownBy(() -> this.testEntityRepository.findByColor("green"))
+				.isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageMatching("Result must not be null!");
+
 		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
 
 		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
@@ -356,8 +377,16 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
+		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
 
 		this.testEntityRepository.saveAll(this.allTestEntities);
+
+		this.testEntityRepository.deleteBySizeEquals(1L);
+		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
+
+		//test saveAll for iterable
+		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
+		this.testEntityRepository.saveAll(testEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
@@ -447,11 +476,25 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		Thread.sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+		sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
 		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
+	}
+
+	@Test
+	public void projectionTest() {
+		reset(datastoreTemplate);
+		assertThat(this.testEntityRepository.findBySize(2L).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
 	}
 
 	@Test
@@ -516,19 +559,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void referenceTest() {
-		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
-		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
-		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
-		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
-
-		this.datastoreTemplate.save(parent);
-		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		ReferenceEntry parent = saveEntitiesGraph();
 
 		ReferenceEntry loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParent).isEqualTo(parent);
 
 		parent.name = "parent updated";
-		parent.childeren.forEach((child) -> child.name = child.name + " updated");
+		parent.children.forEach((child) -> child.name = child.name + " updated");
 		parent.sibling.name = "sibling updated";
 
 		this.datastoreTemplate.save(parent);
@@ -539,6 +576,68 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParentAfterUpdate).isEqualTo(parent);
+	}
+
+	@Test
+	public void lazyReferenceCollectionTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		ReferenceEntry lazyParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+
+		//Saving an entity with not loaded lazy field
+		this.datastoreTemplate.save(lazyParent);
+
+		ReferenceEntry loadedParent = this.datastoreTemplate.findById(lazyParent.id, ReferenceEntry.class);
+		assertThat(loadedParent.children).containsExactlyInAnyOrder(parent.children.toArray(new ReferenceEntry[0]));
+	}
+
+
+	@Test
+	public void lazyReferenceTest() throws InterruptedException {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+
+		//Saving an entity with not loaded lazy field
+		this.datastoreTemplate.save(loadedParent);
+
+		loadedParent = this.datastoreTemplate.findById(loadedParent.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
+	}
+
+
+	@Test
+	public void singularLazyPropertyTest() {
+		LazyEntity lazyParentEntity = new LazyEntity(new LazyEntity(new LazyEntity()));
+		this.datastoreTemplate.save(lazyParentEntity);
+
+		LazyEntity loadedParent = this.datastoreTemplate.findById(lazyParentEntity.id, LazyEntity.class);
+		assertThat(loadedParent).isEqualTo(lazyParentEntity);
+	}
+
+	@Test
+	public void lazyReferenceTransactionTest() {
+		ReferenceEntry parent = saveEntitiesGraph();
+
+		//Exception should be produced if a lazy loaded property accessed outside of the initial transaction
+		ReferenceEntry finalLoadedParent = this.transactionalTemplateService.findByIdLazy(parent.id);
+		assertThatThrownBy(() -> finalLoadedParent.children.size()).isInstanceOf(DatastoreDataException.class)
+				.hasMessage("Lazy load should be invoked within the same transaction");
+
+		//No exception should be produced if a lazy loaded property accessed within the initial transaction
+		ReferenceEntry finalLoadedParentLazyLoaded = this.transactionalTemplateService.findByIdLazyAndLoad(parent.id);
+		assertThat(finalLoadedParentLazyLoaded).isEqualTo(parent);
+	}
+
+	private ReferenceEntry saveEntitiesGraph() {
+		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
+		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
+		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
+		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
+		this.datastoreTemplate.save(parent);
+		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+		return parent;
 	}
 
 	@Test
@@ -700,6 +799,24 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
+	public void mapSubclass() {
+		CustomMap customMap1 = new CustomMap();
+		customMap1.put("key1", "val1");
+		ServiceConfiguration service1 = new ServiceConfiguration("service1", customMap1);
+		CustomMap customMap2 = new CustomMap();
+		customMap2.put("key2", "val2");
+		ServiceConfiguration service2 = new ServiceConfiguration("service2", customMap2);
+
+		this.datastoreTemplate.saveAll(Arrays.asList(service1, service2));
+
+		waitUntilTrue(() -> this.datastoreTemplate.count(ServiceConfiguration.class) == 2);
+
+		Collection<ServiceConfiguration> events = this.datastoreTemplate.findAll(ServiceConfiguration.class);
+
+		assertThat(events).containsExactlyInAnyOrder(service1, service2);
+	}
+
+	@Test
 	public void readOnlySaveTest() {
 		this.expectedException.expect(TransactionSystemException.class);
 		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.");
@@ -715,7 +832,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void readOnlyCountTest() {
-		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(testEntityA);
+		assertThat(this.transactionalTemplateService.findByIdInReadOnly(1)).isEqualTo(this.testEntityA);
 	}
 
 	@Test
@@ -734,6 +851,77 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(readCompany.leaders).hasSize(1);
 		assertThat(readCompany.leaders.get(0).id).isEqualTo(entity1.id);
+	}
+
+	@Test
+	public void testSlicedEntityProjections() {
+		reset(datastoreTemplate);
+		Slice<TestEntityProjection> testEntityProjectionSlice =
+				this.testEntityRepository.findBySize(2L, PageRequest.of(0, 1));
+
+		List<TestEntityProjection> testEntityProjections =
+				testEntityProjectionSlice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+
+		// Verifies that the projection method call works.
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+
+		ProjectionEntityQuery projectionQuery =
+				com.google.cloud.datastore.Query.newProjectionEntityQueryBuilder()
+						.addProjection("color")
+						.setFilter(PropertyFilter.eq("size", 2L))
+						.setKind("test_entities_ci").setLimit(1).build();
+
+		verify(datastoreTemplate).queryKeysOrEntities(eq(projectionQuery), any());
+	}
+
+	@Test
+	public void testPageableGqlEntityProjectionsPage() {
+		Page<TestEntityProjection> page =
+				this.testEntityRepository.getBySizePage(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections = page.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test
+	public void testPageableGqlEntityProjectionsSlice() {
+		Slice<TestEntityProjection> slice =
+				this.testEntityRepository.getBySizeSlice(2L, PageRequest.of(0, 3));
+
+		List<TestEntityProjection> testEntityProjections = slice.get().collect(Collectors.toList());
+
+		assertThat(testEntityProjections).hasSize(1);
+		assertThat(testEntityProjections.get(0)).isInstanceOf(TestEntityProjection.class);
+		assertThat(testEntityProjections.get(0)).isNotInstanceOf(TestEntity.class);
+		assertThat(testEntityProjections.get(0).getColor()).isEqualTo("blue");
+	}
+
+	@Test(timeout = 10000L)
+	public void testSliceString() {
+		try {
+			Slice<String> slice = this.testEntityRepository.getSliceStringBySize(2L, PageRequest.of(0, 3));
+
+			List<String> testEntityProjections = slice.get().collect(Collectors.toList());
+
+			assertThat(testEntityProjections).hasSize(1);
+			assertThat(testEntityProjections.get(0)).isEqualTo("blue");
+		}
+		catch (DatastoreException e) {
+			if (e.getMessage().contains("no matching index found")) {
+				throw new RuntimeException("The required index is not found. " +
+						"The index could be created by running this command from 'resources' directory: " +
+						"'gcloud datastore indexes create index.yaml'");
+			}
+			throw e;
+		}
 	}
 }
 
@@ -936,10 +1124,10 @@ class Employee {
 	@Override
 	public String toString() {
 		return "Employee{" +
-				"id=" + id.getNameOrId() +
+				"id=" + this.id.getNameOrId() +
 				", subordinates="
-				+ (subordinates != null
-				? subordinates.stream()
+				+ (this.subordinates != null
+				? this.subordinates.stream()
 				.map(employee -> employee.id.getNameOrId())
 				.collect(Collectors.toList())
 				: null)

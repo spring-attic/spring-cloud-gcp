@@ -66,7 +66,7 @@ public class ParallelSpannerRepositoryIntegrationTests extends AbstractSpannerIn
 				assertThat(repo.count()).isZero();
 			});
 			assertThat(repo.count()).isZero();
-			return null;
+			return 0;
 		});
 
 		executeInParallel(unused -> assertThat(this.tradeRepository.countByAction("BUY")).isEqualTo(PARALLEL_OPERATIONS));

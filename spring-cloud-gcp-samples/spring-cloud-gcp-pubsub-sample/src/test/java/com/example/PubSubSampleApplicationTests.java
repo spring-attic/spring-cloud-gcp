@@ -17,7 +17,6 @@
 package com.example;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -39,12 +38,14 @@ import com.google.pubsub.v1.Topic;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.system.OutputCaptureRule;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,10 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
 public class PubSubSampleApplicationTests {
+
+	/** Output capture for validating that message was received. */
+	@Rule
+	public OutputCaptureRule output = new OutputCaptureRule();
 
 	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 60;
 
@@ -129,41 +134,19 @@ public class PubSubSampleApplicationTests {
 
 	@AfterClass
 	public static void cleanupPubsubClients() {
-		if (topicAdminClient != null) {
-			List<String> testTopics = Arrays.asList(
-					SAMPLE_TEST_TOPIC,
-					SAMPLE_TEST_TOPIC2,
-					SAMPLE_TEST_TOPIC_DELETE);
-
-			for (String topicName : testTopics) {
-				List<String> projectTopics = getTopicNamesFromProject();
-				String testTopicName = ProjectTopicName.format(projectName, topicName);
-				if (projectTopics.contains(testTopicName)) {
-					topicAdminClient.deleteTopic(testTopicName);
-				}
-			}
-
-			topicAdminClient.close();
-		}
 
 		if (subscriptionAdminClient != null) {
-			List<String> testSubscriptions = Arrays.asList(
-					SAMPLE_TEST_SUBSCRIPTION1,
-					SAMPLE_TEST_SUBSCRIPTION2,
-					SAMPLE_TEST_SUBSCRIPTION3,
-					SAMPLE_TEST_SUBSCRIPTION_DELETE);
-
-			for (String testSubscription : testSubscriptions) {
-				String testSubscriptionName = ProjectSubscriptionName.format(
-						projectName, testSubscription);
-				List<String> projectSubscriptions = getSubscriptionNamesFromProject();
-				if (projectSubscriptions.contains(testSubscriptionName)) {
-					subscriptionAdminClient.deleteSubscription(testSubscriptionName);
-				}
-			}
+			deleteSubscriptions(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_SUBSCRIPTION2,
+					SAMPLE_TEST_SUBSCRIPTION3, SAMPLE_TEST_SUBSCRIPTION_DELETE);
 
 			subscriptionAdminClient.close();
 		}
+
+		if (topicAdminClient != null) {
+			deleteTopics(SAMPLE_TEST_TOPIC, SAMPLE_TEST_TOPIC2, SAMPLE_TEST_TOPIC_DELETE);
+			topicAdminClient.close();
+		}
+
 	}
 
 	@Before
@@ -181,16 +164,21 @@ public class PubSubSampleApplicationTests {
 	}
 
 	@Test
-	public void testReceiveMessage() {
+	public void testReceiveMessageByPull() {
 		postMessage("HelloWorld-Pull", SAMPLE_TEST_TOPIC);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
 						.containsExactly("HelloWorld-Pull"));
+	}
 
-		// After subscribing, the message will be acked by the application and no longer be present.
+	@Test
+	public void testReceiveMessagesBySubscribe() {
+		postMessage("HelloWorld-Subscribe", SAMPLE_TEST_TOPIC);
+
 		subscribe(SAMPLE_TEST_SUBSCRIPTION1);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty());
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+				.until(() -> this.output.getOut().contains(
+						"Message received from " + SAMPLE_TEST_SUBSCRIPTION1 + " subscription: HelloWorld-Pull"));
 	}
 
 	@Test
@@ -325,4 +313,26 @@ public class PubSubSampleApplicationTests {
 				.map(Subscription::getName)
 				.collect(Collectors.toList());
 	}
+
+	private static void deleteTopics(String... testTopics) {
+		for (String topicName : testTopics) {
+			List<String> projectTopics = getTopicNamesFromProject();
+			String testTopicName = ProjectTopicName.format(projectName, topicName);
+			if (projectTopics.contains(testTopicName)) {
+				topicAdminClient.deleteTopic(testTopicName);
+			}
+		}
+	}
+
+	private static void deleteSubscriptions(String... testSubscriptions) {
+		for (String testSubscription : testSubscriptions) {
+			String testSubscriptionName = ProjectSubscriptionName.format(
+					projectName, testSubscription);
+			List<String> projectSubscriptions = getSubscriptionNamesFromProject();
+			if (projectSubscriptions.contains(testSubscriptionName)) {
+				subscriptionAdminClient.deleteSubscription(testSubscriptionName);
+			}
+		}
+	}
+
 }

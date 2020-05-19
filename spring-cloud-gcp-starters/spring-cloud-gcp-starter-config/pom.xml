@@ -4,11 +4,12 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-gcp-starters</artifactId>
-		<version>1.3.0.BUILD-SNAPSHOT</version>
+		<version>1.2.3.BUILD-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter-config</artifactId>
 	<name>Spring Cloud GCP Config Starter</name>
 	<description>Starter for Spring Cloud Config Client using Google Runtime Configuration API</description>
+	<url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-config</url>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>https://www.spring.io</url>

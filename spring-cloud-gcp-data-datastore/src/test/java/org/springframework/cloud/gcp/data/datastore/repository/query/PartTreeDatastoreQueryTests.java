@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConvers
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.cloud.gcp.data.datastore.it.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
@@ -56,6 +59,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.DefaultParameters;
@@ -86,6 +91,11 @@ public class PartTreeDatastoreQueryTests {
 
 	private static final DatastoreResultsIterable<Object> EMPTY_RESPONSE = new DatastoreResultsIterable<>(
 			Collections.emptyIterator(), null);
+	static final CompositeFilter FILTER = CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+			PropertyFilter.eq("ticker", "abcd"),
+			PropertyFilter.lt("price", 8.88),
+			PropertyFilter.ge("price", 3.33),
+			PropertyFilter.isNull("__key__"));
 
 	private DatastoreTemplate datastoreTemplate;
 
@@ -113,7 +123,7 @@ public class PartTreeDatastoreQueryTests {
 		this.datastoreMappingContext = new DatastoreMappingContext();
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
 		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null,
-				datastoreMappingContext);
+				this.datastoreMappingContext);
 		when(this.datastoreTemplate.getDatastoreEntityConverter())
 				.thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions())
@@ -121,10 +131,14 @@ public class PartTreeDatastoreQueryTests {
 
 	}
 
-	private PartTreeDatastoreQuery<Trade> createQuery(boolean isPageQuery, boolean isSliceQuery) {
+	private PartTreeDatastoreQuery<Trade> createQuery(boolean isPageQuery, boolean isSliceQuery,
+			ProjectionInformation projectionInformation) {
+		ProjectionFactory projectionFactory = mock(ProjectionFactory.class);
+		doReturn(projectionInformation != null ? projectionInformation : getProjectionInformationMock()).when(projectionFactory).getProjectionInformation(any());
+
 		PartTreeDatastoreQuery<Trade> tradePartTreeDatastoreQuery = new PartTreeDatastoreQuery<>(this.queryMethod,
 				this.datastoreTemplate,
-				this.datastoreMappingContext, Trade.class);
+				this.datastoreMappingContext, Trade.class, projectionFactory);
 		PartTreeDatastoreQuery<Trade> spy = spy(tradePartTreeDatastoreQuery);
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
@@ -134,15 +148,23 @@ public class PartTreeDatastoreQueryTests {
 		return spy;
 	}
 
+	private ProjectionInformation getProjectionInformationMock() {
+		ProjectionInformation mock = mock(ProjectionInformation.class);
+		doReturn(Trade.class).when(mock).getType();
+		return mock;
+	}
+
 	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
-		queryWithMockResult("findTop333ByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
-				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class));
+		queryWithMockResult("findTop333ByActionAndSymbolAndPriceLessThan"
+						+ "AndPriceGreaterThanEqual"
+						+ "AndEmbeddedEntityStringFieldEquals"
+						+ "AndIdIsNullOrderByIdDesc", null,
+				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class, String.class));
 
 		Object[] params = new Object[] { "BUY", "abcd",
 				// this int param requires custom conversion
-				8, 3.33 };
+				8, 3.33, "abc" };
 
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
@@ -152,6 +174,55 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8L),
 							PropertyFilter.ge("price", 3.33),
+							PropertyFilter.eq("embeddedEntity.stringField", "abc"),
+							PropertyFilter.isNull("__key__")))
+					.setKind("trades")
+					.setOrderBy(OrderBy.desc("__key__")).setLimit(333).build();
+
+			assertThat(statement).isEqualTo(expected);
+
+			return EMPTY_RESPONSE;
+		});
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
+
+		this.partTreeDatastoreQuery.execute(params);
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+	}
+
+	@Test
+	public void compoundNameConventionProjectionTest() throws NoSuchMethodException, IntrospectionException {
+		ProjectionInformation projectionInformation = mock(ProjectionInformation.class);
+		doReturn(TradeProjection.class).when(projectionInformation).getType();
+		doReturn(true).when(projectionInformation).isClosed();
+		doReturn(Arrays.asList(
+				new PropertyDescriptor("id", null, null),
+				new PropertyDescriptor("symbol", null, null))
+		).when(projectionInformation).getInputProperties();
+
+		queryWithMockResult("findTop333ByActionAndSymbolAndPriceLessThan"
+						+ "AndPriceGreaterThanEqual"
+						+ "AndEmbeddedEntityStringFieldEquals"
+						+ "AndIdIsNullOrderByIdDesc", null,
+				getClass().getMethod("tradeMethodProjection", String.class, String.class, double.class, double.class, String.class),
+				projectionInformation
+		);
+
+		Object[] params = new Object[] { "BUY", "abcd",
+				// this int param requires custom conversion
+				8, 3.33, "abc" };
+
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			StructuredQuery statement = invocation.getArgument(0);
+
+			StructuredQuery expected = StructuredQuery.newProjectionEntityQueryBuilder()
+					.addProjection("__key__", "ticker")
+					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+							PropertyFilter.eq("ticker", "abcd"),
+							PropertyFilter.lt("price", 8L),
+							PropertyFilter.ge("price", 3.33),
+							PropertyFilter.eq("embeddedEntity.stringField", "abc"),
 							PropertyFilter.isNull("__key__")))
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(333).build();
@@ -181,11 +252,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(444)
 					.setLimit(444)
@@ -216,11 +283,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setLimit(333)
 					.setOrderBy(OrderBy.desc("__key__")).build();
@@ -250,11 +313,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__"), OrderBy.asc("price")).build();
 
@@ -283,11 +342,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).build();
 
@@ -342,11 +397,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(444)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(444).build();
@@ -370,11 +421,11 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
-		this.partTreeDatastoreQuery = createQuery(true, false);
+		this.partTreeDatastoreQuery = createQuery(true, false, null);
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		preparePageResults(2, 2, null);
+		preparePageResults(2, 2, null, Arrays.asList(3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -397,14 +448,14 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
-		this.partTreeDatastoreQuery = createQuery(true, false);
+		this.partTreeDatastoreQuery = createQuery(true, false, null);
 
 		PageRequest pageRequest = PageRequest.of(1, 2, Sort.Direction.DESC, "id");
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33,
 				DatastorePageable.from(pageRequest, cursor, 99L) };
 
-		preparePageResults(2, 2, cursor);
+		preparePageResults(2, 2, cursor, Arrays.asList(3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -418,16 +469,16 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
-	public void pageableQueryNoPageableParam() throws NoSuchMethodException {
+	public void pageableQueryMissingPageableParamReturnsAllResults() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class));
 
-		this.partTreeDatastoreQuery = createQuery(true, false);
+		this.partTreeDatastoreQuery = createQuery(true, false, null);
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		preparePageResults(0, null, null);
+		preparePageResults(0, null, null, Arrays.asList(1, 2, 3, 4), Arrays.asList(1, 2, 3, 4));
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -449,7 +500,7 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
-		this.partTreeDatastoreQuery = createQuery(false, true);
+		this.partTreeDatastoreQuery = createQuery(false, true, null);
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
@@ -473,7 +524,7 @@ public class PartTreeDatastoreQueryTests {
 						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class));
 
-		this.partTreeDatastoreQuery = createQuery(false, true);
+		this.partTreeDatastoreQuery = createQuery(false, true, null);
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
@@ -499,7 +550,7 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
-		this.partTreeDatastoreQuery = createQuery(false, true);
+		this.partTreeDatastoreQuery = createQuery(false, true, null);
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(0, 2, Sort.Direction.DESC, "id") };
 
@@ -517,39 +568,30 @@ public class PartTreeDatastoreQueryTests {
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
-	private void preparePageResults(int offset, Integer limit, Cursor cursor) {
+	private void preparePageResults(int offset, Integer limit, Cursor cursor,
+			List<Integer> pageResults, List<Integer> fullResults) {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setStartCursor(cursor)
 					.setOffset(cursor != null ? 0 : offset)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(limit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			List<Integer> results = Arrays.asList(3, 4);
-			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("abc".getBytes()));
+			return new DatastoreResultsIterable(pageResults.iterator(), Cursor.copyFrom("abc".getBytes()));
 		});
 
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
 			KeyQuery statement = invocation.getArgument(0);
 			KeyQuery expected = StructuredQuery.newKeyQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
-			List<Integer> results = Arrays.asList(1, 2, 3, 4);
-			return new DatastoreResultsIterable(results.iterator(), Cursor.copyFrom("def".getBytes()));
+			return new DatastoreResultsIterable(fullResults.iterator(), Cursor.copyFrom("def".getBytes()));
 		});
 	}
 
@@ -559,11 +601,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
-							PropertyFilter.ge("price", 3.33),
-							PropertyFilter.isNull("__key__")))
+					.setFilter(FILTER)
 					.setKind("trades")
 					.setOffset(offset)
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
@@ -575,11 +613,7 @@ public class PartTreeDatastoreQueryTests {
 				.thenAnswer(invocation -> {
 					EntityQuery statement = invocation.getArgument(0);
 					EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-							.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-									PropertyFilter.eq("ticker", "abcd"),
-									PropertyFilter.lt("price", 8.88),
-									PropertyFilter.ge("price", 3.33),
-									PropertyFilter.isNull("__key__")))
+							.setFilter(FILTER)
 							.setKind("trades")
 							.setStartCursor(cursor)
 							.setOrderBy(OrderBy.desc("__key__")).setLimit(1).build();
@@ -597,6 +631,73 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	@Test
+	public void deleteTest() throws NoSuchMethodException {
+		queryWithMockResult("deleteByAction", null,
+				getClass().getMethod("countByAction", String.class));
+
+		this.partTreeDatastoreQuery = createQuery(false, false, null);
+
+		Object[] params = new Object[] { "BUY" };
+
+		prepareDeleteResults(false);
+
+		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class) int.class);
+
+		this.partTreeDatastoreQuery.execute(params);
+
+		verify(this.datastoreTemplate, times(0))
+				.query(any(), (Function) any());
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+
+		verify(this.datastoreTemplate, times(1))
+				.deleteAllById(eq(Arrays.asList(3, 4, 5)), any());
+	}
+
+	@Test
+	public void deleteReturnCollectionTest() throws NoSuchMethodException {
+		queryWithMockResult("deleteByAction", null,
+				getClass().getMethod("countByAction", String.class));
+
+		this.partTreeDatastoreQuery = createQuery(false, false, null);
+
+		Object[] params = new Object[] { "BUY" };
+
+		prepareDeleteResults(true);
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
+
+		List result = (List) this.partTreeDatastoreQuery.execute(params);
+		assertThat(result).containsExactly(3, 4, 5);
+
+		verify(this.datastoreTemplate, times(0))
+				.query(any(), (Function) any());
+
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
+
+		verify(this.datastoreTemplate, times(1))
+				.deleteAll(eq(Arrays.asList(3, 4, 5)));
+	}
+	private void prepareDeleteResults(boolean isCollection) {
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			StructuredQuery<?> statement = invocation.getArgument(0);
+			StructuredQuery.Builder builder = isCollection ? StructuredQuery.newEntityQueryBuilder()
+					: StructuredQuery.newKeyQueryBuilder();
+			StructuredQuery<?> expected = builder
+					.setFilter(PropertyFilter.eq("action", "BUY"))
+					.setKind("trades")
+					.build();
+
+			assertThat(statement).isEqualTo(expected);
+			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+		});
+	}
+
+	@Test
 	public void unspecifiedParametersTest() throws NoSuchMethodException {
 		this.expectedException.expectMessage(
 				"Too few parameters are provided for query method: " +
@@ -607,7 +708,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
-		this.partTreeDatastoreQuery = createQuery(false, false);
+		this.partTreeDatastoreQuery = createQuery(false, false, null);
 
 		// There are too few params specified, so the exception will occur.
 		Object[] params = new Object[] { "BUY" };
@@ -624,7 +725,7 @@ public class PartTreeDatastoreQueryTests {
 		queryWithMockResult("findByAction", null,
 				getClass().getMethod("countByPrice", Integer.class));
 
-		this.partTreeDatastoreQuery = createQuery(false, false);
+		this.partTreeDatastoreQuery = createQuery(false, false, null);
 
 		Object[] params = new Object[] { new Trade() };
 
@@ -636,7 +737,7 @@ public class PartTreeDatastoreQueryTests {
 		this.expectedException.expectMessage("Unsupported predicate keyword: BETWEEN");
 
 		queryWithMockResult("countByTraderIdBetween", null, getClass().getMethod("traderAndPrice"));
-		this.partTreeDatastoreQuery = createQuery(false, false);
+		this.partTreeDatastoreQuery = createQuery(false, false, null);
 		this.partTreeDatastoreQuery.execute(EMPTY_PARAMETERS);
 	}
 
@@ -697,7 +798,7 @@ public class PartTreeDatastoreQueryTests {
 	public void nonCollectionReturnType() throws NoSuchMethodException {
 		Trade trade = new Trade();
 		queryWithMockResult("findByAction", null,
-				getClass().getMethod("findByAction", String.class), true);
+				getClass().getMethod("findByAction", String.class), true, null);
 
 		Object[] params = new Object[] { "BUY", };
 
@@ -722,7 +823,7 @@ public class PartTreeDatastoreQueryTests {
 	public void usingIdField() throws NoSuchMethodException {
 		Trade trade = new Trade();
 		queryWithMockResult("findByActionAndId", null,
-				getClass().getMethod("findByActionAndId", String.class, String.class), true);
+				getClass().getMethod("findByActionAndId", String.class, String.class), true, null);
 
 		Object[] params = new Object[] { "BUY", "id1"};
 		when(this.datastoreTemplate.createKey(eq("trades"), eq("id1")))
@@ -750,23 +851,10 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
 	}
 
-
-	@Test
-	public void nonCollectionReturnTypeNoResults() throws NoSuchMethodException {
-		this.expectedException.expectMessage("Expecting at least 1 result, but none found");
-
-		queryWithMockResult("findByAction", Collections.emptyList(),
-				getClass().getMethod("findByAction", String.class), true);
-
-
-		Object[] params = new Object[] { "BUY", };
-		this.partTreeDatastoreQuery.execute(params);
-	}
-
 	@Test
 	public void nonCollectionReturnTypeNoResultsNullable() throws NoSuchMethodException {
 		queryWithMockResult("findByAction", Collections.emptyList(),
-				getClass().getMethod("findByActionNullable", String.class), true);
+				getClass().getMethod("findByActionNullable", String.class), true, null);
 
 		Object[] params = new Object[] { "BUY", };
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isNull();
@@ -775,17 +863,23 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void nonCollectionReturnTypeNoResultsOptional() throws NoSuchMethodException {
 		queryWithMockResult("findByAction", Collections.emptyList(),
-				getClass().getMethod("findByActionOptional", String.class), true);
+				getClass().getMethod("findByActionOptional", String.class), true, null);
 
 		Object[] params = new Object[] { "BUY", };
 		assertThat((Optional) this.partTreeDatastoreQuery.execute(params)).isNotPresent();
 	}
 
-	private void queryWithMockResult(String queryName, List results, Method m) {
-		queryWithMockResult(queryName, results, m, false);
+	private void queryWithMockResult(String queryName, List results, Method m,
+			ProjectionInformation projectionInformation) {
+		queryWithMockResult(queryName, results, m, false, projectionInformation);
 	}
 
-	private void queryWithMockResult(String queryName, List results, Method m, boolean mockOptionalNullable) {
+	private void queryWithMockResult(String queryName, List results, Method m) {
+		queryWithMockResult(queryName, results, m, false, null);
+	}
+
+	private void queryWithMockResult(String queryName, List results, Method m, boolean mockOptionalNullable,
+			ProjectionInformation projectionInformation) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		doReturn(new DefaultParameters(m))
 				.when(this.queryMethod).getParameters();
@@ -802,7 +896,7 @@ public class PartTreeDatastoreQueryTests {
 					.when(this.queryMethod).isNullable();
 		}
 
-		this.partTreeDatastoreQuery = createQuery(false, false);
+		this.partTreeDatastoreQuery = createQuery(false, false, projectionInformation);
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(new DatastoreResultsIterable<>(
 						results != null ? results.iterator() : Collections.emptyIterator(), null));
@@ -823,6 +917,14 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	public Optional<Trade> findByActionOptional(String action) {
+		return null;
+	}
+
+	public List<Trade> tradeMethod(String action, String symbol, double pless, double pgreater, String embeddedProperty) {
+		return null;
+	}
+
+	public List<TradeProjection> tradeMethodProjection(String action, String symbol, double pless, double pgreater, String embeddedProperty) {
 		return null;
 	}
 
@@ -866,6 +968,13 @@ public class PartTreeDatastoreQueryTests {
 
 		@Field(name = "trader_id")
 		String traderId;
+
+		EmbeddedEntity embeddedEntity;
 	}
 
+	public interface TradeProjection {
+		String getId();
+
+		String getSymbol();
+	}
 }

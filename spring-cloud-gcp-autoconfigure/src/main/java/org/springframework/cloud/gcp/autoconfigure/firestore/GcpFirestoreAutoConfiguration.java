@@ -28,6 +28,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import reactor.core.publisher.Flux;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -116,7 +117,7 @@ public class GcpFirestoreAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public FirestoreGrpc.FirestoreStub firestoreGrpcStub(
-				ManagedChannel firestoreManagedChannel) throws IOException {
+				@Qualifier("firestoreManagedChannel") ManagedChannel firestoreManagedChannel) throws IOException {
 			return FirestoreGrpc.newStub(firestoreManagedChannel)
 					.withCallCredentials(MoreCallCredentials.from(
 							GcpFirestoreAutoConfiguration.this.credentialsProvider.getCredentials()));
@@ -137,9 +138,9 @@ public class GcpFirestoreAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
-				FirestoreClassMapper classMapper) {
+				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
 			return new FirestoreTemplate(firestoreStub, GcpFirestoreAutoConfiguration.this.firestoreRootPath,
-					classMapper);
+					classMapper, firestoreMappingContext);
 		}
 
 		@Bean
@@ -151,10 +152,10 @@ public class GcpFirestoreAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean
+		@ConditionalOnMissingBean (name = "firestoreManagedChannel")
 		public ManagedChannel firestoreManagedChannel() {
 			return ManagedChannelBuilder
-					.forTarget(GcpFirestoreAutoConfiguration.this.hostPort)
+					.forTarget("dns:///" + GcpFirestoreAutoConfiguration.this.hostPort)
 					.userAgent(USER_AGENT_HEADER_PROVIDER.getUserAgent())
 					.build();
 		}

@@ -1,7 +1,7 @@
 :spring-security-ref: https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/
 :spring-security-javadoc: https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/
 
-== Cloud Identity-Aware Proxy (IAP) Authentication
+== Cloud IAP
 
 https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)] provides a security layer over applications deployed to Google Cloud.
 

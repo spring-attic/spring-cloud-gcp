@@ -62,7 +62,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
-		Class simpleConvertedType = getReturnedSimpleConvertableItemType();
+		Class<?> simpleConvertedType = getReturnedSimpleConvertableItemType();
 		if (simpleConvertedType != null) {
 			return convertToSimpleReturnType(results, simpleConvertedType);
 		}
@@ -73,7 +73,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 				: this.queryMethod.getResultProcessor().processResult(results.get(0));
 	}
 
-	Object convertToSimpleReturnType(List results, Class simpleConvertedType) {
+	Object convertToSimpleReturnType(List<?> results, Class<?> simpleConvertedType) {
 		return this.queryMethod.isCollectionQuery()
 				? results.stream()
 						.map((x) -> this.spannerTemplate.getSpannerEntityProcessor()
@@ -83,11 +83,14 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 						.convert(results.get(0), simpleConvertedType);
 	}
 
-	Class getReturnedSimpleConvertableItemType() {
-		Class itemType = this.queryMethod.isCollectionQuery()
-				? this.queryMethod.getResultProcessor().getReturnedType()
-						.getReturnedType()
+	Class<?> getReturnedType() {
+		return this.queryMethod.isCollectionQuery()
+				? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType()
 				: this.queryMethod.getReturnedObjectType();
+	}
+
+	Class<?> getReturnedSimpleConvertableItemType() {
+		Class<?> itemType = getReturnedType();
 
 		// If the user has configured converters that can handle the item type, then it is
 		// assumed
@@ -110,7 +113,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		if (rawResult == null) {
 			return Collections.emptyList();
 		}
-		return rawResult.stream().map((result) -> processRawObjectForProjection(result))
+		return rawResult.stream().map(this::processRawObjectForProjection)
 				.collect(Collectors.toList());
 	}
 

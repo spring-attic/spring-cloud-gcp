@@ -5,8 +5,11 @@ org.springframework.cloud.gcp.autoconfigure.logging.StackdriverLoggingAutoConfig
 org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubReactiveAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerEmulatorAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.SpannerTransactionManagerAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.firestore.GcpFirestoreAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.firestore.GcpFirestoreEmulatorAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration,\
@@ -14,11 +17,14 @@ org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfigurat
 org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreRepositoriesAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.security.FirebaseAuthenticationAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.vision.CloudVisionAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreEmulatorAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.bigquery.GcpBigQueryAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.firestore.FirestoreRepositoriesAutoConfiguration
+org.springframework.cloud.gcp.autoconfigure.firestore.FirestoreRepositoriesAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration
+org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration

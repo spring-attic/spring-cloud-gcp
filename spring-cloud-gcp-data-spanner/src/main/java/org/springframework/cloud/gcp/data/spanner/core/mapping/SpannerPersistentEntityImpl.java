@@ -58,6 +58,7 @@ import org.springframework.util.StringUtils;
  * @param <T> the type of the persistent entity
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -89,6 +90,10 @@ public class SpannerPersistentEntityImpl<T>
 	private SpannerCompositeKeyProperty idProperty;
 
 	private String tableName;
+
+	private boolean hasEagerlyLoadedProperties = false;
+
+	private final String where;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}.
@@ -124,6 +129,8 @@ public class SpannerPersistentEntityImpl<T>
 		this.context = new StandardEvaluationContext();
 
 		this.table = this.findAnnotation(Table.class);
+		Where annotation = findAnnotation(Where.class);
+		this.where = annotation != null ? annotation.value() : "";
 		this.tableNameExpression = detectExpression();
 	}
 
@@ -156,6 +163,9 @@ public class SpannerPersistentEntityImpl<T>
 		}
 		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
+		}
+		else if (property.isEagerInterleaved()) {
+			this.hasEagerlyLoadedProperties = true;
 		}
 
 		if (property.getPrimaryKeyOrder() != null
@@ -222,7 +232,7 @@ public class SpannerPersistentEntityImpl<T>
 			// getting the inner type will throw an exception if the property isn't a
 			// collection.
 			Class childType = spannerPersistentProperty.getColumnInnerType();
-			SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl)
+			SpannerPersistentEntityImpl<?> childEntity = (SpannerPersistentEntityImpl<?>)
 					this.spannerMappingContext.getPersistentEntity(childType);
 			List<SpannerPersistentProperty> primaryKeyProperties = getFlattenedPrimaryKeyProperties();
 			List<SpannerPersistentProperty> childKeyProperties = childEntity
@@ -253,9 +263,9 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
-			SpannerPersistentEntity spannerPersistentEntity) {
+			SpannerPersistentEntity<?> spannerPersistentEntity) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						if (ConversionUtils.isIterableNonByteArrayType(
 								spannerPersistentProperty.getType())) {
@@ -308,7 +318,7 @@ public class SpannerPersistentEntityImpl<T>
 		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
 			if (property.isEmbedded()) {
 				primaryKeyColumns
-						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
+						.addAll((this.spannerMappingContext
 								.getPersistentEntity(property.getType()))
 										.getFlattenedPrimaryKeyProperties());
 			}
@@ -352,6 +362,12 @@ public class SpannerPersistentEntityImpl<T>
 		return this.tableName;
 	}
 
+	@Override
+	public boolean hasMultiFieldKey() {
+		return getIdProperty() != null
+				&& !getIdProperty().getActualType().equals(Key.class);
+	}
+
 	// Because SpEL expressions in table name definitions are allowed, validation is
 	// required.
 	private String validateTableName(String name) {
@@ -360,6 +376,21 @@ public class SpannerPersistentEntityImpl<T>
 					+ "allowed in table names: " + name);
 		}
 		return name;
+	}
+
+	@Override
+	public boolean hasEagerlyLoadedProperties() {
+		return this.hasEagerlyLoadedProperties;
+	}
+
+	@Override
+	public String getWhere() {
+		return where;
+	}
+
+	@Override
+	public boolean hasWhere() {
+		return !where.isEmpty();
 	}
 
 	@Override
@@ -375,24 +406,31 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public PersistentPropertyAccessor getPropertyAccessor(Object object) {
-		PersistentPropertyAccessor delegatedAccessor = super.getPropertyAccessor(object);
-		return new PersistentPropertyAccessor() {
+	public <B> PersistentPropertyAccessor<B> getPropertyAccessor(B object) {
+		PersistentPropertyAccessor<B> delegatedAccessor = super.getPropertyAccessor(object);
+		return new PersistentPropertyAccessor<B>() {
 
 			@Override
-			public void setProperty(PersistentProperty property,
+			public void setProperty(PersistentProperty<?> property,
 					@Nullable Object value) {
 				if (property.isIdProperty()) {
-					SpannerPersistentEntity owner = (SpannerPersistentEntity) property.getOwner();
+					SpannerPersistentEntity<?> owner = (SpannerPersistentEntity<?>) property.getOwner();
 					SpannerPersistentProperty[] primaryKeyProperties = owner.getPrimaryKeyProperties();
 
-					Key keyValue = (Key) value;
-					if (keyValue == null || keyValue.size() != primaryKeyProperties.length) {
-						throw new SpannerDataException(
-								"The number of key parts is not equal to the number of primary key properties");
+					Iterator<Object> partsIterator;
+					if (value instanceof Key) {
+						Key keyValue = (Key) value;
+						if (keyValue.size() != primaryKeyProperties.length) {
+							throwWrongNumOfPartsException();
+						}
+						partsIterator = keyValue.getParts().iterator();
 					}
-
-					Iterator<Object> partsIterator = keyValue.getParts().iterator();
+					else {
+						if (primaryKeyProperties.length > 1) {
+							throwWrongNumOfPartsException();
+						}
+						partsIterator = Collections.singleton(value).iterator();
+					}
 					for (int i = 0; i < primaryKeyProperties.length; i++) {
 						SpannerPersistentProperty prop = primaryKeyProperties[i];
 						delegatedAccessor.setProperty(prop,
@@ -405,9 +443,14 @@ public class SpannerPersistentEntityImpl<T>
 				}
 			}
 
+			private void throwWrongNumOfPartsException() {
+				throw new SpannerDataException(
+						"The number of key parts is not equal to the number of primary key properties");
+			}
+
 			@Nullable
 			@Override
-			public Object getProperty(PersistentProperty property) {
+			public Object getProperty(PersistentProperty<?> property) {
 				if (property.isIdProperty()) {
 					return ((SpannerCompositeKeyProperty) property).getId(getBean());
 				}
@@ -417,9 +460,17 @@ public class SpannerPersistentEntityImpl<T>
 			}
 
 			@Override
-			public Object getBean() {
+			public B getBean() {
 				return delegatedAccessor.getBean();
 			}
 		};
+	}
+
+	@Override
+	public String getPrimaryKeyColumnName() {
+		SpannerPersistentProperty primaryKeyProperty = getPrimaryKeyProperties()[0];
+		return primaryKeyProperty.isEmbedded()
+				? this.spannerMappingContext.getPersistentEntity(primaryKeyProperty.getType()).getPrimaryKeyColumnName()
+				: primaryKeyProperty.getColumnName();
 	}
 }

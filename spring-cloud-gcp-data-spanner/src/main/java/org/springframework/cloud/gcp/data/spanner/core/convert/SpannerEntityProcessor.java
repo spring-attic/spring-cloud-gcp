@@ -44,7 +44,7 @@ public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEnti
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass);
 
 	/**
-	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
+	 * Converts a Spanner {@link ResultSet} into a list of objects.
 	 * @param resultSet the Spanner results to convert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass the type of the objects the Spanner results represent.

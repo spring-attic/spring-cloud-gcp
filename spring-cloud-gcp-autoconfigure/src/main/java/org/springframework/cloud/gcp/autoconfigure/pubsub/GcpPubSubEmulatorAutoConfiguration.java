@@ -45,8 +45,8 @@ public class GcpPubSubEmulatorAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget(gcpPubSubProperties.getEmulatorHost())
-				.usePlaintext(true)
+				.forTarget("dns:///" + gcpPubSubProperties.getEmulatorHost())
+				.usePlaintext()
 				.build();
 		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
 	}

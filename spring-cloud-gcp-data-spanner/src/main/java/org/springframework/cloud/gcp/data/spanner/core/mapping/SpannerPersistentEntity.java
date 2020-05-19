@@ -31,6 +31,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @param <T> the underlying persistent entity type
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -98,4 +99,45 @@ public interface SpannerPersistentEntity<T> extends
 	 * @param handler must not be {@literal null}.
 	 */
 	void doWithColumnBackedProperties(PropertyHandler<SpannerPersistentProperty> handler);
+
+	/**
+	 * Returns true if the entity has a muti-field key.
+	 *
+	 * @return true if the entity has a muti-field key
+	 */
+	boolean hasMultiFieldKey();
+
+	/**
+	 * Returns a primary key column name; if there are multiple primary key columns, returns first one.
+	 * In case of embedded keys it works recursively.
+	 *
+	 * @return a primary key column name
+	 */
+	String getPrimaryKeyColumnName();
+
+	/**
+	 * Returns true if the entity has at least one eagerly load interleaved property.
+	 *
+	 * @return true if the entity has at least one eagerly load interleaved property
+	 * @see Interleaved#lazy()
+	 */
+	boolean hasEagerlyLoadedProperties();
+
+	/**
+	 * Returns the value of the {@link Where} annotation from the entity's class or inherited from parents
+	 * or an empty string when no annotation found.
+	 *
+	 * @return the value of the {@link Where} from the entity's class or inherited from parents
+	 *     or an empty string when no annotation found.
+	 * @see #hasWhere()
+	 */
+	String getWhere();
+
+	/**
+	 * Returns true when the entity has an annotation {@link Where} with a non-empty value.
+	 *
+	 * @return true when the entity has an annotation {@link Where} with a non-empty value.
+	 * @see #getWhere()
+	 */
+	boolean hasWhere();
 }

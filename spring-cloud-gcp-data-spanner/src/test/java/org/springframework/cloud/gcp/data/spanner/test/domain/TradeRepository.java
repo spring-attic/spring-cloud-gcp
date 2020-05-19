@@ -17,7 +17,10 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Struct;
@@ -26,12 +29,15 @@ import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 /**
  * A repository for integration tests that holds many complex use cases.
  *
  * @author Chengyuan Zhao
  */
+
+@Nonnull
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	List<Trade> findByTraderId(String traderId);
@@ -45,6 +51,9 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	List<Trade> deleteBySymbol(String symbol);
 
 	void deleteBySymbolAndAction(String symbol, String action);
+
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id")
+	Optional<Trade> fetchById(@Param("id") String id);
 
 	@Query(dmlStatement = true, value = "UPDATE :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:" +
 			" set action = @action WHERE id = @id")
@@ -71,9 +80,11 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 			+ "where action = @action")
 	List<String> getFirstStringList(@Param("action") String action);
 
+	//The sort should be passed as a Pageable param - Spanner did not preserve the order
+	//of a wrapped query that we will have at fetching of eager-interleaved fields of the Trade entity
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " WHERE action=@action AND action=#{#action} ORDER BY id desc")
-	List<Trade> annotatedTradesByAction(@Param("action") String action);
+			+ " WHERE action=@action AND action=#{#action}")
+	List<Trade> annotatedTradesByAction(@Param("action") String action, Pageable pageable);
 
 	List<TradeProjection> findByActionIgnoreCase(String action);
 
@@ -106,4 +117,7 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	long countWithInQuery(@Param("actions") List<String> actions);
 
 	List<Trade> findByActionIn(Set<String> action);
+
+	@NonNull
+	Trade getByAction(String s);
 }

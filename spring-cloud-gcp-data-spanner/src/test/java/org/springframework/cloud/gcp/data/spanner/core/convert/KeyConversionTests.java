@@ -77,8 +77,8 @@ public class KeyConversionTests {
 						Key.of(1, true, false, "hello", ByteArray.copyFrom("world")) },
 				{ "converted default type (date)",
 						java.util.Date.from(Instant.ofEpochSecond(123)),
-						Key.of(SpannerConverters.JAVA_TO_SPANNER_DATE_CONVERTER
-								.convert(java.util.Date.from(Instant.ofEpochSecond(123)))) },
+						Key.of(SpannerConverters.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER
+								.convert(java.sql.Timestamp.from(Instant.ofEpochSecond(123)))) },
 				{ "unsupported type (TestEntity)", new TestEntities.TestEntity(), SpannerDataException.class },
 				{ "empty key (Object[])", new Object[] {}, SpannerDataException.class },
 				{ "empty key (List{})", Collections.emptyList(), SpannerDataException.class },

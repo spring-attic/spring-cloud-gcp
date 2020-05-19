@@ -7,26 +7,13 @@
         <!-- Your own application should inherit from spring-boot-starter-parent -->
         <artifactId>spring-cloud-gcp-samples</artifactId>
         <groupId>org.springframework.cloud</groupId>
-        <version>1.3.0.BUILD-SNAPSHOT</version>
+        <version>1.2.3.BUILD-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-gcp-config-sample</artifactId>
     <name>Spring Cloud GCP Runtime Configuration Code Sample</name>
-
-    <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-gcp-dependencies</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -38,6 +25,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-starter-config</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Optional dependency to enable configuration refresh runtime via /refresh endpoint -->

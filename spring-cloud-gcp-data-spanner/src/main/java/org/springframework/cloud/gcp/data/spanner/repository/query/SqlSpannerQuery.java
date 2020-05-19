@@ -67,6 +67,8 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	// A character that isn't used in SQL
 	private static String ENTITY_CLASS_NAME_BOOKEND = ":";
+	private static Pattern ENTITY_CLASS_NAME_PATTERN = Pattern.compile(
+			"\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\" + ENTITY_CLASS_NAME_BOOKEND);
 
 	private final String sql;
 
@@ -94,14 +96,14 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		this.isDml = isDml;
 	}
 
-	private boolean isPageableOrSort(Class type) {
+	private boolean isPageableOrSort(Class<?> type) {
 		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
 	private List<String> getParamTags() {
 		List<String> tags = new ArrayList<>();
 		Set<String> seen = new HashSet<>();
-		Parameters parameters = getQueryMethod().getParameters();
+		Parameters<?, ?> parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Parameter param = parameters.getParameter(i);
 			if (isPageableOrSort(param.getType())) {
@@ -124,17 +126,15 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		return tags;
 	}
 
-	private String resolveEntityClassNames(String sql) {
-		Pattern pattern = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
-				+ ENTITY_CLASS_NAME_BOOKEND + "");
-		Matcher matcher = pattern.matcher(sql);
+	private static String resolveEntityClassNames(String sql, SpannerMappingContext spannerMappingContext) {
+		Matcher matcher = ENTITY_CLASS_NAME_PATTERN.matcher(sql);
 		String result = sql;
 		while (matcher.find()) {
 			String matched = matcher.group();
 			String className = matched.substring(1, matched.length() - 1);
 			try {
-				Class entityClass = Class.forName(className);
-				SpannerPersistentEntity spannerPersistentEntity = this.spannerMappingContext
+				Class<?> entityClass = Class.forName(className);
+				SpannerPersistentEntity<?> spannerPersistentEntity = spannerMappingContext
 						.getPersistentEntity(entityClass);
 				if (spannerPersistentEntity == null) {
 					throw new SpannerDataException(
@@ -199,7 +199,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		Sort sort = null;
 
 		for (Object param : parameters) {
-			Class paramClass = param.getClass();
+			Class<?> paramClass = param.getClass();
 			if (isPageableOrSort(paramClass)) {
 				if (pageable != null || sort != null) {
 					throw new SpannerDataException(
@@ -218,8 +218,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		}
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
-				params.toArray(),
-				resolveEntityClassNames(this.sql));
+				params.toArray(), resolveEntityClassNames(this.sql, this.spannerMappingContext));
 
 		resolveSpELTags(queryTagValue);
 
@@ -243,16 +242,16 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
+		final Class<?> returnedType = getReturnedType();
+		final SpannerPersistentEntity<?> entity = returnedType == null ? null : this.spannerMappingContext.getPersistentEntity(returnedType);
+
 		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
-						resolveEntityClassNames(queryTagValue.sql),
-						this.spannerMappingContext);
-
-		Class simpleItemType = getReturnedSimpleConvertableItemType();
+						queryTagValue.sql, this.spannerMappingContext, entity != null && entity.hasEagerlyLoadedProperties());
 
 		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
 
-		return (simpleItemType != null)
+		return (getReturnedSimpleConvertableItemType() != null)
 				? this.spannerTemplate.query(
 						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)
@@ -303,8 +302,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		String sql;
 
-		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params,
-				String sql) {
+		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params, String sql) {
 			this.tags = tags;
 			this.intialParams = params;
 			this.sql = sql;

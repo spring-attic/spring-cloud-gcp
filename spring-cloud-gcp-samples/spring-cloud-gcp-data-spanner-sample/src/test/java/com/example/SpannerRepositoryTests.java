@@ -16,13 +16,15 @@
 
 package com.example;
 
+import java.sql.Timestamp;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.cloud.spanner.Key;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -119,12 +121,16 @@ public class SpannerRepositoryTests {
 		ResponseEntity<Trader> tradesResponse = testRestTemplate.exchange(
 				String.format("http://localhost:%s/traders/t123", this.port),
 				HttpMethod.PUT,
-				new HttpEntity<>("{\"firstName\": \"John\", \"lastName\": \"Smith\"}", headers),
+				new HttpEntity<>("{\"firstName\": \"John\", \"lastName\": \"Smith\", \"createdOn\": " +
+						"\"2000-Jan-02 03:04:05 UTC\", \"modifiedOn\": [\"2000-Jan-02 03:04:05 UTC\"]}", headers),
 				new ParameterizedTypeReference<Trader>() { });
 
-		Trader expected = new Trader("t123", "John", "Smith");
+		ZonedDateTime expectedUtcDate = ZonedDateTime.of(2000, 1, 2, 3, 4, 5, 0, ZoneOffset.UTC);
+		Timestamp expectedTimestamp = new Timestamp(expectedUtcDate.toEpochSecond() * 1000L);
+		Trader expected = new Trader("t123", "John", "Smith", expectedTimestamp,
+				Collections.singletonList(expectedTimestamp));
 		assertThat(tradesResponse.getBody()).isEqualTo(expected);
-		assertThat(this.traderRepository.findAllById(Collections.singleton(Key.of("t123"))).iterator().next())
+		assertThat(this.traderRepository.findAllById(Collections.singleton("t123")).iterator().next())
 				.isEqualTo(expected);
 	}
 

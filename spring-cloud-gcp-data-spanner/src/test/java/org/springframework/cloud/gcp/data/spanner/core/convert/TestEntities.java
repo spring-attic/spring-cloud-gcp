@@ -97,7 +97,7 @@ public class TestEntities {
 
 		ByteArray bytes;
 
-		@Interleaved
+		@Interleaved(lazy = true)
 		List<ChildTestEntity> childTestEntities;
 
 		/**
@@ -290,4 +290,5 @@ public class TestEntities {
 			this.booleanField = booleanField;
 		}
 	}
+
 }

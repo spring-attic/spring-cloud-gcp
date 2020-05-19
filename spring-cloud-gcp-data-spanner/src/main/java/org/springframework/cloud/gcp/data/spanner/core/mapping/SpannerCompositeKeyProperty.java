@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  * correspond to actual properties of POJOs, as it might even be a composite, multi-column key.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -139,6 +140,21 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	public boolean isEagerInterleaved() {
+		return false;
+	}
+
+	@Override
+	public String getWhere() {
+		return "";
+	}
+
+	@Override
+	public boolean hasWhere() {
+		return false;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		return OptionalLong.empty();
 	}
@@ -155,7 +171,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
 	@Override
 	public Class<?> getType() {
-		return Key.class;
+		return this.primaryKeyColumns.length == 1 ? this.primaryKeyColumns[0].getActualType() : Key.class;
 	}
 
 	@Override

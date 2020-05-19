@@ -74,6 +74,8 @@ public MessageSource<InputStream> streamingAdapter(Storage gcs) {
 }
 ----
 
+If you would like to process the files in your bucket in a specific order, you may pass in a `Comparator<BlobInfo>` to the constructor `GcsStreamingMessageSource` to sort the files being processed.
+
 ==== Outbound channel adapter
 
 The outbound channel adapter allows files to be written to Google Cloud Storage.
@@ -93,6 +95,6 @@ public MessageHandler outboundChannelAdapter(Storage gcs) {
 }
 ----
 
-=== Sample
+==== Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-storage-sample[sample application] is available.
+See the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-storage-sample[Spring Integration with Google Cloud Storage Sample Code].

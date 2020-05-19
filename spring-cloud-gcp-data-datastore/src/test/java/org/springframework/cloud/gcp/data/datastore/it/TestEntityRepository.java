@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
@@ -31,6 +33,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -39,6 +42,7 @@ import org.springframework.lang.Nullable;
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */
+@Nonnull
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, Long> {
 
 	@Query("select * from  test_entities_ci where size = @size ")
@@ -66,9 +70,13 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	int deleteBySize(long size);
 
+	void deleteBySizeEquals(long size);
+
 	List<TestEntity> removeByColor(String color);
 
 	List<TestEntity> findByShape(Shape shape);
+
+	List<TestEntity> findByEmbeddedEntityStringField(String val);
 
 	@Query("select * from test_entities_ci where shape = @enum_val")
 	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
@@ -107,6 +115,19 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query("select * from  test_entities_ci where size = @size")
 	TestEntityProjection getBySize(@Param("size") long size);
 
+	TestEntityProjection findBySize(long size);
+
+	@Query("select * from test_entities_ci where size = @size")
+	Slice<TestEntityProjection> getBySizeSlice(@Param("size") long size, Pageable pageable);
+
+	@Query("select * from test_entities_ci where size = @size")
+	Page<TestEntityProjection> getBySizePage(@Param("size") long size, Pageable pageable);
+
+	@Query("select color from test_entities_ci where size = @size")
+	Slice<String> getSliceStringBySize(@Param("size") long size, Pageable pageable);
+
+	Slice<TestEntityProjection> findBySize(long size, Pageable pageable);
+
 	Page<TestEntity> findByShape(Shape shape, Pageable pageable);
 
 	Slice<TestEntity> findByColor(String color, Pageable pageable);
@@ -115,4 +136,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	@Nullable
 	TestEntity getByColor(String color);
+
+	@NonNull
+	TestEntity findByColor(String color);
 }

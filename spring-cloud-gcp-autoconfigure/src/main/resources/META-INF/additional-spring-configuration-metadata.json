@@ -7,6 +7,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.config.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Runtime components.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.datastore.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Datastore components.",
@@ -17,6 +23,12 @@
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Firestore components.",
       "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.firestore.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables autoconfiguration to use the Firestore emulator.",
+      "defaultValue": false
     },
     {
       "name": "spring.cloud.gcp.logging.enabled",
@@ -37,15 +49,33 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.secretmanager.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Secret Manager components.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.spanner.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Spanner components.",
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.spanner.emulator.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables auto-configuration to use the Spanner emulator.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.cloud.gcp.sql.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud SQL support components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.secretmanager.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure GCP Secret Manager support components.",
       "defaultValue": true
     },
     {
@@ -70,6 +100,12 @@
       "name": "spring.cloud.gcp.vision.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Vision components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.core.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Core components.",
       "defaultValue": true
     }
   ]

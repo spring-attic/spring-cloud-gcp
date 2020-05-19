@@ -45,6 +45,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -54,7 +55,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
@@ -68,7 +68,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
@@ -78,6 +77,7 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  * @author Ray Tsang
  * @author Mike Eltsufin
+ * @author Roman Solodovnichenko
  *
  * @since 1.1
  */
@@ -168,6 +168,20 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
+	public <T> boolean existsById(Class<T> entityClass, Key key) {
+		Assert.notNull(key, "A non-null key is required.");
+
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
+		KeySet keys = KeySet.singleKey(key);
+
+		try (ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
+				Collections.singleton(persistentEntity.getPrimaryKeyColumnName()), null)) {
+			maybeEmitEvent(new AfterReadEvent(Collections.emptyList(), keys, null));
+			return resultSet.next();
+		}
+	}
+
+	@Override
 	public <T> T read(Class<T> entityClass, Key key, SpannerReadOptions options) {
 		List<T> items = read(entityClass, KeySet.singleKey(key), options);
 		return items.isEmpty() ? null : items.get(0);
@@ -179,16 +193,41 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> read(Class<T> entityClass, KeySet keys,
-			SpannerReadOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
-		List<T> entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options), entityClass,
-				(options != null) ? options.getIncludeProperties() : null,
-				options != null && options.isAllowPartialRead());
+	public <T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) {
+		SpannerPersistentEntity<T> persistentEntity =
+				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
+		List<T> entities;
+		if (persistentEntity.hasEagerlyLoadedProperties() || persistentEntity.hasWhere()) {
+			entities = executeReadQueryAndResolveChildren(keys, persistentEntity,
+					toQueryOption(keys, options), options != null ? options.getIndex() : null);
+		}
+		else {
+			entities = mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
+					persistentEntity.columns(), options), entityClass,
+					(options != null) ? options.getIncludeProperties() : null,
+					options != null && options.isAllowPartialRead());
+		}
 		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
+	}
+
+	/**
+	 * In many cases {@link KeySet} with {@link SpannerReadOptions} are compatible with
+	 * {@link SpannerReadOptions}. The method throws exception when it is impossible.
+	 * @param options read-parameters
+	 * @return query-parameters
+	 * @throws IllegalArgumentException when {@link SpannerQueryOptions} can't be converted to {@link SpannerQueryOptions}
+	 * 	or {@code keys} have "ranges".
+	 * @see SpannerReadOptions#toQueryOptions()
+	 */
+	private static SpannerQueryOptions toQueryOption(KeySet keys, SpannerReadOptions options) throws IllegalArgumentException {
+		if (keys != null && keys.getRanges().iterator().hasNext()) {
+			throw new IllegalArgumentException(String.format("KeySet %s has ranges", keys));
+		}
+		if (options == null) {
+			return new SpannerQueryOptions();
+		}
+		return options.toQueryOptions();
 	}
 
 	@Override
@@ -205,11 +244,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public <T> List<T> query(Class<T> entityClass, Statement statement,
-			SpannerQueryOptions options) {
-		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
-		maybeEmitEvent(new AfterQueryEvent(entitites, statement, options));
-		return entitites;
+	public <T> List<T> query(Class<T> entityClass, Statement statement, SpannerQueryOptions options) {
+		List<T> entities = queryAndResolveChildren(entityClass, statement, options);
+		maybeEmitEvent(new AfterQueryEvent(entities, statement, options));
+		return entities;
 	}
 
 	@Override
@@ -225,14 +263,14 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> entity = this.mappingContext.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
-				persistentEntity) + " FROM " + persistentEntity.tableName();
+				entity, this.mappingContext, true)
+				+ " FROM " + entity.tableName() + SpannerStatementQueryExecutor.buildWhere(entity);
 		return query(entityClass,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
-								entityClass, options, sql, this.mappingContext),
+								entityClass, options, sql, this.mappingContext, false),
 						null, null, null, null, null),
 				options);
 	}
@@ -244,7 +282,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 
 	@Override
-	public void insertAll(Iterable objects) {
+	public void insertAll(Iterable<?> objects) {
 		applySaveMutations(() -> getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
 	}
 
@@ -254,7 +292,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public void updateAll(Iterable objects) {
+	public void updateAll(Iterable<?> objects) {
 		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
 				(x) -> this.mutationFactory.update(x, null)), objects, null);
 	}
@@ -279,7 +317,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public void upsertAll(Iterable objects) {
+	public void upsertAll(Iterable<?> objects) {
 		applySaveMutations(() -> getMutationsForMultipleObjects(objects,
 				(x) -> this.mutationFactory.upsert(x, null)), objects, null);
 	}
@@ -297,7 +335,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				includeProperties);
 	}
 
-	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier, Iterable entities,
+	private void applySaveMutations(Supplier<List<Mutation>> mutationsSupplier, Iterable<?> entities,
 			Set<String> includeProperties) {
 		maybeEmitEvent(new BeforeSaveEvent(entities, includeProperties));
 		List<Mutation> mutations = mutationsSupplier.get();
@@ -312,37 +350,37 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	@Override
-	public void deleteAll(Iterable objects) {
-		applyDeleteMutations(objects, (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+	public void deleteAll(Iterable<?> objects) {
+		applyDeleteMutations(objects, StreamSupport.stream(objects.spliterator(), false)
 				.map(this.mutationFactory::delete).collect(Collectors.toList()));
 	}
 
-	private void applyDeleteMutations(Iterable objects, List<Mutation> mutations) {
+	private void applyDeleteMutations(Iterable<?> objects, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, objects, null, null));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, objects, null, null));
 	}
 
 	@Override
-	public void delete(Class entityClass, Key key) {
+	public <T> void delete(Class<T> entityClass, Key key) {
 		applyDeleteMutations(entityClass, KeySet.newBuilder().addKey(key).build(),
 				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
 	}
 
 	@Override
-	public void delete(Class entityClass, KeySet keys) {
+	public <T> void delete(Class<T> entityClass, KeySet keys) {
 		applyDeleteMutations(entityClass, keys, Collections
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
 	}
 
-	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+	private void applyDeleteMutations(Class<?> entityClass, KeySet keys, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
-	public long count(Class entityClass) {
+	public <T> long count(Class<T> entityClass) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		Statement statement = Statement.of(
@@ -422,10 +460,10 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		String message;
 		StringBuilder logSb = new StringBuilder("Executing query");
 		if (options.getTimestampBound() != null) {
-			logSb.append(" at timestamp" + options.getTimestampBound());
+			logSb.append(" at timestamp ").append(options.getTimestampBound());
 		}
-		for (QueryOption queryOption : (QueryOption[]) options.getOptions()) {
-			logSb.append(" with option: " + queryOption);
+		for (QueryOption queryOption : options.getOptions()) {
+			logSb.append(" with option: ").append(queryOption);
 		}
 		logSb.append(" : ").append(statement);
 		message = logSb.toString();
@@ -440,9 +478,18 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 		else {
 			resultSet = ((options.getTimestampBound() != null)
 					? getReadContext(options.getTimestampBound())
-					: getReadContext()).executeQuery(statement, (QueryOption[]) options.getOptions());
+					: getReadContext()).executeQuery(statement, options.getOptions());
 		}
 		return resultSet;
+	}
+
+	private <T> List<T> executeReadQueryAndResolveChildren(KeySet keys, SpannerPersistentEntity<T> persistentEntity,
+			SpannerQueryOptions options, String index) {
+		Statement statement = SpannerStatementQueryExecutor.buildQuery(keys, persistentEntity,
+				this.spannerEntityProcessor.getWriteConverter(),
+				this.mappingContext, index);
+
+		return resolveChildEntities(query(persistentEntity.getType(), statement, options), options.getIncludeProperties());
 	}
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
@@ -450,22 +497,13 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
-		ResultSet resultSet;
-
 		ReadContext readContext = (options != null && options.getTimestampBound() != null)
 				? getReadContext(options.getTimestampBound())
 				: getReadContext();
 
-		if (options == null) {
-			resultSet = readContext.read(tableName, keys, columns);
-		}
-		else if (options.getIndex() != null) {
-			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getOptions());
-		}
-		else {
-			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
-		}
+		final ResultSet resultSet = options != null && options.getIndex() != null
+				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
+				: readContext.read(tableName, keys, columns, options == null ? ArrayUtils.toArray() : options.getOptions());
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
@@ -483,22 +521,22 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 			return;
 		}
 		if (options.getTimestampBound() != null) {
-			logs.append(" at timestamp " + options.getTimestampBound());
+			logs.append(" at timestamp ").append(options.getTimestampBound());
 		}
 		for (ReadOption readOption : options.getOptions()) {
-			logs.append(" with option: " + readOption);
+			logs.append(" with option: ").append(readOption);
 		}
 		if (options.getIndex() != null) {
-			logs.append(" secondary index: " + options.getIndex());
+			logs.append(" secondary index: ").append(options.getIndex());
 		}
 	}
 
 	private StringBuilder logColumns(String tableName, KeySet keys,
 			Iterable<String> columns) {
-		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
-				+ " with keys: " + keys + " and columns: ");
-		StringJoiner sj = new StringJoiner(",");
-		columns.forEach((col) -> sj.add(col));
+		StringBuilder logSb = new StringBuilder();
+		logSb.append("Executing read on table ").append(tableName).append(" with keys: ").append(keys).append(" and columns: ");
+		StringJoiner sj = new StringJoiner(", ");
+		columns.forEach(sj::add);
 		logSb.append(sj.toString());
 		return logSb;
 	}
@@ -537,24 +575,29 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	private void resolveChildEntity(Object entity, Set<String> includeProperties) {
-		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+		SpannerPersistentEntity<?> spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entity.getClass());
-		PersistentPropertyAccessor accessor = spannerPersistentEntity
+		PersistentPropertyAccessor<?> accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
+				(spannerPersistentProperty) -> {
 					if (includeProperties != null && !includeProperties
 							.contains(spannerPersistentEntity.getName())) {
 						return;
 					}
-					Class childType = spannerPersistentProperty.getColumnInnerType();
-					SpannerPersistentEntity childPersistentEntity = this.mappingContext
-							.getPersistentEntity(childType);
+					//an interleaved property can only be List
+					List propertyValue = (List) accessor.getProperty(spannerPersistentProperty);
+					if (propertyValue != null) {
+						resolveChildEntities(propertyValue, null);
+						return;
+					}
+					Class<?> childType = spannerPersistentProperty.getColumnInnerType();
 
 					Supplier<List> getChildrenEntitiesFunc = () -> queryAndResolveChildren(childType,
 							SpannerStatementQueryExecutor.getChildrenRowsQuery(
 									this.spannerSchemaUtils.getKey(entity),
-									childPersistentEntity, this.spannerEntityProcessor.getWriteConverter()),
+									spannerPersistentProperty, this.spannerEntityProcessor.getWriteConverter(),
+									this.mappingContext),
 							null);
 
 					accessor.setProperty(spannerPersistentProperty,
@@ -564,9 +607,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				});
 	}
 
-	private List<Mutation> getMutationsForMultipleObjects(Iterable it,
+	private List<Mutation> getMutationsForMultipleObjects(Iterable<?> it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
-		return (List<Mutation>) StreamSupport.stream(it.spliterator(), false)
+		return StreamSupport.stream(it.spliterator(), false)
 				.flatMap((x) -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}

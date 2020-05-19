@@ -53,10 +53,12 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
@@ -87,6 +89,7 @@ import static org.mockito.Mockito.when;
  * Tests for the Spanner Template.
  *
  * @author Chengyuan Zhao
+ * @author Roman Solodovnichenko
  */
 public class SpannerTemplateTests {
 
@@ -219,6 +222,40 @@ public class SpannerTemplateTests {
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
 		verify(transactionContext, times(1)).executeUpdate(eq(DML));
+	}
+
+	@Test
+	public void existsByIdTest() {
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenReturn(true);
+
+		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(any())).thenReturn(this.readContext);
+
+		Key key = Key.of("key");
+		KeySet keySet = KeySet.singleKey(key);
+		assertThat(this.spannerTemplate.existsById(TestEntity.class, key)).isTrue();
+
+		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.readContext, times(1))
+				.read(eq("custom_test_table"), eq(keySet), eq(Collections.singleton("id")));
+	}
+
+	@Test
+	public void existsByIdEmbeddedKeyTest() {
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenReturn(false);
+
+		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
+		when(this.databaseClient.singleUse(any())).thenReturn(this.readContext);
+
+		Key key = Key.of("key");
+		KeySet keySet = KeySet.singleKey(key);
+		assertThat(this.spannerTemplate.existsById(TestEntityEmbeddedPK.class, key)).isFalse();
+
+		verify(this.databaseClient, times(1)).singleUse();
+		verify(this.readContext, times(1))
+				.read(eq("test_table_embedded_pk"), eq(keySet), eq(Collections.singleton("stringId")));
 	}
 
 	@Test
@@ -396,6 +433,47 @@ public class SpannerTemplateTests {
 				.build();
 		spyTemplate.read(TestEntity.class, keys);
 		verify(spyTemplate, times(1)).read(eq(TestEntity.class), same(keys), eq(null));
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
+	public void findKeySetTestEagerOptions() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
+				.build();
+		SpannerReadOptions options = new SpannerReadOptions();
+		spyTemplate.read(ParentEntity.class, keys, options);
+		verify(spyTemplate, times(1)).read(eq(ParentEntity.class), same(keys), eq(options));
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
+	public void findKeySetTestEager() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
+				.build();
+		spyTemplate.read(ParentEntity.class, keys);
+		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
+				"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 FROM child_test_table " +
+				"WHERE (child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) AND (deleted = false)) AS childEntities " +
+				"FROM parent_test_table WHERE (id = @tag0) OR (id_2 = @tag1)")
+				.bind("tag0").to("key1").bind("tag1").to("key2").build();
+		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
+		verify(this.databaseClient, times(1)).singleUse();
+	}
+
+	@Test
+	public void readAllTestEager() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		spyTemplate.readAll(ParentEntity.class);
+		Statement statement = Statement.newBuilder("SELECT other, id, custom_col, id_2, " +
+				"ARRAY (SELECT AS STRUCT deleted, id3, id, id_2 FROM child_test_table " +
+				"WHERE (child_test_table.id = parent_test_table.id " +
+				"AND child_test_table.id_2 = parent_test_table.id_2) AND (deleted = false)) AS childEntities " +
+				"FROM parent_test_table")
+				.build();
+		verify(spyTemplate, times(1)).query(eq(ParentEntity.class), eq(statement), any());
 		verify(this.databaseClient, times(1)).singleUse();
 	}
 
@@ -828,6 +906,21 @@ public class SpannerTemplateTests {
 		verifyEvents(null, expectedAfter, operation, verifyOperation);
 	}
 
+	@Table(name = "test_table_embedded_pk")
+	private static class TestEntityEmbeddedPK {
+		@Embedded
+		@PrimaryKey
+		EmbeddedPK key;
+	}
+
+	private static class EmbeddedPK {
+		@PrimaryKey(keyOrder = 1)
+		String stringId;
+
+		@PrimaryKey(keyOrder = 2)
+		long id2;
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKey(keyOrder = 1)
@@ -867,6 +960,7 @@ public class SpannerTemplateTests {
 		String other;
 
 		@Interleaved
+		@Where("deleted = false")
 		List<ChildEntity> childEntities;
 	}
 
@@ -883,6 +977,8 @@ public class SpannerTemplateTests {
 
 		@Interleaved(lazy = true)
 		List<GrandChildEntity> childEntities;
+
+		boolean deleted;
 	}
 
 	@Table(name = "grand_child_test_table")

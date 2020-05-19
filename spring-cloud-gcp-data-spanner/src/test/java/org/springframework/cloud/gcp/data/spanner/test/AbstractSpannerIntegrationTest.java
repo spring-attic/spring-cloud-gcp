@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -26,15 +27,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.test.domain.CommitTimestamps;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +45,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * <ul>
  * <li>initializes the Spring application context</li>
  * <li>sets up the database schema</li>
- * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
  *
  * <p>Prerequisites for running integration tests:
@@ -69,8 +67,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  */
 @ContextConfiguration(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
-
-	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	private static final Log LOGGER = LogFactory.getLog(AbstractSpannerIntegrationTest.class);
 
@@ -125,14 +121,11 @@ public abstract class AbstractSpannerIntegrationTest {
 	public void tableCreatedTest() {
 		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
 				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName())).isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
+				this.spannerMappingContext.getPersistentEntity(CommitTimestamps.class).tableName())).isTrue();
 	}
 
 	protected void createDatabaseWithSchema() {
-		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory =
-				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
-		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
-
 		List<String> createStatements = createSchemaStatements();
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
@@ -149,18 +142,24 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return this.spannerSchemaUtils
-				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class);
+		List<String> list = new ArrayList<>(this.spannerSchemaUtils
+				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils
+				.getCreateTableDdlString(CommitTimestamps.class)
+				.replaceAll("TIMESTAMP", "TIMESTAMP OPTIONS (allow_commit_timestamp = true)"));
+		return list;
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return this.spannerSchemaUtils
-				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class);
+		List<String> list = new ArrayList<>(this.spannerSchemaUtils
+				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils
+				.getDropTableDdlString(CommitTimestamps.class));
+		return list;
 	}
 
 	@After
 	public void clean() {
-		try {
 			// this is to reduce duplicated errors reported by surefire plugin
 			if (setupFailed || initializeAttempts > 0) {
 				initializeAttempts--;
@@ -169,13 +168,5 @@ public abstract class AbstractSpannerIntegrationTest {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
 			LOGGER.debug("Integration database cleaned up!");
-		}
-		finally {
-			// we need to remove the extra bean created even if there is a failure at
-			// startup
-			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
-					.getAutowireCapableBeanFactory();
-			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
-		}
 	}
 }

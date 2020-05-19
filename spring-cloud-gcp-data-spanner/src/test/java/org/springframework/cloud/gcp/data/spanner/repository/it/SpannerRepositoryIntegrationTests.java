@@ -22,14 +22,22 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import org.assertj.core.util.Sets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponent;
@@ -39,13 +47,19 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.SymbolAction;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Integration tests for Spanner Repository that uses many features.
@@ -68,6 +82,12 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	@Autowired
 	TradeRepositoryTransactionalService tradeRepositoryTransactionalService;
 
+	@Autowired
+	SpannerMappingContext spannerMappingContext;
+
+	@SpyBean
+	SpannerTemplate spannerTemplate;
+
 	@Before
 	@After
 	public void cleanUpData() {
@@ -76,6 +96,33 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void queryMethodsTest() {
+		final int subTrades = 42;
+		Trade trade = Trade.aTrade(null, subTrades);
+		this.spannerOperations.insert(trade);
+
+		final String identifier = trade.getTradeDetail().getId();
+		final String traderId = trade.getTraderId();
+
+		long count = subTradeRepository.countBy(identifier, traderId);
+		assertThat(count)
+				.isEqualTo(subTrades);
+
+		List<SubTrade> list = subTradeRepository.getList(
+				identifier, traderId, Sort.by(Order.desc("subTradeId")));
+		assertThat(list)
+				.hasSize(subTrades);
+		assertThat(list.get(subTrades - 1))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		List<SubTrade> page = subTradeRepository.getPage(
+				identifier, traderId, PageRequest.of(0, 1024, Sort.by(Order.asc("subTradeId"))));
+		assertThat(page)
+				.hasSize(subTrades);
+		assertThat(page.get(0))
+				.satisfies(s -> assertThat(s.getSubTradeId()).isEqualTo("subTrade0"));
+
+		this.tradeRepository.deleteAll();
+
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
 		List<Trade> trader1SellTrades = insertTrades("trader1", "SELL", 2);
 		List<Trade> trader2Trades = insertTrades("trader2", "SELL", 3);
@@ -172,7 +219,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.compareTo(tradesReceivedPage2.get(1).getId())).isNegative();
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
-				.annotatedTradesByAction("BUY");
+				.annotatedTradesByAction("BUY", PageRequest.of(0, 100, Sort.by(Order.desc("id"))));
 		assertThat(buyTradesRetrieved).containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
 		assertThat(buyTradesRetrieved.get(0).getId()).isGreaterThan(buyTradesRetrieved.get(1).getId());
 		assertThat(buyTradesRetrieved.get(1).getId()).isGreaterThan(buyTradesRetrieved.get(2).getId());
@@ -238,6 +285,20 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.subTradeRepository.count()).isEqualTo(2);
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(3);
 
+		// test eager-fetch in @Query
+		Mockito.clearInvocations(spannerTemplate);
+		final Trade aTrade = someTrade;
+		assertThat(tradeRepository.fetchById(aTrade.getId()))
+				.isNotEmpty()
+				.hasValueSatisfying(t -> assertThat(t.getId()).isEqualTo(aTrade.getId()))
+				.hasValueSatisfying(t -> assertThat(t.getTraderId()).isEqualTo(aTrade.getTraderId()))
+				.hasValueSatisfying(t -> assertThat(t.getSymbol()).isEqualTo(aTrade.getSymbol()))
+				.hasValueSatisfying(t -> assertThat(t.getSubTrades()).hasSize(aTrade.getSubTrades().size()));
+		Mockito.verify(spannerTemplate, Mockito.times(1))
+				.executeQuery(any(Statement.class), any());
+		Mockito.verify(spannerTemplate, Mockito.times(1))
+				.query(eq(Trade.class), any(Statement.class), any(SpannerQueryOptions.class));
+
 		List<SubTradeComponent> subTradeComponents = (List) this.subTradeComponentRepository.findAll();
 
 		assertThat(subTradeComponents.get(0).getCommitTimestamp())
@@ -261,8 +322,42 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.subTradeRepository.count()).isEqualTo(0);
 
 		this.tradeRepository.deleteAll();
-		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
+		this.tradeRepositoryTransactionalService.testTransactionalAnnotation(3);
 		assertThat(this.tradeRepository.count()).isEqualTo(1L);
+
+		List<Trade> trades = (List) tradeRepository.findAll();
+		someTrade = trades.get(0);
+		assertThat(someTrade.getSubTrades()).hasSize(3);
+		SubTrade someSubTrade = trades.get(0).getSubTrades().get(0);
+		someSubTrade.setDisabled(true); // a soft-delete
+		subTradeRepository.save(someSubTrade);
+
+		someTrade = this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		assertThat(someTrade.getSubTrades())
+				.doesNotContain(someSubTrade) // "someSubTrade" was soft-deleted
+				.hasSize(2);
+
+	}
+
+	@Test
+	public void existsTest() {
+		Trade trade = Trade.aTrade();
+		this.tradeRepository.save(trade);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext.getPersistentEntity(Trade.class);
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(trade);
+		PersistentProperty idProperty = persistentEntity.getIdProperty();
+		Key key = (Key) accessor.getProperty(idProperty);
+		assertThat(this.tradeRepository.existsById(key)).isTrue();
+		this.tradeRepository.delete(trade);
+		assertThat(this.tradeRepository.existsById(key)).isFalse();
+	}
+
+	@Test
+	public void testNonNull() {
+		assertThatThrownBy(() -> this.tradeRepository.getByAction("non-existing-action"))
+				.isInstanceOf(EmptyResultDataAccessException.class)
+				.hasMessageMatching("Result must not be null!");
 	}
 
 	@Test
@@ -290,12 +385,11 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("SELL")).size()).isEqualTo(5L);
 	}
 
-	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
+	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade();
+			Trade t = Trade.aTrade(traderId, 0);
 			t.setAction(action);
-			t.setTraderId(traderId1);
 			t.setSymbol("ABCD");
 			trades.add(t);
 			this.spannerOperations.insert(t);
@@ -312,10 +406,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		TradeRepository tradeRepository;
 
 		@Transactional
-		public void testTransactionalAnnotation() {
-			Trade trade = Trade.aTrade();
+		public void testTransactionalAnnotation(int numSubTrades) {
+			Trade trade = Trade.aTrade(null, numSubTrades);
 			this.tradeRepository.save(trade);
-
 			// because the insert happens within the same transaction, this count is still
 			// 1
 			assertThat(this.tradeRepository.count()).isEqualTo(0L);

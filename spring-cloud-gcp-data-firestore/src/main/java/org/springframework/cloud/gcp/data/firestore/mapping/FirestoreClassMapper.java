@@ -24,7 +24,7 @@ import com.google.firestore.v1.Value;
  *
  * @author Dmitry Solomakha
  * @author Mike Eltsufin
- * @since 1.3
+ * @since 1.2.2
  */
 public interface FirestoreClassMapper {
 	/**

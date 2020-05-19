@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.integration.metadata.ConcurrentMetadataStore;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Lukas Gemela
  */
 public class GcsPersistentAcceptOnceFileListFilter
 		extends AbstractPersistentAcceptOnceFileListFilter<BlobInfo> {
@@ -36,7 +37,7 @@ public class GcsPersistentAcceptOnceFileListFilter
 
 	@Override
 	protected long modified(BlobInfo blobInfo) {
-		return (blobInfo != null) ? blobInfo.getUpdateTime() : -1;
+		return (blobInfo != null && blobInfo.getUpdateTime() != null) ? blobInfo.getUpdateTime() : -1;
 	}
 
 	@Override
