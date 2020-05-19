@@ -25,6 +25,8 @@ import javax.annotation.PreDestroy;
 import brave.baggage.BaggagePropagation;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
+import brave.propagation.B3Propagation;
+import brave.propagation.stackdriver.StackdriverTracePropagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
@@ -36,7 +38,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import zipkin2.CheckResult;
 import zipkin2.Span;
-import zipkin2.propagation.stackdriver.StackdriverTracePropagation;
 import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.ReporterMetrics;
@@ -219,7 +220,8 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public BaggagePropagation.FactoryBuilder baggagePropagationFactoryBuilder() {
-		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.FACTORY);
+		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.newFactory(
+				B3Propagation.newFactoryBuilder().injectFormat(B3Propagation.Format.MULTI).build()));
 	}
 
 	@PreDestroy
