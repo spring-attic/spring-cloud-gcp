@@ -16,6 +16,7 @@
 
 package com.example;
 
+import com.google.cloud.logging.Payload.JsonPayload;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +109,8 @@ public class LoggingSampleApplicationTests {
 					});
 
 					List<String> logContents = logEntries.stream()
-							.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
+							.map((logEntry) -> (String) ((JsonPayload) logEntry.getPayload())
+									.getDataAsMap().get("message"))
 							.collect(Collectors.toList());
 
 					assertThat(logContents).containsExactlyInAnyOrder(
