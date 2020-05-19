@@ -52,9 +52,9 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<spring-cloud-commons.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-bus.version>2.2.2.BUILD-SNAPSHOT</spring-cloud-bus.version>
-		<spring-cloud-sleuth.version>2.2.2.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
+		<spring-cloud-sleuth.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Ivyland.BUILD-SNAPSHOT</spring-cloud-stream.version>
-		<zipkin-gcp.version>0.16.0</zipkin-gcp.version>
+		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 		<kotlin.version>1.3.31</kotlin.version>
 
