@@ -27,7 +27,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
-import com.google.cloud.logging.Payload.StringPayload;
+import com.google.cloud.logging.Payload.JsonPayload;
 import com.google.devtools.cloudtrace.v1.GetTraceRequest;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceServiceGrpc;
@@ -155,7 +155,8 @@ public class TraceSampleApplicationTests {
 
 
 			List<String> logContents = logEntries.stream()
-					.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
+					.map((logEntry) -> (String) ((JsonPayload) logEntry.getPayload())
+							.getDataAsMap().get("message"))
 					.collect(Collectors.toList());
 
 			assertThat(logContents).contains("starting busy work");
