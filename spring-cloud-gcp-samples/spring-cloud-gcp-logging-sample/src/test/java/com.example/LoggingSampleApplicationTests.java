@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.google.cloud.logging.Payload.JsonPayload;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
-import com.google.cloud.logging.Payload.StringPayload;
+import com.google.cloud.logging.Payload.JsonPayload;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
