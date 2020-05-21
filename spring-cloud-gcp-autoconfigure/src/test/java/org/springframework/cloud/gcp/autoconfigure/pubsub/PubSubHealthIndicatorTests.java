@@ -16,25 +16,25 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.google.api.gax.grpc.GrpcStatusCode;
 import com.google.api.gax.rpc.ApiException;
+import io.grpc.Status.Code;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicator;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for the PubSub Health Indicator.
@@ -48,9 +48,17 @@ public class PubSubHealthIndicatorTests {
 	private PubSubTemplate pubSubTemplate;
 
 	@Test
-	public void healthUp() throws Exception {
+	public void healthUpFor404() throws Exception {
 		when(pubSubTemplate.pull(anyString(), anyInt(), anyBoolean())).thenThrow(new ApiException(
 				new IllegalStateException("Illegal State"), GrpcStatusCode.of(io.grpc.Status.Code.NOT_FOUND), false));
+		PubSubHealthIndicator healthIndicator = new PubSubHealthIndicator(pubSubTemplate);
+		assertThat(healthIndicator.health().getStatus()).isEqualTo(Status.UP);
+	}
+
+	@Test
+	public void healthUpFor403() throws Exception {
+		when(pubSubTemplate.pull(anyString(), anyInt(), anyBoolean())).thenThrow(new ApiException(
+				new IllegalStateException("Illegal State"), GrpcStatusCode.of(Code.PERMISSION_DENIED), false));
 		PubSubHealthIndicator healthIndicator = new PubSubHealthIndicator(pubSubTemplate);
 		assertThat(healthIndicator.health().getStatus()).isEqualTo(Status.UP);
 	}

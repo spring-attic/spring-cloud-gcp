@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.health;
 
+import com.google.api.gax.rpc.StatusCode.Code;
 import java.util.UUID;
 
 import com.google.api.gax.rpc.ApiException;
@@ -53,7 +54,8 @@ public class PubSubHealthIndicator extends AbstractHealthIndicator {
 			this.pubSubTemplate.pull("subscription-" + UUID.randomUUID().toString(), 1, true);
 		}
 		catch (ApiException aex) {
-			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
+			Code errorCode = aex.getStatusCode().getCode();
+			if (errorCode == StatusCode.Code.NOT_FOUND || errorCode == Code.PERMISSION_DENIED) {
 				builder.up();
 			}
 			else {
