@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.health;
 
-import com.google.api.gax.rpc.StatusCode.Code;
 import java.util.UUID;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
