@@ -70,9 +70,9 @@ public class FirestoreSampleApplicationTests {
 		User[] users = restTemplate.getForObject("/users", User[].class);
 		assertThat(users).isEmpty();
 
-		sendPostRequestForUser("Alpha", 49);
-		sendPostRequestForUser("Beta", 23);
-		sendPostRequestForUser("Delta", 49);
+		sendPostRequestForUser("Alpha", 49, "rat-Snowflake");
+		sendPostRequestForUser("Beta", 23, "");
+		sendPostRequestForUser("Delta", 49, "fish-Dory,spider-Man");
 
 		users = restTemplate.getForObject("/users", User[].class);
 		List<String> names = Arrays.stream(users).map(User::getName).collect(Collectors.toList());
@@ -86,13 +86,14 @@ public class FirestoreSampleApplicationTests {
 	/**
 	 * Sends a POST request to the server which will create a new User in Firestore.
 	 */
-	private void sendPostRequestForUser(String name, int age) {
+	private void sendPostRequestForUser(String name, int age, String pets) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("name", name);
 		map.add("age", age);
+		map.add("pets", pets);
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
 		this.restTemplate.postForEntity("/users/saveUser", request, String.class);
