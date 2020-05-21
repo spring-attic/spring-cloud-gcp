@@ -1570,8 +1570,7 @@ can&#8217;t increase the RPC timeout higher than this amount.</p></td>
 <div class="paragraph">
 <p>If you are using Spring Boot Actuator, you can take advantage of the Cloud Pub/Sub health indicator called <code>pubsub</code>.
 The health indicator will verify whether Cloud Pub/Sub is up and accessible by your application.
-To enable it, all you need to do is add the <a href="https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready">Spring Boot Actuator</a> to your project.
-To disable the Cloud Pub/Sub indicator, set <code>management.health.pubsub.enabled</code> to <code>false</code>.</p>
+To enable it, all you need to do is add the <a href="https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready">Spring Boot Actuator</a> to your project.</p>
 </div>
 <div class="paragraph">
 <p>The <code>pubsub</code> indicator will then roll up to the overall application status visible at <a href="http://localhost:8080/actuator/health" class="bare">localhost:8080/actuator/health</a> (use the <code>management.endpoint.health.show-details</code> property to view per-indicator details).</p>
@@ -1583,6 +1582,19 @@ To disable the Cloud Pub/Sub indicator, set <code>management.health.pubsub.enabl
     &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If your application already has actuator and Cloud Pub/Sub starters, this health indicator is enabled by default.
+To disable the Cloud Pub/Sub indicator, set <code>management.health.pubsub.enabled</code> to <code>false</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
