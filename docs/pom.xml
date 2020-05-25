@@ -56,6 +56,10 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>spring-cloud-gcp-starter-metrics</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 		</dependency>
 		<dependency>
