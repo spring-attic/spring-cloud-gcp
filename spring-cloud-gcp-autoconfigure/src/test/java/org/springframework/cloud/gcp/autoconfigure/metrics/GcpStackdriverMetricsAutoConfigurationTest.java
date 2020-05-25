@@ -31,6 +31,11 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Tests for auto-config.
+ *
+ * @author Eddú Meléndez
+ */
 public class GcpStackdriverMetricsAutoConfigurationTest {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -42,6 +47,13 @@ public class GcpStackdriverMetricsAutoConfigurationTest {
 	public void testProjectIdIsSet() {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.project-id=demo-project")
+				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class));
+	}
+
+	@Test
+	public void testMetricsProjectIdIsSet() {
+		this.contextRunner
+				.withPropertyValues("spring.cloud.gcp.metrics.project-id=demo-project")
 				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class));
 	}
 

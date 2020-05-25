@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.metrics;
 
+import java.io.IOException;
+
 import com.google.api.gax.core.CredentialsProvider;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.step.StepMeterRegistry;
@@ -29,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,21 +45,30 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureBefore(StackdriverMetricsExportAutoConfiguration.class)
 @ConditionalOnClass({StepMeterRegistry.class, StackdriverConfig.class})
 @ConditionalOnBean(Clock.class)
-@EnableConfigurationProperties(StackdriverProperties.class)
+@EnableConfigurationProperties({GcpMetricsProperties.class, StackdriverProperties.class})
 @ConditionalOnProperty(value = "spring.cloud.gcp.metrics.enabled", matchIfMissing = true)
 public class GcpStackdriverMetricsAutoConfiguration {
 
-	private final StackdriverProperties properties;
+	private final StackdriverProperties stackdriverProperties;
 
-	public GcpStackdriverMetricsAutoConfiguration(StackdriverProperties stackdriverProperties) {
-		this.properties = stackdriverProperties;
+	private final String projectId;
+
+	private final CredentialsProvider credentialsProvider;
+
+	public GcpStackdriverMetricsAutoConfiguration(GcpMetricsProperties gcpMetricsProperties,
+			StackdriverProperties stackdriverProperties, GcpProjectIdProvider gcpProjectIdProvider,
+			CredentialsProvider credentialsProvider) throws IOException {
+		this.stackdriverProperties = stackdriverProperties;
+		this.projectId = (gcpMetricsProperties.getProjectId() != null)
+				? gcpMetricsProperties.getProjectId() : gcpProjectIdProvider.getProjectId();
+		this.credentialsProvider = gcpMetricsProperties.getCredentials().hasKey()
+				? new DefaultCredentialsProvider(gcpMetricsProperties) : credentialsProvider;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public StackdriverConfig stackdriverConfig(GcpProjectIdProvider projectIdProvider, CredentialsProvider credentialsProvider) {
-		String projectId = projectIdProvider.getProjectId();
-		return new GcpStackdriverPropertiesConfigAdapter(this.properties, projectId, credentialsProvider);
+	public StackdriverConfig stackdriverConfig() {
+		return new GcpStackdriverPropertiesConfigAdapter(this.stackdriverProperties, this.projectId, this.credentialsProvider);
 	}
 
 }
