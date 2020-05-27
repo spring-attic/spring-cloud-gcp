@@ -37,16 +37,18 @@
     Some values are prefilled as an example of what you can type in.
   </p>
 
-  <div class="panel">
-    <b>Create and save a new User</b>
-    <form action="/users/saveUser" method="post">
-      Name: <input type="text" name="name" value="Joe Smith">
-      <br>
-      Age: <input type="text" name="age" value="44">
-      <br>
-      <input type="submit" value="submit">
-    </form>
-  </div>
+    <div class="panel">
+        <b>Create and save a new User</b>
+        <form action="/users/saveUser" method="post">
+            Name: <input type="text" name="name" value="Joe Smith">
+            <br>
+            Age: <input type="text" name="age" value="44">
+            <br>
+            Pets (comma-separated values {pet-type}-{name} for each pet, such as "fish-dory"): <input type="text" name="pets" value="dog-Dusty,cat-Tosha">
+            <br>
+            <input type="submit" value="submit">
+        </form>
+    </div>
 
   <div class="panel">
     <a href="/users">Show all users</a>

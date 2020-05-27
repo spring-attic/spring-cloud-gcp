@@ -16,6 +16,11 @@
 
 package com.example;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -57,8 +62,19 @@ public class UserController {
 				.flatMap(formData -> {
 					User user = new User(
 							formData.getFirst("name"),
-							Integer.parseInt(formData.getFirst("age")));
+							Integer.parseInt(formData.getFirst("age")),
+							createPets(formData.getFirst("pets")));
 					return userRepository.save(user);
 				});
+	}
+
+	private List<Pet> createPets(String pets) {
+		return pets == null || pets.isEmpty()
+				? Collections.emptyList()
+				: Arrays.stream(pets.split(","))
+				.map(s -> {
+					String[] parts = s.split("-");
+					return new Pet(parts[0], parts[1]);
+				}).collect(Collectors.toList());
 	}
 }

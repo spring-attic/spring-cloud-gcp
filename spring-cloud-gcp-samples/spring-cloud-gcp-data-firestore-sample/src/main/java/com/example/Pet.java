@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,19 @@
 
 package com.example;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
-import com.google.cloud.firestore.annotation.DocumentId;
-
-import org.springframework.cloud.gcp.data.firestore.Document;
-
-/**
- * Example POJO to demonstrate Spring Cloud GCP Spring Data Firestore operations.
- *
- * @author Daniel Zou
- */
-@Document(collectionName = "users")
-public class User {
-
-	@DocumentId
+public class Pet {
 	String name;
 
-	int age;
+	String type;
 
-	List<Pet> pets;
-
-	User() {
-		pets = new ArrayList<>();
+	public Pet() {
 	}
 
-	public User(String name, int age, List<Pet> pets) {
+	public Pet(String type, String name) {
+		this.type = type;
 		this.name = name;
-		this.age = age;
-		this.pets = pets;
 	}
 
 	public String getName() {
@@ -57,20 +39,12 @@ public class User {
 		this.name = name;
 	}
 
-	public int getAge() {
-		return age;
+	public String getType() {
+		return type;
 	}
 
-	public void setAge(int age) {
-		this.age = age;
-	}
-
-	public List<Pet> getPets() {
-		return pets;
-	}
-
-	public void setPets(List<Pet> pets) {
-		this.pets = pets;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override
@@ -81,23 +55,21 @@ public class User {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		User user = (User) o;
-		return age == user.age &&
-				Objects.equals(name, user.name) &&
-				Objects.equals(pets, user.pets);
+		Pet pet = (Pet) o;
+		return Objects.equals(name, pet.name) &&
+				Objects.equals(type, pet.type);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, age, pets);
+		return Objects.hash(name, type);
 	}
 
 	@Override
 	public String toString() {
-		return "User{" +
+		return "Pet{" +
 				"name='" + name + '\'' +
-				", age=" + age +
-				", pets=" + pets +
+				", type='" + type + '\'' +
 				'}';
 	}
 }
