@@ -5,7 +5,7 @@
   "api_description": "Provides support for MySQL databases in Google Cloud SQL using Spring JDBC",
   "release_level": "ga",
   "language": "java",
-  "repo": "spring-cloud/spring-cloud-gcp",
+  "repo": "googlecloudplatform/spring-cloud-gcp",
   "repo_short": "spring-cloud-gcp",
-  "distribution_name": "org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql"
+  "distribution_name": "com.google.cloud:spring-cloud-gcp-starter-sql-mysql"
 }

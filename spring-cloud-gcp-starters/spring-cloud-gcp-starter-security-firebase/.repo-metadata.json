@@ -5,7 +5,7 @@
   "api_description": "Spring Cloud GCP support for Firebase Security Rules.",
   "release_level": "ga",
   "language": "java",
-  "repo": "spring-cloud/spring-cloud-gcp",
+  "repo": "googlecloudplatform/spring-cloud-gcp",
   "repo_short": "spring-cloud-gcp",
-  "distribution_name": "org.springframework.cloud:spring-cloud-gcp-starter-security-firebase"
+  "distribution_name": "com.google.cloud:spring-cloud-gcp-starter-security-firebase"
 }

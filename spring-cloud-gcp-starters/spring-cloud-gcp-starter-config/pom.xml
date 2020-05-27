@@ -9,7 +9,7 @@
 	<artifactId>spring-cloud-gcp-starter-config</artifactId>
 	<name>Spring Cloud GCP Config Starter</name>
 	<description>Starter for Spring Cloud Config Client using Google Runtime Configuration API</description>
-	<url>https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-config</url>
+	<url>https://github.com/googlecloudplatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-config</url>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>https://www.spring.io</url>
