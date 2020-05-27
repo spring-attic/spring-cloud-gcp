@@ -27,6 +27,7 @@ import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -45,11 +46,11 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
-import org.springframework.data.util.Pair;
 
 /**
  * Executes Cloud Spanner query statements using
@@ -72,31 +73,34 @@ public final class SpannerStatementQueryExecutor {
 	 * Executes a PartTree-based query.
 	 * @param type the type of the underlying entity
 	 * @param tree the parsed metadata of the query
-	 * @param params the parameters of this specific query
+	 * @param parameterAccessor the parameters of this specific query
 	 * @param queryMethodParamsMetadata parameter metadata from Query Method
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
 	 * @param <T> the type of the underlying entity
 	 * @return list of entities.
 	 */
-	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
+	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, ParameterAccessor parameterAccessor,
 			Parameter[] queryMethodParamsMetadata,
 			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
-		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
-				spannerMappingContext, type);
+		SqlAndTags sqlAndTags = buildPartTreeSqlString(tree, spannerMappingContext, type, parameterAccessor);
 		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
 				sqlAndTags);
+		Object[] params = StreamSupport.stream(parameterAccessor.spliterator(), false).toArray();
 		return spannerTemplate.query(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
+				sqlAndTags.getSql(), sqlAndTags.getTags(), null,
 				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
 	}
 
 	private static Map<String, Parameter> preparePartTreeSqlTagParameterMap(Parameter[] queryMethodParamsMetadata,
-			Pair<String, List<String>> sqlAndTags) {
+			SqlAndTags sqlAndTags) {
 		Map<String, Parameter> paramMetadataMap = new HashMap<>();
 		for (int i = 0; i < queryMethodParamsMetadata.length; i++) {
-			paramMetadataMap.put(sqlAndTags.getSecond().get(i), queryMethodParamsMetadata[i]);
+			Parameter queryMethodParamsMetadatum = queryMethodParamsMetadata[i];
+			if (queryMethodParamsMetadatum.getType() != Pageable.class && queryMethodParamsMetadatum.getType() != Sort.class) {
+				paramMetadataMap.put(sqlAndTags.getTags().get(i), queryMethodParamsMetadatum);
+			}
 		}
 		return paramMetadataMap;
 	}
@@ -107,7 +111,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @param rowFunc the function to apply to each row of the result.
 	 * @param type the type of the underlying entity
 	 * @param tree the parsed metadata of the query
-	 * @param params the parameters of this specific query
+	 * @param parameterAccessor the parameters of this specific query
 	 * @param queryMethodParamsMetadata parameter metadata from Query Method
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
@@ -116,14 +120,15 @@ public final class SpannerStatementQueryExecutor {
 	 * @return list of objects mapped using the given function.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
-			PartTree tree, Object[] params, Parameter[] queryMethodParamsMetadata, SpannerTemplate spannerTemplate,
+			PartTree tree, ParameterAccessor parameterAccessor, Parameter[] queryMethodParamsMetadata, SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
-		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
-				spannerMappingContext, type);
+		SqlAndTags sqlAndTags = buildPartTreeSqlString(tree,
+				spannerMappingContext, type, parameterAccessor);
 		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
 				sqlAndTags);
+		Object[] params = StreamSupport.stream(parameterAccessor.spliterator(), false).toArray();
 		return spannerTemplate.query(rowFunc, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null,
+				sqlAndTags.getSql(), sqlAndTags.getTags(), null,
 				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
 	}
 
@@ -160,12 +165,7 @@ public final class SpannerStatementQueryExecutor {
 		StringBuilder sb = applySort(options.getSort(),
 				new StringBuilder("SELECT *").append(subquery)
 						.append(" FROM (").append(sql).append(")").append(alias)
-						.append(buildWhere(persistentEntity)),
-				(o) -> {
-					SpannerPersistentProperty property = persistentEntity
-							.getPersistentProperty(o.getProperty());
-					return (property != null) ? property.getColumnName() : o.getProperty();
-				});
+						.append(buildWhere(persistentEntity)), persistentEntity);
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
@@ -419,8 +419,8 @@ public final class SpannerStatementQueryExecutor {
 		return joiner.toString();
 	}
 
-	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
-			SpannerMappingContext spannerMappingContext, Class type) {
+	private static SqlAndTags buildPartTreeSqlString(PartTree tree,
+			SpannerMappingContext spannerMappingContext, Class type, ParameterAccessor params) {
 
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
 				.getPersistentEntity(type);
@@ -430,9 +430,8 @@ public final class SpannerStatementQueryExecutor {
 		buildSelect(persistentEntity, tree, stringBuilder, spannerMappingContext);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
-		applySort(tree.getSort(), stringBuilder, (o) -> persistentEntity
-				.getPersistentProperty(o.getProperty()).getColumnName());
-		buildLimit(tree, stringBuilder);
+		applySort(params.getSort().isSorted() ? params.getSort() : tree.getSort(), stringBuilder, persistentEntity);
+		buildLimit(tree, stringBuilder, params);
 
 		String selectSql = stringBuilder.toString();
 
@@ -444,7 +443,7 @@ public final class SpannerStatementQueryExecutor {
 		else if (tree.isExistsProjection()) {
 			finalSql = "SELECT EXISTS(" + selectSql + ")";
 		}
-		return Pair.of(finalSql, tags);
+		return new SqlAndTags(finalSql, tags);
 	}
 
 	private static void buildSelect(
@@ -461,14 +460,15 @@ public final class SpannerStatementQueryExecutor {
 	}
 
 	public static StringBuilder applySort(Sort sort, StringBuilder sql,
-			Function<Order, String> sortedPropertyNameFunction) {
+			SpannerPersistentEntity<?> persistentEntity) {
 		if (sort == null || sort.isUnsorted()) {
 			return sql;
 		}
 		sql.append(" ORDER BY ");
 		StringJoiner sj = new StringJoiner(" , ");
 		sort.iterator().forEachRemaining((o) -> {
-			String sortedPropertyName = sortedPropertyNameFunction.apply(o);
+			SpannerPersistentProperty property = persistentEntity.getPersistentProperty(o.getProperty());
+			String sortedPropertyName = (property != null) ? property.getColumnName() : o.getProperty();
 			String sortedProperty = o.isIgnoreCase() ? "LOWER(" + sortedPropertyName + ")"
 					: sortedPropertyName;
 			sj.add(sortedProperty + (o.isAscending() ? " ASC" : " DESC"));
@@ -582,12 +582,19 @@ public final class SpannerStatementQueryExecutor {
 		}
 	}
 
-	private static void buildLimit(PartTree tree, StringBuilder stringBuilder) {
+	private static void buildLimit(PartTree tree, StringBuilder stringBuilder, ParameterAccessor params) {
 		if (tree.isExistsProjection()) {
 			stringBuilder.append(" LIMIT 1");
 		}
 		else if (tree.isLimiting()) {
 			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
+		}
+		else {
+			Pageable pageable = params.getPageable();
+			if (pageable.isPaged()) {
+				stringBuilder.append(" LIMIT ").append(pageable.getPageSize())
+				.append(" OFFSET ").append(pageable.getOffset());
+			}
 		}
 	}
 }
