@@ -61,9 +61,6 @@
 
 		<!-- Checkstyle version settings. Keep in sync with spring-cloud-gcp-samples/pom.xml -->
 		<spring-javaformat-checkstyle.version>0.0.21</spring-javaformat-checkstyle.version>
-		<puppycrawl-tools-checkstyle.version>8.32</puppycrawl-tools-checkstyle.version>
-		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
-		<spring-cloud-build-tools.version>3.0.0-SNAPSHOT</spring-cloud-build-tools.version>
 	</properties>
 
 	<dependencyManagement>
@@ -192,13 +189,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.springframework.cloud</groupId>
-						<artifactId>spring-cloud-build-tools</artifactId>
-						<version>${spring-cloud-build-tools.version}</version>
-					</dependency>
-				</dependencies>
 				<executions>
 					<execution>
 						<id>checkstyle-validation</id>
