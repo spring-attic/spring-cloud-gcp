@@ -1,6 +1,6 @@
 == Stackdriver Monitoring
 
-Google Cloud Platform provides a managed distributed tracing service called https://cloud.google.com/monitoring/[Stackdriver Monitoring], and https://micrometer.io/docs/registry/stackdriver[Micrometer] can be used with it to easily instrument Spring Boot applications for observability.
+Google Cloud Platform provides a service called https://cloud.google.com/monitoring/[Stackdriver Monitoring], and https://micrometer.io/docs/registry/stackdriver[Micrometer] can be used with it to easily instrument Spring Boot applications for observability.
 
 Spring Boot already provides auto-configuration for Stackdriver. This module enables to auto-detect the `project-id` and `credentials`. Also, it can be customized.
 
@@ -23,7 +23,7 @@ dependencies {
 }
 ----
 
-You must enable Stackdriver Monitoring API from the Google Cloud Console in order to capture traces.
+You must enable Stackdriver Monitoring API from the Google Cloud Console in order to capture metrics.
 Navigate to the https://console.cloud.google.com/apis/api/monitoring.googleapis.com/overview[Stackdriver Monitoring API] for your project and make sure it’s enabled.
 
 === Spring Boot Starter for Stackdriver Monitoring
