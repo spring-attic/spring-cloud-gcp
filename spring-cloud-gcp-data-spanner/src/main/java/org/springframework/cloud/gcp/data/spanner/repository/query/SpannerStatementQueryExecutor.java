@@ -61,6 +61,7 @@ import org.springframework.data.repository.query.parser.PartTree;
  * @author Balint Pato
  * @author Mike Eltsufin
  * @author Roman Solodovnichenko
+ * @author Dmitry Solomakha
  *
  * @since 1.1
  */
@@ -84,22 +85,24 @@ public final class SpannerStatementQueryExecutor {
 			Parameter[] queryMethodParamsMetadata,
 			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
-		SqlAndTags sqlAndTags = buildPartTreeSqlString(tree, spannerMappingContext, type, parameterAccessor);
+		SqlStringAndPlaceholders sqlStringAndPlaceholders = buildPartTreeSqlString(tree, spannerMappingContext, type, parameterAccessor);
 		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
-				sqlAndTags);
+				sqlStringAndPlaceholders);
 		Object[] params = StreamSupport.stream(parameterAccessor.spliterator(), false).toArray();
 		return spannerTemplate.query(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getSql(), sqlAndTags.getTags(), null,
+				sqlStringAndPlaceholders.getSql(), sqlStringAndPlaceholders.getPlaceholders(), null,
 				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
 	}
 
-	private static Map<String, Parameter> preparePartTreeSqlTagParameterMap(Parameter[] queryMethodParamsMetadata,
-			SqlAndTags sqlAndTags) {
+	private static Map<String, Parameter> preparePartTreeSqlTagParameterMap(Parameter[] paramsMetadata,
+			SqlStringAndPlaceholders sqlStringAndPlaceholders) {
 		Map<String, Parameter> paramMetadataMap = new HashMap<>();
-		for (int i = 0; i < queryMethodParamsMetadata.length; i++) {
-			Parameter queryMethodParamsMetadatum = queryMethodParamsMetadata[i];
-			if (queryMethodParamsMetadatum.getType() != Pageable.class && queryMethodParamsMetadatum.getType() != Sort.class) {
-				paramMetadataMap.put(sqlAndTags.getTags().get(i), queryMethodParamsMetadatum);
+		for (int i = 0; i < paramsMetadata.length; i++) {
+			Parameter param = paramsMetadata[i];
+			//Skip Pageable and Sort parameters because they don't need to be bound to the tags in the query.
+			//They are processed separately in applySort and buildLimit methods.
+			if (param.getType() != Pageable.class && param.getType() != Sort.class) {
+				paramMetadataMap.put(sqlStringAndPlaceholders.getPlaceholders().get(i), param);
 			}
 		}
 		return paramMetadataMap;
@@ -122,13 +125,13 @@ public final class SpannerStatementQueryExecutor {
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
 			PartTree tree, ParameterAccessor parameterAccessor, Parameter[] queryMethodParamsMetadata, SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
-		SqlAndTags sqlAndTags = buildPartTreeSqlString(tree,
+		SqlStringAndPlaceholders sqlStringAndPlaceholders = buildPartTreeSqlString(tree,
 				spannerMappingContext, type, parameterAccessor);
 		Map<String, Parameter> paramMetadataMap = preparePartTreeSqlTagParameterMap(queryMethodParamsMetadata,
-				sqlAndTags);
+				sqlStringAndPlaceholders);
 		Object[] params = StreamSupport.stream(parameterAccessor.spliterator(), false).toArray();
 		return spannerTemplate.query(rowFunc, buildStatementFromSqlWithArgs(
-				sqlAndTags.getSql(), sqlAndTags.getTags(), null,
+				sqlStringAndPlaceholders.getSql(), sqlStringAndPlaceholders.getPlaceholders(), null,
 				spannerTemplate.getSpannerEntityProcessor().getWriteConverter(), params, paramMetadataMap), null);
 	}
 
@@ -419,7 +422,7 @@ public final class SpannerStatementQueryExecutor {
 		return joiner.toString();
 	}
 
-	private static SqlAndTags buildPartTreeSqlString(PartTree tree,
+	private static SqlStringAndPlaceholders buildPartTreeSqlString(PartTree tree,
 			SpannerMappingContext spannerMappingContext, Class type, ParameterAccessor params) {
 
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
@@ -431,7 +434,7 @@ public final class SpannerStatementQueryExecutor {
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
 		applySort(params.getSort().isSorted() ? params.getSort() : tree.getSort(), stringBuilder, persistentEntity);
-		buildLimit(tree, stringBuilder, params);
+		buildLimit(tree, stringBuilder, params.getPageable());
 
 		String selectSql = stringBuilder.toString();
 
@@ -443,7 +446,7 @@ public final class SpannerStatementQueryExecutor {
 		else if (tree.isExistsProjection()) {
 			finalSql = "SELECT EXISTS(" + selectSql + ")";
 		}
-		return new SqlAndTags(finalSql, tags);
+		return new SqlStringAndPlaceholders(finalSql, tags);
 	}
 
 	private static void buildSelect(
@@ -582,7 +585,7 @@ public final class SpannerStatementQueryExecutor {
 		}
 	}
 
-	private static void buildLimit(PartTree tree, StringBuilder stringBuilder, ParameterAccessor params) {
+	private static void buildLimit(PartTree tree, StringBuilder stringBuilder, Pageable pageable) {
 		if (tree.isExistsProjection()) {
 			stringBuilder.append(" LIMIT 1");
 		}
@@ -590,7 +593,6 @@ public final class SpannerStatementQueryExecutor {
 			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
 		}
 		else {
-			Pageable pageable = params.getPageable();
 			if (pageable.isPaged()) {
 				stringBuilder.append(" LIMIT ").append(pageable.getPageSize())
 				.append(" OFFSET ").append(pageable.getOffset());

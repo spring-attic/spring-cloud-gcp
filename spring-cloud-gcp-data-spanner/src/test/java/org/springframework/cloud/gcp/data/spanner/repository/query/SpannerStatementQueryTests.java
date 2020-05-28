@@ -149,7 +149,7 @@ public class SpannerStatementQueryTests {
 
 		// This dummy method was created so the metadata for the ARRAY param inner type is
 		// provided.
-		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Object.class, Object.class,
+		Method method = QueryHolder.class.getMethod("repositoryMethod1", Object.class, Object.class, Object.class,
 				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
 				Object.class, Object.class, List.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
@@ -172,7 +172,7 @@ public class SpannerStatementQueryTests {
 
 		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
-		Method method = QueryHolder.class.getMethod("dummyMethod3",
+		Method method = QueryHolder.class.getMethod("repositoryMethod3",
 				Object.class, Object.class, Object.class,
 				Object.class, Object.class, Object.class,
 				Object.class, Object.class, Object.class,
@@ -223,7 +223,7 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void pageableTest() throws NoSuchMethodException {
 		Object[] params = new Object[] { 8.88, PageRequest.of(1, 10, Sort.by("traderId")) };
-		Method method = QueryHolder.class.getMethod("dummyMethod5",
+		Method method = QueryHolder.class.getMethod("repositoryMethod5",
 				Double.class, Pageable.class);
 		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
 				+ "FROM trades WHERE ( price<@tag0 ) "
@@ -236,7 +236,7 @@ public class SpannerStatementQueryTests {
 	@Test
 	public void sortTest() throws NoSuchMethodException {
 		Object[] params = new Object[] { 8.88, Sort.by(Order.desc("traderId"), Order.asc("price"), Order.desc("action")) };
-		Method method = QueryHolder.class.getMethod("dummyMethod6",
+		Method method = QueryHolder.class.getMethod("repositoryMethod6",
 				Double.class, Sort.class);
 		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
 				+ "FROM trades WHERE ( price<@tag0 ) "
@@ -245,7 +245,7 @@ public class SpannerStatementQueryTests {
 		runPageableOrSortTest(params, method, expectedSql);
 	}
 
-	void runPageableOrSortTest(Object[] params, Method method, String expectedSql) {
+	private void runPageableOrSortTest(Object[] params, Method method, String expectedSql) {
 		when(this.queryMethod.getName()).thenReturn(
 				"findByPriceLessThan");
 		this.partTreeSpannerQuery = spy(createQuery());
@@ -287,7 +287,7 @@ public class SpannerStatementQueryTests {
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
-		Method method = QueryHolder.class.getMethod("dummyMethod4", Object.class, Object.class, Object.class);
+		Method method = QueryHolder.class.getMethod("repositoryMethod4", Object.class, Object.class, Object.class);
 		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		// There are too few params specified, so the exception will occur.
@@ -305,7 +305,7 @@ public class SpannerStatementQueryTests {
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
-		Method method = QueryHolder.class.getMethod("dummyMethod2", Object.class, Object.class, Object.class,
+		Method method = QueryHolder.class.getMethod("repositoryMethod2", Object.class, Object.class, Object.class,
 				Object.class, Object.class, Trade.class, Object.class);
 
 		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
@@ -352,31 +352,32 @@ public class SpannerStatementQueryTests {
 		}
 	}
 
+	//The methods in this class are used to emulate repository methods
 	private static class QueryHolder {
-		public long dummyMethod(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+		public long repositoryMethod1(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
 				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11, List<Integer> tag12) {
 			// tag12 is intentionally List<Integer> instead of List<Long> to trigger conversion.
 			return 0;
 		}
 
-		public long dummyMethod2(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Trade tag5, Object tag6) {
+		public long repositoryMethod2(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Trade tag5, Object tag6) {
 			return 0;
 		}
 
-		public long dummyMethod3(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+		public long repositoryMethod3(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
 				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11) {
 			return 0;
 		}
 
-		public long dummyMethod4(Object tag0, Object tag1, Object tag2) {
+		public long repositoryMethod4(Object tag0, Object tag1, Object tag2) {
 			return 0;
 		}
 
-		public long dummyMethod5(Double tag0, Pageable tag1) {
+		public long repositoryMethod5(Double tag0, Pageable tag1) {
 			return 0;
 		}
 
-		public long dummyMethod6(Double tag0, Sort tag1) {
+		public long repositoryMethod6(Double tag0, Sort tag1) {
 			return 0;
 		}
 	}
