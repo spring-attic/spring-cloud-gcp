@@ -1,15 +1,6 @@
-runtime: java
-env: flex
-
-handlers:
-- url: /.*
-  script: this field is required, but ignored
-
-manual_scaling:
-  instances: 1
-
-resources:
-  memory_gb: 4
+runtime: java11
+instance_class: F1
 
 env_variables:
   JAVA_OPTS: -Djava.security.egd=file:/dev/./urandom
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAM=256m -XX:ActiveProcessorCount=2 -Xmx32m"
