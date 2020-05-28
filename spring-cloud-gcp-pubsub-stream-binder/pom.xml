@@ -38,8 +38,6 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-stream-binder-test</artifactId>
-			<!-- Remove version once Spring cloud stream updates the dependencies pom. See #2269. -->
-			<version>3.1.0.BUILD-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
