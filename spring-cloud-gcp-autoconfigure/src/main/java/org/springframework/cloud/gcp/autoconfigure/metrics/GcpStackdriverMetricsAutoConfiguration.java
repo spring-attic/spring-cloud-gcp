@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Provides auto-detection for project.
+ * Provides auto-detection for `project-id` and `credentials`.
  *
  * @author Eddú Meléndez
  */
@@ -46,7 +46,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({StepMeterRegistry.class, StackdriverConfig.class})
 @ConditionalOnBean(Clock.class)
 @EnableConfigurationProperties({GcpMetricsProperties.class, StackdriverProperties.class})
-@ConditionalOnProperty(value = "spring.cloud.gcp.metrics.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "spring.cloud.gcp.metrics.enabled", matchIfMissing = true, havingValue = "true")
 public class GcpStackdriverMetricsAutoConfiguration {
 
 	private final StackdriverProperties stackdriverProperties;
