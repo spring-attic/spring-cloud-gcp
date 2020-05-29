@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.metrics;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
 import org.junit.Test;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
@@ -47,14 +48,16 @@ public class GcpStackdriverMetricsAutoConfigurationTest {
 	public void testProjectIdIsSet() {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.project-id=demo-project")
-				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class));
+				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class)
+						.hasSingleBean(StackdriverMeterRegistry.class));
 	}
 
 	@Test
 	public void testMetricsProjectIdIsSet() {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.metrics.project-id=demo-project")
-				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class));
+				.run(context -> assertThat(context).hasSingleBean(StackdriverConfig.class)
+						.hasSingleBean(StackdriverMeterRegistry.class));
 	}
 
 	@Configuration
