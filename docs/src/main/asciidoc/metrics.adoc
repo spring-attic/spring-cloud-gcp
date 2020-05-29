@@ -26,6 +26,26 @@ dependencies {
 You must enable Stackdriver Monitoring API from the Google Cloud Console in order to capture metrics.
 Navigate to the https://console.cloud.google.com/apis/api/monitoring.googleapis.com/overview[Stackdriver Monitoring API] for your project and make sure it’s enabled.
 
+This starter depends on `org.springframework.boot:spring-boot-starter-actuator` dependency. Make sure the dependency is being declared.
+
+Maven coordinates:
+
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+}
+----
+
 === Spring Boot Starter for Stackdriver Monitoring
 
 Spring Boot Starter for Stackdriver Monitoring uses Micrometer.
