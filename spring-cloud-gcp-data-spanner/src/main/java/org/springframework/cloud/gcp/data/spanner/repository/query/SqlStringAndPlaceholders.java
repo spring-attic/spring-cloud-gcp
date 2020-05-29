@@ -27,9 +27,8 @@ import java.util.List;
  *
  * @author Dmitry Solomakha
  *
- * @since 1.2
+ * @since 1.2.4
  */
-
 class SqlStringAndPlaceholders {
 	private String sql;
 

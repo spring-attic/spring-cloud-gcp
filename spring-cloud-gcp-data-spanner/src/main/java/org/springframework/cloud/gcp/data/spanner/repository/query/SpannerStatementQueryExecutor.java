@@ -589,14 +589,12 @@ public final class SpannerStatementQueryExecutor {
 		if (tree.isExistsProjection()) {
 			stringBuilder.append(" LIMIT 1");
 		}
+		else if (pageable.isPaged()) {
+			stringBuilder.append(" LIMIT ").append(pageable.getPageSize())
+					.append(" OFFSET ").append(pageable.getOffset());
+		}
 		else if (tree.isLimiting()) {
 			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
-		}
-		else {
-			if (pageable.isPaged()) {
-				stringBuilder.append(" LIMIT ").append(pageable.getPageSize())
-				.append(" OFFSET ").append(pageable.getOffset());
-			}
 		}
 	}
 }

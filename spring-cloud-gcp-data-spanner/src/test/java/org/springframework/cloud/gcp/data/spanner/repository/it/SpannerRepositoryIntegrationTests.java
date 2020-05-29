@@ -49,6 +49,7 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
@@ -197,6 +198,18 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository
 				.findByTraderId("trader2", PageRequest.of(1, 2, Sort.by(Direction.DESC, "tradeTime"))))
 				.containsExactlyInAnyOrder(trader2Trades.get(0));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", Pageable.unpaged()))
+				.containsExactlyInAnyOrder(trader2Trades.get(0), trader2Trades.get(1));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", PageRequest.of(0, 1)))
+				.containsExactlyInAnyOrder(trader2Trades.get(0));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", PageRequest.of(0, 1, Sort.by(Direction.DESC, "tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(2));
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
 				.findByActionIgnoreCase("bUy");
