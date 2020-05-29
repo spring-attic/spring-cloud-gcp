@@ -329,7 +329,38 @@ It is not required to add it to any other class, unless there is a need to overr
 <pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
-Unresolved directive in firestore.adoc - include::/opt/jenkins/data/workspace/spring-cloud-gcp-master-ci/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]</code></pre>
+@Document(collectionName = "usersCollection")
+public class User {
+	/**
+	 * Used to test @PropertyName annotation on a field.
+	 */
+	@PropertyName("drink")
+	public String favoriteDrink;
+
+	@DocumentId
+	private String name;
+
+	private Integer age;
+
+	public User() {
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getAge() {
+		return this.age;
+	}
+
+	public void setAge(Integer age) {
+		this.age = age;
+	}
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -363,7 +394,59 @@ They are stored as embedded documents (or arrays, correspondingly) in the Cloud 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in firestore.adoc - include::/opt/jenkins/data/workspace/spring-cloud-gcp-master-ci/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=embedded_class_collections]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@Document(collectionName = "usersCollection")
+public class User {
+	/**
+	 * Used to test @PropertyName annotation on a field.
+	 */
+	@PropertyName("drink")
+	public String favoriteDrink;
+
+	@DocumentId
+	private String name;
+
+	private Integer age;
+
+	private List&lt;String&gt; pets;
+
+	private List&lt;Address&gt; addresses;
+
+	private Address homeAddress;
+
+	public List&lt;String&gt; getPets() {
+		return this.pets;
+	}
+
+	public void setPets(List&lt;String&gt; pets) {
+		this.pets = pets;
+	}
+
+	public List&lt;Address&gt; getAddresses() {
+		return this.addresses;
+	}
+
+	public void setAddresses(List&lt;Address&gt; addresses) {
+		this.addresses = addresses;
+	}
+
+	@PropertyName("address")
+	public Address getHomeAddress() {
+		return this.homeAddress;
+	}
+
+	@PropertyName("address")
+	public void setHomeAddress(Address homeAddress) {
+		this.homeAddress = homeAddress;
+	}
+
+	public static class Address {
+		String streetAddress;
+		String country;
+
+		public Address() {
+		}
+	}
+}</code></pre>
 </div>
 </div>
 </div>
@@ -378,7 +461,31 @@ They are stored as embedded documents (or arrays, correspondingly) in the Cloud 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">Unresolved directive in firestore.adoc - include::/opt/jenkins/data/workspace/spring-cloud-gcp-master-ci/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]</code></pre>
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">public interface UserRepository extends FirestoreReactiveRepository&lt;User&gt; {
+	Flux&lt;User&gt; findByAge(Integer age);
+
+	Flux&lt;User&gt; findByHomeAddressCountry(String country);
+
+	Flux&lt;User&gt; findByFavoriteDrink(String drink);
+
+	Flux&lt;User&gt; findByAgeGreaterThanAndAgeLessThan(Integer age1, Integer age2);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Sort sort);
+
+	Flux&lt;User&gt; findByAgeGreaterThan(Integer age, Pageable pageable);
+
+	Flux&lt;User&gt; findByAgeIn(List&lt;Integer&gt; ages);
+
+	Flux&lt;User&gt; findByAgeAndPetsContains(Integer age, List&lt;String&gt; pets);
+
+	Flux&lt;User&gt; findByPetsContains(List&lt;String&gt; pets);
+
+	Flux&lt;User&gt; findByPetsContainsAndAgeIn(String pets, List&lt;Integer&gt; ages);
+
+	Mono&lt;Long&gt; countByAgeIsGreaterThan(Integer age);
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
