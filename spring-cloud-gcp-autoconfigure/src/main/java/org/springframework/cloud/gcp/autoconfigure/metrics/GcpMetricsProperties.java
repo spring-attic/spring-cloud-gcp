@@ -22,6 +22,12 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
+/**
+ * Settings for Stackdriver Metrics.
+ *
+ * @author Eddú Meléndez
+ * @since 1.2.4
+ */
 @ConfigurationProperties(prefix = "spring.cloud.gcp.metrics")
 public class GcpMetricsProperties implements CredentialsSupplier {
 

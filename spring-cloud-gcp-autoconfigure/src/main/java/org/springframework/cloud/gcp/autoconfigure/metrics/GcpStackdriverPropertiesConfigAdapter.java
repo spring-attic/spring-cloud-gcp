@@ -23,6 +23,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.export.stackdriver
 
 /**
  * @author Eddú Meléndez
+ * @since 1.2.4
  */
 public class GcpStackdriverPropertiesConfigAdapter extends StackdriverPropertiesConfigAdapter {
 
