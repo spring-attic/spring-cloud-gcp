@@ -32,6 +32,10 @@ public class FirebaseAuthenticationProperties {
 	 */
 	private String publicKeysEndpoint = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
 
+	/**
+	 * Overrides the GCP project ID specified in the Core module.
+	 */
+	private String projectId;
 
 	public String getPublicKeysEndpoint() {
 		return publicKeysEndpoint;
@@ -39,5 +43,13 @@ public class FirebaseAuthenticationProperties {
 
 	public void setPublicKeysEndpoint(String publicKeysEndpoint) {
 		this.publicKeysEndpoint = publicKeysEndpoint;
+	}
+
+	public String getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
 	}
 }

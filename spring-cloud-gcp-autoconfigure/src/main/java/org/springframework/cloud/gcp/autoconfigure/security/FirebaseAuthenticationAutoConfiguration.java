@@ -60,11 +60,13 @@ public class FirebaseAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "firebaseJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator, GcpProjectIdProvider gcpProjectIdProvider) {
+	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(
+			JwtIssuerValidator jwtIssuerValidator,
+			FirebaseAuthenticationProjectIdEvaluator evaluator) {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(jwtIssuerValidator);
-		validators.add(new FirebaseTokenValidator(gcpProjectIdProvider.getProjectId()));
+		validators.add(new FirebaseTokenValidator(evaluator.getProjectId()));
 		return new DelegatingOAuth2TokenValidator<>(validators);
 	}
 
@@ -78,8 +80,15 @@ public class FirebaseAuthenticationAutoConfiguration {
 	}
 
 	@Bean
-	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider) {
-		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, gcpProjectIdProvider.getProjectId()));
+	public JwtIssuerValidator jwtIssuerValidator(FirebaseAuthenticationProjectIdEvaluator evaluator) {
+		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, evaluator.getProjectId()));
+	}
+
+	@Bean
+	public FirebaseAuthenticationProjectIdEvaluator firebaseAuthenticationProjectIdEnabler(
+			GcpProjectIdProvider gcpProjectIdProvider,
+			FirebaseAuthenticationProperties properties) {
+		return new FirebaseAuthenticationProjectIdEvaluator(gcpProjectIdProvider, properties);
 	}
 
 	private RestOperations restOperations() {
@@ -88,5 +97,4 @@ public class FirebaseAuthenticationAutoConfiguration {
 		clientHttpRequestFactory.setReadTimeout(2_000);
 		return new RestTemplate(clientHttpRequestFactory);
 	}
-
 }
