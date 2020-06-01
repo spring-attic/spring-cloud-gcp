@@ -9,51 +9,51 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 
 === General
 
-* Upgrade to latest libraries bom and sql socket factory (#2373)
-* Make transaction managers conditional on enabled flag for Spanner and Datastore (#2376)
+* Upgrade to latest libraries bom and sql socket factory (https://github.com/spring-cloud/spring-cloud-gcp/issues/2373[#2373])
+* Make transaction managers conditional on enabled flag for Spanner and Datastore (https://github.com/spring-cloud/spring-cloud-gcp/issues/2376[#2376])
 
 === Secret Manager 
 
-* Remove the version property in secret manager (#2270)
-* Secret manager template with project (#2283) (#2284)
-* Create protocol for specifying secrets' project and versions (#2302)
-* Add secret manager autoconfigure property (#2363)
+* Remove the version property in secret manager (https://github.com/spring-cloud/spring-cloud-gcp/issues/2270[#2270])
+* Secret manager template with project (https://github.com/spring-cloud/spring-cloud-gcp/issues/2283[#2283]) (https://github.com/spring-cloud/spring-cloud-gcp/issues/2284[#2284])
+* Create protocol for specifying secrets' project and versions (https://github.com/spring-cloud/spring-cloud-gcp/issues/2302[#2302])
+* Add secret manager autoconfigure property (https://github.com/spring-cloud/spring-cloud-gcp/issues/2363[#2363])
 
 === Pub/Sub 
 
-* Suppress exception in Pub/Sub adapter in AUTO_ACK and MANUAL modes (#2319)
-* Detailed docs on acking/nacking in Spring Integration (#2078)
-* Make 403 an allowable Pub/Sub UP status (#2385)
+* Suppress exception in Pub/Sub adapter in AUTO_ACK and MANUAL modes (https://github.com/spring-cloud/spring-cloud-gcp/issues/2319[#2319])
+* Detailed docs on acking/nacking in Spring Integration (https://github.com/spring-cloud/spring-cloud-gcp/issues/2078[#2078])
+* Make 403 an allowable Pub/Sub UP status (https://github.com/spring-cloud/spring-cloud-gcp/issues/2385[#2385])
 
 === Trace
 
-* Support Extra Propagation Fields with Trace (#2290)
+* Support Extra Propagation Fields with Trace (https://github.com/spring-cloud/spring-cloud-gcp/issues/2290[#2290])
 
 === Spanner
 
-* Fix @Where with ORDER BY query generation (#2267)
-* Add SpannerOptions auto-configuration for emulator (#2356)
+* Fix @Where with ORDER BY query generation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2267[#2267])
+* Add SpannerOptions auto-configuration for emulator (https://github.com/spring-cloud/spring-cloud-gcp/issues/2356[#2356])
 
 === Datastore
 
-* Support for nested properties in PartTree methods (#2307)
-* Datastore Projections should restrict query to contain only the necessary fields (#2335)
-* Support custom maps (#2345)
+* Support for nested properties in PartTree methods (https://github.com/spring-cloud/spring-cloud-gcp/issues/2307[#2307])
+* Datastore Projections should restrict query to contain only the necessary fields (https://github.com/spring-cloud/spring-cloud-gcp/issues/2335[#2335])
+* Support custom maps (https://github.com/spring-cloud/spring-cloud-gcp/issues/2345[#2345])
 
 === Firestore
 
-* Firestore nested properties (#2300)
-* Add autoconfiguration for Firestore Emulator (#2244)
-* Add support for Firestore Sort PartTree queries (#2341)
-* Add child collection to the entity class in Firestore sample (#2388)
+* Firestore nested properties (https://github.com/spring-cloud/spring-cloud-gcp/issues/2300[#2300])
+* Add autoconfiguration for Firestore Emulator (https://github.com/spring-cloud/spring-cloud-gcp/issues/2244[#2244])
+* Add support for Firestore Sort PartTree queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2341[#2341])
+* Add child collection to the entity class in Firestore sample (https://github.com/spring-cloud/spring-cloud-gcp/issues/2388[#2388])
 
 === Vision
 
-* Allow users to provide the ImageContext in CloudVisionTemplate (#2286)
+* Allow users to provide the ImageContext in CloudVisionTemplate (https://github.com/spring-cloud/spring-cloud-gcp/issues/2286[#2286])
 
 === Firebase Security
 
-* Make Firebase Security Autoconfiguration conditional (#2258)
+* Make Firebase Security Autoconfiguration conditional (https://github.com/spring-cloud/spring-cloud-gcp/issues/2258[#2258])
 
 == 1.2.2.RELEASE (2020-03-04)
 
