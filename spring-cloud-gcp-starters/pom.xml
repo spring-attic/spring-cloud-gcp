@@ -31,6 +31,7 @@
 		<module>spring-cloud-gcp-starter-firestore</module>
 		<module>spring-cloud-gcp-starter-trace</module>
 		<module>spring-cloud-gcp-starter-logging</module>
+		<module>spring-cloud-gcp-starter-metrics</module>
 		<module>spring-cloud-gcp-starter-sql-mysql</module>
 		<module>spring-cloud-gcp-starter-sql-postgresql</module>
 		<module>spring-cloud-gcp-starter-security-iap</module>

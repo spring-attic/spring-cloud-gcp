@@ -41,6 +41,8 @@ include::trace.adoc[]
 
 include::logging.adoc[]
 
+include::metrics.adoc[]
+
 include::spanner.adoc[]
 
 include::datastore.adoc[]

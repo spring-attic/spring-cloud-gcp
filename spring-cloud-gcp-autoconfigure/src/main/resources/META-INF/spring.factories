@@ -23,7 +23,8 @@ org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreEmulatorAutoCo
 org.springframework.cloud.gcp.autoconfigure.bigquery.GcpBigQueryAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.firestore.FirestoreRepositoriesAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration
+org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.metrics.GcpStackdriverMetricsAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration,\

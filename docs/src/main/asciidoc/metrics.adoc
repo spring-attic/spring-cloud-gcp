@@ -1,0 +1,65 @@
+== Stackdriver Monitoring
+
+Google Cloud Platform provides a service called https://cloud.google.com/monitoring/[Stackdriver Monitoring], and https://micrometer.io/docs/registry/stackdriver[Micrometer] can be used with it to easily instrument Spring Boot applications for observability.
+
+Spring Boot already provides auto-configuration for Stackdriver. This module enables to auto-detect the `project-id` and `credentials`. Also, it can be customized.
+
+Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-metrics</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-metrics'
+}
+----
+
+You must enable Stackdriver Monitoring API from the Google Cloud Console in order to capture metrics.
+Navigate to the https://console.cloud.google.com/apis/api/monitoring.googleapis.com/overview[Stackdriver Monitoring API] for your project and make sure it’s enabled.
+
+This starter requires `org.springframework.boot:spring-boot-starter-actuator` dependency to activate. Make sure the dependency is being declared.
+
+Maven coordinates:
+
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+}
+----
+
+=== Spring Boot Starter for Stackdriver Monitoring
+
+Spring Boot Starter for Stackdriver Monitoring uses Micrometer.
+
+All configurations are optional:
+
+|===
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.metrics.enabled` | Auto-configure Micrometer to send metrics to Stackdriver Monitoring. | No | `true`
+| `spring.cloud.gcp.metrics.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.metrics.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.metrics.credentials.encoded-key` | Overrides the credentials encoded key from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.metrics.credentials.scopes` | Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+|===
+
+You can use core Spring Boot Actuator properties to control reporting frequency, etc.
+Read https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready-metrics-export-stackdriver[Spring Boot Actuator documentation] for more information on Stackdriver Actuator configurations.
