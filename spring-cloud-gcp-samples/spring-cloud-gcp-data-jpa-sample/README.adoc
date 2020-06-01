@@ -20,9 +20,11 @@ If you decided to set a root password for your instance footnoteref:[note, Googl
 
 4. Open the link:src/main/resources/application.properties[application.properties] file and replace
 *[database-name]* with the name of the database you created in step 3 and
-*[instance-connection-name]* with the instance connection name of the instance you created in step 1.
+*[instance-connection-name]* with the instance connection name of the instance you created in step 2.
 +
 If you set a root password, add the `spring.datasource.password` property with the root password as the value.
++
+NOTE: The `instance-connection-name` is an identifier of your Cloud SQL instance in the format: `<PROJECT_ID>:<REGION>:<INSTANCE_NAME>`.
 
 5. https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If you are authenticated in the Cloud SDK], your credentials will be automatically found by the Spring Boot Starter for Google Cloud SQL.
 +
