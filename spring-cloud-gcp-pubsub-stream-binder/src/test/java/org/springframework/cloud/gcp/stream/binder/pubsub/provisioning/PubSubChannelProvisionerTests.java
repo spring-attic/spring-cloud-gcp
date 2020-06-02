@@ -181,10 +181,10 @@ public class PubSubChannelProvisionerTests {
 	@Test
 	public void testProvisionConsumerDestination_concurrentTopicCreation() {
 		when(this.pubSubAdminMock.createTopic(any())).thenThrow(AlreadyExistsException.class);
-		when(this.pubSubAdminMock.getTopic(eq("non_existing_topic"))).thenReturn(null);
+		when(this.pubSubAdminMock.getTopic(eq("already_existing_topic"))).thenReturn(null);
 
 		// Ensure no exceptions occur if topic already exists on create call
 		this.pubSubChannelProvisioner
-				.provisionConsumerDestination("non_existing_topic", "group1", this.properties);
+				.provisionConsumerDestination("already_existing_topic", "group1", this.properties);
 	}
 }
