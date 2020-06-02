@@ -14,6 +14,9 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 
 === Secret Manager 
 
+NOTE: This version introduced several breaking changes to Secret Manager property source.
+Please see the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.3.RELEASE/reference/html/#secret-manager-property-source)[reference documentation] for the new way for accessing secrets as properties.
+
 * Remove the version property in secret manager (https://github.com/spring-cloud/spring-cloud-gcp/issues/2270[#2270])
 * Secret manager template with project (https://github.com/spring-cloud/spring-cloud-gcp/issues/2283[#2283]) (https://github.com/spring-cloud/spring-cloud-gcp/issues/2284[#2284])
 * Create protocol for specifying secrets' project and versions (https://github.com/spring-cloud/spring-cloud-gcp/issues/2302[#2302])
