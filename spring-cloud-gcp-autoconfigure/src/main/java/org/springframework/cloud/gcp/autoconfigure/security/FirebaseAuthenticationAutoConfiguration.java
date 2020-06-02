@@ -58,15 +58,19 @@ public class FirebaseAuthenticationAutoConfiguration {
 
 	private static final String ISSUER_TEMPLATE = "https://securetoken.google.com/%s";
 
+	private final String projectId;
+
+	public FirebaseAuthenticationAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider, FirebaseAuthenticationProperties properties) {
+		this.projectId = (properties.getProjectId() != null) ? properties.getProjectId() : gcpProjectIdProvider.getProjectId();
+	}
+
 	@Bean
 	@ConditionalOnMissingBean(name = "firebaseJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(
-			JwtIssuerValidator jwtIssuerValidator,
-			FirebaseAuthenticationProjectIdEvaluator evaluator) {
+	public DelegatingOAuth2TokenValidator<Jwt> firebaseJwtDelegatingValidator(JwtIssuerValidator jwtIssuerValidator, GcpProjectIdProvider gcpProjectIdProvider) {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(jwtIssuerValidator);
-		validators.add(new FirebaseTokenValidator(evaluator.getProjectId()));
+		validators.add(new FirebaseTokenValidator(projectId));
 		return new DelegatingOAuth2TokenValidator<>(validators);
 	}
 
@@ -80,15 +84,8 @@ public class FirebaseAuthenticationAutoConfiguration {
 	}
 
 	@Bean
-	public JwtIssuerValidator jwtIssuerValidator(FirebaseAuthenticationProjectIdEvaluator evaluator) {
-		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, evaluator.getProjectId()));
-	}
-
-	@Bean
-	public FirebaseAuthenticationProjectIdEvaluator firebaseAuthenticationProjectIdEnabler(
-			GcpProjectIdProvider gcpProjectIdProvider,
-			FirebaseAuthenticationProperties properties) {
-		return new FirebaseAuthenticationProjectIdEvaluator(gcpProjectIdProvider, properties);
+	public JwtIssuerValidator jwtIssuerValidator(GcpProjectIdProvider gcpProjectIdProvider) {
+		return new JwtIssuerValidator(String.format(ISSUER_TEMPLATE, projectId));
 	}
 
 	private RestOperations restOperations() {
