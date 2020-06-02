@@ -124,7 +124,7 @@ public class PubSubChannelProvisioner
 				}
 				catch (AlreadyExistsException alreadyExistsException) {
 					// Ignore concurrent topic creation - we're good as long as topic was created and exists
-					LOGGER.warn("Failed to auto-create topic '" + topicName + "' because it already exists.");
+					LOGGER.info("Failed to auto-create topic '" + topicName + "' because it already exists.");
 				}
 			}
 			else {
