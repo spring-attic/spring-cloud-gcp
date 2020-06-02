@@ -36,6 +36,8 @@ import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.util.StringUtils;
 
+import com.google.api.gax.rpc.AlreadyExistsException;
+
 /**
  * Provisioning provider for Pub/Sub.
  *
@@ -118,7 +120,11 @@ public class PubSubChannelProvisioner
 		Topic topic = this.pubSubAdmin.getTopic(topicName);
 		if (topic == null) {
 			if (autoCreate) {
-				topic = this.pubSubAdmin.createTopic(topicName);
+				try {
+					topic = this.pubSubAdmin.createTopic(topicName);
+				} catch(AlreadyExistsException alreadyExistsException) {
+					// Ignore concurrent topic creation - we're good as long as topic was created and exists
+				}
 			}
 			else {
 				throw new ProvisioningException("Non-existing '" + topicName + "' topic.");
