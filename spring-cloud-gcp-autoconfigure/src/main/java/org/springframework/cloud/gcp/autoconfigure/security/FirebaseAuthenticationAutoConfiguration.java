@@ -61,7 +61,7 @@ public class FirebaseAuthenticationAutoConfiguration {
 	private final String projectId;
 
 	public FirebaseAuthenticationAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider, FirebaseAuthenticationProperties properties) {
-		this.projectId = (properties.getProjectId() != null) ? properties.getProjectId() : gcpProjectIdProvider.getProjectId();
+		this.projectId = properties.getProjectId() != null ? properties.getProjectId() : gcpProjectIdProvider.getProjectId();
 	}
 
 	@Bean
