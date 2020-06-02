@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import org.apache.commons.logging.Log;
@@ -35,8 +36,6 @@ import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.util.StringUtils;
-
-import com.google.api.gax.rpc.AlreadyExistsException;
 
 /**
  * Provisioning provider for Pub/Sub.
@@ -122,7 +121,8 @@ public class PubSubChannelProvisioner
 			if (autoCreate) {
 				try {
 					topic = this.pubSubAdmin.createTopic(topicName);
-				} catch(AlreadyExistsException alreadyExistsException) {
+				} 
+				catch (AlreadyExistsException alreadyExistsException) {
 					// Ignore concurrent topic creation - we're good as long as topic was created and exists
 					LOGGER.warn("Failed to auto-create topic '" + topicName + "' because it already exists.");
 				}
