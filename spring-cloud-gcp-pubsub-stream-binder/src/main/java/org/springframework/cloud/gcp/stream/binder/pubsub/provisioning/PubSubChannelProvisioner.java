@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.api.gax.rpc.AlreadyExistsException;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import org.apache.commons.logging.Log;
@@ -118,7 +119,13 @@ public class PubSubChannelProvisioner
 		Topic topic = this.pubSubAdmin.getTopic(topicName);
 		if (topic == null) {
 			if (autoCreate) {
-				topic = this.pubSubAdmin.createTopic(topicName);
+				try {
+					topic = this.pubSubAdmin.createTopic(topicName);
+				}
+				catch (AlreadyExistsException alreadyExistsException) {
+					// Ignore concurrent topic creation - we're good as long as topic was created and exists
+					LOGGER.info("Failed to auto-create topic '" + topicName + "' because it already exists.");
+				}
 			}
 			else {
 				throw new ProvisioningException("Non-existing '" + topicName + "' topic.");
