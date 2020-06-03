@@ -27,7 +27,7 @@ Select the `Global` resource and look under the `spring.log` channel to see the 
 
 === Running on Google Cloud Platform
 
-Deploy to Google AppEngine:
+Deploy to App Engine:
 
 ----
 $ mvn clean package appengine:deploy -Dapp.deploy.projectId=$PROJECT_ID -Dapp.deploy.version=$VERSION
