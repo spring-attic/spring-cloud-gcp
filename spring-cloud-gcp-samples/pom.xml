@@ -25,6 +25,7 @@
 		<spring-cloud-build-tools.version>3.0.0-SNAPSHOT</spring-cloud-build-tools.version>
 		<puppycrawl-tools-checkstyle.version>8.32</puppycrawl-tools-checkstyle.version>
 		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+		<app-engine-maven-plugin.version>2.2.0</app-engine-maven-plugin.version>
 	</properties>
 
 	<modules>
@@ -116,12 +117,26 @@
 	</profiles>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>com.google.cloud.tools</groupId>
+					<artifactId>appengine-maven-plugin</artifactId>
+					<version>${app-engine-maven-plugin.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
+			</plugin>
+			<plugin>
+				<!-- Enables repackaging the JAR into an executable. -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

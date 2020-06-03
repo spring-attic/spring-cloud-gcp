@@ -32,10 +32,10 @@ Additionally, if you logged in with the Google Cloud SDK or have the `GOOGLE_CLO
 Note that the trace transmission delay default value is 10 seconds, so it can take a little while for the traces to show up in the Trace List page.
 You can shorten this delay using the `spring.cloud.gcp.trace.scheduled-delay-seconds` property.
 
-== Deploy to App Engine Flexible Environment
+== Deploy to App Engine Standard Environment
 
-If you have Cloud SDK installed, https://cloud.google.com/appengine/docs/flexible/java/using-maven[Maven App Engine Plug-in] can be used to deploy the application to App Engine Flexible environment:
+If you have Cloud SDK installed, https://cloud.google.com/appengine/docs/standard/java11/testing-and-deploying-your-app[Maven App Engine Plug-in] can be used to deploy the application to App Engine Standard environment:
 
 ----
-$ mvn appengine:deploy
+$ mvn clean package appengine:deploy -Dapp.deploy.projectId=$PROJECT_ID -Dapp.deploy.version=$VERSION
 ----
