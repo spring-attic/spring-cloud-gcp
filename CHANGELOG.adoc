@@ -12,6 +12,11 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 * Upgrade to latest libraries bom and sql socket factory (https://github.com/spring-cloud/spring-cloud-gcp/issues/2373[#2373])
 * Make transaction managers conditional on enabled flag for Spanner and Datastore (https://github.com/spring-cloud/spring-cloud-gcp/issues/2376[#2376])
 
+=== Logging
+
+NOTE: As we upgraded to the latest version of `google-cloud-logging-logback`, we picked up a https://github.com/googleapis/java-logging-logback/pull/43[breaking change] where the log entry payload is now written in JSON rather than plain text.
+So, if you're reading log entries back from Cloud Logging using `LogEntry.getPayload()`, make sure to cast the returned payload object to `JsonPayload` instead of `StringPayload`.
+
 === Secret Manager 
 
 NOTE: This version introduced several breaking changes to Secret Manager property source.
