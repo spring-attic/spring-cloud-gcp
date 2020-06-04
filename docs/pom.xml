@@ -16,8 +16,8 @@
 	<properties>
 		<docs.main>spring-cloud-gcp</docs.main>
 		<main.basedir>${basedir}/..</main.basedir>
-		<docs.whitelisted.branches>1.0.x,1.1.x,1.2.x</docs.whitelisted.branches>
 		<configprops.inclusionPattern>spring.cloud.gcp.*</configprops.inclusionPattern>
+		<upload-docs-zip.phase>deploy</upload-docs-zip.phase>
 	</properties>
 
 	<dependencies>
@@ -88,32 +88,24 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 	<profiles>
 		<profile>
 			<id>docs</id>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>exec-maven-plugin</artifactId>
+						<groupId>pl.project13.maven</groupId>
+						<artifactId>git-commit-id-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-resources-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
 						<groupId>org.asciidoctor</groupId>
@@ -123,6 +115,12 @@
 								<project-version>${project.version}</project-version>
 							</attributes>
 						</configuration>
+					</plugin>
+					<plugin>
+						<artifactId>maven-antrun-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<artifactId>maven-deploy-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>
