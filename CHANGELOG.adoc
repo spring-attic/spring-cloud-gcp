@@ -30,7 +30,6 @@ Please see the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.
 === Pub/Sub 
 * New async pull methods in `Pub/Sub Template`, as well as fully asynchronous `PubSubReactiveFactory.poll()` (https://github.com/spring-cloud/spring-cloud-gcp/pull/2227[#2227])
 * Suppress exception in Pub/Sub adapter in AUTO_ACK and MANUAL modes (https://github.com/spring-cloud/spring-cloud-gcp/issues/2319[#2319])
-* Detailed docs on acking/nacking in Spring Integration (https://github.com/spring-cloud/spring-cloud-gcp/issues/2078[#2078])
 * Make 403 an allowable Pub/Sub UP status (https://github.com/spring-cloud/spring-cloud-gcp/issues/2385[#2385])
 
 === Trace
