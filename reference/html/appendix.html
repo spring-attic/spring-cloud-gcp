@@ -86,7 +86,26 @@ function createSwitchItem(block, blockSwitch) {
 	return {'item': item, 'content': content};
 }
 
+function globalSwitch() {
+	$('.switch--item').each(function() {
+		$(this).off('click');
+		$(this).on('click', function() {
+			selectedText = $(this).text()
+			selectedIndex = $(this).index()
+			$(".switch--item").filter(function() { return ($(this).text() === selectedText) }).each(function() {
+				$(this).addClass('selected');
+				$(this).siblings().removeClass('selected');
+				selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+				selectedContent.removeClass('hidden');
+				selectedContent.siblings().addClass('hidden');
+			});
+		});
+	});
+}
+
 $(addBlockSwitches);
+$(globalSwitch);
+
 </script>
 
 </head>
@@ -318,6 +337,31 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.logging.enabled</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Auto-configure Google Cloud Stackdriver logging for Spring MVC.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.metrics.credentials.encoded-key</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.metrics.credentials.location</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.metrics.credentials.scopes</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.metrics.enabled</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">true</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Auto-configure Google Cloud Monitoring for Micrometer.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.metrics.project-id</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the GCP project ID specified in the Core module.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.project-id</p></td>
@@ -558,6 +602,11 @@ Also, you can define your own properties.
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.secretmanager.project-id</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the GCP Project ID specified in the Core module.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.security.firebase.project-id</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Overrides the GCP project ID specified in the Core module.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">spring.cloud.gcp.security.firebase.public-keys-endpoint</p></td>
@@ -831,7 +880,7 @@ Also, you can define your own properties.
 </div>
 <script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
 <script type="text/javascript" src="js/toc.js"></script>
-<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<link rel="stylesheet" href="js/highlight/styles/github.min.css">
 <script src="js/highlight/highlight.min.js"></script>
 <script>hljs.initHighlighting()</script>
 </body>

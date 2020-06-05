@@ -86,7 +86,26 @@ function createSwitchItem(block, blockSwitch) {
 	return {'item': item, 'content': content};
 }
 
+function globalSwitch() {
+	$('.switch--item').each(function() {
+		$(this).off('click');
+		$(this).on('click', function() {
+			selectedText = $(this).text()
+			selectedIndex = $(this).index()
+			$(".switch--item").filter(function() { return ($(this).text() === selectedText) }).each(function() {
+				$(this).addClass('selected');
+				$(this).siblings().removeClass('selected');
+				selectedContent = $(this).parent().siblings(".content").eq(selectedIndex)
+				selectedContent.removeClass('hidden');
+				selectedContent.siblings().addClass('hidden');
+			});
+		});
+	});
+}
+
 $(addBlockSwitches);
+$(globalSwitch);
+
 </script>
 
 </head>
@@ -122,13 +141,13 @@ $(addBlockSwitches);
 <div class="content">
 <div class="paragraph">
 <p>This project makes it easy for Spring users to run their applications on Google Cloud Platform.
-You can check our project website <a href="https://cloud.spring.io/spring-cloud-gcp">here</a>.</p>
+You can check our project website <a href="https://spring.io/projects/spring-cloud-gcp">here</a>.</p>
 </div>
 <div class="paragraph">
-<p>For a deep dive into the project, refer to the <a href="https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.0.RELEASE/reference/html/">Spring Cloud GCP 1.2 Reference Document</a>.</p>
+<p>For a deep dive into the project, refer to the <a href="https://cloud.spring.io/spring-cloud-gcp/reference/html/">Spring Cloud GCP 1.2 Reference Document</a> or the <a href="https://googleapis.dev/java/spring-cloud-gcp/latest/index.html">latest Javadocs</a>.</p>
 </div>
 <div class="paragraph">
-<p>If you prefer to learn by doing, try <a href="https://codelabs.developers.google.com/spring">Spring on GCP codelabs</a>.</p>
+<p>If you prefer to learn by doing, try taking a look at the <a href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples">Spring Cloud GCP sample applications</a> or the <a href="https://codelabs.developers.google.com/spring">Spring on GCP codelabs</a>.</p>
 </div>
 <div class="paragraph">
 <p>Currently, this repository provides support for:</p>
@@ -151,6 +170,9 @@ You can check our project website <a href="https://cloud.spring.io/spring-cloud-
 <p><a href="spring-cloud-gcp-data-datastore">Spring Data Cloud Datastore</a></p>
 </li>
 <li>
+<p><a href="spring-cloud-gcp-data-firestore">Spring Data Cloud Firestore</a></p>
+</li>
+<li>
 <p><a href="spring-cloud-gcp-vision">Google Cloud Vision API Template</a></p>
 </li>
 <li>
@@ -170,6 +192,9 @@ You can check our project website <a href="https://cloud.spring.io/spring-cloud-
 <p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore">Google Cloud Datastore</a></p>
 </li>
 <li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-firestore">Google Cloud Firestore</a></p>
+</li>
+<li>
 <p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging">Google Cloud Logging</a></p>
 </li>
 <li>
@@ -186,6 +211,12 @@ You can check our project website <a href="https://cloud.spring.io/spring-cloud-
 </li>
 <li>
 <p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace">Stackdriver Trace with Spring Cloud Sleuth</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-secretmanager">Google Secret Manager</a></p>
+</li>
+<li>
+<p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-firebase">Firebase Authentication</a></p>
 </li>
 <li>
 <p><a href="spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap">Google Cloud IAP Authentication</a></p>
@@ -226,8 +257,8 @@ Before you start working on one, please take a look at our <a href="CONTRIBUTING
 <h2 id="_spring_cloud_gcp_bill_of_materials_bom"><a class="link" href="#_spring_cloud_gcp_bill_of_materials_bom">Spring Cloud GCP Bill of Materials (BOM)</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>If you&#8217;re a Maven Central user, add our BOM to your pom.xml <code>&lt;dependencyManagement&gt;</code> section.
-This will allow you to omit versions for any of the Maven dependencies and instead delegate versioning to the BOM.</p>
+<p>If you&#8217;re a Maven user, add our BOM to your pom.xml <code>&lt;dependencyManagement&gt;</code> section.
+This will allow you to not specify versions for any of the Maven dependencies and instead delegate versioning to the BOM.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -236,7 +267,7 @@ This will allow you to omit versions for any of the Maven dependencies and inste
         &lt;dependency&gt;
             &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
             &lt;artifactId&gt;spring-cloud-gcp-dependencies&lt;/artifactId&gt;
-            &lt;version&gt;1.2.0.RELEASE&lt;/version&gt;
+            &lt;version&gt;1.2.3.RELEASE&lt;/version&gt;
             &lt;type&gt;pom&lt;/type&gt;
             &lt;scope&gt;import&lt;/scope&gt;
         &lt;/dependency&gt;
@@ -250,8 +281,7 @@ This will allow you to omit versions for any of the Maven dependencies and inste
 <h2 id="_spring_milestones_maven_repository"><a class="link" href="#_spring_milestones_maven_repository">Spring Milestones Maven Repository</a></h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The latest non-GA Maven artifacts for the project are available in the Spring Milestones repository instead of Maven Central.
-They are named like <code>1.2.0.M1</code> or <code>1.2.0.M2</code> and are released more frequently than GA <code>RELEASE</code> versions.
+<p>The latest non-GA Maven artifacts for the project are only available in the Spring Milestones repository.
 You will want to make sure that the repository is added to your <code>pom.xml</code> file or globally in your <a href="https://maven.apache.org/settings.html"><code>settings.xml</code></a> file.</p>
 </div>
 <div class="listingblock">
@@ -278,7 +308,7 @@ You will want to make sure that the repository is added to your <code>pom.xml</c
 <pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;repositories&gt;
     &lt;repository&gt;
         &lt;id&gt;spring-snapshots&lt;/id&gt;
-        &lt;name&gt;Spring SnapShots&lt;/name&gt;
+        &lt;name&gt;Spring Snapshots&lt;/name&gt;
         &lt;url&gt;https://repo.spring.io/libs-snapshot&lt;/url&gt;
         &lt;snapshots&gt;
             &lt;enabled&gt;true&lt;/enabled&gt;
@@ -288,7 +318,7 @@ You will want to make sure that the repository is added to your <code>pom.xml</c
 </div>
 </div>
 <div class="paragraph">
-<p>For example, the <code>1.2.2.BUILD-SNAPSHOT</code> is available from this repository.</p>
+<p>For example, the <code>1.2.4.BUILD-SNAPSHOT</code> is available from this repository.</p>
 </div>
 </div>
 </div>
@@ -331,7 +361,7 @@ If your app is running on Google App Engine or Google Compute Engine, in most ca
 </div>
 <script type="text/javascript" src="js/tocbot/tocbot.min.js"></script>
 <script type="text/javascript" src="js/toc.js"></script>
-<link rel="stylesheet" href="js/highlight/styles/atom-one-dark-reasonable.min.css">
+<link rel="stylesheet" href="js/highlight/styles/github.min.css">
 <script src="js/highlight/highlight.min.js"></script>
 <script>hljs.initHighlighting()</script>
 </body>
