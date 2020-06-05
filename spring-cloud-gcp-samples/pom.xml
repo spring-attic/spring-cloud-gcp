@@ -113,6 +113,25 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>spring-cloud-gcp-ci-it</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<systemPropertyVariables>
+								<gcs-resource-test-bucket>gcp-storage-resource-bucket-sample</gcs-resource-test-bucket>
+								<gcs-read-bucket>gcp-storage-bucket-sample-input</gcs-read-bucket>
+								<gcs-write-bucket>gcp-storage-bucket-sample-output</gcs-write-bucket>
+								<gcs-local-directory>/tmp/gcp_integration_tests/integration_storage_sample</gcs-local-directory>
+							</systemPropertyVariables>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 	<build>
