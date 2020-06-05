@@ -26,6 +26,7 @@ import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -44,6 +45,8 @@ import org.springframework.data.annotation.Id;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -56,6 +59,14 @@ import static org.mockito.Mockito.mock;
  * @since 1.2
  */
 public class GcpDatastoreEmulatorIntegrationTests {
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Google Cloud Datastore integration tests are disabled. "
+						+ "Please use '-Dit.datastore=true' to enable them. ",
+				System.getProperty("it.datastore"), is("true"));
+	}
 
 	@Test
 	public void testDatastoreEmulatorConfiguration() {

@@ -18,7 +18,6 @@ package com.example;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.TeeOutputStream;
@@ -28,42 +27,38 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Tests for the receiver application.
+ * Tests for the Firestore sample application.
  *
  * @author Dmitry Solomakha
- * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@TestPropertySource("classpath:application-test.properties")
 @DirtiesContext
-public class ReceiverTest {
+public class FirestoreSampleAppIntegrationTests {
+	private static final int TIMEOUT = 10;
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
 
-	@Autowired
-	private PubSubTemplate pubSubTemplate;
-
 	@BeforeClass
 	public static void prepare() {
 		assumeThat(
-				"PUB/SUB-sample integration tests are disabled. Please use '-Dit.pubsub=true' "
+				"Firestore-sample tests are disabled. Please use '-Dit.firestore=true' "
 						+ "to enable them. ",
-				System.getProperty("it.pubsub"), is("true"));
+				System.getProperty("it.firestore"), is("true"));
 
 		systemOut = System.out;
 		baos = new ByteArrayOutputStream();
@@ -77,15 +72,21 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void testSample() throws Exception {
-		String message = "test message " + UUID.randomUUID();
-		String expectedString = "Message arrived! Payload: " + message;
-
-		this.pubSubTemplate.publish("exampleTopic", message);
+	public void testSample() {
+		String expectedString =
+				"read: {name=Ada, phones=[123, 456]}\n" +
+				"read: User{name='Joe', phones=[Phone{number=12345, type=CELL}, Phone{number=54321, type=WORK}]}";
 
 		Awaitility.await()
-				.atMost(60, TimeUnit.SECONDS)
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
 				.until(() -> baos.toString().contains(expectedString));
-		assertThat(baos.toString()).contains(expectedString);
+
+		//the following two lines appear in a non-deterministic order, so checking them independently
+		Awaitility.await()
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
+				.until(() -> baos.toString().contains("removing: ada"));
+		Awaitility.await()
+				.atMost(TIMEOUT, TimeUnit.SECONDS)
+				.until(() -> baos.toString().contains("removing: joe"));
 	}
 }

@@ -31,7 +31,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * @author Eddú Meléndez
  */
-public class GcpSpannerEmulatorAutoConfigurationTests {
+public class GcpSpannerEmulatorAutoConfigurationIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerEmulatorAutoConfiguration.class,

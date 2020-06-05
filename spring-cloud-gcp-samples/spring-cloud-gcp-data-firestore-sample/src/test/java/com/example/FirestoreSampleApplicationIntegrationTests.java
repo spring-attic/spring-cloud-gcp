@@ -45,7 +45,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = FirestoreSampleApplication.class)
 @TestPropertySource("classpath:application-test.properties")
-public class FirestoreSampleApplicationTests {
+public class FirestoreSampleApplicationIntegrationTests {
 
 	@Autowired
 	FirestoreTemplate firestoreTemplate;

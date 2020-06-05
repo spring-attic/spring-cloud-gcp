@@ -34,7 +34,7 @@ import static org.junit.Assume.assumeThat;
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		classes = Application.class,
 		properties = "application.ocr-bucket=vision-integration-test-bucket")
-public class VisionOcrSampleTest {
+public class VisionOcrSampleIntegrationTest {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;

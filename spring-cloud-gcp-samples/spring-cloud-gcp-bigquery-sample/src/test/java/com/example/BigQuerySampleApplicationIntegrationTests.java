@@ -55,7 +55,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = BigQuerySampleApplication.class, properties = "spring.cloud.gcp.bigquery.datasetName=test_dataset")
-public class BigQuerySampleApplicationTests {
+public class BigQuerySampleApplicationIntegrationTests {
 
 	private static final String DATASET_NAME = "test_dataset";
 

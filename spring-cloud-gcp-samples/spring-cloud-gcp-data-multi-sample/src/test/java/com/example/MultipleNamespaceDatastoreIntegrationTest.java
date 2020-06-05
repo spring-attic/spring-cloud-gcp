@@ -42,7 +42,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application-test.properties")
 @EnableAutoConfiguration
-public class MultipleNamespaceDatastoreTest {
+public class MultipleNamespaceDatastoreIntegrationTest {
 
 	@Autowired
 	PersonRepository datastorePersonRepository;

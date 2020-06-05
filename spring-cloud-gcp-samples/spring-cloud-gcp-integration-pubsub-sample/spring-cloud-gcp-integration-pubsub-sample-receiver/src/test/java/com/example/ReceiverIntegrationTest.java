@@ -42,14 +42,15 @@ import static org.junit.Assume.assumeThat;
  * Tests for the receiver application.
  *
  * @author Dmitry Solomakha
+ * @author Elena Felder
  *
- * @since 1.2
+ * @since 1.1
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @DirtiesContext
-public class PollingReceiverTest {
+public class ReceiverIntegrationTest {
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -78,7 +79,7 @@ public class PollingReceiverTest {
 	@Test
 	public void testSample() throws Exception {
 		String message = "test message " + UUID.randomUUID();
-		String expectedString = "Message arrived by Synchronous Pull! Payload: " + message;
+		String expectedString = "Message arrived! Payload: " + message;
 
 		this.pubSubTemplate.publish("exampleTopic", message);
 

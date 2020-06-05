@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,9 @@
 package com.example;
 
 import java.util.List;
+import java.util.Map;
 
-import org.junit.After;
+import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,56 +28,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Simple integration test to verify the SQL sample application. This test will use the
- * properties set in resources/application.properties.
- *
- * Run with: mvn -Dit.cloudsql test
+ * Tests the Pub/Sub Json payload app.
  *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
-public class SqlMysqlSampleApplicationTests {
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
+public class PubSubJsonPayloadSampleApplicationIntegrationTests {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
 	@BeforeClass
-	public static void checkToRun() {
+	public static void prepare() {
 		assumeThat(
-				"SQL sample integration tests are disabled. Please use '-Dit.cloudsql=true' "
+				"PUB/SUB-sample integration tests are disabled. Please use '-Dit.pubsub=true' "
 						+ "to enable them. ",
-				System.getProperty("it.cloudsql"), is("true"));
-	}
-
-	@After
-	public void clearTable() {
-		this.jdbcTemplate.execute("DROP TABLE IF EXISTS users");
+				System.getProperty("it.pubsub"), is("true"));
 	}
 
 	@Test
-	public void testSqlRowsAccess() {
-		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
-				"/getTuples", HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
-				});
+	public void testReceivesJsonPayload() {
+		Map<String, String> params = new MapBuilder<String, String>()
+				.put("name", "Bob")
+				.put("age", "25")
+				.build();
 
-		assertThat(result.getBody()).containsExactlyInAnyOrder(
-				"[luisao@example.com, Anderson, Silva]",
-				"[jonas@example.com, Jonas, Goncalves]",
-				"[fejsa@example.com, Ljubomir, Fejsa]");
+		this.testRestTemplate.postForObject(
+				"/createPerson?name={name}&age={age}", null, String.class, params);
+
+		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+			ResponseEntity<List<Person>> response = this.testRestTemplate.exchange(
+					"/listPersons",
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<List<Person>>() {
+					});
+
+			assertThat(response.getBody()).containsExactly(new Person("Bob", 25));
+		});
 	}
 }

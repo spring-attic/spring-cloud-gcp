@@ -53,7 +53,7 @@ import java.util.concurrent.TimeUnit
 			"spring.test.mockmvc.print=none"
 		]
 )
-class RegistrationKotlinSampleApplicationTests {
+class RegistrationKotlinSampleApplicationIntegrationTests {
 
 	private val REGISTER_USER_URL = "/registerPerson?firstName=Bob&lastName=Blob&email=bob@bob.com"
 

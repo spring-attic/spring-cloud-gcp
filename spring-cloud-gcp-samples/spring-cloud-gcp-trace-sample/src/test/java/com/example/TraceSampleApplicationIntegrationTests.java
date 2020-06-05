@@ -65,7 +65,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
-public class TraceSampleApplicationTests {
+public class TraceSampleApplicationIntegrationTests {
 
 	@LocalServerPort
 	private int port;

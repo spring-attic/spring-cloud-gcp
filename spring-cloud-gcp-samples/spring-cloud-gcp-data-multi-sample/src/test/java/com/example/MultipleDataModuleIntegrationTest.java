@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application-test.properties")
 @EnableAutoConfiguration
-public class MultipleDataModuleTest {
+public class MultipleDataModuleIntegrationTest {
 
 	// The Spanner Repo
 	@Autowired

@@ -50,7 +50,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(classes = DatastoreBookshelfExample.class,
 		properties = { InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "="
 				+ false }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DatastoreBookshelfExampleTests {
+public class DatastoreBookshelfExampleIntegrationTests {
 
 	@Autowired
 	private Shell shell;

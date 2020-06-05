@@ -56,7 +56,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
-public class LoggingSampleApplicationTests {
+public class LoggingSampleApplicationIntegrationTests {
 
 	private static final String LOG_FILTER_FORMAT = "trace:%s";
 

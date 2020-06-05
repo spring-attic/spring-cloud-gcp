@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 jobs:
   unitTests:
+    # We want to run on external PRs, but not on our own internal PRs as they'll be run
+    # by the push to the branch.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,6 +24,7 @@ jobs:
           ${{ runner.os }}-maven-
 
     - name: Unit Tests
+      continue-on-error: true
       run: |
         ./mvnw \
           --fail-at-end \
@@ -29,12 +33,33 @@ jobs:
           --show-version \
           --define maven.javadoc.skip=true \
           test
+    - name: Archive logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: Test logs - ${{ matrix.it}}
+        path: "**/target/surefire-reports/*"
 
   integrationTests:
-    if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
-    needs: unitTests
+    if: |
+      github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' &&
+       (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository)
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        it:
+          - bigquery
+          - config
+          - datastore
+          - firestore
+          - logging
+          - kotlin
+          # - pubsub # currently not working
+          # - pubsub-emulator # not sure if this actually does anything?
+          - secretmanager
+          - spanner
+          - storage
+          - trace
+          - vision
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
@@ -53,7 +78,13 @@ jobs:
           project_id: spring-cloud-gcp-ci
           service_account_key: ${{ secrets.SPRING_CLOUD_GCP_CI_SA_KEY }}
           export_default_credentials: true
+      - name: install pubsub-emulator
+        if: ${{ matrix.it }} == 'pubsub-emulator'
+        run: |
+          gcloud components install pubsub-emulator && \
+            gcloud components update
       - name: Integration Tests
+        continue-on-error: true
         run: |
           ./mvnw \
             --batch-mode \
@@ -62,5 +93,10 @@ jobs:
             --define test="**/*IntegrationTest*" \
             --define failIfNoTests=false \
             --define maven.javadoc.skip=true \
-            --define it.storage=true \
+            --define it.${{ matrix.it }}=true \
             test
+      - name: Archive logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test logs - ${{ matrix.it}}
+          path: "**/target/surefire-reports/*"

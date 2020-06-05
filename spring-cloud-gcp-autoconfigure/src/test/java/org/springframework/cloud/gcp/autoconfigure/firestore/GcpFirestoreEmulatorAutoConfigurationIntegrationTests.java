@@ -35,7 +35,7 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Daniel Zou
  */
-public class GcpFirestoreEmulatorAutoConfigurationTests {
+public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 
 	ApplicationContextRunner contextRunner =
 			new ApplicationContextRunner()

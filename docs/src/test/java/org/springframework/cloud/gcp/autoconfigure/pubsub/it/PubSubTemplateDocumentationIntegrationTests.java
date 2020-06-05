@@ -58,7 +58,7 @@ import static org.awaitility.Awaitility.await;
  *
  * @author Dmitry Solomakha
  */
-public class PubSubTemplateDocumentationTests {
+public class PubSubTemplateDocumentationIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")

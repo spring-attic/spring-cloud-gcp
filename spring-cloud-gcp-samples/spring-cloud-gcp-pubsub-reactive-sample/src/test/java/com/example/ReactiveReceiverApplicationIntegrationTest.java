@@ -52,7 +52,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(
 	webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 	classes = ReactiveReceiverApplication.class)
-public class ReactiveReceiverApplicationTest {
+public class ReactiveReceiverApplicationIntegrationTest {
 
 	@LocalServerPort
 	private int port;

@@ -44,7 +44,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {DemoApplication.class})
-public class CloudSqlJpaSampleApplicationTests {
+public class CloudSqlJpaSampleApplicationIntegrationTests {
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(

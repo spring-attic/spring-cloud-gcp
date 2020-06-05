@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  *
  * @since 1.2
  */
-public class FirestoreDocumentationTests {
+public class FirestoreDocumentationIntegrationTests {
 	private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpFirestoreAutoConfiguration.class));

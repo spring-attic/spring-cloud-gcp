@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class VisionApiSampleApplicationTests {
+public class VisionApiSampleApplicationIntegrationTests {
 
 	private static final String LABEL_IMAGE_URL = "/extractLabels?imageUrl=classpath:static/boston-terrier.jpg";
 

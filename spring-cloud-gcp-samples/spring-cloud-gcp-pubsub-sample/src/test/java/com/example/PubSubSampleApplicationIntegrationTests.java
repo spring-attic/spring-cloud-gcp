@@ -64,7 +64,7 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
-public class PubSubSampleApplicationTests {
+public class PubSubSampleApplicationIntegrationTests {
 
 	/** Output capture for validating that message was received. */
 	@Rule

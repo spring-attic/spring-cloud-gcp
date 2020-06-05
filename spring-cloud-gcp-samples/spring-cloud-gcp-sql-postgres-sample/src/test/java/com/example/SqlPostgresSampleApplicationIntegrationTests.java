@@ -51,7 +51,7 @@ import static org.junit.Assume.assumeThat;
 		"spring.datasource.continue-on-error=true",
 		"spring.datasource.initialization-mode=always"
 })
-public class SqlPostgresSampleApplicationTests {
+public class SqlPostgresSampleApplicationIntegrationTests {
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
