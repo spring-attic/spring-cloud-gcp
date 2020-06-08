@@ -34,6 +34,7 @@ jobs:
           --define maven.javadoc.skip=true \
           test
     - name: Archive logs
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: Test logs - ${{ matrix.it}}
@@ -41,8 +42,7 @@ jobs:
 
   integrationTests:
     if: |
-      github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' &&
-       (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository)
+      github.event_name == 'push' && github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -101,12 +101,14 @@ jobs:
             --fail-at-end \
             --activate-profiles spring-cloud-gcp-ci-it \
             --show-version \
+            --define maven.test.redirectTestOutputToFile=true \
             --define test="**/*IntegrationTest*" \
             --define failIfNoTests=false \
             --define maven.javadoc.skip=true \
             --define it.${{ matrix.it }}=true \
             test
       - name: Archive logs
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: Test logs - ${{ matrix.it}}
