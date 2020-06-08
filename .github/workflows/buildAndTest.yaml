@@ -24,11 +24,11 @@ jobs:
           ${{ runner.os }}-maven-
 
     - name: Unit Tests
-      continue-on-error: true
       run: |
         ./mvnw \
           --fail-at-end \
           --batch-mode \
+          --threads 1.5C \
           --activate-profiles full-checkstyle \
           --show-version \
           --define maven.javadoc.skip=true \
@@ -53,7 +53,7 @@ jobs:
           - firestore
           - logging
           - kotlin
-          # - pubsub # currently not working
+          - pubsub
           # - pubsub-emulator # not sure if this actually does anything?
           - secretmanager
           - spanner
@@ -79,15 +79,25 @@ jobs:
           service_account_key: ${{ secrets.SPRING_CLOUD_GCP_CI_SA_KEY }}
           export_default_credentials: true
       - name: install pubsub-emulator
-        if: ${{ matrix.it }} == 'pubsub-emulator'
+        if: ${{ matrix.it == 'pubsub-emulator' }}
         run: |
           gcloud components install pubsub-emulator && \
             gcloud components update
-      - name: Integration Tests
-        continue-on-error: true
+      # Some integration tests (pubsub) fork their own mvn instance, which needs these
+      # libraries to be installed to the local repo.
+      - name: Mvn install
         run: |
           ./mvnw \
             --batch-mode \
+            --threads 1.5C \
+            --define skipTests=true \
+            --define maven.javadoc.skip=true \
+            install
+      - name: Integration Tests
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --fail-at-end \
             --activate-profiles spring-cloud-gcp-ci-it \
             --show-version \
             --define test="**/*IntegrationTest*" \

@@ -53,7 +53,7 @@ import static org.junit.Assume.assumeThat;
 		"spring.cloud.stream.bindings.output.destination=my-topic",
 		"spring.cloud.stream.bindings.input.group=my-group"})
 @DirtiesContext
-public class SampleAppIntegrationTest {
+public class PubSubBinderSampleAppIntegrationTest {
 
 	@Autowired
 	private TestRestTemplate restTemplate;

@@ -18,6 +18,7 @@ package com.example;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -72,19 +73,19 @@ public class PubSubSampleApplicationIntegrationTests {
 
 	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 60;
 
-	private static final String SAMPLE_TEST_TOPIC = "pubsub-sample-test-exampleTopic";
+	private static final String SAMPLE_TEST_TOPIC = "pubsub-sample-test-exampleTopic-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_TOPIC2 = "pubsub-sample-test-exampleTopic2";
+	private static final String SAMPLE_TEST_TOPIC2 = "pubsub-sample-test-exampleTopic2-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_TOPIC_DELETE = "pubsub-sample-test-topicdelete";
+	private static final String SAMPLE_TEST_TOPIC_DELETE = "pubsub-sample-test-topicdelete-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_SUBSCRIPTION1 = "pubsub-sample-test-exampleSubscription1";
+	private static final String SAMPLE_TEST_SUBSCRIPTION1 = "pubsub-sample-test-exampleSubscription1-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_SUBSCRIPTION2 = "pubsub-sample-test-exampleSubscription2";
+	private static final String SAMPLE_TEST_SUBSCRIPTION2 = "pubsub-sample-test-exampleSubscription2-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_SUBSCRIPTION3 = "pubsub-sample-test-exampleSubscription3";
+	private static final String SAMPLE_TEST_SUBSCRIPTION3 = "pubsub-sample-test-exampleSubscription3-" + UUID.randomUUID();
 
-	private static final String SAMPLE_TEST_SUBSCRIPTION_DELETE = "pubsub-sample-test-subdelete";
+	private static final String SAMPLE_TEST_SUBSCRIPTION_DELETE = "pubsub-sample-test-subdelete-" + UUID.randomUUID();
 
 	private static TopicAdminClient topicAdminClient;
 

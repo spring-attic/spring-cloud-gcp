@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Elena Felder
  */
-public class SampleAppIntegrationTest {
+public class PubSubStreamBinderSampleAppIntegrationTest {
 
 	/** Captures output to check that Sink application processed the message. */
 	@Rule
