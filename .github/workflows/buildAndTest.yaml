@@ -54,7 +54,7 @@ jobs:
           - logging
           - kotlin
           - pubsub
-          # - pubsub-emulator # not sure if this actually does anything?
+          - pubsub-emulator
           - secretmanager
           - spanner
           - storage
@@ -78,14 +78,15 @@ jobs:
           project_id: spring-cloud-gcp-ci
           service_account_key: ${{ secrets.SPRING_CLOUD_GCP_CI_SA_KEY }}
           export_default_credentials: true
-      - name: install pubsub-emulator
+      - name: Install pubsub-emulator
         if: ${{ matrix.it == 'pubsub-emulator' }}
         run: |
-          gcloud components install pubsub-emulator && \
+          gcloud components install pubsub-emulator beta && \
             gcloud components update
       # Some integration tests (pubsub) fork their own mvn instance, which needs these
       # libraries to be installed to the local repo.
       - name: Mvn install
+        if: ${{ matrix.it == 'pubsub' }}
         run: |
           ./mvnw \
             --batch-mode \
