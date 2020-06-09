@@ -94,6 +94,12 @@ jobs:
             --define skipTests=true \
             --define maven.javadoc.skip=true \
             install
+      - name: Wait our turn for running integration tests
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          continue-after-seconds: 1200 # 30 min
       - name: Integration Tests
         run: |
           ./mvnw \
