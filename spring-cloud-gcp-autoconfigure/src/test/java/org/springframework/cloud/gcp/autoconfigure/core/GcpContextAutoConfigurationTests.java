@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -26,8 +28,10 @@ import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for the top-level context auto-configuration.
@@ -39,7 +43,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GcpContextAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class))
+			.withUserConfiguration(TestConfiguration.class);
 
 	@Test
 	public void testGetProjectIdProvider_withGcpProperties() {
@@ -91,5 +96,13 @@ public class GcpContextAutoConfigurationTests {
 		return context -> assertThat(context
 				.getBeansOfType(GcpProjectIdProvider.class).size())
 						.isEqualTo(count);
+	}
+
+	private static class TestConfiguration {
+
+		@Bean
+		public CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
 	}
 }

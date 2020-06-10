@@ -90,9 +90,16 @@ public class StackdriverTraceAutoConfigurationTests {
 			.withPropertyValues("spring.cloud.gcp.project-id=proj",
 					"spring.sleuth.sampler.probability=1.0");
 
+	private Reporter doNothingReporter = r -> { /*do nothing!*/ };
+
 	@Test
 	public void test() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner
+				.withBean(
+						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
+						Reporter.class,
+						() ->  doNothingReporter)
+				.run((context) -> {
 			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
 			assertThat(sleuthProperties.isTraceId128()).isTrue();
 			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
@@ -136,8 +143,8 @@ public class StackdriverTraceAutoConfigurationTests {
 						Span traceSpan = gcpTraceService.getSpan(spanId);
 						assertThat(traceSpan.getDisplayName().getValue()).isEqualTo("foo");
 						assertThat(traceSpan.getAttributes().getAttributeMapMap()).containsKey("foo");
-						assertThat(traceSpan.getAttributes().getAttributeMapMap().get("foo").getStringValue().getValue())
-								.isEqualTo("bar");
+						assertThat(traceSpan.getAttributes().getAttributeMapMap().get("foo").getStringValue()
+								.getValue()).isEqualTo("bar");
 					});
 
 			MultipleReportersConfig.OtherSender sender
@@ -150,7 +157,7 @@ public class StackdriverTraceAutoConfigurationTests {
 	@Test
 	public void testAsyncReporterHealthCheck() {
 		Sender senderMock = mock(Sender.class);
-		when(senderMock.check()).thenReturn(CheckResult.failed(new RuntimeException()));
+		when(senderMock.check()).thenReturn(CheckResult.OK);
 		when(senderMock.encoding()).thenReturn(SpanBytesEncoder.PROTO3.encoding());
 
 		this.contextRunner
@@ -168,6 +175,10 @@ public class StackdriverTraceAutoConfigurationTests {
 	@Test
 	public void defaultSchedulerUsedWhenNoneProvided() {
 		this.contextRunner
+				.withBean(
+						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
+						Reporter.class,
+						() ->  doNothingReporter)
 				.run(context -> {
 					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
 					assertThat(executorProvider.getExecutor()).isNotNull();
@@ -181,6 +192,10 @@ public class StackdriverTraceAutoConfigurationTests {
 		when(threadPoolTaskSchedulerMock.getScheduledExecutor()).thenReturn(scheduledExecutorServiceMock);
 
 		this.contextRunner
+				.withBean(
+						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
+						Reporter.class,
+						() ->  doNothingReporter)
 				.withBean("traceSenderThreadPool", ThreadPoolTaskScheduler.class, () -> threadPoolTaskSchedulerMock)
 				.run(context -> {
 					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
