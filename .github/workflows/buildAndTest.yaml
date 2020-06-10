@@ -107,7 +107,6 @@ jobs:
             --fail-at-end \
             --activate-profiles spring-cloud-gcp-ci-it \
             --show-version \
-            --define maven.test.redirectTestOutputToFile=true \
             --define test="**/*IntegrationTest*" \
             --define failIfNoTests=false \
             --define maven.javadoc.skip=true \
