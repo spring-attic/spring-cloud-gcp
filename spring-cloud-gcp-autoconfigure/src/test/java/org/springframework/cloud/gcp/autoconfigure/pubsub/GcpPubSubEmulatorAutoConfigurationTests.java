@@ -24,6 +24,7 @@ import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.assertj.core.data.Offset;
 import org.junit.Test;
@@ -32,8 +33,10 @@ import org.threeten.bp.Duration;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for the Pub/Sub emulator config.
@@ -82,7 +85,8 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 					"spring.cloud.gcp.pubsub.publisher.batching.enabled=true")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class));
+					GcpPubSubAutoConfiguration.class))
+			.withUserConfiguration(TestConfiguration.class);
 
 	@Test
 	public void testEmulatorConfig() {
@@ -171,5 +175,12 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 			assertThat(settings.getDelayThreshold()).isEqualTo(Duration.ofSeconds(23));
 			assertThat(settings.getIsEnabled()).isTrue();
 		});
+	}
+
+	private static class TestConfiguration {
+		@Bean
+		public CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
 	}
 }

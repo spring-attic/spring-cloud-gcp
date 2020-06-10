@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.Test;
+import zipkin2.reporter.Reporter;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.mock;
 public class StackdriverLoggingAutoConfigurationTests {
 
 	private WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
+			.withUserConfiguration(TestConfiguration.class)
 			.withConfiguration(
 					AutoConfigurations.of(
 							StackdriverLoggingAutoConfiguration.class,
@@ -62,6 +64,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 				AutoConfigurations.of(
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
+				.withUserConfiguration(TestConfiguration.class)
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
@@ -73,6 +76,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 				AutoConfigurations.of(
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
+				.withUserConfiguration(TestConfiguration.class)
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
@@ -90,20 +94,22 @@ public class StackdriverLoggingAutoConfigurationTests {
 		this.contextRunner
 				.withConfiguration(AutoConfigurations.of(StackdriverTraceAutoConfiguration.class,
 						TraceAutoConfiguration.class))
-				.withUserConfiguration(Configuration.class)
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
 	}
 
-	private static class Configuration {
+	private static class TestConfiguration {
 
 		@Bean
 		public CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
 
+		@Bean
+		public Reporter stackdriverReporter() {
+			return r -> { };
+		}
 	}
-
 }

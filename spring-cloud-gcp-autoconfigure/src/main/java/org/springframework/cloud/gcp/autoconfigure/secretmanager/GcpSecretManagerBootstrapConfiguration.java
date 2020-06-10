@@ -52,15 +52,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 @ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
 
-	private final CredentialsProvider credentialsProvider;
-
 	private final GcpProjectIdProvider gcpProjectIdProvider;
 
 	public GcpSecretManagerBootstrapConfiguration(
 			GcpSecretManagerProperties properties,
 			ConfigurableEnvironment configurableEnvironment) throws IOException {
 
-		this.credentialsProvider = new DefaultCredentialsProvider(properties);
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId
 				: new DefaultGcpProjectIdProvider();
@@ -85,9 +82,15 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SecretManagerServiceClient secretManagerClient() throws IOException {
+	public CredentialsProvider googleCredentials(GcpSecretManagerProperties secretManagerProperties) throws Exception {
+		return new DefaultCredentialsProvider(secretManagerProperties);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SecretManagerServiceClient secretManagerClient(CredentialsProvider googleCredentials) throws IOException {
 		SecretManagerServiceSettings settings = SecretManagerServiceSettings.newBuilder()
-				.setCredentialsProvider(this.credentialsProvider)
+				.setCredentialsProvider(googleCredentials)
 				.setHeaderProvider(new UserAgentHeaderProvider(GcpSecretManagerBootstrapConfiguration.class))
 				.build();
 
