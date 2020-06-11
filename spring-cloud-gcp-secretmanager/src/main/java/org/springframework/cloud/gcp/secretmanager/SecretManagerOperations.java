@@ -86,6 +86,21 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload, String projectId);
 
 	/**
+	 * Deletes the specified secret under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 */
+	void deleteSecret(String secretId);
+
+	/**
+	 * Deletes the specified secret.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 * @param projectId the GCP project containing the secret to delete.
+	 */
+	void deleteSecret(String secretId, String projectId);
+
+	/**
 	 * Gets the secret payload of the specified {@code secretIdentifier} secret.
 	 *
 	 * <p>The {@code secretIdentifier} must either be a secret ID or a fully qualified

@@ -101,8 +101,18 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		return true;
 	}
 
+	@Override
+	public void deleteSecret(String secretId) {
+		deleteSecret(secretId, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
 	public void deleteSecret(String secretId, String projectId) {
-		removeSecret(secretId, projectId);
+		SecretName name = SecretName.of(projectId, secretId);
+		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+				.setName(name.toString())
+				.build();
+		this.secretManagerServiceClient.deleteSecret(request);
 	}
 
 	ByteString getSecretByteString(String secretIdentifier) {
@@ -168,13 +178,5 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 				.setSecret(secretId)
 				.setSecretVersion(LATEST_VERSION)
 				.build();
-	}
-
-	private void removeSecret(String secretId, String projectId) {
-		SecretName name = SecretName.of(projectId, secretId);
-		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
-				.setName(name.toString())
-				.build();
-		secretManagerServiceClient.deleteSecret(request);
 	}
 }

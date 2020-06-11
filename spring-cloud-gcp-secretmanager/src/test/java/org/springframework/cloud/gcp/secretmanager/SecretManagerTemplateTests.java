@@ -183,15 +183,11 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testDeleteSecret() {
-		// This means that no previous secrets exist.
-		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
-
-		this.secretManagerTemplate.createSecret("my-secret", "hello world!");
-
-		// Verify the secret is created correctly.
-		verifyCreateSecretRequest("my-secret", "my-project");
-		this.secretManagerTemplate.deleteSecret("my-secret", "my-project");
+		this.secretManagerTemplate.deleteSecret("my-secret");
 		verifyDeleteSecretRequest("my-secret", "my-project");
+
+		this.secretManagerTemplate.deleteSecret("my-secret", "custom-project");
+		verifyDeleteSecretRequest("my-secret", "custom-project");
 	}
 
 	private void verifyCreateSecretRequest(String secretId, String projectId) {
