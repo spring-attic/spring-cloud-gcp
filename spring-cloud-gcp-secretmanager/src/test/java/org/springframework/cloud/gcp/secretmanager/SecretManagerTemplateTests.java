@@ -20,6 +20,7 @@ import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
+import com.google.cloud.secretmanager.v1beta1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
@@ -180,6 +181,19 @@ public class SecretManagerTemplateTests {
 		assertThat(result).isEqualTo("get after it.");
 	}
 
+	@Test
+	public void testDeleteSecret() {
+		// This means that no previous secrets exist.
+		when(this.client.getSecret(any(SecretName.class))).thenThrow(NotFoundException.class);
+
+		this.secretManagerTemplate.createSecret("my-secret", "hello world!");
+
+		// Verify the secret is created correctly.
+		verifyCreateSecretRequest("my-secret", "my-project");
+		this.secretManagerTemplate.deleteSecret("my-secret", "my-project");
+		verifyDeleteSecretRequest("my-secret", "my-project");
+	}
+
 	private void verifyCreateSecretRequest(String secretId, String projectId) {
 		Secret secretToAdd = Secret.newBuilder()
 				.setReplication(
@@ -202,5 +216,13 @@ public class SecretManagerTemplateTests {
 				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8(payload)))
 				.build();
 		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	private void verifyDeleteSecretRequest(String secretId, String projectId) {
+		SecretName name = SecretName.of(projectId, secretId);
+		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+				.setName(name.toString())
+				.build();
+		verify(this.client).deleteSecret(request);
 	}
 }
