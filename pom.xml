@@ -39,7 +39,6 @@
 		<module>spring-cloud-gcp-data-datastore</module>
 		<module>spring-cloud-gcp-security-iap</module>
 		<module>spring-cloud-gcp-vision</module>
-		<module>spring-cloud-gcp-kotlin-samples</module>
 		<module>spring-cloud-gcp-logging</module>
 		<module>spring-cloud-gcp-data-firestore</module>
 		<module>spring-cloud-gcp-bigquery</module>

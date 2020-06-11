@@ -23,6 +23,14 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+    - name: Mvn install # Need this when the directory/pom structure changes
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --threads 1.5C \
+          --define maven.test.skip=true \
+          --define maven.javadoc.skip=true \
+          install
 
     - name: Unit Tests
       run: |
@@ -86,17 +94,16 @@ jobs:
         run: |
           gcloud components install pubsub-emulator beta && \
             gcloud components update
-      # Some integration tests (pubsub) fork their own mvn instance, which needs these
-      # libraries to be installed to the local repo.
-      - name: Mvn install
-        if: ${{ matrix.it == 'pubsub' }}
+
+      - name: Mvn install # Need this when the directory/pom structure changes
         run: |
           ./mvnw \
             --batch-mode \
             --threads 1.5C \
-            --define skipTests=true \
+            --define maven.test.skip=true \
             --define maven.javadoc.skip=true \
             install
+
       - name: Wait our turn for running integration tests
         uses: softprops/turnstyle@v1
         env:
