@@ -20,6 +20,7 @@ import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
+import com.google.cloud.secretmanager.v1beta1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
@@ -98,6 +99,20 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		}
 
 		return true;
+	}
+
+	@Override
+	public void deleteSecret(String secretId) {
+		deleteSecret(secretId, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
+	public void deleteSecret(String secretId, String projectId) {
+		SecretName name = SecretName.of(projectId, secretId);
+		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+				.setName(name.toString())
+				.build();
+		this.secretManagerServiceClient.deleteSecret(request);
 	}
 
 	ByteString getSecretByteString(String secretIdentifier) {
