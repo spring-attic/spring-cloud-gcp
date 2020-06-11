@@ -469,7 +469,7 @@ Natively supported types:
 * `long[]`
 * `boolean[]`
 * `java.util.Date`
-* `java.util.Instant`
+* `java.time.Instant`
 * `java.sql.Date`
 * `java.time.LocalDate`
 * `java.time.LocalDateTime`
