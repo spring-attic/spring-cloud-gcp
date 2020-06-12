@@ -21,7 +21,6 @@ import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.DeleteSecretRequest;
-import com.google.cloud.secretmanager.v1beta1.DestroySecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;

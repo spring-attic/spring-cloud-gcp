@@ -106,7 +106,7 @@ public interface SecretManagerOperations {
 	 * @param secretId the secret ID of the secret to delete.
 	 * @param version the version to delete
 	 */
-	void deleteSecretVersion(String secretId,String version);
+	void deleteSecretVersion(String secretId, String version);
 
 	/**
 	 * Deletes the specified secret.
