@@ -115,6 +115,16 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		this.secretManagerServiceClient.deleteSecret(request);
 	}
 
+	@Override
+	public void deleteSecretVersion(String secretId, String projectId, String version) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		this.secretManagerServiceClient.destroySecretVersion(secretVersionName);
+	}
+
 	ByteString getSecretByteString(String secretIdentifier) {
 		SecretVersionName secretVersionName =
 				SecretManagerPropertyUtils.getSecretVersionName(secretIdentifier, projectIdProvider);

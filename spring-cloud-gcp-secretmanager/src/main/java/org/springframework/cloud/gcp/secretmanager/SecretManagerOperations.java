@@ -101,6 +101,15 @@ public interface SecretManagerOperations {
 	void deleteSecret(String secretId, String projectId);
 
 	/**
+	 * Deletes the specified secret.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 * @param projectId the GCP project containing the secret to delete.
+	 * @param version the version to delete
+	 */
+	void deleteSecretVersion(String secretId, String projectId, String version);
+
+	/**
 	 * Gets the secret payload of the specified {@code secretIdentifier} secret.
 	 *
 	 * <p>The {@code secretIdentifier} must either be a secret ID or a fully qualified
