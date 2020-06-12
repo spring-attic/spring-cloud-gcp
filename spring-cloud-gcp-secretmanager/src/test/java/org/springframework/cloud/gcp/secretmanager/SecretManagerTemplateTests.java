@@ -192,9 +192,6 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testDeleteSecretVersion() {
-		this.secretManagerTemplate.deleteSecretVersion("my-secret", "1");
-		verifyDeleteSecretVersionRequest("my-secret", "my-project", "1");
-
 		this.secretManagerTemplate.deleteSecretVersion("my-secret", "custom-project", "10");
 		verifyDeleteSecretVersionRequest("my-secret", "custom-project", "10");
 	}

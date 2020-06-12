@@ -101,14 +101,6 @@ public interface SecretManagerOperations {
 	void deleteSecret(String secretId, String projectId);
 
 	/**
-	 * Deletes the specified secret version under the default-configured project.
-	 *
-	 * @param secretId the secret ID of the secret to delete.
-	 * @param version the version to delete
-	 */
-	void deleteSecretVersion(String secretId, String version);
-
-	/**
 	 * Deletes the specified secret.
 	 *
 	 * @param secretId the secret ID of the secret to delete.
