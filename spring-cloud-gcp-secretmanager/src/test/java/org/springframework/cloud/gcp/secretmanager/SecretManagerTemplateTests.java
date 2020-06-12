@@ -190,6 +190,15 @@ public class SecretManagerTemplateTests {
 		verifyDeleteSecretRequest("my-secret", "custom-project");
 	}
 
+	@Test
+	public void testDeleteSecretVersion(){
+		this.secretManagerTemplate.deleteSecretVersion("my-secret", "1");
+		verifyDeleteSecretVersionRequest("my-secret","my-project","1");
+
+		this.secretManagerTemplate.deleteSecretVersion("my-secret", "custom-project","10");
+		verifyDeleteSecretVersionRequest("my-secret", "custom-project","10");
+	}
+
 	private void verifyCreateSecretRequest(String secretId, String projectId) {
 		Secret secretToAdd = Secret.newBuilder()
 				.setReplication(
@@ -220,5 +229,14 @@ public class SecretManagerTemplateTests {
 				.setName(name.toString())
 				.build();
 		verify(this.client).deleteSecret(request);
+	}
+
+	private void verifyDeleteSecretVersionRequest(String secretId, String projectId, String version){
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		verify(this.client).destroySecretVersion(secretVersionName);
 	}
 }
