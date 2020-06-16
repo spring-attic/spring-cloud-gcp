@@ -88,7 +88,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * Constructor for FirestoreTemplate.
 	 * @param firestore Firestore gRPC stub
 	 * @param parent the parent resource. For example:
-	 *     projects/{project_id}/databases/{database_id}/documents or
+	 *     projects/{project_id}/databases/{database_id}/documents
 	 * @param classMapper a {@link FirestoreClassMapper} used for conversion
 	 * @param mappingContext Mapping Context
 	 */
@@ -99,6 +99,10 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.databasePath = Util.extractDatabasePath(parent);
 		this.classMapper = classMapper;
 		this.mappingContext = mappingContext;
+	}
+
+	public <T> FirestoreReactiveOperations operationsWithParent(T parent) {
+		return new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
 	}
 
 	/**

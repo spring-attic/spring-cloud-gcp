@@ -24,6 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
+import org.springframework.cloud.gcp.data.firestore.entities.PhoneNumber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -162,6 +164,16 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+
+		//tag::subcollection[]
+		FirestoreReactiveOperations bobTemplate = this.firestoreTemplate.operationsWithParent(new User("Bob", 60));
+
+		PhoneNumber phoneNumber = new PhoneNumber("111-222-333");
+		bobTemplate.save(phoneNumber).block();
+		assertThat(bobTemplate.findAll(PhoneNumber.class).collectList().block()).containsExactly(phoneNumber);
+		bobTemplate.deleteAll(PhoneNumber.class).block();
+		assertThat(bobTemplate.findAll(PhoneNumber.class).collectList().block()).isEmpty();
+		//end::subcollection[]
 	}
 
 

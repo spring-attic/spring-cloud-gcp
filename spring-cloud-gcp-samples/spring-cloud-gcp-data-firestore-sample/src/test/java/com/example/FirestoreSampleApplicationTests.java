@@ -68,12 +68,13 @@ public class FirestoreSampleApplicationTests {
 
 	@Test
 	public void saveUserTest() {
+		restTemplate.getForEntity("/users/removePhonesForUser?name=Alpha", String.class);
 		User[] users = restTemplate.getForObject("/users", User[].class);
 		assertThat(users).isEmpty();
 
-		sendPostRequestForUser("Alpha", 49, "rat-Snowflake");
-		sendPostRequestForUser("Beta", 23, "");
-		sendPostRequestForUser("Delta", 49, "fish-Dory,spider-Man");
+		sendPostRequestForUser("Alpha", 49, "rat-Snowflake", "555666777,777666555");
+		sendPostRequestForUser("Beta", 23, "", "");
+		sendPostRequestForUser("Delta", 49, "fish-Dory,spider-Man", "");
 
 		User[] allUsers = restTemplate.getForObject("/users", User[].class);
 		List<String> names = Arrays.stream(allUsers).map(User::getName).collect(Collectors.toList());
@@ -87,12 +88,24 @@ public class FirestoreSampleApplicationTests {
 						Arrays.asList(new Pet("fish", "Dory"),
 								new Pet("spider", "Man")))
 				);
+		PhoneNumber[] phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber))
+				.containsExactlyInAnyOrder("555666777", "777666555");
+
+		restTemplate.getForEntity("/users/removeUser?name=Alpha", String.class);
+		phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber))
+				.containsExactlyInAnyOrder("555666777", "777666555");
+
+		restTemplate.getForEntity("/users/removePhonesForUser?name=Alpha", String.class);
+		phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber)).isEmpty();
 	}
 
 	/**
 	 * Sends a POST request to the server which will create a new User in Firestore.
 	 */
-	private void sendPostRequestForUser(String name, int age, String pets) {
+	private void sendPostRequestForUser(String name, int age, String pets, String phoneNums) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -100,6 +113,7 @@ public class FirestoreSampleApplicationTests {
 		map.add("name", name);
 		map.add("age", age);
 		map.add("pets", pets);
+		map.add("phones", phoneNums);
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
 		this.restTemplate.postForEntity("/users/saveUser", request, String.class);
