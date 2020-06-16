@@ -86,6 +86,23 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload, String projectId);
 
 	/**
+	 * Disables the specified secret under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to disable.
+	 * @param version the version to enable
+	 */
+	void disableSecretVersion(String secretId, String version);
+
+	/**
+	 * Disables the specified secret under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to disable.
+	 * @param projectId unique identifier of your project.
+	 * @param version the version to enable
+	 */
+	void disableSecretVersion(String secretId, String projectId, String version);
+
+	/**
 	 * Deletes the specified secret under the default-configured project.
 	 *
 	 * @param secretId the secret ID of the secret to delete.
