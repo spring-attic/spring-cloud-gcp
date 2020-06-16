@@ -75,4 +75,19 @@ public class SecretManagerSampleTests {
 		assertThat(response.getBody()).contains(
 				"Secret ID: secret-manager-sample-secret | Value: 12345");
 	}
+
+	@Test
+	public void testDeleteSecret() {
+		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+		params.add("secretId", "secret-manager-sample-secret");
+		params.add("projectId", "");
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
+
+		ResponseEntity<String> response = this.testRestTemplate.postForEntity("/deleteSecret", request, String.class);
+		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+
+		response = this.testRestTemplate.getForEntity(
+				"/getSecret?secretId=secret-manager-sample-secret", String.class);
+		assertThat(response.getStatusCode().is2xxSuccessful()).isFalse();
+	}
 }
