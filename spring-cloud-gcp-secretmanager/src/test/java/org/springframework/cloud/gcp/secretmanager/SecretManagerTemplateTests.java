@@ -240,6 +240,7 @@ public class SecretManagerTemplateTests {
 				.build();
 		verify(this.client).enableSecretVersion(secretVersionName);
 	}
+
 	private void verifyDeleteSecretRequest(String secretId, String projectId) {
 		SecretName name = SecretName.of(projectId, secretId);
 		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
