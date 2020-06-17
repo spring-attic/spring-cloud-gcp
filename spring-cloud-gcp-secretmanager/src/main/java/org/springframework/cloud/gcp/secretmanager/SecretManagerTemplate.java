@@ -102,6 +102,21 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	}
 
 	@Override
+	public void disableSecretVersion(String secretId, String version) {
+		disableSecretVersion(secretId, this.projectIdProvider.getProjectId(), version);
+	}
+
+	@Override
+	public void disableSecretVersion(String secretId, String projectId, String version) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		this.secretManagerServiceClient.disableSecretVersion(secretVersionName);
+	}
+
+	@Override
 	public void enableSecretVersion(String secretId, String version) {
 		enableSecretVersion(secretId, this.projectIdProvider.getProjectId(), version);
 	}
