@@ -101,8 +101,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.mappingContext = mappingContext;
 	}
 
-	@Override
-	public <T> FirestoreReactiveOperations withParent(T parent) {
+  @Override
+  public <T> FirestoreReactiveOperations withParent(T parent) {
     FirestoreTemplate firestoreTemplate =
             new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
     firestoreTemplate.setUsingStreamTokens(this.usingStreamTokens);
@@ -110,7 +110,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
     firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
 
     return firestoreTemplate;
-	}
+  }
 
 	/**
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
