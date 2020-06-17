@@ -101,4 +101,20 @@ public class SecretManagerWebController {
 		map.put("message", "Secret created!");
 		return new ModelAndView("index.html", map);
 	}
+
+	@PostMapping("/deleteSecret")
+	public ModelAndView deleteSecret(
+			@RequestParam String secretId,
+			@RequestParam(required = false) String projectId,
+			ModelMap map) {
+		if (StringUtils.isEmpty(projectId)) {
+			this.secretManagerTemplate.deleteSecret(secretId);
+		}
+		else {
+			this.secretManagerTemplate.deleteSecret(secretId, projectId);
+		}
+		map.put("applicationSecret", this.appSecret);
+		map.put("message", "Secret deleted!");
+		return new ModelAndView("index.html", map);
+	}
 }
