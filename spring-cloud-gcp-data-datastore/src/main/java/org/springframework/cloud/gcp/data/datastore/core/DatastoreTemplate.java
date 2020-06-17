@@ -88,6 +88,7 @@ import org.springframework.util.TypeUtils;
  * An implementation of {@link DatastoreOperations}.
  *
  * @author Chengyuan Zhao
+ * @author Vinicius Carvalho
  *
  * @since 1.1
  */
@@ -122,10 +123,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
-	/**
-	 * Get the {@link DatastoreEntityConverter} used by this template.
-	 * @return the converter.
-	 */
+	@Override
 	public DatastoreEntityConverter getDatastoreEntityConverter() {
 		return this.datastoreEntityConverter;
 	}
@@ -261,15 +259,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				: null;
 	}
 
-	/**
-	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
-	 * returned.
-	 * @param query the query to execute.
-	 * @param entityClass the type of object to retrieve.
-	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
-	 */
+	@Override
 	public <T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = getDatastoreReadWriter().run(query);
 		DatastoreResultsIterable resultsIterable;
@@ -289,6 +279,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return (List<T>) queryIterable(query, entityFunc).getIterable();
 	}
 
+	@Override
 	public <A, T> DatastoreResultsIterable<T> queryIterable(Query<A> query, Function<A, T> entityFunc) {
 		QueryResults<A> results = getDatastoreReadWriter().run(query);
 		List resultsList = new ArrayList();

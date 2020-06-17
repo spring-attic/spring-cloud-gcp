@@ -20,7 +20,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -40,12 +40,12 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final DatastoreQueryMethod queryMethod;
 
-	final DatastoreTemplate datastoreTemplate;
+	final DatastoreOperations datastoreTemplate;
 
 	final Class<T> entityType;
 
 	public AbstractDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreTemplate datastoreTemplate,
+							DatastoreOperations datastoreTemplate,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		this.queryMethod = queryMethod;
 		this.datastoreTemplate = datastoreTemplate;
@@ -79,7 +79,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}
 
-	public DatastoreTemplate getDatastoreTemplate() {
+	public DatastoreOperations getDatastoreTemplate() {
 		return this.datastoreTemplate;
 	}
 

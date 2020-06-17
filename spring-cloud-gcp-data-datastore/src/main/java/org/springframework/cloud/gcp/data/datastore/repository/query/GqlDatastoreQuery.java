@@ -36,8 +36,8 @@ import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -97,9 +97,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
-			DatastoreTemplate datastoreTemplate, String gql,
-			QueryMethodEvaluationContextProvider evaluationContextProvider,
-			DatastoreMappingContext datastoreMappingContext) {
+							DatastoreOperations datastoreTemplate, String gql,
+							QueryMethodEvaluationContextProvider evaluationContextProvider,
+							DatastoreMappingContext datastoreMappingContext) {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, type);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.originalGql = StringUtils.trimTrailingCharacter(gql.trim(), ';');

@@ -42,6 +42,7 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -78,6 +79,7 @@ import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_
  *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
+ * @author Vinicius Carvalho
  *
  * @since 1.1
  */
@@ -109,7 +111,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param projectionFactory the projection factory that is used to get projection information.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreTemplate datastoreTemplate,
+								DatastoreOperations datastoreTemplate,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType, ProjectionFactory projectionFactory) {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, entityType);
 		this.tree = new PartTree(queryMethod.getName(), entityType);
@@ -254,13 +256,12 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
-		List datastoreResultsList = this.datastoreTemplate.query(queryNext, x -> x);
 
 		List<Object> result =
-				StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
+				(List<Object>) StreamSupport.stream(this.datastoreTemplate.query(queryNext, x -> x).spliterator(), false).collect(Collectors.toList());
 
 		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, pageable, !datastoreResultsList.isEmpty()));
+				new SliceImpl(result, pageable, !result.isEmpty()));
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {

@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.repository.support;
 import java.util.Optional;
 
 import org.springframework.beans.BeansException;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntityInformation;
@@ -54,7 +54,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
-	private final DatastoreTemplate datastoreTemplate;
+	private final DatastoreOperations datastoreTemplate;
 
 	private ApplicationContext applicationContext;
 
@@ -66,7 +66,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 	 * repositories.
 	 */
 	DatastoreRepositoryFactory(DatastoreMappingContext datastoreMappingContext,
-			DatastoreTemplate datastoreTemplate) {
+							DatastoreOperations datastoreTemplate) {
 		Assert.notNull(datastoreMappingContext,
 				"A non-null Datastore mapping context is required.");
 		Assert.notNull(datastoreTemplate,

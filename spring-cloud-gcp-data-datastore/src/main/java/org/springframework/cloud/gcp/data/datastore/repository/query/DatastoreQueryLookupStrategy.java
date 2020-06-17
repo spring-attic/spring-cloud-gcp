@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 import java.lang.reflect.Method;
 
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -39,14 +39,14 @@ import org.springframework.util.Assert;
  */
 public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 
-	private final DatastoreTemplate datastoreTemplate;
+	private final DatastoreOperations datastoreTemplate;
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	public DatastoreQueryLookupStrategy(DatastoreMappingContext datastoreMappingContext,
-			DatastoreTemplate datastoreTemplate,
+										DatastoreOperations datastoreTemplate,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		Assert.notNull(datastoreMappingContext,
 				"A non-null DatastoreMappingContext is required.");
