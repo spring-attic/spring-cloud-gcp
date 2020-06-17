@@ -182,6 +182,15 @@ public class SecretManagerTemplateTests {
 	}
 
 	@Test
+	public void testEnableSecretVersion() {
+		this.secretManagerTemplate.enableSecretVersion("my-secret", "1");
+		verifyEnableSecretVersionRequest("my-secret", "my-project", "1");
+
+		this.secretManagerTemplate.enableSecretVersion("my-secret", "custom-project", "1");
+		verifyEnableSecretVersionRequest("my-secret", "custom-project", "1");
+	}
+
+	@Test
 	public void testDeleteSecret() {
 		this.secretManagerTemplate.deleteSecret("my-secret");
 		verifyDeleteSecretRequest("my-secret", "my-project");
@@ -218,6 +227,15 @@ public class SecretManagerTemplateTests {
 				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8(payload)))
 				.build();
 		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	private void verifyEnableSecretVersionRequest(String secretId, String projectId, String version) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		verify(this.client).enableSecretVersion(secretVersionName);
 	}
 
 	private void verifyDeleteSecretRequest(String secretId, String projectId) {
