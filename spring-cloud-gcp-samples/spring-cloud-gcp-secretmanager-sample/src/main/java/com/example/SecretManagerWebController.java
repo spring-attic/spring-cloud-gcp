@@ -111,10 +111,10 @@ public class SecretManagerWebController {
 			this.secretManagerTemplate.deleteSecret(secretId);
 		}
 		else {
-			this.secretManagerTemplate.deleteSecret(secretId,projectId);
+			this.secretManagerTemplate.deleteSecret(secretId, projectId);
 		}
 		map.put("applicationSecret", this.appSecret);
 		map.put("message", "Secret deleted!");
-		return new ModelAndView("index.html",map);
+		return new ModelAndView("index.html", map);
 	}
 }

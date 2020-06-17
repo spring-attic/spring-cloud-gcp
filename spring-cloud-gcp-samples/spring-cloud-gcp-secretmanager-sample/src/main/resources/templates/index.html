@@ -24,6 +24,9 @@
     background-color: #d6f5d6;
   }
 
+  .message-highlight {
+    background-color: #f4d03f;
+  }
 
 </style>
 
@@ -89,28 +92,28 @@
           </ol>
       </form>
 
-    <h3 th:if="${message}">
-      [[${message}]]
-    </h3>
   </div>
 
-    <div class="panel highlight">
-        <h3>Delete Secret</h3>
-        <p>
-            This will delete a secret if the provided secret ID exists.
-        </p>
-        <form method="POST" action="/deleteSecret">
-            <ol>
-                <li>Secret ID: <input type="text" name="secretId"/></li>
-                <li>Project ID (optional): <input type="text" name="projectId"/></li>
-                <li><input type="submit" value="Delete Secret"/></li>
-            </ol>
-        </form>
+  <div class="panel highlight">
+    <h3>Delete Secret</h3>
+    <p>
+      This will delete a secret if the provided secret ID exists.
+    </p>
+    <form method="POST" action="/deleteSecret">
+      <ol>
+        <li>Secret ID: <input type="text" name="secretId"/></li>
+        <li>Project ID (optional): <input type="text" name="projectId"/></li>
+        <li><input type="submit" value="Delete Secret"/></li>
+      </ol>
+    </form>
+  </div>
 
-        <h3 th:if="${message}">
-            [[${message}]]
-        </h3>
-    </div>
+
+  <div class="panel message-highlight" th:if="${message}">
+    <h3>
+      Secret Manager Operation: [[${message}]]
+    </h3>
+  </div>
 </div>
 
 <div class="panel">
