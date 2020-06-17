@@ -129,23 +129,24 @@ public interface FirestoreReactiveOperations {
 	 */
 	<T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass);
 
-	/**
-	 * Executes a query represented as query builder and returns results of the given domain type.
-	 * @param <T> the type param of the domain type.
-	 * @param builder the query builder.
-	 * @param entityClass the domain type of entities.
-	 * @return {@link Flux} emitting the found entities.
-	 */
-	<T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityClass);
-
-	/**
-	 * Creates FirestoreReactiveOperations object with a provided parent.
-	 * The parent doesn't have to exist in Firestore, but should have a non-empty id field.
-	 * @param <T> the type param of the parent.
-	 * @param parent the query builder.
-	 * @return template with a given parent.
+  /**
+   * Executes a query represented as query builder and returns results of the given domain type.
+   * @param <T> the type param of the domain type.
+   * @param builder the query builder.
+   * @param entityClass the domain type of entities.
+   * @return {@link Flux} emitting the found entities.
    * @since 1.2.4
-	 */
-	<T> FirestoreReactiveOperations withParent(T parent);
+   */
+  <T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityClass);
+
+  /**
+   * Creates FirestoreReactiveOperations object with a provided parent.
+   * The parent doesn't have to exist in Firestore, but should have a non-empty id field.
+   * @param <T> the type param of the parent.
+   * @param parent the query builder.
+   * @return template with a given parent.
+   * @since 1.2.4
+   */
+  <T> FirestoreReactiveOperations withParent(T parent);
 
 }
