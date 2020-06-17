@@ -24,14 +24,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
-import org.springframework.cloud.gcp.data.firestore.entities.PhoneNumber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
+import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.entities.PhoneNumber;
 import org.springframework.cloud.gcp.data.firestore.entities.User;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.test.context.ContextConfiguration;

@@ -16,8 +16,10 @@
 
 package org.springframework.cloud.gcp.data.firestore.entities;
 
-import com.google.cloud.firestore.annotation.DocumentId;
 import java.util.Objects;
+
+import com.google.cloud.firestore.annotation.DocumentId;
+
 import org.springframework.cloud.gcp.data.firestore.Document;
 
 /**
