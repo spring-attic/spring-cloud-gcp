@@ -103,11 +103,11 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public void disableSecretVersion(String secretId, String version) {
-		disableSecretVersion(secretId, this.projectIdProvider.getProjectId(), version);
+		disableSecretVersion(secretId, version, this.projectIdProvider.getProjectId());
 	}
 
 	@Override
-	public void disableSecretVersion(String secretId, String projectId, String version) {
+	public void disableSecretVersion(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
@@ -118,11 +118,11 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 
 	@Override
 	public void enableSecretVersion(String secretId, String version) {
-		enableSecretVersion(secretId, this.projectIdProvider.getProjectId(), version);
+		enableSecretVersion(secretId, version, this.projectIdProvider.getProjectId());
 	}
 
 	@Override
-	public void enableSecretVersion(String secretId, String projectId, String version) {
+	public void enableSecretVersion(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
@@ -146,7 +146,7 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 	}
 
 	@Override
-	public void deleteSecretVersion(String secretId, String projectId, String version) {
+	public void deleteSecretVersion(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)

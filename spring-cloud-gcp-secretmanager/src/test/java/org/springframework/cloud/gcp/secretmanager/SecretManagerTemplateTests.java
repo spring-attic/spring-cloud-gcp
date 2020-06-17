@@ -184,10 +184,10 @@ public class SecretManagerTemplateTests {
 	@Test
 	public void testEnableSecretVersion() {
 		this.secretManagerTemplate.enableSecretVersion("my-secret", "1");
-		verifyEnableSecretVersionRequest("my-secret", "my-project", "1");
+		verifyEnableSecretVersionRequest("my-secret", "1", "my-project");
 
-		this.secretManagerTemplate.enableSecretVersion("my-secret", "custom-project", "1");
-		verifyEnableSecretVersionRequest("my-secret", "custom-project", "1");
+		this.secretManagerTemplate.enableSecretVersion("my-secret", "1", "custom-project");
+		verifyEnableSecretVersionRequest("my-secret", "1", "custom-project");
 	}
 
 	@Test
@@ -201,17 +201,17 @@ public class SecretManagerTemplateTests {
 
 	@Test
 	public void testDeleteSecretVersion() {
-		this.secretManagerTemplate.deleteSecretVersion("my-secret", "custom-project", "10");
-		verifyDeleteSecretVersionRequest("my-secret", "custom-project", "10");
+		this.secretManagerTemplate.deleteSecretVersion("my-secret", "10", "custom-project");
+		verifyDeleteSecretVersionRequest("my-secret", "10", "custom-project");
 	}
 
 	@Test
 	public void testDisableSecretVersion() {
 		this.secretManagerTemplate.disableSecretVersion("my-secret", "1");
-		verifyDisableSecretVersionRequest("my-secret", "my-project", "1");
+		verifyDisableSecretVersionRequest("my-secret", "1", "my-project");
 
-		this.secretManagerTemplate.disableSecretVersion("my-secret", "custom-project", "1");
-		verifyDisableSecretVersionRequest("my-secret", "custom-project", "1");
+		this.secretManagerTemplate.disableSecretVersion("my-secret", "1", "custom-project");
+		verifyDisableSecretVersionRequest("my-secret", "1", "custom-project");
 	}
 
 	private void verifyCreateSecretRequest(String secretId, String projectId) {
@@ -238,7 +238,7 @@ public class SecretManagerTemplateTests {
 		verify(this.client).addSecretVersion(addSecretVersionRequest);
 	}
 
-	private void verifyEnableSecretVersionRequest(String secretId, String projectId, String version) {
+	private void verifyEnableSecretVersionRequest(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
@@ -255,7 +255,7 @@ public class SecretManagerTemplateTests {
 		verify(this.client).deleteSecret(request);
 	}
 
-	private void verifyDeleteSecretVersionRequest(String secretId, String projectId, String version) {
+	private void verifyDeleteSecretVersionRequest(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
@@ -264,7 +264,7 @@ public class SecretManagerTemplateTests {
 		verify(this.client).destroySecretVersion(secretVersionName);
 	}
 
-	private void verifyDisableSecretVersionRequest(String secretId, String projectId, String version) {
+	private void verifyDisableSecretVersionRequest(String secretId, String version, String projectId) {
 		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
 				.setProject(projectId)
 				.setSecret(secretId)
