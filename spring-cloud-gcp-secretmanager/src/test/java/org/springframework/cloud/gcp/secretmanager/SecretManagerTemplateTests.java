@@ -186,9 +186,6 @@ public class SecretManagerTemplateTests {
 		this.secretManagerTemplate.enableSecretVersion("my-secret", "1");
 		verifyEnableSecretVersionRequest("my-secret", "my-project", "1");
 
-		this.secretManagerTemplate.getSecretString("sm://my-secret/1");
-		verifyEnableSecretVersionRequest("my-secret", "my-project", "1");
-
 		this.secretManagerTemplate.enableSecretVersion("my-secret", "custom-project", "1");
 		verifyEnableSecretVersionRequest("my-secret", "custom-project", "1");
 	}

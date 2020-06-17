@@ -94,7 +94,7 @@ public interface SecretManagerOperations {
 	void enableSecretVersion(String secretId, String version);
 
 	/**
-	 * Enables the specified secret under the default-configured project.
+	 * Enables the secret version under the specified project.
 	 *
 	 * @param secretId the secret ID of the secret to delete.
 	 * @param projectId unique identifier of your project.
