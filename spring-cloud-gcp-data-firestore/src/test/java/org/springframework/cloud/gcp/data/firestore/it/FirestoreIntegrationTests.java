@@ -166,7 +166,7 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
 		//tag::subcollection[]
-		FirestoreReactiveOperations bobTemplate = this.firestoreTemplate.operationsWithParent(new User("Bob", 60));
+		FirestoreReactiveOperations bobTemplate = this.firestoreTemplate.withParent(new User("Bob", 60));
 
 		PhoneNumber phoneNumber = new PhoneNumber("111-222-333");
 		bobTemplate.save(phoneNumber).block();

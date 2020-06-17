@@ -101,8 +101,15 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.mappingContext = mappingContext;
 	}
 
-	public <T> FirestoreReactiveOperations operationsWithParent(T parent) {
-		return new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
+	@Override
+	public <T> FirestoreReactiveOperations withParent(T parent) {
+    FirestoreTemplate firestoreTemplate =
+            new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
+    firestoreTemplate.setUsingStreamTokens(this.usingStreamTokens);
+    firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
+    firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
+
+    return firestoreTemplate;
 	}
 
 	/**

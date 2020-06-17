@@ -64,7 +64,7 @@ public class UserController {
 
 	@GetMapping("/phones")
 	private Flux<PhoneNumber> getPhonesByName(@RequestParam String name) {
-		return this.firestoreTemplate.operationsWithParent(new User(name, 0, null))
+		return this.firestoreTemplate.withParent(new User(name, 0, null))
 				.findAll(PhoneNumber.class);
 	}
 
@@ -76,7 +76,7 @@ public class UserController {
 
 	@GetMapping("/removePhonesForUser")
 	private Mono<String> removePhonesByName(@RequestParam String name) {
-		return this.firestoreTemplate.operationsWithParent(new User(name, 0, null))
+		return this.firestoreTemplate.withParent(new User(name, 0, null))
 				.deleteAll(PhoneNumber.class).map(numRemoved ->  "successfully removed " + numRemoved + " phone numbers");
 	}
 
@@ -88,7 +88,7 @@ public class UserController {
 							formData.getFirst("name"),
 							Integer.parseInt(formData.getFirst("age")),
 							createPets(formData.getFirst("pets")));
-					FirestoreReactiveOperations userTemplate = this.firestoreTemplate.operationsWithParent(user);
+					FirestoreReactiveOperations userTemplate = this.firestoreTemplate.withParent(user);
 					List<PhoneNumber> phones = getPhones(formData.getFirst("phones"));
 					return userTemplate.saveAll(Flux.fromIterable(phones)).then(userRepository.save(user));
 				});

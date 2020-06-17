@@ -261,7 +261,7 @@ Documents in subcollections can contain subcollections as well, allowing you to 
 
 WARNING: Deleting a document does not delete its subcollections!
 
-To use subcollections you will need to create a `FirestoreReactiveOperations` object with a parent entity using `FirestoreReactiveOperations.operationsWithParent` call.
+To use subcollections you will need to create a `FirestoreReactiveOperations` object with a parent entity using `FirestoreReactiveOperations.withParent` call.
 You can use this object to save, query and remove entities associated with this parent.
 The parent doesn't have to exist in Firestore, but should have a non-empty id field.
 
