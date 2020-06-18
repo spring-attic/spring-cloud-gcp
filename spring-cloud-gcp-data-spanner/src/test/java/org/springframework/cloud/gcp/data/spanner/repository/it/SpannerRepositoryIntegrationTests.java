@@ -49,7 +49,9 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -180,6 +182,34 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> trader2TradesRetrieved = this.tradeRepository
 				.findByTraderId("trader2");
 		assertThat(trader2TradesRetrieved).containsExactlyInAnyOrderElementsOf(trader2Trades);
+
+		assertThat(this.tradeRepository
+				.findByTraderId("trader2", PageRequest.of(0, 2, Sort.by("tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(0), trader2Trades.get(1));
+
+		assertThat(this.tradeRepository
+				.findByTraderId("trader2", PageRequest.of(1, 2, Sort.by("tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(2));
+
+		assertThat(this.tradeRepository
+				.findByTraderId("trader2", PageRequest.of(0, 2, Sort.by(Direction.DESC, "tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(2), trader2Trades.get(1));
+
+		assertThat(this.tradeRepository
+				.findByTraderId("trader2", PageRequest.of(1, 2, Sort.by(Direction.DESC, "tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(0));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", Pageable.unpaged()))
+				.containsExactlyInAnyOrder(trader2Trades.get(0), trader2Trades.get(1));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", PageRequest.of(0, 1)))
+				.containsExactlyInAnyOrder(trader2Trades.get(0));
+
+		assertThat(this.tradeRepository
+				.findTop2ByTraderIdOrderByTradeTimeAsc("trader2", PageRequest.of(0, 1, Sort.by(Direction.DESC, "tradeTime"))))
+				.containsExactlyInAnyOrder(trader2Trades.get(2));
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
 				.findByActionIgnoreCase("bUy");
@@ -388,7 +418,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	private List<Trade> insertTrades(String traderId, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
-			Trade t = Trade.aTrade(traderId, 0);
+			Trade t = Trade.aTrade(traderId, 0, i);
 			t.setAction(action);
 			t.setSymbol("ABCD");
 			trades.add(t);

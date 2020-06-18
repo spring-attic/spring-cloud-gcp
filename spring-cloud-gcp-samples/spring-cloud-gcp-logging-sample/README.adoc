@@ -25,9 +25,17 @@ $ curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
 To see the logged lines, navigate to the https://console.cloud.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the logged text.
 
+=== Running on Google Cloud Platform
+
+Deploy to App Engine:
+
+----
+$ mvn clean package appengine:deploy -Dapp.deploy.projectId=$PROJECT_ID -Dapp.deploy.version=$VERSION
+----
+
 If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE), you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
 You can further narrow down the log by request by using the following filtering text that takes advantage of the trace ID label in each logged line.
-For example, if deployed to App Engine (by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
+For example, if deployed to App Engine, you can use the following to filter by the trace ID:
 
 ----
  resource.type="gae_app"
@@ -38,4 +46,4 @@ For example, if deployed to App Engine (by using `mvn appengine:deploy` in this 
 Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the same value for both log messages.
 The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
 
-NOTE: When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs will appear on Cloud Logging in duplicate: once in the `spring.log` stream and once in the `stdout` stream.
+NOTE: When running on GAE or GKE, remember to remove the `CONSOLE` appender. Otherwise, logs are duplicated in Cloud Logging (once in the `spring.log` stream and once in the `stdout` stream).

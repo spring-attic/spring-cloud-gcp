@@ -22,6 +22,8 @@ import java.util.function.Function;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
@@ -52,10 +54,12 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	@Override
 	protected List executeRawResult(Object[] parameters) {
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+				parameters);
 		if (isCountOrExistsQuery()) {
 			return SpannerStatementQueryExecutor.executeQuery(
 					(struct) -> isCountQuery() ? struct.getLong(0) : struct.getBoolean(0),
-					this.entityType, this.tree, parameters, getQueryMethod().getMethod().getParameters(),
+					this.entityType, this.tree, paramAccessor, getQueryMethod().getMethod().getParameters(),
 					this.spannerTemplate,
 					this.spannerMappingContext);
 		}
@@ -64,14 +68,16 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.performReadWriteTransaction(getDeleteFunction(parameters));
 		}
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
-				parameters, getQueryMethod().getMethod().getParameters(), this.spannerTemplate,
+				paramAccessor, getQueryMethod().getMethod().getParameters(), this.spannerTemplate,
 				this.spannerMappingContext);
 	}
 
 	private Function<SpannerTemplate, List> getDeleteFunction(Object[] parameters) {
 		return (transactionTemplate) -> {
+			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
+					parameters);
 			List<T> entitiesToDelete = SpannerStatementQueryExecutor
-					.executeQuery(this.entityType, this.tree, parameters, getQueryMethod().getMethod().getParameters(),
+					.executeQuery(this.entityType, this.tree, paramAccessor, getQueryMethod().getMethod().getParameters(),
 							transactionTemplate, this.spannerMappingContext);
 			transactionTemplate.deleteAll(entitiesToDelete);
 

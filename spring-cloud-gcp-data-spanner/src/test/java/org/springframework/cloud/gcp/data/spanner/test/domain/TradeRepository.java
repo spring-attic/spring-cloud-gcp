@@ -42,6 +42,10 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	List<Trade> findByTraderId(String traderId);
 
+	List<Trade> findByTraderId(String traderId, Pageable pageable);
+
+	List<Trade> findTop2ByTraderIdOrderByTradeTimeAsc(String traderId, Pageable pageable);
+
 	int countByAction(String action);
 
 	// deletes with the given action string, and returns the number of deleted items.

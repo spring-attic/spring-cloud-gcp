@@ -5,6 +5,63 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.3.RELEASE (2020-05-29)
+
+=== General
+
+* Upgrade to latest libraries bom and sql socket factory (https://github.com/spring-cloud/spring-cloud-gcp/issues/2373[#2373])
+* Make transaction managers conditional on enabled flag for Spanner and Datastore (https://github.com/spring-cloud/spring-cloud-gcp/issues/2376[#2376])
+
+=== Logging
+
+NOTE: As we upgraded to the latest version of `google-cloud-logging-logback`, we picked up a https://github.com/googleapis/java-logging-logback/pull/43[breaking change] where the log entry payload is now written in JSON rather than plain text.
+So, if you're reading log entries back from Cloud Logging using `LogEntry.getPayload()`, make sure to cast the returned payload object to `JsonPayload` instead of `StringPayload`.
+
+=== Secret Manager 
+
+NOTE: This version introduced several breaking changes to Secret Manager property source.
+Please see the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.3.RELEASE/reference/html/#secret-manager-property-source)[reference documentation] for the new way for accessing secrets as properties.
+
+* Remove the version property in secret manager (https://github.com/spring-cloud/spring-cloud-gcp/issues/2270[#2270])
+* Secret manager template with project (https://github.com/spring-cloud/spring-cloud-gcp/issues/2283[#2283]) (https://github.com/spring-cloud/spring-cloud-gcp/issues/2284[#2284])
+* Create protocol for specifying secrets' project and versions (https://github.com/spring-cloud/spring-cloud-gcp/issues/2302[#2302])
+* Add secret manager autoconfigure property (https://github.com/spring-cloud/spring-cloud-gcp/issues/2363[#2363])
+
+=== Pub/Sub 
+* New async pull methods in `Pub/Sub Template`, as well as fully asynchronous `PubSubReactiveFactory.poll()` (https://github.com/spring-cloud/spring-cloud-gcp/pull/2227[#2227])
+* Suppress exception in Pub/Sub adapter in AUTO_ACK and MANUAL modes (https://github.com/spring-cloud/spring-cloud-gcp/issues/2319[#2319])
+* Make 403 an allowable Pub/Sub UP status (https://github.com/spring-cloud/spring-cloud-gcp/issues/2385[#2385])
+
+=== Trace
+
+* Support Extra Propagation Fields with Trace (https://github.com/spring-cloud/spring-cloud-gcp/issues/2290[#2290])
+
+=== Spanner
+
+* Fix @Where with ORDER BY query generation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2267[#2267])
+* Add SpannerOptions auto-configuration for emulator (https://github.com/spring-cloud/spring-cloud-gcp/issues/2356[#2356])
+
+=== Datastore
+
+* Support for nested properties in PartTree methods (https://github.com/spring-cloud/spring-cloud-gcp/issues/2307[#2307])
+* Datastore Projections should restrict query to contain only the necessary fields (https://github.com/spring-cloud/spring-cloud-gcp/issues/2335[#2335])
+* Support custom maps (https://github.com/spring-cloud/spring-cloud-gcp/issues/2345[#2345])
+
+=== Firestore
+
+* Firestore nested properties (https://github.com/spring-cloud/spring-cloud-gcp/issues/2300[#2300])
+* Add autoconfiguration for Firestore Emulator (https://github.com/spring-cloud/spring-cloud-gcp/issues/2244[#2244])
+* Add support for Firestore Sort PartTree queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2341[#2341])
+* Add child collection to the entity class in Firestore sample (https://github.com/spring-cloud/spring-cloud-gcp/issues/2388[#2388])
+
+=== Vision
+
+* Allow users to provide the ImageContext in CloudVisionTemplate (https://github.com/spring-cloud/spring-cloud-gcp/issues/2286[#2286])
+
+=== Firebase Security
+
+* Make Firebase Security Autoconfiguration conditional (https://github.com/spring-cloud/spring-cloud-gcp/issues/2258[#2258])
+Thank you to the contributors from our user community: @eddumelendez, @mzeijen, @s13o, @acet, @guillaumeblaquiere
 == 1.2.2.RELEASE (2020-03-04)
 
 === General

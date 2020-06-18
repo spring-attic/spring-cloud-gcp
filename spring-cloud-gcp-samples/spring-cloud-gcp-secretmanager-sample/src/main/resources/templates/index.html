@@ -24,6 +24,9 @@
     background-color: #d6f5d6;
   }
 
+  .message-highlight {
+    background-color: #f4d03f;
+  }
 
 </style>
 
@@ -46,10 +49,10 @@
 </div>
 
 <div class="panel">
-  <h2>Create, Read, and Update Secrets</h2>
+  <h2>Create, Read, Update and Delete Secrets</h2>
 
   <p>
-    Using the form below, you can create/update secrets in Secret Manager and also read them.
+    Using the form below, you can create/update secrets in Secret Manager, read and delete them.
     In the controller code, the <i>SecretManagerTemplate</i> is being used to do these operations.
   </p>
 
@@ -89,8 +92,26 @@
           </ol>
       </form>
 
-    <h3 th:if="${message}">
-      [[${message}]]
+  </div>
+
+  <div class="panel highlight">
+    <h3>Delete Secret</h3>
+    <p>
+      This will delete a secret if the provided secret ID exists.
+    </p>
+    <form method="POST" action="/deleteSecret">
+      <ol>
+        <li>Secret ID: <input type="text" name="secretId"/></li>
+        <li>Project ID (optional): <input type="text" name="projectId"/></li>
+        <li><input type="submit" value="Delete Secret"/></li>
+      </ol>
+    </form>
+  </div>
+
+
+  <div class="panel message-highlight" th:if="${message}">
+    <h3>
+      Secret Manager Operation: [[${message}]]
     </h3>
   </div>
 </div>

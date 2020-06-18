@@ -89,6 +89,10 @@ public class Trade {
 	}
 
 	public static Trade aTrade(String customTraderId, int subTrades) {
+		return aTrade(customTraderId, subTrades, 0);
+	}
+
+	public static Trade aTrade(String customTraderId, int subTrades, int tradeTime) {
 		Trade t = new Trade("ABCD", new ArrayList<>());
 		String tradeId = UUID.randomUUID().toString();
 		String traderId = customTraderId == null ? UUID.randomUUID().toString() : customTraderId;
@@ -99,7 +103,7 @@ public class Trade {
 		t.age = 8;
 		t.action = "BUY";
 		t.traderId = traderId;
-		t.tradeTime = Instant.ofEpochSecond(333);
+		t.tradeTime = Instant.ofEpochSecond(333 + tradeTime);
 		t.tradeDate = Date.from(t.tradeTime);
 		t.tradeLocalDate = LocalDate.of(2015, 1, 1);
 		t.tradeLocalDateTime = LocalDateTime.of(2015, 1, 1, 2, 3, 4, 5);

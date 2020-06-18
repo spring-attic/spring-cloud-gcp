@@ -53,10 +53,10 @@ $ curl -H "x-goog-iap-jwt-assertion: [JWK TOKEN]" localhost:8080/topsecret
 ----
 
 
-== Deploying the Sample to AppEngine Flexible
+== Deploying the Sample to AppEngine Standard
 
-The following Maven target will deploy this application to the root of your AppEngine Flexible instance:
+The following Maven target will deploy this application to the root of your AppEngine Standard instance:
 ----
-$ mvn appengine:deploy
+$ mvn clean package appengine:deploy -Dapp.deploy.projectId=$PROJECT_ID -Dapp.deploy.version=$VERSION
 ----
 

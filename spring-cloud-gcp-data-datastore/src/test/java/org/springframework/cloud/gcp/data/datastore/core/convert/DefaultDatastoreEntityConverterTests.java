@@ -241,7 +241,7 @@ public class DefaultDatastoreEntityConverterTests {
 		this.thrown.expectMessage("Unable to read property boolField");
 		this.thrown.expectMessage(
 				"Unable to convert class " +
-				"com.google.common.collect.RegularImmutableList to class java.lang.Boolean");
+				"com.google.common.collect.SingletonImmutableList to class java.lang.Boolean");
 
 		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
