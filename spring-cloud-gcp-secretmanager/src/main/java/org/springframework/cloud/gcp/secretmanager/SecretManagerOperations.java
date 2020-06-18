@@ -88,7 +88,7 @@ public interface SecretManagerOperations {
 	/**
 	 * Enables the specified secret version under the default-configured project.
 	 *
-	 * @param secretId the secret ID of the secret to delete.
+	 * @param secretId the secret ID of the secret to enable.
 	 * @param version the version to enable
 	 */
 	void enableSecretVersion(String secretId, String version);
@@ -96,7 +96,7 @@ public interface SecretManagerOperations {
 	/**
 	 * Enables the secret version under the specified project.
 	 *
-	 * @param secretId the secret ID of the secret to delete.
+	 * @param secretId the secret ID of the secret to enable.
 	 * @param version the version to enable
 	 * @param projectId unique identifier of your project.
 	 */
@@ -106,7 +106,7 @@ public interface SecretManagerOperations {
 	 * Disables the specified secret version under the default-configured project.
 	 *
 	 * @param secretId the secret ID of the secret to disable.
-	 * @param version the version to enable
+	 * @param version the version to disable
 	 */
 	void disableSecretVersion(String secretId, String version);
 
@@ -114,7 +114,7 @@ public interface SecretManagerOperations {
 	 * Disables the secret version under the specified project.
 	 *
 	 * @param secretId the secret ID of the secret to disable.
-	 * @param version the version to enable
+	 * @param version the version to disable
 	 * @param projectId unique identifier of your project.
 	 */
 	void disableSecretVersion(String secretId, String version, String projectId);
@@ -135,7 +135,7 @@ public interface SecretManagerOperations {
 	void deleteSecret(String secretId, String projectId);
 
 	/**
-	 * Deletes the specified secret.
+	 * Deletes the specified secret version.
 	 *
 	 * @param secretId the secret ID of the secret to delete.
 	 * @param version the version to delete
