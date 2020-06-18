@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,9 +45,11 @@ import static org.mockito.Mockito.when;
  * @author Elena Felder
  */
 public class GcpStorageAutoConfigurationTests {
+	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 		.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
+			.withPropertyValues("spring.cloud.gcp.storage.project-id=" + PROJECT_NAME)
 		.withUserConfiguration(TestConfiguration.class);
 
 
@@ -110,10 +111,10 @@ public class GcpStorageAutoConfigurationTests {
 			return () -> mock(Credentials.class);
 		}
 
-		@Bean
-		public static GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "hollow-light-of-the-sealed-land";
-		}
+//		@Bean
+//		public static GcpProjectIdProvider gcpProjectIdProvider() {
+//			return () -> "hollow-light-of-the-sealed-land";
+//		}
 	}
 
 }

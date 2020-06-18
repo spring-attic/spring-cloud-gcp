@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
@@ -53,20 +54,22 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
-public abstract class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
+public abstract class GcpStorageAutoConfiguration {
+	private GcpProjectIdProvider gcpProjectIdProvider; //NOSONAR squid:S1610 must be a class for Spring
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static Storage storage(CredentialsProvider credentialsProvider,
-			GcpStorageProperties gcpStorageProperties,
-			GcpProjectIdProvider projectIdProvider) throws IOException {
+	public Storage storage(CredentialsProvider credentialsProvider, GcpStorageProperties gcpStorageProperties) throws IOException {
+		this.gcpProjectIdProvider = gcpStorageProperties.getProjectId() != null
+				? gcpStorageProperties::getProjectId
+				: new DefaultGcpProjectIdProvider();
 		return StorageOptions.newBuilder()
 				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
 						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(
 						new UserAgentHeaderProvider(GcpStorageAutoConfiguration.class))
-				.setProjectId(projectIdProvider.getProjectId())
+				.setProjectId(gcpProjectIdProvider.getProjectId())
 				.build().getService();
 	}
 }
