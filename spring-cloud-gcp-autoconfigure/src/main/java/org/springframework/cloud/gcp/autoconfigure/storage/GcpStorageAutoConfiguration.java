@@ -54,22 +54,36 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
-public abstract class GcpStorageAutoConfiguration {
-	private GcpProjectIdProvider gcpProjectIdProvider; //NOSONAR squid:S1610 must be a class for Spring
+public abstract class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
+
+	private final GcpProjectIdProvider gcpProjectIdProvider;
+
+	private final CredentialsProvider credentialsProvider;
+
+	public GcpStorageAutoConfiguration(
+			GcpProjectIdProvider coreProjectIdProvider,
+			CredentialsProvider credentialsProvider,
+			GcpStorageProperties gcpStorageProperties) throws IOException {
+
+		this.gcpProjectIdProvider =
+				gcpStorageProperties.getProjectId() != null
+						? gcpStorageProperties::getProjectId
+						: coreProjectIdProvider;
+
+		this.credentialsProvider =
+				gcpStorageProperties.getCredentials().hasKey()
+						? new DefaultCredentialsProvider(gcpStorageProperties)
+						: credentialsProvider;
+	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Storage storage(CredentialsProvider credentialsProvider, GcpStorageProperties gcpStorageProperties) throws IOException {
-		this.gcpProjectIdProvider = gcpStorageProperties.getProjectId() != null
-				? gcpStorageProperties::getProjectId
-				: new DefaultGcpProjectIdProvider();
+	public Storage storage() throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
-						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
-						: credentialsProvider.getCredentials())
 				.setHeaderProvider(
 						new UserAgentHeaderProvider(GcpStorageAutoConfiguration.class))
-				.setProjectId(gcpProjectIdProvider.getProjectId())
+				.setProjectId(this.gcpProjectIdProvider.getProjectId())
+				.setCredentials(this.credentialsProvider.getCredentials())
 				.build().getService();
 	}
 }
