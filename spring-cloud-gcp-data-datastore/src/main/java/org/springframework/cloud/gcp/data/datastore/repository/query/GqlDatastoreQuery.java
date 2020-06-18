@@ -142,8 +142,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
 		DatastoreResultsIterable found = isNonEntityReturnType
-				? this.datastoreTemplate.queryIterable(query, GqlDatastoreQuery::getNonEntityObjectFromRow)
-				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
+				? this.datastoreOperations.queryIterable(query, GqlDatastoreQuery::getNonEntityObjectFromRow)
+				: this.datastoreOperations.queryKeysOrEntities(query, this.entityType);
 
 		Object result;
 		if (isPageQuery() || isSliceQuery()) {
@@ -176,7 +176,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private Slice buildSlice(Pageable pageableParam, ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues,
 			Cursor cursor, List resultsList) {
 		GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQuery(cursor, 1);
-		DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery, this.entityType);
+		DatastoreResultsIterable<?> next = this.datastoreOperations.queryKeysOrEntities(nextQuery, this.entityType);
 
 		Pageable pageable = DatastorePageable.from(pageableParam, cursor, null);
 		return new SliceImpl(resultsList, pageable, next.iterator().hasNext());
@@ -189,7 +189,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: null;
 		if (count == null) {
 			GqlQuery nextQuery = parsedQueryWithTagsAndValues.bindArgsToGqlQueryNoLimit();
-			DatastoreResultsIterable<?> next = this.datastoreTemplate.queryKeysOrEntities(nextQuery,
+			DatastoreResultsIterable<?> next = this.datastoreOperations.queryKeysOrEntities(nextQuery,
 					this.entityType);
 			count = StreamSupport.stream(next.spliterator(), false).count();
 		}
@@ -199,7 +199,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Object convertCollectionResult(Class returnedItemType, Iterable rawResult) {
-		Object result = this.datastoreTemplate.getDatastoreEntityConverter()
+		Object result = this.datastoreOperations.getDatastoreEntityConverter()
 				.getConversions().convertOnRead(
 						rawResult, this.queryMethod.getCollectionReturnType(), returnedItemType);
 		return processRawObjectForProjection(result);
@@ -229,13 +229,13 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							+ "the query returned more than one result.");
 		}
 		return isNonEntityReturnType
-				? this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+				? this.datastoreOperations.getDatastoreEntityConverter().getConversions()
 						.convertOnRead(result, null, returnedItemType)
 				: this.queryMethod.getResultProcessor().processResult(result);
 	}
 
 	boolean isNonEntityReturnedType(Class returnedType) {
-		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+		return this.datastoreOperations.getDatastoreEntityConverter().getConversions()
 				.getDatastoreCompatibleType(returnedType).isPresent();
 	}
 
@@ -407,7 +407,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					boundVal = convertCollectionParamToCompatibleArray((List) ValueUtil.toListIfArray(val));
 				}
 				else {
-					boundVal = GqlDatastoreQuery.this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+					boundVal = GqlDatastoreQuery.this.datastoreOperations.getDatastoreEntityConverter().getConversions()
 							.convertOnWriteSingle(convertEntitiesToKeys(val)).get();
 				}
 				DatastoreNativeTypes.bindValueToGqlBuilder(builder, this.tagsOrdered.get(i), boundVal);
@@ -428,7 +428,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		private Object convertEntitiesToKeys(Object o) {
 			if (GqlDatastoreQuery.this.datastoreMappingContext.hasPersistentEntityFor(o.getClass())) {
-				return GqlDatastoreQuery.this.datastoreTemplate.getKey(o);
+				return GqlDatastoreQuery.this.datastoreOperations.getKey(o);
 			}
 			return o;
 		}

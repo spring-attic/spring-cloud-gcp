@@ -54,7 +54,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
-	private final DatastoreOperations datastoreTemplate;
+	private final DatastoreOperations datastoreOperations;
 
 	private ApplicationContext applicationContext;
 
@@ -62,17 +62,17 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 	 * Constructor.
 	 * @param datastoreMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
-	 * @param datastoreTemplate the Datastore operations object used by Datastore
+	 * @param datastoreOperations the Datastore operations object used by Datastore
 	 * repositories.
 	 */
 	DatastoreRepositoryFactory(DatastoreMappingContext datastoreMappingContext,
-							DatastoreOperations datastoreTemplate) {
+			DatastoreOperations datastoreOperations) {
 		Assert.notNull(datastoreMappingContext,
 				"A non-null Datastore mapping context is required.");
-		Assert.notNull(datastoreTemplate,
+		Assert.notNull(datastoreOperations,
 				"A non-null Datastore template object is required.");
 		this.datastoreMappingContext = datastoreMappingContext;
-		this.datastoreTemplate = datastoreTemplate;
+		this.datastoreOperations = datastoreOperations;
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 	@Override
 	protected Object getTargetRepository(RepositoryInformation metadata) {
-		return getTargetRepositoryViaReflection(metadata, this.datastoreTemplate,
+		return getTargetRepositoryViaReflection(metadata, this.datastoreOperations,
 				metadata.getDomainType());
 	}
 
@@ -106,7 +106,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		return Optional.of(new DatastoreQueryLookupStrategy(this.datastoreMappingContext,
-				this.datastoreTemplate,
+				this.datastoreOperations,
 				delegateContextProvider(evaluationContextProvider)));
 	}
 
