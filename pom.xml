@@ -54,7 +54,11 @@
 		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 		<kotlin.version>1.3.31</kotlin.version>
-        <errorprone.version>2.3.4</errorprone.version>
+		<errorprone.version>2.3.4</errorprone.version>
+		<skip.surefire.tests>false</skip.surefire.tests>
+		<skip.failsafe.tests>false</skip.failsafe.tests>
+		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
+		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -152,9 +156,30 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven-surefire-plugin.version}</version>
 					<configuration>
 						<argLine>-Xms512m -Xmx512m</argLine>
+						<skip>${skip.surefire.tests}</skip>
+						<excludes>
+							<exclude>${integration-test.pattern}</exclude>
+						</excludes>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven-failsafe-plugin.version}</version>
+					<configuration>
+						<skip>${skip.failsafe.tests}</skip>
+						<includes>
+							<include>${integration-test.pattern}</include>
+						</includes>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${maven-deploy-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -213,6 +238,10 @@
 						<link>https://googleapis.dev/java/google-cloud-clients/latest/</link>
 					</links>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
