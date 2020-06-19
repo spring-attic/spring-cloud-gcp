@@ -55,18 +55,34 @@ import org.springframework.context.annotation.Import;
 @Import(GoogleStorageProtocolResolver.class)
 public abstract class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
+	private final GcpProjectIdProvider gcpProjectIdProvider;
+
+	private final CredentialsProvider credentialsProvider;
+
+	public GcpStorageAutoConfiguration(
+			GcpProjectIdProvider coreProjectIdProvider,
+			CredentialsProvider credentialsProvider,
+			GcpStorageProperties gcpStorageProperties) throws IOException {
+
+		this.gcpProjectIdProvider =
+				gcpStorageProperties.getProjectId() != null
+						? gcpStorageProperties::getProjectId
+						: coreProjectIdProvider;
+
+		this.credentialsProvider =
+				gcpStorageProperties.getCredentials().hasKey()
+						? new DefaultCredentialsProvider(gcpStorageProperties)
+						: credentialsProvider;
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
-	public static Storage storage(CredentialsProvider credentialsProvider,
-			GcpStorageProperties gcpStorageProperties,
-			GcpProjectIdProvider projectIdProvider) throws IOException {
+	public Storage storage() throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
-						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
-						: credentialsProvider.getCredentials())
 				.setHeaderProvider(
 						new UserAgentHeaderProvider(GcpStorageAutoConfiguration.class))
-				.setProjectId(projectIdProvider.getProjectId())
+				.setProjectId(this.gcpProjectIdProvider.getProjectId())
+				.setCredentials(this.credentialsProvider.getCredentials())
 				.build().getService();
 	}
 }

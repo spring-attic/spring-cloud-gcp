@@ -47,14 +47,15 @@ import static org.mockito.Mockito.when;
  */
 public class GcpStorageAutoConfigurationTests {
 
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-		.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
-		.withUserConfiguration(TestConfiguration.class);
+	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
+	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
+			.withPropertyValues("spring.cloud.gcp.storage.project-id=" + PROJECT_NAME)
+			.withUserConfiguration(TestConfiguration.class);
 
 	@Test
 	public void testValidObject() throws Exception {
-
 		this.contextRunner.run((context) -> {
 			Resource resource = context.getBean("mockResource", Resource.class);
 			assertThat(resource.contentLength()).isEqualTo(4096);
@@ -63,7 +64,6 @@ public class GcpStorageAutoConfigurationTests {
 
 	@Test
 	public void testAutoCreateFilesTrueByDefault() throws IOException {
-
 		this.contextRunner
 			.run((context) -> {
 				Resource resource = context.getBean("mockResource", Resource.class);
@@ -112,7 +112,7 @@ public class GcpStorageAutoConfigurationTests {
 
 		@Bean
 		public static GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "hollow-light-of-the-sealed-land";
+			return () -> "default-project";
 		}
 	}
 
