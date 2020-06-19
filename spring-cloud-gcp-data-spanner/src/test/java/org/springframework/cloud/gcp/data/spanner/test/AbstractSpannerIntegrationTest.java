@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdmi
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.test.domain.CommitTimestamps;
+import org.springframework.cloud.gcp.data.spanner.test.domain.Singer;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -144,6 +145,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected List<String> createSchemaStatements() {
 		List<String> list = new ArrayList<>(this.spannerSchemaUtils
 				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils.getCreateTableDdlString(Singer.class));
 		list.add(this.spannerSchemaUtils
 				.getCreateTableDdlString(CommitTimestamps.class)
 				.replaceAll("TIMESTAMP", "TIMESTAMP OPTIONS (allow_commit_timestamp = true)"));
@@ -153,6 +155,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected Iterable<String> dropSchemaStatements() {
 		List<String> list = new ArrayList<>(this.spannerSchemaUtils
 				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class));
+		list.add(this.spannerSchemaUtils.getDropTableDdlString(Singer.class));
 		list.add(this.spannerSchemaUtils
 				.getDropTableDdlString(CommitTimestamps.class));
 		return list;

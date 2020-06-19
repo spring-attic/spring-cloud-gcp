@@ -199,13 +199,12 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		Sort sort = null;
 
 		for (Object param : parameters) {
-			Class<?> paramClass = param.getClass();
-			if (isPageableOrSort(paramClass)) {
+			if (param != null && isPageableOrSort(param.getClass())) {
 				if (pageable != null || sort != null) {
 					throw new SpannerDataException(
 							"Only a single Pageable or Sort param is allowed.");
 				}
-				else if (Pageable.class.isAssignableFrom(paramClass)) {
+				else if (Pageable.class.isAssignableFrom(param.getClass())) {
 						pageable = (Pageable) param;
 				}
 				else {

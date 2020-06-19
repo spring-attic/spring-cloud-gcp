@@ -39,6 +39,8 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
+import org.springframework.cloud.gcp.data.spanner.test.domain.Singer;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SingerRepository;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponent;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponentRepository;
@@ -71,6 +73,9 @@ import static org.mockito.ArgumentMatchers.eq;
  */
 @RunWith(SpringRunner.class)
 public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegrationTest {
+
+	@Autowired
+	SingerRepository singerRepository;
 
 	@Autowired
 	TradeRepository tradeRepository;
@@ -400,6 +405,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			// expected exception that causes roll-back;
 		}
 		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+	}
+
+	@Test
+	public void testDmlStatement_nullColumn() {
+		this.singerRepository.insert("123", null);
+		Singer singer = this.singerRepository.findById("123").get();
+		assertThat(singer.getName()).isNull();
 	}
 
 	private void arrayParameterBindTest() {
