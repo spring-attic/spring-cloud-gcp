@@ -362,7 +362,7 @@ public final class SpannerStatementQueryExecutor {
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object originalParam, Parameter paramMetadata) {
 
-	  // Gets the type of the bind parameter; if null then infer the type from the parameter metadata.
+		// Gets the type of the bind parameter; if null then infer the type from the parameter metadata.
 		Class<?> parameterClass = originalParam != null
 				? originalParam.getClass() : paramMetadata.getType();
 
