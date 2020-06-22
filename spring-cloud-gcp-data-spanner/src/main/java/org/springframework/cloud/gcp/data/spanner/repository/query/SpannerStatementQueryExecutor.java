@@ -361,7 +361,8 @@ public final class SpannerStatementQueryExecutor {
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
 			Object originalParam, Parameter paramMetadata) {
-		if (ConversionUtils.isIterableNonByteArrayType(originalParam.getClass())) {
+		Class propType = originalParam != null ? originalParam.getClass() : paramMetadata.getType();
+		if (ConversionUtils.isIterableNonByteArrayType(propType)) {
 			if (!ConverterAwareMappingSpannerEntityWriter.attemptSetIterableValueOnBinder((Iterable) originalParam,
 					bind, spannerCustomConverter, (Class) ((ParameterizedType) paramMetadata.getParameterizedType())
 							.getActualTypeArguments()[0])) {
@@ -370,11 +371,11 @@ public final class SpannerStatementQueryExecutor {
 			}
 			return;
 		}
-		if (!ConverterAwareMappingSpannerEntityWriter.attemptBindSingleValue(originalParam, originalParam.getClass(),
+		if (!ConverterAwareMappingSpannerEntityWriter.attemptBindSingleValue(originalParam, propType,
 				bind, spannerCustomConverter)) {
 			if (paramStructConvertFunc == null) {
-				throw new IllegalArgumentException("Param: " + originalParam.toString()
-						+ " is not a supported type: " + originalParam.getClass());
+				throw new IllegalArgumentException("Param: " + originalParam
+						+ " is not a supported type: " + propType);
 			}
 			try {
 				Object unused = ((BiFunction<ValueBinder, Object, Struct>)
@@ -382,8 +383,8 @@ public final class SpannerStatementQueryExecutor {
 						.get(Struct.class)).apply(bind, paramStructConvertFunc.apply(originalParam));
 			}
 			catch (SpannerDataException ex) {
-				throw new IllegalArgumentException("Param: " + originalParam.toString()
-						+ " is not a supported type: " + originalParam.getClass(), ex);
+				throw new IllegalArgumentException("Param: " + originalParam
+						+ " is not a supported type: " + propType, ex);
 			}
 		}
 	}
