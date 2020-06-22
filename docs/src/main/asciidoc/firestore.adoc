@@ -103,7 +103,7 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 import com.google.cloud.firestore.annotation.DocumentId;
 import org.springframework.cloud.gcp.data.firestore.Document;
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=class_definition]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/User.java[tag=class_definition]
 ----
 
 `@Document(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
@@ -122,7 +122,7 @@ Example:
 
 [source,java,indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/User.java[tag=embedded_class_collections]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/User.java[tag=embedded_class_collections]
 ----
 
 === Reactive Repositories
@@ -134,7 +134,7 @@ For example:
 [source,java]
 ----
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserRepository.java[tag=repository]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/UserRepository.java[tag=repository]
 
 ----
 
@@ -292,9 +292,9 @@ The starter automatically configures and registers a `Firestore` bean in the Spr
  @Autowired
  Firestore firestore;
 
-include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=write]
+include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=write]
 
-include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationTests.java[tag=read]
+include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=read]
 ----
 
 === Emulator Usage

@@ -37,6 +37,11 @@
 |spring.cloud.gcp.firestore.host-port | firestore.googleapis.com:443 | The host and port of the Firestore emulator service; can be overridden to specify an emulator.
 |spring.cloud.gcp.firestore.project-id |  | 
 |spring.cloud.gcp.logging.enabled | true | Auto-configure Google Cloud Stackdriver logging for Spring MVC.
+|spring.cloud.gcp.metrics.credentials.encoded-key |  | 
+|spring.cloud.gcp.metrics.credentials.location |  | 
+|spring.cloud.gcp.metrics.credentials.scopes |  | 
+|spring.cloud.gcp.metrics.enabled | true | Auto-configure Google Cloud Monitoring for Micrometer.
+|spring.cloud.gcp.metrics.project-id |  | Overrides the GCP project ID specified in the Core module.
 |spring.cloud.gcp.project-id |  | GCP project ID where services are running.
 |spring.cloud.gcp.pubsub.credentials.encoded-key |  | 
 |spring.cloud.gcp.pubsub.credentials.location |  | 
@@ -85,6 +90,7 @@
 |spring.cloud.gcp.secretmanager.credentials.scopes |  | 
 |spring.cloud.gcp.secretmanager.enabled | true | Auto-configure GCP Secret Manager support components.
 |spring.cloud.gcp.secretmanager.project-id |  | Overrides the GCP Project ID specified in the Core module.
+|spring.cloud.gcp.security.firebase.project-id |  | Overrides the GCP project ID specified in the Core module.
 |spring.cloud.gcp.security.firebase.public-keys-endpoint | https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com | Link to Google's public endpoint containing Firebase public keys.
 |spring.cloud.gcp.security.iap.algorithm | ES256 | Encryption algorithm used to sign the JWK token.
 |spring.cloud.gcp.security.iap.audience |  | Non-dynamic audience string to validate.
