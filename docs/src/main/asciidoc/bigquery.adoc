@@ -13,7 +13,7 @@ Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-bigquery-starter</artifactId>
+    <artifactId>spring-cloud-gcp-starter-bigquery</artifactId>
 </dependency>
 ----
 
@@ -22,7 +22,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-bigquery-starter'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-bigquery'
 }
 ----
 
