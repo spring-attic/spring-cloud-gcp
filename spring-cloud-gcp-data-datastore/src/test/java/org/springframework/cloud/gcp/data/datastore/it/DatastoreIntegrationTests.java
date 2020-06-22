@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreException;
@@ -923,6 +924,21 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 			throw e;
 		}
 	}
+
+	@Test(timeout = 10000L)
+	public void testUnindex() {
+		SubEntity childSubEntity = new SubEntity();
+		childSubEntity.stringList = Collections.singletonList(generateString(1600));
+		childSubEntity.stringProperty = generateString(1600);
+		SubEntity parentSubEntity = new SubEntity();
+		parentSubEntity.embeddedSubEntities = Collections.singletonList(childSubEntity);
+		this.datastoreTemplate.save(parentSubEntity);
+	}
+
+	private String generateString(int length) {
+		return IntStream.range(0, length).mapToObj(String::valueOf)
+						.collect(Collectors.joining(","));
+	}
 }
 
 /**
@@ -971,6 +987,9 @@ class SubEntity {
 	List<String> stringList;
 
 	String stringProperty;
+
+	@Unindexed
+	List<SubEntity> embeddedSubEntities;
 }
 
 class PetOwner {

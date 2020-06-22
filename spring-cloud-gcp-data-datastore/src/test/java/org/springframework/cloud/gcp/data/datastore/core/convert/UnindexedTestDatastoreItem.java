@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
  */
+@Entity
 public class UnindexedTestDatastoreItem {
 	private long indexedField;
 
@@ -38,6 +40,17 @@ public class UnindexedTestDatastoreItem {
 
 	@Unindexed
 	private Map<String, String> unindexedMapField;
+
+	@Unindexed
+	UnindexedTestDatastoreItem embeddedItem;
+
+	@Unindexed
+	List<UnindexedTestDatastoreItem> unindexedItems;
+
+	public UnindexedTestDatastoreItem(long indexedField, UnindexedTestDatastoreItem embeddedItem) {
+		this.indexedField = indexedField;
+		this.embeddedItem = embeddedItem;
+	}
 
 	public UnindexedTestDatastoreItem() {
 	}
@@ -72,5 +85,21 @@ public class UnindexedTestDatastoreItem {
 
 	public void setUnindexedMapField(Map<String, String> unindexedMapField) {
 		this.unindexedMapField = unindexedMapField;
+	}
+
+	public UnindexedTestDatastoreItem getEmbeddedItem() {
+		return embeddedItem;
+	}
+
+	public void setEmbeddedItem(UnindexedTestDatastoreItem embeddedItem) {
+		this.embeddedItem = embeddedItem;
+	}
+
+	public List<UnindexedTestDatastoreItem> getUnindexedItems() {
+		return unindexedItems;
+	}
+
+	public void setUnindexedItems(List<UnindexedTestDatastoreItem> unindexedItems) {
+		this.unindexedItems = unindexedItems;
 	}
 }
