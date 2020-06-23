@@ -284,6 +284,62 @@ public class SqlSpannerQueryTests {
 
 
 	@Test
+	public void sortAndPageableQueryTest() throws NoSuchMethodException {
+
+		String sql = "SELECT * FROM :org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Child:"
+						+ " WHERE id = @id AND trader_id = @trader_id";
+		// @formatter:off
+		String entityResolvedSql = "SELECT *, " +
+						"ARRAY (SELECT AS STRUCT canceled, documentId, id, childId, content " +
+						"FROM documents WHERE (documents.id = children.id AND documents.childId = children.childId) " +
+						"AND (canceled = false)) AS documents " +
+						"FROM (SELECT * FROM children WHERE id = @id AND trader_id = @trader_id) children " +
+						"WHERE disabled = false ORDER BY trader_id ASC LIMIT 2 OFFSET 2";
+		// @formatter:on
+
+		Object[] params = new Object[] { "ID", "TRADER_ID", Sort.by(Order.asc("trader_id")), PageRequest.of(1, 2)};
+		String[] paramNames = new String[] { "id", "trader_id", "ignoredSort", "pageable" };
+
+		when(queryMethod.isCollectionQuery()).thenReturn(false);
+		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Child.class);
+
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		for (int i = 0; i < params.length; i++) {
+			evaluationContext.setVariable(paramNames[i], params[i]);
+		}
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+						.thenReturn(evaluationContext);
+
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Child.class, false);
+
+		doAnswer((invocation) -> {
+			Statement statement = invocation.getArgument(0);
+			SpannerQueryOptions queryOptions = invocation.getArgument(1);
+			assertThat(queryOptions.isAllowPartialRead()).isTrue();
+
+			assertThat(statement.getSql()).isEqualTo(entityResolvedSql);
+
+			Map<String, Value> paramMap = statement.getParameters();
+
+			assertThat(paramMap.get("id").getString()).isEqualTo(params[0]);
+			assertThat(paramMap.get("trader_id").getString()).isEqualTo(params[1]);
+			assertThat(paramMap.get("ignoredSort")).isNull();
+			assertThat(paramMap.get("pageable")).isNull();
+
+			return null;
+		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+
+		Method method = QueryHolder.class.getMethod("sortAndPageable", String.class, String.class, Sort.class, Pageable.class);
+		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
+
+		sqlSpannerQuery.execute(params);
+
+		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
+	}
+
+	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
 
 		String sql = "SELECT DISTINCT * FROM "
@@ -555,6 +611,10 @@ public class SqlSpannerQueryTests {
 
 		public void noParamMethod() {
 
+		}
+
+		public List<Child> sortAndPageable(String id, String trader_id, Sort sort, Pageable pageable) {
+			return null;
 		}
 	}
 }
