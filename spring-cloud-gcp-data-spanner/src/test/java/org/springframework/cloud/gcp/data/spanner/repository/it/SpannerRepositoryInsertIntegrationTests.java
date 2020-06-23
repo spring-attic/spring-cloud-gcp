@@ -70,7 +70,7 @@ public class SpannerRepositoryInsertIntegrationTests {
 		this.singerRepository.deleteAll();
 	}
 
-		@Test
+	@Test
 	public void insertTest() {
 		singerRepository.insert(1, "Cher", null);
 		Iterable<Singer> singers = singerRepository.findAll();
