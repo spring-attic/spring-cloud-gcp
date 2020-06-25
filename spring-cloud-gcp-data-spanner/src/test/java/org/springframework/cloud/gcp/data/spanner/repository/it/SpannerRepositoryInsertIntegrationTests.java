@@ -20,6 +20,7 @@ import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,6 +35,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Integration tests for Spanner Repository.
@@ -54,6 +56,14 @@ public class SpannerRepositoryInsertIntegrationTests {
 
 	@Autowired
 	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(System.getProperty("it.spanner"))
+						.as("Spanner integration tests are disabled. "
+										+ "Please use '-Dit.spanner=true' to enable them. ")
+						.isEqualTo("true");
+	}
 
 	@Before
 	public void setUp() {
