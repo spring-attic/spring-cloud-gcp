@@ -72,43 +72,6 @@ public final class PubSubReactiveFactory {
 	 * batches of up to the requested number of messages until the full demand is fulfilled
 	 * or subscription terminated.
 	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval,
-	 * requesting up to {@code maxMessages} messages at each poll.
-	 * <p>For specific demand, as many messages as are available will be returned immediately,
-	 * with remaining demand being fulfilled in the future.
-	 * Pub/Sub timeout will cause a retry with the same demand.
-	 * <p>Any exceptions that are thrown by the Pub/Sub client will be passed as an error to the stream.
-	 * The error handling operators, like {@link Flux#retry()},
-	 * can be used to recover and continue streaming messages.
-	 * @param subscriptionName subscription from which to retrieve messages.
-	 * @param pollingPeriodMs how frequently to poll the source subscription in case of
-	 * unlimited demand, in milliseconds.
-	 * @param maxMessages max number of messages that may be pulled from the source
-	 * subscription in case of unlimited demand.
-	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
-	 * @throws IllegalArgumentException if {@code maxMessages < 0}
-	 */
-	public Flux<AcknowledgeablePubsubMessage> poll(String subscriptionName, long pollingPeriodMs, int maxMessages) {
-		if (maxMessages < 0) {
-			throw new IllegalArgumentException("maxMessages cannot be less than 0");
-		}
-		return Flux.create(sink -> {
-			sink.onRequest((numRequested) -> {
-				if (numRequested == Long.MAX_VALUE) {
-					pollingPull(subscriptionName, pollingPeriodMs, maxMessages, sink);
-				}
-				else {
-					backpressurePull(subscriptionName, numRequested, sink);
-				}
-			});
-		});
-	}
-
-	/**
-	 * Create an infinite stream {@link Flux} of {@link AcknowledgeablePubsubMessage} objects.
-	 * <p>The {@link Flux} respects backpressure by using of Pub/Sub Synchronous Pull to retrieve
-	 * batches of up to the requested number of messages until the full demand is fulfilled
-	 * or subscription terminated.
-	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval,
 	 * requesting up to {@code Integer.MAX_VALUE} messages at each poll.
 	 * <p>For specific demand, as many messages as are available will be returned immediately,
 	 * with remaining demand being fulfilled in the future.
@@ -117,27 +80,36 @@ public final class PubSubReactiveFactory {
 	 * The error handling operators, like {@link Flux#retry()},
 	 * can be used to recover and continue streaming messages.
 	 * @param subscriptionName subscription from which to retrieve messages.
-	 * @param pollingPeriodMs how frequently to poll the source subscription in case of
-	 * unlimited demand, in milliseconds.
+	 * @param pollingPeriodMs how frequently to poll the source subscription in case of unlimited demand, in milliseconds.
 	 * @return infinite stream of {@link AcknowledgeablePubsubMessage} objects.
 	 */
 	public Flux<AcknowledgeablePubsubMessage> poll(String subscriptionName, long pollingPeriodMs) {
-		return poll(subscriptionName, pollingPeriodMs, Integer.MAX_VALUE);
+
+		return Flux.create(sink -> {
+			sink.onRequest((numRequested) -> {
+				if (numRequested == Long.MAX_VALUE) {
+					pollingPull(subscriptionName, pollingPeriodMs, sink);
+				}
+				else {
+					backpressurePull(subscriptionName, numRequested, sink);
+				}
+			});
+		});
 	}
 
 	private void pollingPull(String subscriptionName, long pollingPeriodMs,
-			int maxMessages, FluxSink<AcknowledgeablePubsubMessage> sink) {
+			FluxSink<AcknowledgeablePubsubMessage> sink) {
 		Disposable disposable = Flux
 				.interval(Duration.ZERO, Duration.ofMillis(pollingPeriodMs), scheduler)
-				.flatMap(ignore -> pullAll(subscriptionName, maxMessages))
+				.flatMap(ignore -> pullAll(subscriptionName))
 				.subscribe(sink::next, sink::error);
 
 		sink.onDispose(disposable);
 	}
 
-	private Flux<AcknowledgeablePubsubMessage> pullAll(String subscriptionName, int maxMessages) {
+	private Flux<AcknowledgeablePubsubMessage> pullAll(String subscriptionName) {
 		CompletableFuture<List<AcknowledgeablePubsubMessage>> pullResponseFuture = this.subscriberOperations
-				.pullAsync(subscriptionName, maxMessages, true).completable();
+				.pullAsync(subscriptionName, Integer.MAX_VALUE, true).completable();
 
 		return Mono.fromFuture(pullResponseFuture).flatMapMany(Flux::fromIterable);
 	}
