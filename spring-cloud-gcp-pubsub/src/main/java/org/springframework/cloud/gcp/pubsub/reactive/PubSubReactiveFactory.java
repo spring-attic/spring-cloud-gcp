@@ -54,16 +54,35 @@ public final class PubSubReactiveFactory {
 
 	private final Scheduler scheduler;
 
+	private final int maxMessages;
+
 	/**
 	 * Instantiate `PubSubReactiveFactory` capable of generating subscription-based streams.
+	 * <p>{@code maxMessages} is set to {@code Integer.MAX_VALUE}.</p>
 	 * @param subscriberOperations template for interacting with GCP Pub/Sub subscriber operations.
 	 * @param scheduler scheduler to use for asynchronously retrieving Pub/Sub messages.
 	 */
 	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations, Scheduler scheduler) {
+		this(subscriberOperations, scheduler, Integer.MAX_VALUE);
+	}
+
+	/**
+	 * Instantiate `PubSubReactiveFactory` capable of generating subscription-based streams.
+	 * @param subscriberOperations template for interacting with GCP Pub/Sub subscriber operations.
+	 * @param scheduler scheduler to use for asynchronously retrieving Pub/Sub messages.
+	 * @param maxMessages max number of messages that may be pulled from the source
+	 * subscription in case of unlimited demand.
+	 */
+	public PubSubReactiveFactory(PubSubSubscriberOperations subscriberOperations,
+			Scheduler scheduler, int maxMessages) {
 		Assert.notNull(subscriberOperations, "subscriberOperations cannot be null.");
 		Assert.notNull(scheduler, "scheduler cannot be null.");
+		if (maxMessages < 1) {
+			throw new IllegalArgumentException("maxMessages cannot be less than 1.");
+		}
 		this.subscriberOperations = subscriberOperations;
 		this.scheduler = scheduler;
+		this.maxMessages = maxMessages;
 	}
 
 	/**
@@ -72,7 +91,7 @@ public final class PubSubReactiveFactory {
 	 * batches of up to the requested number of messages until the full demand is fulfilled
 	 * or subscription terminated.
 	 * <p>For unlimited demand, the underlying subscription will be polled at a regular interval,
-	 * requesting up to {@code Integer.MAX_VALUE} messages at each poll.
+	 * requesting up to {@code maxMessages} messages at each poll.
 	 * <p>For specific demand, as many messages as are available will be returned immediately,
 	 * with remaining demand being fulfilled in the future.
 	 * Pub/Sub timeout will cause a retry with the same demand.
@@ -109,7 +128,7 @@ public final class PubSubReactiveFactory {
 
 	private Flux<AcknowledgeablePubsubMessage> pullAll(String subscriptionName) {
 		CompletableFuture<List<AcknowledgeablePubsubMessage>> pullResponseFuture = this.subscriberOperations
-				.pullAsync(subscriptionName, Integer.MAX_VALUE, true).completable();
+				.pullAsync(subscriptionName, maxMessages, true).completable();
 
 		return Mono.fromFuture(pullResponseFuture).flatMapMany(Flux::fromIterable);
 	}
