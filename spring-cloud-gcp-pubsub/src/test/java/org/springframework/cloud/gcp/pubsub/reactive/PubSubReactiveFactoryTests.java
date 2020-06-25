@@ -167,7 +167,7 @@ public class PubSubReactiveFactoryTests {
 	@Test
 	public void testUnlimitedDemandWithMaxMessages() throws InterruptedException {
 		setUpMessages("msg1", "msg2", "stop", "msg3", "stop", "msg4", "msg5", "msg6", "stop");
-		
+
 		PubSubReactiveFactory factory = new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet(), 2);
 
 		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString))
