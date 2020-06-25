@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Statement;
@@ -44,7 +43,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConve
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Where;
@@ -52,8 +50,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.query.DefaultParameters;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
@@ -62,7 +60,6 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -142,17 +139,9 @@ public class SqlSpannerQueryTests {
 				"FROM (SELECT DISTINCT * FROM trades) trades";
 		// @formatter:on
 
-		Parameters parameters = mock(Parameters.class);
-
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
 		final Class toReturn = Trade.class;
 		when(queryMethod.isCollectionQuery()).thenReturn(false);
 		when(queryMethod.getReturnedObjectType()).thenReturn(toReturn);
-
-		when(parameters.getNumberOfParameters()).thenReturn(0);
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
@@ -174,6 +163,7 @@ public class SqlSpannerQueryTests {
 		// provided.
 		Method method = QueryHolder.class.getMethod("dummyMethod2");
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
 
 		sqlSpannerQuery.execute(new Object[] {});
 
@@ -197,25 +187,8 @@ public class SqlSpannerQueryTests {
 		Object[] params = new Object[] { "ID", "TRADER_ID", PageRequest.of(3, 10, Sort.by(Order.asc("trader_id")))};
 		String[] paramNames = new String[] { "id", "trader_id", "ignoredPageable" };
 
-		Parameters parameters = mock(Parameters.class);
-
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
 		when(queryMethod.isCollectionQuery()).thenReturn(false);
 		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Child.class);
-
-		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
-			int index = invocation.getArgument(0);
-			Parameter param = mock(Parameter.class);
-			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
-
-			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
-
-			return param;
-		});
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < params.length; i++) {
@@ -246,6 +219,7 @@ public class SqlSpannerQueryTests {
 		// provided.
 		Method method = QueryHolder.class.getMethod("dummyMethod4", String.class, String.class, Pageable.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
 
 		sqlSpannerQuery.execute(params);
 
@@ -269,25 +243,8 @@ public class SqlSpannerQueryTests {
 		Object[] params = new Object[] { "ID", "TRADER_ID", Sort.by(Order.asc("trader_id"))};
 		String[] paramNames = new String[] { "id", "trader_id", "ignoredSort" };
 
-		Parameters parameters = mock(Parameters.class);
-
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
 		when(queryMethod.isCollectionQuery()).thenReturn(false);
 		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Child.class);
-
-		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
-			int index = invocation.getArgument(0);
-			Parameter param = mock(Parameter.class);
-			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
-
-			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
-
-			return param;
-		});
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < params.length; i++) {
@@ -318,12 +275,69 @@ public class SqlSpannerQueryTests {
 		// provided.
 		Method method = QueryHolder.class.getMethod("dummyMethod5", String.class, String.class, Sort.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
 
 		sqlSpannerQuery.execute(params);
 
 		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
 	}
 
+
+	@Test
+	public void sortAndPageableQueryTest() throws NoSuchMethodException {
+
+		String sql = "SELECT * FROM :org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Child:"
+						+ " WHERE id = @id AND trader_id = @trader_id";
+		// @formatter:off
+		String entityResolvedSql = "SELECT *, " +
+						"ARRAY (SELECT AS STRUCT canceled, documentId, id, childId, content " +
+						"FROM documents WHERE (documents.id = children.id AND documents.childId = children.childId) " +
+						"AND (canceled = false)) AS documents " +
+						"FROM (SELECT * FROM children WHERE id = @id AND trader_id = @trader_id) children " +
+						"WHERE disabled = false ORDER BY trader_id ASC LIMIT 2 OFFSET 2";
+		// @formatter:on
+
+		Object[] params = new Object[] { "ID", "TRADER_ID", Sort.by(Order.asc("trader_id")), PageRequest.of(1, 2)};
+		String[] paramNames = new String[] { "id", "trader_id", "ignoredSort", "pageable" };
+
+		when(queryMethod.isCollectionQuery()).thenReturn(false);
+		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Child.class);
+
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		for (int i = 0; i < params.length; i++) {
+			evaluationContext.setVariable(paramNames[i], params[i]);
+		}
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+						.thenReturn(evaluationContext);
+
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Child.class, false);
+
+		doAnswer((invocation) -> {
+			Statement statement = invocation.getArgument(0);
+			SpannerQueryOptions queryOptions = invocation.getArgument(1);
+			assertThat(queryOptions.isAllowPartialRead()).isTrue();
+
+			assertThat(statement.getSql()).isEqualTo(entityResolvedSql);
+
+			Map<String, Value> paramMap = statement.getParameters();
+
+			assertThat(paramMap.get("id").getString()).isEqualTo(params[0]);
+			assertThat(paramMap.get("trader_id").getString()).isEqualTo(params[1]);
+			assertThat(paramMap.get("ignoredSort")).isNull();
+			assertThat(paramMap.get("pageable")).isNull();
+
+			return null;
+		}).when(this.spannerTemplate).executeQuery(any(), any());
+
+
+		Method method = QueryHolder.class.getMethod("sortAndPageable", String.class, String.class, Sort.class, Pageable.class);
+		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
+
+		sqlSpannerQuery.execute(params);
+
+		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
+	}
 
 	@Test
 	public void compoundNameConventionTest() throws NoSuchMethodException {
@@ -365,27 +379,8 @@ public class SqlSpannerQueryTests {
 				"tag3", "tag4",
 				"tag5", "tag6", "tag7", "tag8", "tag9", "tag10" };
 
-		Parameters parameters = mock(Parameters.class);
-
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
 		when(queryMethod.isCollectionQuery()).thenReturn(false);
 		when(queryMethod.getReturnedObjectType()).thenReturn((Class) Trade.class);
-
-		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
-			int index = invocation.getArgument(0);
-			Parameter param = mock(Parameter.class);
-			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
-
-			// @formatter:off
-			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
-			// @formatter:on;
-
-			return param;
-		});
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < params.length; i++) {
@@ -426,72 +421,18 @@ public class SqlSpannerQueryTests {
 
 		// This dummy method was created so the metadata for the ARRAY param inner type is
 		// provided.
-		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Object.class, Object.class,
+		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Pageable.class, Object.class,
 				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
 				Object.class, List.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
-
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
 		sqlSpannerQuery.execute(params);
 
 		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
 	}
 
 	@Test
-	public void multiplePageableSortTest() {
-		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
-		String sql = "SELECT * FROM table;";
-
-		Parameters parameters = mock(Parameters.class);
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
-		when(parameters.getNumberOfParameters()).thenReturn(0);
-
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Trade.class, false);
-
-		sqlSpannerQuery.execute(new Object[] { this.pageable, this.sort });
-	}
-
-	@Test
-	public void mutliplePageableTest() {
-		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
-		String sql = "SELECT * FROM table;";
-
-		Parameters parameters = mock(Parameters.class);
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
-		when(parameters.getNumberOfParameters()).thenReturn(0);
-
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Trade.class, false);
-
-		sqlSpannerQuery.execute(new Object[] { this.pageable, this.pageable });
-	}
-
-	@Test
-	public void mutlipleSortTest() {
-		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
-		String sql = "SELECT * FROM table;";
-
-		Parameters parameters = mock(Parameters.class);
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
-		when(parameters.getNumberOfParameters()).thenReturn(0);
-
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Trade.class, false);
-
-		sqlSpannerQuery.execute(new Object[] { this.sort, this.sort });
-	}
-
-	@Test
-	public void dmlTest() {
+	public void dmlTest() throws NoSuchMethodException {
 		String sql = "dml statement here";
 
 		TransactionContext context = mock(TransactionContext.class);
@@ -503,12 +444,11 @@ public class SqlSpannerQueryTests {
 			return transactionCallable.run(context);
 		});
 
-		Parameters parameters = mock(Parameters.class);
-		// @formatter:off
+		Method method = QueryHolder.class.getMethod("noParamMethod");
+
 		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
-		when(parameters.getNumberOfParameters()).thenReturn(0);
+				.thenReturn(new DefaultParameters(method));
+
 
 		SqlSpannerQuery sqlSpannerQuery = spy(createQuery(sql, Trade.class, true));
 
@@ -532,27 +472,8 @@ public class SqlSpannerQueryTests {
 		Object[] params = new Object[] { "ID", "TRADER_ID" };
 		String[] paramNames = new String[] { "id", "trader_id" };
 
-		Parameters parameters = mock(Parameters.class);
-
-		// @formatter:off
-		Mockito.<Parameters>when(this.queryMethod.getParameters())
-				.thenReturn(parameters);
-		// @formatter:on
 		when(queryMethod.isCollectionQuery()).thenReturn(false);
 		when(queryMethod.getReturnedObjectType()).thenReturn((Class) long.class);
-
-		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
-			int index = invocation.getArgument(0);
-			Parameter param = mock(Parameter.class);
-			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
-
-			// @formatter:off
-			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
-			// @formatter:on;
-
-			return param;
-		});
 
 		EvaluationContext evaluationContext = new StandardEvaluationContext();
 		for (int i = 0; i < params.length; i++) {
@@ -582,6 +503,7 @@ public class SqlSpannerQueryTests {
 		// provided.
 		Method method = QueryHolder.class.getMethod("dummyMethod3", String.class, String.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(new DefaultParameters(method));
 
 		sqlSpannerQuery.execute(params);
 
@@ -656,8 +578,8 @@ public class SqlSpannerQueryTests {
 	}
 
 	private static class QueryHolder {
-		public long dummyMethod(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
-				Object tag6, Object tag7, Object tag8, Object tag9, Object tag11,
+		public long dummyMethod(Object tag0, Pageable pageable, Object tag1, Object tag2, Object tag3, Object tag4,
+				Object tag5, Object tag6, Object tag7, Object tag8, Object tag9,
 				@Param("tag10") List<String> blahblah) {
 			// tag10 is intentionally named via annotation.
 			return 0;
@@ -667,17 +589,32 @@ public class SqlSpannerQueryTests {
 			return 0;
 		}
 
-		public long dummyMethod3(String param1, String param2) {
+		public long dummyMethod3(String id, String trader_id) {
 			return 0;
 		}
 
-		public List<Child> dummyMethod4(String param1, String param2, Pageable param3) {
+		public List<Child> dummyMethod4(String id, String trader_id, Pageable param3) {
 			return null;
 		}
 
-		public List<Child> dummyMethod5(String param1, String param2, Sort param3) {
+		public List<Child> dummyMethod5(String id, String trader_id, Sort param3) {
 			return null;
 		}
 
+		public List<Child> pageableAndSort(Pageable param1, Sort param2) {
+			return null;
+		}
+
+		public List<Child> doublePageable(Pageable param1, Pageable param2) {
+			return null;
+		}
+
+		public void noParamMethod() {
+
+		}
+
+		public List<Child> sortAndPageable(String id, String trader_id, Sort sort, Pageable pageable) {
+			return null;
+		}
 	}
 }
