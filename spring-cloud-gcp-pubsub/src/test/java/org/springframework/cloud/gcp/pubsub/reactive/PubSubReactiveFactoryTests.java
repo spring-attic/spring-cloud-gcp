@@ -41,6 +41,7 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.scheduling.annotation.AsyncResult;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -67,6 +68,13 @@ public class PubSubReactiveFactoryTests {
 	@Before
 	public void setUp() {
 		factory = new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet());
+	}
+
+	@Test
+	public void testIllegalArgumentExceptionWithMaxMessagesLessThanOne() {
+		assertThatThrownBy(() -> new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet(), 0))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("maxMessages cannot be less than 1.");
 	}
 
 	@Test
@@ -153,6 +161,29 @@ public class PubSubReactiveFactoryTests {
 
 		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
 		methodOrder.verify(this.subscriberOperations, times(3)).pullAsync("sub1", Integer.MAX_VALUE, true);
+		methodOrder.verifyNoMoreInteractions();
+	}
+
+	@Test
+	public void testUnlimitedDemandWithMaxMessages() throws InterruptedException {
+		setUpMessages("msg1", "msg2", "stop", "msg3", "stop", "msg4", "msg5", "msg6", "stop");
+
+		PubSubReactiveFactory factory = new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet(), 2);
+
+		StepVerifier.withVirtualTime(() -> factory.poll("sub1", 10).map(this::messageToString))
+				.expectSubscription()
+				.expectNext("msg1", "msg2")
+				.expectNoEvent(Duration.ofMillis(20))
+				.expectNext("msg3")
+				.expectNoEvent(Duration.ofMillis(10))
+				.expectNext("msg4", "msg5")
+				.expectNoEvent(Duration.ofMillis(10))
+				.expectNext("msg6")
+				.thenCancel()
+				.verify();
+
+		InOrder methodOrder = Mockito.inOrder(this.subscriberOperations);
+		methodOrder.verify(this.subscriberOperations, times(5)).pullAsync("sub1", 2, true);
 		methodOrder.verifyNoMoreInteractions();
 	}
 
