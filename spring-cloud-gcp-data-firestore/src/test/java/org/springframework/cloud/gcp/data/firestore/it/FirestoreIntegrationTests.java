@@ -29,7 +29,9 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
+import org.springframework.cloud.gcp.data.firestore.FirestoreReactiveOperations;
 import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
+import org.springframework.cloud.gcp.data.firestore.entities.PhoneNumber;
 import org.springframework.cloud.gcp.data.firestore.entities.User;
 import org.springframework.cloud.gcp.data.firestore.transaction.ReactiveFirestoreTransactionManager;
 import org.springframework.test.context.ContextConfiguration;
@@ -162,6 +164,16 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
 		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
+
+		//tag::subcollection[]
+		FirestoreReactiveOperations bobTemplate = this.firestoreTemplate.withParent(new User("Bob", 60));
+
+		PhoneNumber phoneNumber = new PhoneNumber("111-222-333");
+		bobTemplate.save(phoneNumber).block();
+		assertThat(bobTemplate.findAll(PhoneNumber.class).collectList().block()).containsExactly(phoneNumber);
+		bobTemplate.deleteAll(PhoneNumber.class).block();
+		assertThat(bobTemplate.findAll(PhoneNumber.class).collectList().block()).isEmpty();
+		//end::subcollection[]
 	}
 
 

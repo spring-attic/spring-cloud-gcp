@@ -255,6 +255,29 @@ Now when you call the methods annotated with `@Transactional` on your service ob
 If an error occurs during the execution of a method annotated with `@Transactional`, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
+==== Subcollections
+A subcollection is a collection associated with a specific entity.
+Documents in subcollections can contain subcollections as well, allowing you to further nest data. You can nest data up to 100 levels deep.
+
+WARNING: Deleting a document does not delete its subcollections!
+
+To use subcollections you will need to create a `FirestoreReactiveOperations` object with a parent entity using `FirestoreReactiveOperations.withParent` call.
+You can use this object to save, query and remove entities associated with this parent.
+The parent doesn't have to exist in Firestore, but should have a non-empty id field.
+
+Autowire `FirestoreReactiveOperations`:
+[source,java,indent=0]
+----
+@Autowired
+FirestoreReactiveOperations firestoreTemplate;
+----
+
+Then you can use this object to create a `FirestoreReactiveOperations` object with a custom parent:
+[source,java,indent=0]
+----
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTests.java[tag=subcollection]
+
+----
 
 === Cloud Firestore Spring Boot Starter
 
