@@ -19,21 +19,21 @@ package com.example;
 import com.google.cloud.firestore.annotation.DocumentId;
 
 public class PhoneNumber {
-  @DocumentId
-  private String number;
+	@DocumentId
+	private String number;
 
-  public PhoneNumber() {
-  }
+	public PhoneNumber() {
+	}
 
-  public PhoneNumber(String number) {
-    this.number = number;
-  }
+	public PhoneNumber(String number) {
+		this.number = number;
+	}
 
-  public String getNumber() {
-    return number;
-  }
+	public String getNumber() {
+		return number;
+	}
 
-  public void setNumber(String number) {
-    this.number = number;
-  }
+	public void setNumber(String number) {
+		this.number = number;
+	}
 }
