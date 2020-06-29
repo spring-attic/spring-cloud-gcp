@@ -256,12 +256,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
+		Iterable nextResult = this.datastoreOperations.query(queryNext, x -> x);
 
 		List<Object> result =
-				(List<Object>) StreamSupport.stream(this.datastoreOperations.query(queryNext, x -> x).spliterator(), false).collect(Collectors.toList());
+						StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
 
 		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, pageable, !result.isEmpty()));
+				new SliceImpl(result, pageable, nextResult.iterator().hasNext()));
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {
