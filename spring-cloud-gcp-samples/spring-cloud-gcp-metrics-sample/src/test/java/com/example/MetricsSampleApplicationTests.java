@@ -74,7 +74,7 @@ public class MetricsSampleApplicationTests {
 
 	@Test
 	public void testMetricRecordedInStackdriver() {
-		String url = String.format("http://localhost:%s/log", this.port);
+		String url = String.format("http://localhost:%s/", this.port);
 		String projectId = this.projectIdProvider.getProjectId();
 		String metricType = "custom.googleapis.com/ping";
 		String metricName = "projects/" + projectId + "/metricDescriptors/" + metricType;
