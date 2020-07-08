@@ -753,8 +753,8 @@ List<Trader> traders = this.datastoreTemplate.findAllById(Arrays.asList("trader1
 List<Trader> allTraders = this.datastoreTemplate.findAll(Trader.class);
 ----
 
-Cloud Datastore executes key-based reads with strong consistency, but queries with eventual consistency.
-In the example above the first two reads utilize keys, while the third is executed using a query based on the corresponding Kind of `Trader`.
+Cloud Datastore uses key-based reads with strong consistency, but queries with eventual consistency.
+In the example above the first two reads utilize keys, while the third is run by using a query based on the corresponding Kind of `Trader`.
 
 
 ===== Indexes
@@ -967,7 +967,7 @@ Because of Cloud Datastore's requirement that explicitly selected fields must al
 
 Delete queries are also supported.
 For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
-Delete queries are executed as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
+Delete queries are run as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
 As a result, `removeBy` and `deleteBy` name-convention query methods cannot be used inside transactions via either `performInTransaction` or `@Transactional` annotation.
 
 Delete queries can have the following return types:
@@ -982,8 +982,8 @@ See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/
 For returning multiple items in a repository method, we support Java collections as well as `org.springframework.data.domain.Page` and `org.springframework.data.domain.Slice`.
 If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page, total number of results and total number of pages.
 
-NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
-Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
+NOTE: Methods that return `Page` run an additional query to compute total number of pages.
+Methods that return `Slice`, on the other hand, do not run any additional queries and, therefore, are much more efficient.
 
 ==== Empty result handling in repository methods
 Java `java.util.Optional` can be used to indicate the potential absence of a return value.
@@ -1248,12 +1248,12 @@ Spring Data Cloud Datastore publishes events extending the Spring Framework's `A
 [options="header"]
 |===
 | Type | Description | Contents
-| `AfterFindByKeyEvent`|Published immediately after read by-key operations are executed by `DatastoreTemplate`| The entities read from Cloud Datastore and the original keys in the request.
-| `AfterQueryEvent`|Published immediately after read byquery operations are executed by `DatastoreTemplate`| The entities read from Cloud Datastore and the original query in the request.
-| `BeforeSaveEvent`|Published immediately before save operations are executed by `DatastoreTemplate`| The entities to be sent to Cloud Datastore and the original Java objects being saved.
-| `AfterSaveEvent`|Published immediately after save operations are executed by `DatastoreTemplate`| The entities sent to Cloud Datastore  and the original Java objects being saved.
-| `BeforeDeleteEvent`|Published immediately before delete operations are executed by `DatastoreTemplate`| The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
-| `AfterDeleteEvent`|Published immediately after delete operations are executed by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
+| `AfterFindByKeyEvent`|Published immediately after read by-key operations are run by `DatastoreTemplate`| The entities read from Cloud Datastore and the original keys in the request.
+| `AfterQueryEvent`|Published immediately after read byquery operations are run by `DatastoreTemplate`| The entities read from Cloud Datastore and the original query in the request.
+| `BeforeSaveEvent`|Published immediately before save operations are run by `DatastoreTemplate`| The entities to be sent to Cloud Datastore and the original Java objects being saved.
+| `AfterSaveEvent`|Published immediately after save operations are run by `DatastoreTemplate`| The entities sent to Cloud Datastore  and the original Java objects being saved.
+| `BeforeDeleteEvent`|Published immediately before delete operations are run by `DatastoreTemplate`| The keys to be sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
+| `AfterDeleteEvent`|Published immediately after delete operations are run by `DatastoreTemplate`| The keys sent to Cloud Datastore. The target entities, ID values, or entity type originally specified for the delete operation.
 |===
 
 === Auditing
