@@ -114,11 +114,11 @@ This annotation is optional, by default the collection name is derived from the 
 NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
 
 ==== Embedded entities and lists
-Spring Data Cloud Firestore supports embedded properties of custom types and lists. 
+Spring Data Cloud Firestore supports embedded properties of custom types and lists.
 Given a custom POJO definition, you can have properties of this type or lists of this type in your entities.
 They are stored as embedded documents (or arrays, correspondingly) in the Cloud Firestore.
 
-Example: 
+Example:
 
 [source,java,indent=0]
 ----
@@ -204,7 +204,7 @@ Note that you can switch between read-only and read-write transactions using `Tr
 include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
 ----
 
-When you have an instance of  `TransactionalOperator`, you can execute a sequence of Firestore operations in a transaction using `operator::transactional`:
+When you have an instance of  `TransactionalOperator`, you can invoke a sequence of Firestore operations in a transaction by using `operator::transactional`:
 
 [source, java, indent=0]
 ----
@@ -214,8 +214,8 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 NOTE: Read operations in a transaction can only happen before write operations.
 All write operations are applied atomically.
 Read documents are locked until the transaction finishes with a commit or a rollback, which are handled by Spring Data.
-If an `Exception` is thrown within a transaction, the rollback operation is executed.
-Otherwise, the commit operation is executed.
+If an `Exception` is thrown within a transaction, the rollback operation is performed.
+Otherwise, the commit operation is performed.
 
 ==== Declarative Transactions with @Transactional Annotation
 
@@ -251,7 +251,7 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 }
 ----
 
-Now when you call the methods annotated with `@Transactional` on your service object, a transaction will be automatically started. 
+Now when you call the methods annotated with `@Transactional` on your service object, a transaction will be automatically started.
 If an error occurs during the execution of a method annotated with `@Transactional`, the transaction will be rolled back. 
 If no error occurs, the transaction will be committed.
 
