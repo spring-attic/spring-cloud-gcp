@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.MetricDescriptor;
@@ -45,7 +46,7 @@ import static org.junit.Assume.assumeThat;
  * @author Eddú Meléndez
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {Application.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = MetricsApplication.class)
 public class MetricsSampleApplicationTests {
 
 	@Autowired
@@ -74,17 +75,21 @@ public class MetricsSampleApplicationTests {
 
 	@Test
 	public void testMetricRecordedInStackdriver() {
-		String url = String.format("http://localhost:%s/", this.port);
 		String projectId = this.projectIdProvider.getProjectId();
-		String metricType = "custom.googleapis.com/ping";
-		String metricName = "projects/" + projectId + "/metricDescriptors/" + metricType;
-
-		ResponseEntity<String> responseEntity = this.testRestTemplate.getForEntity(url, String.class);
-		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
 		await().atMost(4, TimeUnit.MINUTES)
 				.pollInterval(5, TimeUnit.SECONDS)
+				.ignoreExceptionsMatching(e -> e.getMessage().contains("Could not find descriptor for metric"))
 				.untilAsserted(() -> {
+					String id = UUID.randomUUID().toString();
+					String url = String.format("http://localhost:%s/%s", this.port, id);
+
+					ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(url, null, String.class);
+					assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
+
+					String metricType = "custom.googleapis.com/" + id;
+					String metricName = "projects/" + projectId + "/metricDescriptors/" + metricType;
+
 					MetricDescriptor metricDescriptor = this.metricClient.getMetricDescriptor(metricName);
 					assertThat(metricDescriptor.getName()).isEqualTo(metricName);
 					assertThat(metricDescriptor.getType()).isEqualTo(metricType);
