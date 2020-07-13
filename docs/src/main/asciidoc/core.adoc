@@ -106,7 +106,7 @@ By default, the credentials provided by the Spring Cloud GCP Starter contain sco
 | Datastore | https://www.googleapis.com/auth/datastore
 | Pub/Sub | https://www.googleapis.com/auth/pubsub
 | Storage (Read Only) | https://www.googleapis.com/auth/devstorage.read_only
-| Storage (Write/Write) | https://www.googleapis.com/auth/devstorage.read_write
+| Storage (Read/Write) | https://www.googleapis.com/auth/devstorage.read_write
 | Runtime Config | https://www.googleapis.com/auth/cloudruntimeconfig
 | Trace (Append) | https://www.googleapis.com/auth/trace.append
 | Cloud Platform | https://www.googleapis.com/auth/cloud-platform
