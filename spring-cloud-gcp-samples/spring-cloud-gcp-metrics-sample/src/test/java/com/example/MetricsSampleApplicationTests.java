@@ -77,19 +77,19 @@ public class MetricsSampleApplicationTests {
 	public void testMetricRecordedInStackdriver() {
 		String projectId = this.projectIdProvider.getProjectId();
 
+		String id = "integration_test_" + UUID.randomUUID().toString().replace('-', '_');
+		String url = String.format("http://localhost:%s/%s", this.port, id);
+
+		ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(url, null, String.class);
+		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
+
+		String metricType = "custom.googleapis.com/" + id;
+		String metricName = "projects/" + projectId + "/metricDescriptors/" + metricType;
+
 		await().atMost(4, TimeUnit.MINUTES)
 				.pollInterval(5, TimeUnit.SECONDS)
 				.ignoreExceptionsMatching(e -> e.getMessage().contains("Could not find descriptor for metric"))
 				.untilAsserted(() -> {
-					String id = UUID.randomUUID().toString();
-					String url = String.format("http://localhost:%s/%s", this.port, id);
-
-					ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(url, null, String.class);
-					assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
-
-					String metricType = "custom.googleapis.com/" + id;
-					String metricName = "projects/" + projectId + "/metricDescriptors/" + metricType;
-
 					MetricDescriptor metricDescriptor = this.metricClient.getMetricDescriptor(metricName);
 					assertThat(metricDescriptor.getName()).isEqualTo(metricName);
 					assertThat(metricDescriptor.getType()).isEqualTo(metricType);
