@@ -58,6 +58,7 @@
 		<app-engine-maven-plugin.version>2.2.0</app-engine-maven-plugin.version>
 		<kotlin.version>1.3.31</kotlin.version>
 		<errorprone.version>2.3.4</errorprone.version>
+		<java-cfenv.version>2.1.1.RELEASE</java-cfenv.version>
 
 		<!-- Checkstyle version settings. Keep in sync with spring-cloud-gcp-samples/pom.xml -->
 		<spring-javaformat-checkstyle.version>0.0.21</spring-javaformat-checkstyle.version>
@@ -142,6 +143,17 @@
 				</exclusions>
 			</dependency>
 
+			<dependency>
+				<groupId>io.pivotal.cfenv</groupId>
+				<artifactId>java-cfenv</artifactId>
+				<version>${java-cfenv.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.pivotal.cfenv</groupId>
+				<artifactId>java-cfenv-test-support</artifactId>
+				<version>${java-cfenv.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
