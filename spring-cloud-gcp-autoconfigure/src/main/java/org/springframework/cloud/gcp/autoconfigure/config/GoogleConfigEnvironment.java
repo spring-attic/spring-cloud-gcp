@@ -40,7 +40,7 @@ class GoogleConfigEnvironment {
 	}
 
 	List<Variable> getVariables() {
-		if (variables == null){
+		if (variables == null) {
 			return Collections.emptyList();
 		}
 		return this.variables;

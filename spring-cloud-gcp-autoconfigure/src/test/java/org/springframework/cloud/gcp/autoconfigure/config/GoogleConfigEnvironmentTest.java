@@ -43,9 +43,9 @@ public class GoogleConfigEnvironmentTest {
 	}
 
 	@Test
-	public void testSetNullValue(){
+	public void testSetNullValue() {
 		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
 		googleConfigEnvironment.setVariables(null);
-		Assert.assertEquals(googleConfigEnvironment.getVariables().isEmpty(),true);
+		Assert.assertEquals(googleConfigEnvironment.getVariables().isEmpty(), true);
 	}
 }
