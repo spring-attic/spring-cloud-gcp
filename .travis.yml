@@ -38,7 +38,7 @@ before_install:
       openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
       tar -xzf travis.tar.gz;
       export INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
-          -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true -Dit.kotlin=true -Dit.vision=true -Dit.firestore=true -Dit.bigquery=true -Dit.secretmanager=true
+          -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true -Dit.kotlin=true -Dit.vision=true -Dit.firestore=true -Dit.bigquery=true -Dit.secretmanager=true -Dit.metrics=true
           -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
           -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
           -Dspring.datasource.password=test
