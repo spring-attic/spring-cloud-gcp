@@ -57,6 +57,7 @@
 		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
 		<module>spring-cloud-gcp-security-firebase-sample</module>
 		<module>spring-cloud-gcp-secretmanager-sample</module>
+		<module>spring-cloud-gcp-metrics-sample</module>
 	</modules>
 
 	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
