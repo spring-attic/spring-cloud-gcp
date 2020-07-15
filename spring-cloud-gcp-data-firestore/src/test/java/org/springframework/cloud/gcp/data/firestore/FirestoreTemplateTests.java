@@ -22,9 +22,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.firestore.v1.CreateDocumentRequest;
+import com.google.firestore.v1.Document.Builder;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
+import com.google.firestore.v1.Precondition.ConditionTypeCase;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
@@ -36,6 +39,7 @@ import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -49,6 +53,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * @author Dmitry Solomakha
@@ -79,7 +84,15 @@ public class FirestoreTemplateTests {
 						.build();
 
 		WriteRequest request = firestoreTemplate.buildWriteRequest(
-				Arrays.asList(new TestEntity("e1", 100L)), writeResponse);
+				Arrays.asList(new TestEntity("e1", 100L), new TestEntity(null, 10L)), writeResponse);
+
+		assertThat(request.getWrites(0).getCurrentDocument().getConditionTypeCase())
+						.isEqualTo(ConditionTypeCase.CONDITIONTYPE_NOT_SET);
+		assertThat(request.getWrites(1).getCurrentDocument().getConditionTypeCase())
+						.isEqualTo(ConditionTypeCase.EXISTS);
+		assertThat(request.getWrites(1).getCurrentDocument().getExists()).isFalse();
+		assertThat(request.getWrites(1).getUpdate().getName()).matches(".*/testEntities/[a-zA-Z0-9]{20}$");
+
 		assertThat(request.getStreamId()).isEmpty();
 		assertThat(request.getStreamToken().toStringUtf8()).isEmpty();
 
@@ -186,6 +199,31 @@ public class FirestoreTemplateTests {
 				.build();
 
 		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void saveGenerateIdTest() {
+		doAnswer(invocation -> {
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 10L));
+
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).createDocument(any(), any());
+		Hooks.onOperatorDebug();
+		StepVerifier.create(this.firestoreTemplate.saveAll(Mono.just(new TestEntity(null, 10L))))
+						.assertNext(testEntity -> assertThat(testEntity.getIdField()).isEqualTo("e1"))
+						.verifyComplete();
+
+		CreateDocumentRequest build = CreateDocumentRequest.newBuilder()
+						.setParent(this.parent)
+						.setCollectionId("testEntities")
+						.setDocument(buildDocument(null, 10L))
+						.build();
+
+		verify(this.firestoreStub, times(1))
+						.createDocument(eq(build), any());
+		verifyNoMoreInteractions(this.firestoreStub);
 	}
 
 	@Test
@@ -349,7 +387,11 @@ public class FirestoreTemplateTests {
 	}
 
 	public static com.google.firestore.v1.Document buildDocument(String name, long l) {
-		return com.google.firestore.v1.Document.newBuilder().setName(parent + "/testEntities/" + name)
+		Builder documentBuilder = com.google.firestore.v1.Document.newBuilder();
+		if (name != null) {
+			documentBuilder.setName(parent + "/testEntities/" + name);
+		}
+		return documentBuilder
 				.putAllFields(createValuesMap(name, l)).build();
 	}
 

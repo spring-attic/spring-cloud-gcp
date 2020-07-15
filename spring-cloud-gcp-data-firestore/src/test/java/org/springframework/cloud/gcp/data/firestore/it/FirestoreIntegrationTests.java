@@ -80,10 +80,23 @@ public class FirestoreIntegrationTests {
 	}
 
 	@Test
+	public void generateIdTest() {
+		User user = new User(null, 29);
+		User bob = new User("Bob", 60);
+
+		List<User> savedUsers = this.firestoreTemplate.saveAll(Flux.just(user, bob)).collectList().block();
+		assertThat(savedUsers).extracting("name").doesNotContainNull();
+
+		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(users).containsExactlyInAnyOrder(savedUsers.toArray(new User[0]));
+	}
+
+	@Test
 	public void transactionTest() {
 		User alice = new User("Alice", 29);
 		User bob = new User("Bob", 60);
 
+		User user = new User(null, 40);
 
 		DefaultTransactionDefinition transactionDefinition = new DefaultTransactionDefinition();
 		transactionDefinition.setReadOnly(false);
@@ -91,12 +104,14 @@ public class FirestoreIntegrationTests {
 
 		reset(this.txManager);
 
-		this.firestoreTemplate.save(alice).then(this.firestoreTemplate.save(bob))
+		this.firestoreTemplate.save(alice)
+						.then(this.firestoreTemplate.save(bob))
+						.then(this.firestoreTemplate.save(user))
 				.as(operator::transactional)
 				.block();
 
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block())
-				.containsExactlyInAnyOrder(bob, alice);
+				.containsExactlyInAnyOrder(bob, alice, user);
 
 		verify(this.txManager, times(1)).commit(any());
 		verify(this.txManager, times(0)).rollback(any());
@@ -117,7 +132,7 @@ public class FirestoreIntegrationTests {
 		verify(this.txManager, times(1)).rollback(any());
 		verify(this.txManager, times(1)).getReactiveTransaction(any());
 
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(3);
 
 		this.firestoreTemplate.findAll(User.class)
 				.flatMap(a -> {
@@ -126,8 +141,9 @@ public class FirestoreIntegrationTests {
 				})
 				.as(operator::transactional).collectList().block();
 
-		assertThat(this.firestoreTemplate.findAll(User.class).map(User::getAge).collectList().block())
-				.containsExactlyInAnyOrder(28, 59);
+		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(users).extracting("age").containsExactlyInAnyOrder(28, 59, 39);
+		assertThat(users).extracting("name").doesNotContainNull();
 
 		this.firestoreTemplate.deleteAll(User.class).as(operator::transactional).block();
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();

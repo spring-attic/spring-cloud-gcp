@@ -21,14 +21,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.google.cloud.firestore.Internal;
+import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
+import com.google.firestore.v1.Precondition;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Write;
+import com.google.firestore.v1.Write.Builder;
 import com.google.firestore.v1.WriteRequest;
 import com.google.firestore.v1.WriteResponse;
 import io.grpc.stub.StreamObserver;
@@ -104,7 +108,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> FirestoreReactiveOperations withParent(T parent) {
 		FirestoreTemplate firestoreTemplate =
-						new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
+						new FirestoreTemplate(this.firestore, buildResourceName(parent).getName(), this.classMapper, this.mappingContext);
 		firestoreTemplate.setUsingStreamTokens(this.usingStreamTokens);
 		firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
 		firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
@@ -189,6 +193,26 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return saveAll(Mono.just(entity)).next();
 	}
 
+	private <T> Flux<T> create(Publisher<T> entities) {
+		return Flux.from(entities).flatMap(this::create);
+	}
+
+	private <T> Mono<T> create(T entity) {
+		return ObservableReactiveUtil
+						.<Document>unaryCall(obs -> {
+							FirestorePersistentEntity<?> persistentEntity =
+											this.mappingContext.getPersistentEntity(entity.getClass());
+							CreateDocumentRequest documentRequest = CreateDocumentRequest.newBuilder()
+											.setParent(this.parent)
+											.setCollectionId(persistentEntity.collectionName())
+											.setDocument(getClassMapper()
+															.entityToDocument(entity, null))
+											.build();
+							this.firestore.createDocument(documentRequest, obs);
+						})
+						.map(document -> (T) getClassMapper().documentToEntity(document, entity.getClass()));
+	}
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -207,10 +231,16 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				return Flux.from(instances).doOnNext(t -> writes.add(createUpdateWrite(t)));
 			}
 
-			Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream, inputs, this::buildWriteRequest);
+			return  Flux.from(instances)
+							.groupBy(t -> getIdValue(t) == null).flatMap(groupedFlux ->
+											groupedFlux.key() ? create(groupedFlux) : upsert(groupedFlux));
 		});
+	}
+
+	private <T> Publisher<? extends T> upsert(Publisher<T> instances) {
+		Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
+		return ObservableReactiveUtil.streamingBidirectionalCall(
+				this::openWriteStream, inputs, this::buildWriteRequest);
 	}
 
 	@Override
@@ -249,7 +279,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 */
 	@Override
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
-		return deleteDocumentsByName(Flux.from(entityPublisher).map(this::buildResourceName)).then();
+		return deleteDocumentsByName(Flux.from(entityPublisher).map(e -> buildResourceName(e).getName())).then();
 	}
 
 	/**
@@ -400,34 +430,65 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	private <T> Write createUpdateWrite(T entity) {
-		String documentResourceName = buildResourceName(entity);
-		Document document = getClassMapper().entityToDocument(entity, documentResourceName);
-		return Write.newBuilder()
-				.setUpdate(document)
-				.build();
+		ResourceName resourceName = buildResourceName(entity);
+		Document document = getClassMapper().entityToDocument(entity, resourceName.getName());
+		Builder builder = Write.newBuilder().setUpdate(document);
+		if (resourceName.isGenerated()) {
+			builder.setCurrentDocument(Precondition.newBuilder().setExists(false).build());
+		}
+		return builder.build();
 	}
 
-	private <T> String buildResourceName(T entity) {
+	private <T> ResourceName buildResourceName(T entity) {
 		FirestorePersistentEntity<?> persistentEntity =
 				this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
-
-		return buildResourceName(persistentEntity, idVal.toString());
+		boolean generated = false;
+		if (idVal == null) {
+			generated = true;
+			if (idProperty.getType() != String.class) {
+				throw new FirestoreDataException("Automatic ID generation only supported for String type");
+			}
+			idVal = Internal.autoId();
+			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
+		}
+		return new ResourceName(buildResourceName(persistentEntity, idVal.toString()), generated);
 	}
 
 	private String buildResourceName(FirestorePersistentEntity<?> persistentEntity, String s) {
 		return this.parent + "/" + persistentEntity.collectionName() + "/" + s;
 	}
 
-	private String getIdValue(Object entity, FirestorePersistentEntity persistentEntity) {
+	private Object getIdValue(Object entity) {
+		FirestorePersistentEntity<?> persistentEntity =
+						this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
-		return idVal.toString();
+		return idVal;
 	}
 
 	public FirestoreClassMapper getClassMapper() {
 		return this.classMapper;
+	}
+
+	private static class ResourceName {
+		private String name;
+
+		private boolean generated;
+
+		ResourceName(String name, boolean generated) {
+			this.name = name;
+			this.generated = generated;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		boolean isGenerated() {
+			return generated;
+		}
 	}
 }
