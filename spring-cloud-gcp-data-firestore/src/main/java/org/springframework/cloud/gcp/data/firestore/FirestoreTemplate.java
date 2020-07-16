@@ -115,7 +115,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> FirestoreReactiveOperations withParent(T parent) {
 		FirestoreTemplate firestoreTemplate =
-						new FirestoreTemplate(this.firestore, buildResourceName(parent).getName(), this.classMapper, this.mappingContext);
+						new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
 		firestoreTemplate.setUsingStreamTokens(this.usingStreamTokens);
 		firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
 		firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
@@ -260,7 +260,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 */
 	@Override
 	public <T> Mono<Void> delete(Publisher<T> entityPublisher) {
-		return deleteDocumentsByName(Flux.from(entityPublisher).map(e -> buildResourceName(e).getName())).then();
+		return deleteDocumentsByName(Flux.from(entityPublisher).map(this::buildResourceName)).then();
 	}
 
 	/**
@@ -411,23 +411,22 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	private <T> Write createUpdateWrite(T entity) {
-		ResourceName resourceName = buildResourceName(entity);
-		Document document = getClassMapper().entityToDocument(entity, resourceName.getName());
+		boolean needsAutoId = getIdValue(entity) == null;
+		String resourceName = buildResourceName(entity);
+		Document document = getClassMapper().entityToDocument(entity, resourceName);
 		Builder builder = Write.newBuilder().setUpdate(document);
-		if (resourceName.isGenerated()) {
+		if (needsAutoId) {
 			builder.setCurrentDocument(Precondition.newBuilder().setExists(false).build());
 		}
 		return builder.build();
 	}
 
-	private <T> ResourceName buildResourceName(T entity) {
+	private <T> String buildResourceName(T entity) {
 		FirestorePersistentEntity<?> persistentEntity =
 				this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
-		boolean generated = false;
 		if (idVal == null) {
-			generated = true;
 			if (idProperty.getType() != String.class) {
 				throw new FirestoreDataException("Automatic ID generation only supported for String type");
 			}
@@ -436,7 +435,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			idVal = autoId();
 			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
 		}
-		return new ResourceName(buildResourceName(persistentEntity, idVal.toString()), generated);
+		return buildResourceName(persistentEntity, idVal.toString());
 	}
 
 	private String buildResourceName(FirestorePersistentEntity<?> persistentEntity, String s) {
@@ -464,24 +463,5 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			builder.append(AUTO_ID_ALPHABET.charAt(RANDOM.nextInt(maxRandom)));
 		}
 		return builder.toString();
-	}
-
-	private static class ResourceName {
-		private String name;
-
-		private boolean generated;
-
-		ResourceName(String name, boolean generated) {
-			this.name = name;
-			this.generated = generated;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		boolean isGenerated() {
-			return generated;
-		}
 	}
 }
