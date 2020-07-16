@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
-import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.Document.Builder;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -39,7 +38,6 @@ import io.grpc.stub.StreamObserver;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -53,7 +51,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * @author Dmitry Solomakha
@@ -199,31 +196,6 @@ public class FirestoreTemplateTests {
 				.build();
 
 		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
-	}
-
-	@Test
-	public void saveGenerateIdTest() {
-		doAnswer(invocation -> {
-			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
-			streamObserver.onNext(buildDocument("e1", 10L));
-
-			streamObserver.onCompleted();
-			return null;
-		}).when(this.firestoreStub).createDocument(any(), any());
-		Hooks.onOperatorDebug();
-		StepVerifier.create(this.firestoreTemplate.saveAll(Mono.just(new TestEntity(null, 10L))))
-						.assertNext(testEntity -> assertThat(testEntity.getIdField()).isEqualTo("e1"))
-						.verifyComplete();
-
-		CreateDocumentRequest build = CreateDocumentRequest.newBuilder()
-						.setParent(this.parent)
-						.setCollectionId("testEntities")
-						.setDocument(buildDocument(null, 10L))
-						.build();
-
-		verify(this.firestoreStub, times(1))
-						.createDocument(eq(build), any());
-		verifyNoMoreInteractions(this.firestoreStub);
 	}
 
 	@Test
