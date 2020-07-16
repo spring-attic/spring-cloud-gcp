@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 
-import com.google.firestore.v1.CreateDocumentRequest;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -199,26 +198,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> Mono<T> save(T entity) {
 		return saveAll(Mono.just(entity)).next();
-	}
-
-	private <T> Flux<T> create(Publisher<T> entities) {
-		return Flux.from(entities).flatMap(this::create);
-	}
-
-	private <T> Mono<T> create(T entity) {
-		return ObservableReactiveUtil
-						.<Document>unaryCall(obs -> {
-							FirestorePersistentEntity<?> persistentEntity =
-											this.mappingContext.getPersistentEntity(entity.getClass());
-							CreateDocumentRequest documentRequest = CreateDocumentRequest.newBuilder()
-											.setParent(this.parent)
-											.setCollectionId(persistentEntity.collectionName())
-											.setDocument(getClassMapper()
-															.entityToDocument(entity, null))
-											.build();
-							this.firestore.createDocument(documentRequest, obs);
-						})
-						.map(document -> (T) getClassMapper().documentToEntity(document, entity.getClass()));
 	}
 
 	/**
