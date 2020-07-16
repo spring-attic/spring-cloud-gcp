@@ -446,9 +446,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		FirestorePersistentEntity<?> persistentEntity =
 						this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
-		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 
-		return idVal;
+		return persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 	}
 
 	public FirestoreClassMapper getClassMapper() {
