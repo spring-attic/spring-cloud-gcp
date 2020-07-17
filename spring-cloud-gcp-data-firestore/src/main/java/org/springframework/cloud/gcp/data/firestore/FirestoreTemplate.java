@@ -431,7 +431,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				throw new FirestoreDataException("Automatic ID generation only supported for String type");
 			}
 
-			//TODO: replace with Internal.autoId() when it is available
+			//TODO: replace with com.google.cloud.firestore.Internal.autoId() when it is available
 			idVal = autoId();
 			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
 		}
@@ -454,7 +454,8 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return this.classMapper;
 	}
 
-	/** Creates a pseudo-random 20-character ID that can be used for Firestore documents. */
+	//Creates a pseudo-random 20-character ID that can be used for Firestore documents.
+	//Copied from com.google.cloud.firestore.FirestoreImpl
 	private static String autoId() {
 		StringBuilder builder = new StringBuilder();
 		int maxRandom = AUTO_ID_ALPHABET.length();
