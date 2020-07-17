@@ -44,6 +44,7 @@ public class GcsLastModifiedFileListFilterTest {
 		assertThat(filter.filterFiles(new BlobInfo[] { blobInfo })).hasSize(0);
 		assertThat(filter.accept(blobInfo)).isFalse();
 		assertThat(callbackTriggered).isTrue();
+		assertThat(filter.supportsSingleFileFiltering()).isTrue();
 	}
 
 	@Test
