@@ -19,8 +19,10 @@ package org.springframework.cloud.gcp.storage.integration.filters;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.cloud.storage.BlobInfo;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +34,8 @@ public class GcsLastModifiedFileListFilterTest {
 	@Test
 	public void testFileLessThanMinimumAgeIsFilteredOut() {
 		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(60, TimeUnit.SECONDS);
+		AtomicBoolean callbackTriggered = new AtomicBoolean(false);
+		filter.addDiscardCallback(blobInfo -> callbackTriggered.set(true));
 
 		BlobInfo blobInfo = mock(BlobInfo.class);
 		when(blobInfo.getUpdateTime())
@@ -39,11 +43,13 @@ public class GcsLastModifiedFileListFilterTest {
 
 		assertThat(filter.filterFiles(new BlobInfo[] { blobInfo })).hasSize(0);
 		assertThat(filter.accept(blobInfo)).isFalse();
+		assertThat(callbackTriggered).isTrue();
 	}
 
 	@Test
 	public void testFileOlderThanMinimumAgeIsReturned() {
 		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(60, TimeUnit.SECONDS);
+		filter.addDiscardCallback(blobInfo -> Assert.fail("Not expected"));
 
 		BlobInfo blobInfo = mock(BlobInfo.class);
 		when(blobInfo.getUpdateTime())
