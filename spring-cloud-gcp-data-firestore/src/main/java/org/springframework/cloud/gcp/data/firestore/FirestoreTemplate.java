@@ -411,14 +411,13 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	private <T> Write createUpdateWrite(T entity) {
-		boolean needsAutoId = getIdValue(entity) == null;
-		String resourceName = buildResourceName(entity);
-		Document document = getClassMapper().entityToDocument(entity, resourceName);
-		Builder builder = Write.newBuilder().setUpdate(document);
-		if (needsAutoId) {
+		Builder builder = Write.newBuilder();
+		if (getIdValue(entity) == null) {
 			builder.setCurrentDocument(Precondition.newBuilder().setExists(false).build());
 		}
-		return builder.build();
+		String resourceName = buildResourceName(entity);
+		Document document = getClassMapper().entityToDocument(entity, resourceName);
+		return builder.setUpdate(document).build();
 	}
 
 	private <T> String buildResourceName(T entity) {
