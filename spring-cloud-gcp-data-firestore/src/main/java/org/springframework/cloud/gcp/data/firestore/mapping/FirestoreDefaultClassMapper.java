@@ -58,10 +58,8 @@ public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
 		Map<String, Value> valuesMap = INTERNAL.protoFromSnapshot(documentSnapshot);
 		Builder builder = Document.newBuilder().putAllFields(valuesMap);
-		if (documentResourceName != null) {
-			builder.setName(documentResourceName);
-		}
-		return builder.build();
+
+		return builder.setName(documentResourceName).build();
 
 	}
 

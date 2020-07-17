@@ -16,11 +16,9 @@
 
 package org.springframework.cloud.gcp.data.firestore;
 
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import com.google.firestore.v1.Document;
@@ -73,13 +71,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private static final DocumentMask NAME_ONLY_MASK = DocumentMask.newBuilder().addFieldPaths(NAME_FIELD).build();
 
 	private static final String NOT_FOUND_DOCUMENT_MESSAGE = "NOT_FOUND: Document";
-
-	private static final String AUTO_ID_ALPHABET =
-					"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-	private static final Random RANDOM = new SecureRandom();
-
-	private static final int AUTO_ID_LENGTH = 20;
 
 	private final FirestoreStub firestore;
 
@@ -427,11 +418,12 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 		if (idVal == null) {
 			if (idProperty.getType() != String.class) {
-				throw new FirestoreDataException("Automatic ID generation only supported for String type");
+				throw new FirestoreDataException(
+								"ID property was null; automatic ID generation is only supported for String type");
 			}
 
 			//TODO: replace with com.google.cloud.firestore.Internal.autoId() when it is available
-			idVal = autoId();
+			idVal = AutoId.autoId();
 			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
 		}
 		return buildResourceName(persistentEntity, idVal.toString());
@@ -451,16 +443,5 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	public FirestoreClassMapper getClassMapper() {
 		return this.classMapper;
-	}
-
-	//Creates a pseudo-random 20-character ID that can be used for Firestore documents.
-	//Copied from com.google.cloud.firestore.FirestoreImpl
-	private static String autoId() {
-		StringBuilder builder = new StringBuilder();
-		int maxRandom = AUTO_ID_ALPHABET.length();
-		for (int i = 0; i < AUTO_ID_LENGTH; i++) {
-			builder.append(AUTO_ID_ALPHABET.charAt(RANDOM.nextInt(maxRandom)));
-		}
-		return builder.toString();
 	}
 }
