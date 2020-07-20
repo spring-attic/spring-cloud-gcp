@@ -19,7 +19,14 @@ package org.springframework.cloud.gcp.data.firestore;
 import java.security.SecureRandom;
 import java.util.Random;
 
-//Copied from com.google.cloud.firestore.FirestoreImpl
+/**
+ * This class is used to generate Id values.
+ * Copied from com.google.cloud.firestore.FirestoreImpl
+ *
+ * @author Dmitry Solomakha
+ * @since 1.3
+ */
+
 final class AutoId {
 	private static final String AUTO_ID_ALPHABET =
 					"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
