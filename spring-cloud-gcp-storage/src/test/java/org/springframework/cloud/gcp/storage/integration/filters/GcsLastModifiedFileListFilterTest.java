@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.storage.integration.filters;
 
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.cloud.storage.BlobInfo;
@@ -33,7 +33,7 @@ public class GcsLastModifiedFileListFilterTest {
 
 	@Test
 	public void testFileLessThanMinimumAgeIsFilteredOut() {
-		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(60, TimeUnit.SECONDS);
+		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(Duration.ofSeconds(60));
 		AtomicBoolean callbackTriggered = new AtomicBoolean(false);
 		filter.addDiscardCallback(blobInfo -> callbackTriggered.set(true));
 
@@ -49,7 +49,7 @@ public class GcsLastModifiedFileListFilterTest {
 
 	@Test
 	public void testFileOlderThanMinimumAgeIsReturned() {
-		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(60, TimeUnit.SECONDS);
+		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(Duration.ofSeconds(60));
 		filter.addDiscardCallback(blobInfo -> Assert.fail("Not expected"));
 
 		BlobInfo blobInfo = mock(BlobInfo.class);

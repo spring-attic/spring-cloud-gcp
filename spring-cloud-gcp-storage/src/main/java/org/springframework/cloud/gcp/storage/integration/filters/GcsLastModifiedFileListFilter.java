@@ -16,44 +16,41 @@
 
 package org.springframework.cloud.gcp.storage.integration.filters;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.filters.DiscardAwareFileListFilter;
-import org.springframework.integration.file.filters.FileListFilter;
 import org.springframework.lang.Nullable;
 
 /**
- * The {@link FileListFilter} implementation to filter those files which
- * {@link BlobInfo#getUpdateTime()} is less than the {@link #age} in comparison with the
- * current time.
- * <p>
- * When {@link #discardCallback} is provided, it called for all the rejected files.
+ * The {@link GcsLastModifiedFileListFilter} is a filter which excludes all files
+ * that were updated within a specified amount of time.
+ *
+ * <p>More specifically, it excludes all files whose {@link BlobInfo#getUpdateTime()} is
+ * within {@link #age} of the current time.
+ *
+ * <p>When {@link #discardCallback} is provided, it called for all the rejected files.
  *
  * @author Hosain Al Ahmad
  */
 public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter<BlobInfo> {
 
-	private static final long ONE_SECOND = 1000;
-
-	private final long age;
+	private final Duration age;
 
 	@Nullable
 	private Consumer<BlobInfo> discardCallback;
 
 	/**
 	 * Construct a {@link GcsLastModifiedFileListFilter} instance with provided {@link #age}.
-	 * Defaults to 60 seconds.
 	 *
-	 * @param age the age value.
-	 * @param unit the uunit for the age value.
+	 * @param age {@link Duration} describing the age of files to filter.
 	 */
-	public GcsLastModifiedFileListFilter(long age, TimeUnit unit) {
-		this.age = unit.toSeconds(age);
+	public GcsLastModifiedFileListFilter(Duration age) {
+		this.age = age;
 	}
 
 	@Override
@@ -64,13 +61,9 @@ public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter
 	@Override
 	public List<BlobInfo> filterFiles(BlobInfo[] files) {
 		List<BlobInfo> list = new ArrayList<>();
-		long now = System.currentTimeMillis() / ONE_SECOND;
 		for (BlobInfo file : files) {
-			if (fileIsAged(file, now)) {
+			if (accept(file)) {
 				list.add(file);
-			}
-			else if (this.discardCallback != null) {
-				this.discardCallback.accept(file);
 			}
 		}
 		return list;
@@ -78,7 +71,7 @@ public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter
 
 	@Override
 	public boolean accept(BlobInfo file) {
-		if (fileIsAged(file, System.currentTimeMillis() / ONE_SECOND)) {
+		if (fileIsAged(file)) {
 			return true;
 		}
 		else if (this.discardCallback != null) {
@@ -87,8 +80,8 @@ public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter
 		return false;
 	}
 
-	private boolean fileIsAged(BlobInfo file, long now) {
-		return file.getUpdateTime() / ONE_SECOND + this.age <= now;
+	private boolean fileIsAged(BlobInfo file) {
+		return file.getUpdateTime() + this.age.toMillis() <= System.currentTimeMillis();
 	}
 
 	@Override
