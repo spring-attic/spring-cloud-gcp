@@ -18,19 +18,21 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.util.Base64;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.autoconfigure.config.GoogleConfigEnvironment.Variable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for the environment config.
  *
  * @author Dmitry Solomakha
+ * @author Eddy Kioi
  */
 public class GoogleConfigEnvironmentTest {
-
 	@Test
 	public void testSetVariabeValue() {
 		GoogleConfigEnvironment.Variable var = new Variable();
@@ -38,5 +40,12 @@ public class GoogleConfigEnvironmentTest {
 		String encodedString = Base64.getEncoder().encodeToString(value.getBytes());
 		var.setValue(encodedString);
 		assertThat(var.getValue()).isEqualTo(value);
+	}
+
+	@Test
+	public void testSetNullValue() {
+		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
+		googleConfigEnvironment.setVariables(null);
+		Assert.assertEquals(googleConfigEnvironment.getVariables().isEmpty(), true);
 	}
 }

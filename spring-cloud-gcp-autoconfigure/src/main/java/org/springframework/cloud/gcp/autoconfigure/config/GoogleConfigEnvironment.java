@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * @author Jisha Abubaker
  * @author Chengyuan Zhao
+ * @author Eddy Kioi
  *
  * @since 1.1
  */
@@ -38,6 +40,9 @@ class GoogleConfigEnvironment {
 	}
 
 	List<Variable> getVariables() {
+		if (variables == null) {
+			return Collections.emptyList();
+		}
 		return this.variables;
 	}
 
@@ -47,7 +52,7 @@ class GoogleConfigEnvironment {
 
 	Map<String, Object> getConfig() {
 		Map<String, Object> config = new HashMap<>();
-		for (Variable variable : this.variables) {
+		for (Variable variable : getVariables()) {
 			Object value = (variable.getText() != null) ? variable.getText() : variable.getValue();
 			config.put(variable.getName(), value);
 		}
