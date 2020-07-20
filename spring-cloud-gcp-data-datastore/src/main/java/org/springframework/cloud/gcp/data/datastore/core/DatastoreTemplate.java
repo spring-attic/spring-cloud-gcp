@@ -772,8 +772,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				Value<?> value;
 				if (persistentProperty.isIdProperty()) {
 					PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(probe);
-					value = KeyValue.of(
-							createKey(persistentEntity.kindName(), accessor.getProperty(persistentProperty)));
+					Object property = accessor.getProperty(persistentProperty);
+					value = property != null
+									? KeyValue.of(createKey(persistentEntity.kindName(), property))
+									: NullValue.of();
 				}
 				else {
 					value = probeEntity.getValue(fieldName);
