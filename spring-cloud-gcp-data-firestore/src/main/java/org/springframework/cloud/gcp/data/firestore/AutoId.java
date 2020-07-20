@@ -24,7 +24,7 @@ import java.util.Random;
  * Copied from com.google.cloud.firestore.FirestoreImpl
  *
  * @author Dmitry Solomakha
- * @since 1.3
+ * @since 1.2.4
  */
 
 final class AutoId {

@@ -23,7 +23,6 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.firestore.Internal;
 import com.google.firestore.v1.Document;
-import com.google.firestore.v1.Document.Builder;
 import com.google.firestore.v1.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
@@ -57,10 +56,9 @@ public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 	public <T> Document entityToDocument(T entity, String documentResourceName) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
 		Map<String, Value> valuesMap = INTERNAL.protoFromSnapshot(documentSnapshot);
-		Builder builder = Document.newBuilder().putAllFields(valuesMap);
-
-		return builder.setName(documentResourceName).build();
-
+		return Document.newBuilder()
+				.putAllFields(valuesMap)
+				.setName(documentResourceName).build();
 	}
 
 	public <T> T documentToEntity(Document document, Class<T> clazz) {
