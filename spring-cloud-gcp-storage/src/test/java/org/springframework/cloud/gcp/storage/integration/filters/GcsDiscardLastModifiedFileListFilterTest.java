@@ -29,11 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GcsLastModifiedFileListFilterTest {
+public class GcsDiscardLastModifiedFileListFilterTest {
 
 	@Test
 	public void testFileLessThanMinimumAgeIsFilteredOut() {
-		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(Duration.ofSeconds(60));
+		GcsDiscardLastModifiedFileListFilter filter = new GcsDiscardLastModifiedFileListFilter(Duration.ofSeconds(60));
 		AtomicBoolean callbackTriggered = new AtomicBoolean(false);
 		filter.addDiscardCallback(blobInfo -> callbackTriggered.set(true));
 
@@ -49,7 +49,7 @@ public class GcsLastModifiedFileListFilterTest {
 
 	@Test
 	public void testFileOlderThanMinimumAgeIsReturned() {
-		GcsLastModifiedFileListFilter filter = new GcsLastModifiedFileListFilter(Duration.ofSeconds(60));
+		GcsDiscardLastModifiedFileListFilter filter = new GcsDiscardLastModifiedFileListFilter(Duration.ofSeconds(60));
 		filter.addDiscardCallback(blobInfo -> Assert.fail("Not expected"));
 
 		BlobInfo blobInfo = mock(BlobInfo.class);

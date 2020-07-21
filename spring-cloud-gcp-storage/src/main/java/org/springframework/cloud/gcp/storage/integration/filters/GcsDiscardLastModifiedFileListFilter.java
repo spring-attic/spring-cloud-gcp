@@ -27,8 +27,8 @@ import org.springframework.integration.file.filters.DiscardAwareFileListFilter;
 import org.springframework.lang.Nullable;
 
 /**
- * The {@link GcsLastModifiedFileListFilter} is a filter which excludes all files
- * that were updated within a specified amount of time.
+ * The {@link GcsDiscardLastModifiedFileListFilter} is a filter which excludes all files
+ * that were updated less than some specified amount of time ago.
  *
  * <p>More specifically, it excludes all files whose {@link BlobInfo#getUpdateTime()} is
  * within {@link #age} of the current time.
@@ -37,7 +37,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Hosain Al Ahmad
  */
-public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter<BlobInfo> {
+public class GcsDiscardLastModifiedFileListFilter implements DiscardAwareFileListFilter<BlobInfo> {
 
 	private final Duration age;
 
@@ -45,11 +45,11 @@ public class GcsLastModifiedFileListFilter implements DiscardAwareFileListFilter
 	private Consumer<BlobInfo> discardCallback;
 
 	/**
-	 * Construct a {@link GcsLastModifiedFileListFilter} instance with provided {@link #age}.
+	 * Construct a {@link GcsDiscardLastModifiedFileListFilter} instance with provided {@link #age}.
 	 *
 	 * @param age {@link Duration} describing the age of files to filter.
 	 */
-	public GcsLastModifiedFileListFilter(Duration age) {
+	public GcsDiscardLastModifiedFileListFilter(Duration age) {
 		this.age = age;
 	}
 
