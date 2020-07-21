@@ -28,15 +28,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for GcsAcceptSinceFileListFilter.
+ * Tests for GcsAcceptModifiedAfterFileListFilter.
  *
  * @author Hosain Al Ahmad
  */
-class GcsAcceptSinceFileListFilterTest {
+class GcsAcceptModifiedAfterFileListFilterTest {
 
 	@Test
 	void addDiscardCallback() {
-		GcsAcceptSinceFileListFilter filter = new GcsAcceptSinceFileListFilter();
+		GcsAcceptModifiedAfterFileListFilter filter = new GcsAcceptModifiedAfterFileListFilter();
 
 		AtomicBoolean callbackTriggered = new AtomicBoolean(false);
 		filter.addDiscardCallback(blobInfo -> callbackTriggered.set(true));
@@ -69,13 +69,13 @@ class GcsAcceptSinceFileListFilterTest {
 		expected.add(newBlob);
 
 		assertThat(
-				new GcsAcceptSinceFileListFilter(now).filterFiles(new BlobInfo[] { oldBlob, currentBlob, newBlob }))
+				new GcsAcceptModifiedAfterFileListFilter(now).filterFiles(new BlobInfo[] { oldBlob, currentBlob, newBlob }))
 						.isEqualTo(expected);
 	}
 
 	@Test
 	void supportsSingleFileFiltering() {
-		assertThat(new GcsAcceptSinceFileListFilter().supportsSingleFileFiltering())
+		assertThat(new GcsAcceptModifiedAfterFileListFilter().supportsSingleFileFiltering())
 				.isTrue();
 	}
 }

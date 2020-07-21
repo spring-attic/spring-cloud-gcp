@@ -29,32 +29,32 @@ import com.google.cloud.storage.BlobInfo;
 import org.springframework.integration.file.filters.DiscardAwareFileListFilter;
 
 /**
- * The {@link GcsAcceptSinceFileListFilter} is a filter which excludes all files
- * that are older than a specific point in time.
+ * The {@link GcsAcceptModifiedAfterFileListFilter} is a filter which accepts all files
+ * that were modified after a specified point in time.
  *
- * <p>More specifically, it excludes all files whose {@link BlobInfo#getUpdateTime()} is
- * less than {@link #millisSince}.
+ * <p>More specifically, it accepts (includes) all files whose {@link BlobInfo#getUpdateTime()} is
+ * after (greater than or equal to) the {@link #acceptAfterCutoffTimestamp}.
  *
- * <p>{@link #millisSince} defaults to Instant.now() (UTC) in millis, but an alternative {@link Instant}
- * can be provided via the constructor.</p>
+ * <p>{@link #acceptAfterCutoffTimestamp} defaults to Instant.now() (UTC) in millis,
+ * but an alternative {@link Instant} can be provided via the constructor.
  *
- * <p>When {@link #discardCallback} is provided, it called for all the rejected files.
+ * <p>When {@link #discardCallback} is provided, it is called for all the rejected files.
  *
  * @author Hosain Al Ahmad
  */
-public class GcsAcceptSinceFileListFilter implements DiscardAwareFileListFilter<BlobInfo> {
+public class GcsAcceptModifiedAfterFileListFilter implements DiscardAwareFileListFilter<BlobInfo> {
 
-	private final long millisSince;
+	private final long acceptAfterCutoffTimestamp;
 
 	@Nullable
 	private Consumer<BlobInfo> discardCallback;
 
-	public GcsAcceptSinceFileListFilter() {
-		millisSince = Instant.now(Clock.systemUTC()).toEpochMilli();
+	public GcsAcceptModifiedAfterFileListFilter() {
+		acceptAfterCutoffTimestamp = Instant.now(Clock.systemUTC()).toEpochMilli();
 	}
 
-	public GcsAcceptSinceFileListFilter(Instant instant) {
-		millisSince = instant.toEpochMilli();
+	public GcsAcceptModifiedAfterFileListFilter(Instant instant) {
+		acceptAfterCutoffTimestamp = instant.toEpochMilli();
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class GcsAcceptSinceFileListFilter implements DiscardAwareFileListFilter<
 	}
 
 	private boolean fileUpdateTimeOnOrAfterPointInTime(BlobInfo file) {
-		return file.getUpdateTime() >= millisSince;
+		return file.getUpdateTime() >= acceptAfterCutoffTimestamp;
 	}
 
 	@Override
