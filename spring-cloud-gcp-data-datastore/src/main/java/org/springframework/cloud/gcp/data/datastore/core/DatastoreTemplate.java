@@ -767,7 +767,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		matcherAccessor.getPropertySpecifiers();
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
-			if (notIgnoredProperty(example, persistentProperty)) {
+			if (!ignoredProperty(example, persistentProperty)) {
 				Value<?> value = getValue(example, probeEntity, persistentEntity, persistentProperty);
 				NullHandler nullHandler = example.getMatcher().getNullHandler();
 				addFilter(nullHandler, filters, persistentProperty.getFieldName(), value);
@@ -795,8 +795,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return value;
 	}
 
-	private <T> boolean notIgnoredProperty(Example<T> example, DatastorePersistentProperty persistentProperty) {
-		return !example.getMatcher().isIgnoredPath(persistentProperty.getName());
+	private <T> boolean ignoredProperty(Example<T> example, DatastorePersistentProperty persistentProperty) {
+		return example.getMatcher().isIgnoredPath(persistentProperty.getName());
 	}
 
 	private <T> Value<?> getIdValue(Example<T> example, DatastorePersistentEntity<?> persistentEntity,
