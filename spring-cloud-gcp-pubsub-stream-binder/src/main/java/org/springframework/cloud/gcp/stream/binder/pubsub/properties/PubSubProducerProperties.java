@@ -24,4 +24,13 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
  * @author Chengyuan Zhao
  */
 public class PubSubProducerProperties extends PubSubCommonProperties {
+	private boolean sync;
+
+	public boolean isSync() {
+		return sync;
+	}
+
+	public void setSync(boolean sync) {
+		this.sync = sync;
+	}
 }

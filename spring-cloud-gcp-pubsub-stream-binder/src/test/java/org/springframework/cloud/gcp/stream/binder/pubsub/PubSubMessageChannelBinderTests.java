@@ -23,13 +23,22 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
+import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
+import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
+import org.springframework.cloud.stream.provisioning.ProducerDestination;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.messaging.MessageChannel;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for channel binder.
@@ -56,12 +65,26 @@ public class PubSubMessageChannelBinderTests {
 	ConsumerDestination consumerDestination;
 
 	@Mock
+	ProducerDestination mockProducerDestination;
+
+	@Mock
 	ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties;
+
+	@Mock
+	ExtendedProducerProperties<PubSubProducerProperties> mockProducerProperties;
+
+	@Mock
+	MessageChannel mockErrorChannel;
 
 	@Before
 	public void before() {
 		this.binder = new PubSubMessageChannelBinder(new String[0], this.channelProvisioner, this.pubSubTemplate,
 				this.properties);
+
+		ConfigurableApplicationContext applicationContext = new GenericApplicationContext();
+		this.binder.setApplicationContext(applicationContext);
+
+		when(mockProducerDestination.getName()).thenReturn("test-topic");
 	}
 
 	@Test
@@ -69,6 +92,27 @@ public class PubSubMessageChannelBinderTests {
 		this.binder.afterUnbindConsumer(this.consumerDestination, "group1", this.consumerProperties);
 
 		verify(this.channelProvisioner).afterUnbindConsumer(this.consumerDestination);
+	}
+
+	@Test
+	public void producerSyncPropertyFalseByDefault() {
+		PubSubProducerProperties props = new PubSubProducerProperties();
+		when(mockProducerProperties.getExtension()).thenReturn(props);
+
+		PubSubMessageHandler messageHandler =
+				(PubSubMessageHandler) this.binder.createProducerMessageHandler(mockProducerDestination, mockProducerProperties, mockErrorChannel);
+		assertThat(messageHandler.isSync()).isFalse();
+	}
+
+	@Test
+	public void producerSyncPropertyPropagatesToMessageHandler() {
+		PubSubProducerProperties props = new PubSubProducerProperties();
+		props.setSync(true);
+		when(mockProducerProperties.getExtension()).thenReturn(props);
+
+		PubSubMessageHandler messageHandler =
+				(PubSubMessageHandler) this.binder.createProducerMessageHandler(mockProducerDestination, mockProducerProperties, mockErrorChannel);
+		assertThat(messageHandler.isSync()).isTrue();
 	}
 
 }
