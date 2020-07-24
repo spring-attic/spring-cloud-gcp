@@ -22,18 +22,19 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
+import org.springframework.cloud.gcp.stream.binder.pubsub.config.PubSubBinderConfiguration;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
-import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.messaging.MessageChannel;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +45,7 @@ import static org.mockito.Mockito.when;
  * Tests for channel binder.
  *
  * @author Mike Eltsufin
+ * @author Elena Felder
  *
  * @since 1.1
  */
@@ -59,32 +61,35 @@ public class PubSubMessageChannelBinderTests {
 	PubSubTemplate pubSubTemplate;
 
 	@Mock
+	PubSubAdmin pubSubAdmin;
+
+	@Mock
 	PubSubExtendedBindingProperties properties;
 
 	@Mock
 	ConsumerDestination consumerDestination;
 
 	@Mock
-	ProducerDestination mockProducerDestination;
+	ProducerDestination producerDestination;
 
 	@Mock
 	ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties;
 
 	@Mock
-	ExtendedProducerProperties<PubSubProducerProperties> mockProducerProperties;
+	MessageChannel errorChannel;
 
-	@Mock
-	MessageChannel mockErrorChannel;
+	ApplicationContextRunner baseContext = new ApplicationContextRunner()
+			.withBean(PubSubTemplate.class, () -> pubSubTemplate)
+			.withBean(PubSubAdmin.class, () -> pubSubAdmin)
+			.withConfiguration(
+					AutoConfigurations.of(PubSubBinderConfiguration.class, PubSubExtendedBindingProperties.class));
 
 	@Before
 	public void before() {
 		this.binder = new PubSubMessageChannelBinder(new String[0], this.channelProvisioner, this.pubSubTemplate,
 				this.properties);
 
-		ConfigurableApplicationContext applicationContext = new GenericApplicationContext();
-		this.binder.setApplicationContext(applicationContext);
-
-		when(mockProducerDestination.getName()).thenReturn("test-topic");
+		when(producerDestination.getName()).thenReturn("test-topic");
 	}
 
 	@Test
@@ -96,23 +101,35 @@ public class PubSubMessageChannelBinderTests {
 
 	@Test
 	public void producerSyncPropertyFalseByDefault() {
-		PubSubProducerProperties props = new PubSubProducerProperties();
-		when(mockProducerProperties.getExtension()).thenReturn(props);
+		baseContext
+				.run(ctx -> {
+					PubSubMessageChannelBinder binder = ctx.getBean(PubSubMessageChannelBinder.class);
 
-		PubSubMessageHandler messageHandler =
-				(PubSubMessageHandler) this.binder.createProducerMessageHandler(mockProducerDestination, mockProducerProperties, mockErrorChannel);
-		assertThat(messageHandler.isSync()).isFalse();
+					PubSubExtendedBindingProperties props = ctx.getBean("pubSubExtendedBindingProperties", PubSubExtendedBindingProperties.class);
+					PubSubMessageHandler messageHandler = (PubSubMessageHandler) binder.createProducerMessageHandler(
+							producerDestination,
+							new ExtendedProducerProperties<>(props.getExtendedProducerProperties("test")),
+							errorChannel
+					);
+					assertThat(messageHandler.isSync()).isFalse();
+				});
 	}
 
 	@Test
 	public void producerSyncPropertyPropagatesToMessageHandler() {
-		PubSubProducerProperties props = new PubSubProducerProperties();
-		props.setSync(true);
-		when(mockProducerProperties.getExtension()).thenReturn(props);
+		baseContext
+				.withPropertyValues("spring.cloud.stream.gcp.pubsub.default.producer.sync=true")
+				.run(ctx -> {
+					PubSubMessageChannelBinder binder = ctx.getBean(PubSubMessageChannelBinder.class);
 
-		PubSubMessageHandler messageHandler =
-				(PubSubMessageHandler) this.binder.createProducerMessageHandler(mockProducerDestination, mockProducerProperties, mockErrorChannel);
-		assertThat(messageHandler.isSync()).isTrue();
+					PubSubExtendedBindingProperties props = ctx.getBean("pubSubExtendedBindingProperties", PubSubExtendedBindingProperties.class);
+					PubSubMessageHandler messageHandler = (PubSubMessageHandler) binder.createProducerMessageHandler(
+							producerDestination,
+							new ExtendedProducerProperties<>(props.getExtendedProducerProperties("test")),
+							errorChannel
+					);
+					assertThat(messageHandler.isSync()).isTrue();
+				});
 	}
 
 }
