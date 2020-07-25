@@ -385,6 +385,9 @@
 		<!-- Error prone; plugin is recommended but only works with Java 9 - 14. -->
 		<profile>
 			<id>errorprone_java_9_and_up</id>
+			<activation>
+				<jdk>[9,14]</jdk>
+			</activation>
 			<build>
 				<pluginManagement>
 					<plugins>
