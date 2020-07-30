@@ -175,13 +175,17 @@ public class FirestoreTemplateExample {
 	@Autowired
 	FirestoreTemplate firestoreTemplate;
 
-	public void doSomething() {
+	public Mono<User> createUsers() {
+		return this.firestoreTemplate.save(new User("Alice", 29))
+		.then(this.firestoreTemplate.save(new User("Bob", 60)));
+	}
 
-		this.firestoreTemplate.save(new User("Alice", 29))
-		.then(this.firestoreTemplate.save(new User("Bob", 60)))
-		.block();
+	public Flux<User> findUsers() {
+		return this.firestoreTemplate.findAll(User.class);
+	}
 
-		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+	public Mono<Long> removeAllUsers() {
+		return this.firestoreTemplate.deleteAll(User.class);
 	}
 }
 ----
