@@ -1,7 +1,7 @@
 :spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
 == Spring Data Cloud Firestore
-NOTE: Currently some features are not supported: query by example, projections, auditing.
+NOTE: Currently some features are not supported: query by example, projections, and auditing.
 
 https://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data Reactive Repositories support for https://cloud.google.com/firestore/[Google Cloud Firestore] in native mode, providing reactive template and repositories support.
@@ -110,7 +110,7 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 This annotation is optional, by default the collection name is derived from the class name.
 
 `@DocumentId` annotation marks a field to be used as document id. This annotation is required.
-If the value is null, and the property type is `String`, the Id is generated automatically.
+NOTE: If the property annotated with `@DocumentId` is `null` and the property type is `String`, the document id is generated automatically when the entity is saved.
 
 NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
 
