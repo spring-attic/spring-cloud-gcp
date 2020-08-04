@@ -177,7 +177,7 @@ public class FirestoreTemplateExample {
 
 	public Mono<User> createUsers() {
 		return this.firestoreTemplate.save(new User("Alice", 29))
-		.then(this.firestoreTemplate.save(new User("Bob", 60)));
+			.then(this.firestoreTemplate.save(new User("Bob", 60)));
 	}
 
 	public Flux<User> findUsers() {
