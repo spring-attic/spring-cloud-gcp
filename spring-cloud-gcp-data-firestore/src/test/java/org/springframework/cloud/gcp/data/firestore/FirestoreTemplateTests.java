@@ -122,14 +122,13 @@ public class FirestoreTemplateTests {
 	@Test
 	public void testIntegerId() {
 
-		assertThatThrownBy(
-						() -> {
-							List<TestEntityIntegerId> entities =
-											Collections.singletonList(new TestEntityIntegerId(1, "abc"));
-							firestoreTemplate.buildWriteRequest(entities, WriteResponse.newBuilder().build());
-						})
-		.isInstanceOf(FirestoreDataException.class)
-		.hasMessageContaining("An ID property is expected to be of String type; was class java.lang.Integer");
+		assertThatThrownBy(() -> {
+			List<TestEntityIntegerId> entities =
+							Collections.singletonList(new TestEntityIntegerId(1, "abc"));
+			firestoreTemplate.buildWriteRequest(entities, WriteResponse.newBuilder().build());
+		})
+						.isInstanceOf(FirestoreDataException.class)
+						.hasMessageContaining("An ID property is expected to be of String type; was class java.lang.Integer");
 	}
 
 	@Test
