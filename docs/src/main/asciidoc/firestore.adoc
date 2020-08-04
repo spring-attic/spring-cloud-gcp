@@ -109,8 +109,10 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 `@Document(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
 This annotation is optional, by default the collection name is derived from the class name.
 
-`@DocumentId` annotation marks a field to be used as document id. This annotation is required.
-NOTE: If the property annotated with `@DocumentId` is `null` and the property type is `String`, the document id is generated automatically when the entity is saved.
+`@DocumentId` annotation marks a field to be used as document id.
+This annotation is required and the annotated field can only be of `String` type.
+
+NOTE: If the property annotated with `@DocumentId` is `null` the document id is generated automatically when the entity is saved.
 
 NOTE: Internally we use Firestore client library object mapping. See https://developers.google.com/android/reference/com/google/firebase/firestore/package-summary[the documentation] for supported annotations.
 
@@ -173,19 +175,19 @@ Using the auto-configuration provided by Spring Data Cloud Firestore, your Sprin
 public class FirestoreTemplateExample {
 
 	@Autowired
-	FirestoreTemplate firestoreTemplate;
+	FirestoreOperations firestoreOperations;
 
 	public Mono<User> createUsers() {
-		return this.firestoreTemplate.save(new User("Alice", 29))
-			.then(this.firestoreTemplate.save(new User("Bob", 60)));
+		return this.firestoreOperatons.save(new User("Alice", 29))
+			.then(this.firestoreOperatons.save(new User("Bob", 60)));
 	}
 
 	public Flux<User> findUsers() {
-		return this.firestoreTemplate.findAll(User.class);
+		return this.firestoreOperatons.findAll(User.class);
 	}
 
 	public Mono<Long> removeAllUsers() {
-		return this.firestoreTemplate.deleteAll(User.class);
+		return this.firestoreOperatons.deleteAll(User.class);
 	}
 }
 ----
