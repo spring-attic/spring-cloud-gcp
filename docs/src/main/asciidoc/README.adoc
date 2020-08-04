@@ -95,7 +95,7 @@ We offer `BUILD-SNAPSHOT` versions that always reflect the latest code changes t
     <repository>
         <id>spring-snapshots</id>
         <name>Spring Snapshots</name>
-        <url>https://repo.spring.io/libs-snapshot</url>
+        <url>https://repo.spring.io/snapshot</url>
         <snapshots>
             <enabled>true</enabled>
         </snapshots>

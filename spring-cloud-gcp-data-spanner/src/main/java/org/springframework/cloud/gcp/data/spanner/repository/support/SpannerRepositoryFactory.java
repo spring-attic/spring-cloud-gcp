@@ -37,6 +37,7 @@ import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -126,6 +127,20 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
 				evaluationContext.setBeanResolver(new BeanFactoryResolver(
 						SpannerRepositoryFactory.this.applicationContext));
+				return evaluationContext;
+			}
+
+			@Override
+			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
+					T parameters, Object[] parameterValues, ExpressionDependencies expressionDependencies) {
+				StandardEvaluationContext evaluationContext =
+						(StandardEvaluationContext) evaluationContextProvider.getEvaluationContext(
+								parameters, parameterValues, expressionDependencies);
+
+				evaluationContext.setRootObject(SpannerRepositoryFactory.this.applicationContext);
+				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
+				evaluationContext.setBeanResolver(
+						new BeanFactoryResolver(SpannerRepositoryFactory.this.applicationContext));
 				return evaluationContext;
 			}
 		};

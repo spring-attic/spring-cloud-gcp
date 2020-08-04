@@ -37,6 +37,7 @@ import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.data.spel.ExpressionDependencies;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
@@ -118,13 +119,13 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 	private QueryMethodEvaluationContextProvider delegateContextProvider(
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+
 		return new QueryMethodEvaluationContextProvider() {
 			@Override
 			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
 					T parameters, Object[] parameterValues) {
 				StandardEvaluationContext evaluationContext = (StandardEvaluationContext)
-						evaluationContextProvider
-						.getEvaluationContext(parameters, parameterValues);
+						evaluationContextProvider.getEvaluationContext(parameters, parameterValues);
 				evaluationContext.setRootObject(
 						DatastoreRepositoryFactory.this.applicationContext);
 				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
@@ -132,7 +133,20 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 						DatastoreRepositoryFactory.this.applicationContext));
 				return evaluationContext;
 			}
+
+			@Override
+			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
+					T parameters, Object[] parameterValues, ExpressionDependencies expressionDependencies) {
+				StandardEvaluationContext evaluationContext =
+						(StandardEvaluationContext) evaluationContextProvider.getEvaluationContext(
+								parameters, parameterValues, expressionDependencies);
+
+				evaluationContext.setRootObject(DatastoreRepositoryFactory.this.applicationContext);
+				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
+				evaluationContext.setBeanResolver(
+						new BeanFactoryResolver(DatastoreRepositoryFactory.this.applicationContext));
+				return evaluationContext;
+			}
 		};
 	}
-
 }
