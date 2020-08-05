@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.data.firestore;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,6 +47,7 @@ import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreDefaultClas
 import org.springframework.cloud.gcp.data.firestore.mapping.FirestoreMappingContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -114,6 +117,18 @@ public class FirestoreTemplateTests {
 		request = firestoreTemplate.buildDeleteRequest(Arrays.asList("hello"), writeResponse);
 		assertThat(request.getStreamId()).isEqualTo("test-stream");
 		assertThat(request.getStreamToken().toStringUtf8()).isEqualTo("the-token");
+	}
+
+	@Test
+	public void testIntegerId() {
+
+		assertThatThrownBy(() -> {
+			List<TestEntityIntegerId> entities =
+							Collections.singletonList(new TestEntityIntegerId(1, "abc"));
+			firestoreTemplate.buildWriteRequest(entities, WriteResponse.newBuilder().build());
+		})
+						.isInstanceOf(FirestoreDataException.class)
+						.hasMessageContaining("An ID property is expected to be of String type; was class java.lang.Integer");
 	}
 
 	@Test
@@ -428,6 +443,19 @@ public class FirestoreTemplateTests {
 		@Override
 		public int hashCode() {
 			return Objects.hash(getIdField(), getLongField());
+		}
+	}
+
+	@Document
+	class TestEntityIntegerId {
+		@DocumentId
+		public Integer id;
+
+		public String value;
+
+		TestEntityIntegerId(Integer id, String value) {
+			this.id = id;
+			this.value = value;
 		}
 	}
 }

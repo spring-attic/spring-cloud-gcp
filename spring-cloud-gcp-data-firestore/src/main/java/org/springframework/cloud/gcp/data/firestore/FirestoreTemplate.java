@@ -417,11 +417,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 		if (idVal == null) {
-			if (idProperty.getType() != String.class) {
-				throw new FirestoreDataException(
-								"ID property was null; automatic ID generation is only supported for String type");
-			}
-
 			//TODO: replace with com.google.cloud.firestore.Internal.autoId() when it is available
 			idVal = AutoId.autoId();
 			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
