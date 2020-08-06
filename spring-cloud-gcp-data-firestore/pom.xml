@@ -7,7 +7,7 @@
     <parent>
         <artifactId>spring-cloud-gcp</artifactId>
         <groupId>org.springframework.cloud</groupId>
-        <version>1.2.4.BUILD-SNAPSHOT</version>
+        <version>1.2.5.BUILD-SNAPSHOT</version>
     </parent>
 
     <artifactId>spring-cloud-gcp-data-firestore</artifactId>
