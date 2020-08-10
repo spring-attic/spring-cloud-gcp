@@ -142,6 +142,15 @@
 		</profile>
 	</profiles>
 
+	<dependencies>
+		<!-- Needed for running JUnit 4 tests when depending on Spring Boot Ilford. -->
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<pluginManagement>
 			<plugins>

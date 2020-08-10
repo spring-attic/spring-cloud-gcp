@@ -158,6 +158,8 @@ public class GqlDatastoreQueryTests {
 		}
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
 				.thenReturn(evaluationContext);
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any(), any()))
+				.thenReturn(evaluationContext);
 
 		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
