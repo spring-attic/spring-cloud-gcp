@@ -37,6 +37,7 @@ public class SecretManagerPropertySourceIntegrationTests {
 	private ConfigurableApplicationContext context =
 			new SpringApplicationBuilder(TestConfiguration.class)
 					.web(WebApplicationType.NONE)
+					.properties("spring.config.use-legacy-processing=true")
 					.run();
 
 	private static final String TEST_SECRET_ID = "spring-cloud-gcp-it-secret";

@@ -49,7 +49,9 @@ public class SecretManagerBootstrapConfigurationTests {
 	private SpringApplicationBuilder applicationBuilder =
 			new SpringApplicationBuilder(
 					TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
-					.properties("spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME)
+					.properties(
+							"spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME,
+							"spring.config.use-legacy-processing=true")
 					.web(WebApplicationType.NONE);
 
 	@Test

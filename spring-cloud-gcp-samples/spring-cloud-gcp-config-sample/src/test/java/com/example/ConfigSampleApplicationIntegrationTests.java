@@ -38,7 +38,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Mike Eltsufin
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { Application.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+		classes = { Application.class },
+		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = { "spring.config.use-legacy-processing=true" }
+)
 @AutoConfigureMockMvc
 public class ConfigSampleApplicationIntegrationTests {
 	@Autowired
