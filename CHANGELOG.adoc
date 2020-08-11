@@ -14,6 +14,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 === Metrics
 
 * New Spring Cloud GCP starter, `spring-cloud-gcp-starter-metrics`, configures Micrometer Stackdriver to automatically pick up project ID and credentials (thanks to @eddumelendez).
+* Added Metrics Sample App (https://github.com/spring-cloud/spring-cloud-gcp/issues/2455[#2455]) 
 
 === Firebase Security
 
