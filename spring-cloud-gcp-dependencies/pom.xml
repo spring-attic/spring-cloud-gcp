@@ -263,8 +263,8 @@
 							<rules>
 								<LinkageCheckerRule
 										implementation="com.google.cloud.tools.dependencies.enforcer.LinkageCheckerRule">
-									<dependencySection>DEPENDENCY_MANAGEMENT
-									</dependencySection>
+									<dependencySection>DEPENDENCY_MANAGEMENT</dependencySection>
+									<reportOnlyReachable>true</reportOnlyReachable>
 								</LinkageCheckerRule>
 							</rules>
 						</configuration>
