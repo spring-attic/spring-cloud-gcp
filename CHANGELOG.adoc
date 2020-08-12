@@ -5,6 +5,52 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.4.RELEASE (2020-07-31)
+
+=== General
+
+* Upgraded GCP libraries BOM and other dependencies (https://github.com/spring-cloud/spring-cloud-gcp/issues/2477[#2477])
+
+=== Metrics
+
+* New Spring Cloud GCP starter, `spring-cloud-gcp-starter-metrics`, configures Micrometer Stackdriver to automatically pick up project ID and credentials (thanks to @eddumelendez).
+* Added Metrics Sample App (https://github.com/spring-cloud/spring-cloud-gcp/issues/2455[#2455]) 
+
+=== Firebase Security
+
+* Allow `projectId` override in Firebase Authentication (https://github.com/spring-cloud/spring-cloud-gcp/issues/2405[#2405])
+
+=== Spanner
+
+* Allow `Pageable` and `Sort` in method-style (part-tree) queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2394[#2394])
+* Fixed: `NullPointerException` when passing the null value for nullable column (https://github.com/spring-cloud/spring-cloud-gcp/issues/2448[#2448])
+
+=== Secret Manager
+
+* Added additional operations for managing secret versions with `SecretManagerTemplate` (thanks to @kioie)
+
+=== Storage
+
+* Added the `spring.cloud.gcp.storage.project-id` autoconfig property (https://github.com/spring-cloud/spring-cloud-gcp/issues/2440[#2440])
+* Additional GCS Spring Integration file filters `GcsAcceptModifiedAfterFileListFilter` and `GcsDiscardRecentModifiedFileListFilter` (thanks to @hosainnet)
+
+=== Datastore
+
+* Fixed: Unable to exclude indexes on nested properties of embedded entity (https://github.com/spring-cloud/spring-cloud-gcp/issues/2439[#2439])
+* Fixed slice query execution in `PartTreeDatastoreQuery` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2452[#2452])
+* Fixed `null` handling for ID in query-by-example (https://github.com/spring-cloud/spring-cloud-gcp/issues/2471[#2471])
+
+=== Pub/Sub
+
+* Added `maxMessages` to `PubSubReactiveFactory.poll` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2441[#2441])
+* Control sync/async publish in Spring Cloud Stream binder (https://github.com/spring-cloud/spring-cloud-gcp/issues/2473[#2473])
+
+=== Firestore
+
+* Add subcollection support for `FirestoreTemplate` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2434[#2434])
+* Added support for automatic ID generation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2466[#2466])
+* Added `FirestoreTemplate` reference documentation (https://github.com/spring-cloud/spring-cloud-gcp/issues/2480[#2480])
+
 == 1.2.3.RELEASE (2020-05-29)
 
 === General
@@ -62,6 +108,7 @@ Please see the https://cloud.spring.io/spring-cloud-static/spring-cloud-gcp/1.2.
 
 * Make Firebase Security Autoconfiguration conditional (https://github.com/spring-cloud/spring-cloud-gcp/issues/2258[#2258])
 Thank you to the contributors from our user community: @eddumelendez, @mzeijen, @s13o, @acet, @guillaumeblaquiere
+
 == 1.2.2.RELEASE (2020-03-04)
 
 === General
