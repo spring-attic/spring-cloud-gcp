@@ -253,7 +253,7 @@
 				<executions>
 					<execution>
 						<id>enforce-linkage-checker</id>
-						<!-- Important! Should run after compile -->
+						<!-- Important! Should run after compile. Cannot run concurrently with 'install' -->
 						<phase>verify</phase>
 						<goals>
 							<goal>enforce</goal>
