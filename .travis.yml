@@ -31,9 +31,9 @@ script:
   - if [ "$INTEGRATION_TEST_FLAGS" != "" ]; then
       ./mvnw test -B -P codecov ${INTEGRATION_TEST_FLAGS} && bash <(curl -s https://codecov.io/bash) -F integration;
     fi;
-  # run enforcer rules
-  - ./mvnw -T 1.5C verify -DskipTests=true -Dspring.profiles.active=spring -B -V -P full-checkstyle
 install:
+  # run enforcer rules separate from 'install' as it interferes with Linkage Checker. 
+  - ./mvnw -T 1.5C verify -DskipTests=true -Dspring.profiles.active=spring -B -V -P full-checkstyle
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -Dspring.profiles.active=spring -Denforcer.skip=true -B -V
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
