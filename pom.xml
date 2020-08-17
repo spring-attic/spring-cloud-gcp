@@ -10,12 +10,14 @@
 		<relativePath/><!-- lookup parent from repository -->
 	</parent>
 
+	<groupId>com.google.cloud</groupId>
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>2.0.0.BUILD-SNAPSHOT</version>
-	<packaging>pom</packaging>
+	<version>2.0.0-SNAPSHOT</version>
+
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
 	<url>https://spring.io/projects/spring-cloud-gcp</url>
+	<packaging>pom</packaging>
 
 	<scm>
 		<url>https://github.com/spring-cloud/spring-cloud-gcp</url>
@@ -23,6 +25,17 @@
 		<developerConnection>scm:git:ssh://git@github.com/spring-cloud/spring-cloud-gcp.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 	<modules>
 		<module>docs</module>
@@ -67,10 +80,9 @@
 	</properties>
 
 	<dependencyManagement>
-
 		<dependencies>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
@@ -135,7 +147,6 @@
 				<artifactId>java-cfenv-test-support</artifactId>
 				<version>${java-cfenv.version}</version>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
@@ -198,11 +209,6 @@
 							<include>${integration-test.pattern}</include>
 						</includes>
 					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-deploy-plugin</artifactId>
-					<version>${maven-deploy-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -429,6 +435,7 @@
 				</pluginManagement>
 			</build>
 		</profile>
+
 		<profile>
 			<id>errorprone_java8</id>
 			<activation>
@@ -467,6 +474,39 @@
 						</plugin>
 					</plugins>
 				</pluginManagement>
+			</build>
+		</profile>
+
+		<!-- Handles deploying snapshots and releases. -->
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.8</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						</configuration>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>

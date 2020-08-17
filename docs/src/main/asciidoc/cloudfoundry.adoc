@@ -8,7 +8,7 @@ In order to take advantage of the Cloud Foundry support make sure the following 
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-starter-cloudfoundry</artifactId>
 </dependency>
 ----

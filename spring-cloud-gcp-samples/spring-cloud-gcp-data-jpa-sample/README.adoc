@@ -50,7 +50,7 @@ In `pom.xml` comment out `spring-cloud-gcp-starter-sql-mysql` and uncomment `spr
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
 </dependency>
 ----

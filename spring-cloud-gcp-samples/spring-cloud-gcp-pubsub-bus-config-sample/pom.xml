@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>spring-cloud-gcp-samples</artifactId>
-        <groupId>org.springframework.cloud</groupId>
-        <version>2.0.0.BUILD-SNAPSHOT</version>
+        <groupId>com.google.cloud</groupId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spring-cloud-gcp-pubsub-bus-config-sample</artifactId>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <packaging>pom</packaging>
     <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
 
@@ -22,7 +22,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.cloud</groupId>
+                <groupId>com.google.cloud</groupId>
                 <artifactId>spring-cloud-gcp-dependencies</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>

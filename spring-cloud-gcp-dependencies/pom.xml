@@ -9,11 +9,24 @@
 		<relativePath/>
 	</parent>
 
+	<groupId>com.google.cloud</groupId>
 	<artifactId>spring-cloud-gcp-dependencies</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
+
 	<name>Spring Cloud GCP Dependencies</name>
 	<description>Spring Cloud GCP Dependencies</description>
-	<version>2.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 	<properties>
 		<gcp-libraries-bom.version>8.1.0</gcp-libraries-bom.version>
@@ -34,174 +47,174 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-autoconfigure</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-cloudfoundry</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-data-datastore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-data-spanner</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-storage</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-logging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-security-iap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-vision</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-bigquery</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-security-firebase</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-secretmanager</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!--Starters-->
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-cloudfoundry</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-data-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-firestore</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-trace</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-logging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-metrics</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-security-firebase</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-vision</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-bigquery</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -291,5 +304,42 @@
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>
+
+    <!--
+    		Release profile must be defined here as well since spring-cloud-gcp-dependencies
+    		does not inherit from spring-cloud-gcp-parent
+    -->
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.8</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
+
 </project>

@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>spring-cloud-gcp</artifactId>
-        <groupId>org.springframework.cloud</groupId>
-        <version>2.0.0.BUILD-SNAPSHOT</version>
+        <groupId>com.google.cloud</groupId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>spring-cloud-gcp-data-firestore</artifactId>
@@ -47,7 +47,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
+            <groupId>com.google.cloud</groupId>
             <artifactId>spring-cloud-gcp-core</artifactId>
         </dependency>
 

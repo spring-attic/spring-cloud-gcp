@@ -5,8 +5,8 @@
 	<parent>
 		<!-- Your own application should inherit from spring-boot-starter-parent -->
 		<artifactId>spring-cloud-gcp-samples</artifactId>
-		<groupId>org.springframework.cloud</groupId>
-		<version>2.0.0.BUILD-SNAPSHOT</version>
+		<groupId>com.google.cloud</groupId>
+		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -16,7 +16,7 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
+				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
@@ -27,7 +27,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
+			<groupId>com.google.cloud</groupId>
 			<artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
 		</dependency>
 		<dependency>

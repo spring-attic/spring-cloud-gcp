@@ -3,22 +3,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-logging-sample</artifactId>
     <name>Spring Cloud GCP Logging Code Sample</name>
 
     <parent>
         <!-- Your own application should inherit from spring-boot-starter-parent -->
         <artifactId>spring-cloud-gcp-samples</artifactId>
-        <groupId>org.springframework.cloud</groupId>
-        <version>2.0.0.BUILD-SNAPSHOT</version>
+        <groupId>com.google.cloud</groupId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.springframework.cloud</groupId>
+                <groupId>com.google.cloud</groupId>
                 <artifactId>spring-cloud-gcp-dependencies</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
@@ -35,7 +35,7 @@
 
         <!-- Starter for Stackriver Logging -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
+            <groupId>com.google.cloud</groupId>
             <artifactId>spring-cloud-gcp-starter-logging</artifactId>
         </dependency>
 

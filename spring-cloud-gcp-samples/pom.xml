@@ -12,8 +12,8 @@
 
 	<name>Spring Cloud GCP Code Samples</name>
 	<artifactId>spring-cloud-gcp-samples</artifactId>
-	<groupId>org.springframework.cloud</groupId>
-	<version>2.0.0.BUILD-SNAPSHOT</version>
+	<groupId>com.google.cloud</groupId>
+	<version>2.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<modelVersion>4.0.0</modelVersion>

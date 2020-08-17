@@ -12,7 +12,7 @@ Maven coordinates for this module only, using <<getting-started.adoc#_bill_of_ma
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-data-datastore</artifactId>
 </dependency>
 ----
@@ -35,7 +35,7 @@ Maven:
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
 </dependency>
 ----

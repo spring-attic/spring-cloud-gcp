@@ -10,7 +10,7 @@ Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.cloud</groupId>
+    <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 </dependency>
 <dependency>
