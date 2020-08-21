@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicator;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 
@@ -69,20 +67,6 @@ public class GcpPubSubAutoConfigurationTests {
 			TransportChannelProvider tcp = ctx.getBean(TransportChannelProvider.class);
 			assertThat(((InstantiatingGrpcChannelProvider) tcp).getKeepAliveTime().toMinutes())
 					.isEqualTo(2);
-		});
-	}
-
-	@Test
-	public void healthIndicatorPresent() {
-		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(PubSubHealthIndicatorAutoConfiguration.class,
-						GcpPubSubAutoConfiguration.class))
-				.withUserConfiguration(TestConfig.class)
-				.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
-						"management.health.pubsub.enabled=true");
-		contextRunner.run(ctx -> {
-			PubSubHealthIndicator healthIndicator = ctx.getBean(PubSubHealthIndicator.class);
-			assertThat(healthIndicator).isNotNull();
 		});
 	}
 
