@@ -26,7 +26,7 @@ dependencies {
 }
 ----
 
-We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
+We provide a link:https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
 To use the starter, see the coordinates below.
 
 
@@ -59,7 +59,7 @@ To setup Spring Data Cloud Datastore, you have to configure the following:
 
 ==== Cloud Datastore settings
 
-You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
+You can use the link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
 It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
@@ -81,7 +81,7 @@ The following configuration options are available:
 
 Spring Data Repositories can be configured via the `@EnableDatastoreRepositories` annotation on your main `@Configuration` class.
 With our Spring Boot Starter for Spring Data Cloud Datastore, `@EnableDatastoreRepositories` is automatically added.
-It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
 
 ==== Autoconfiguration
 
@@ -1349,4 +1349,4 @@ To enable it, all you need to do is add the https://docs.spring.io/spring-boot/d
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample[Simple Spring Boot Application] and more advanced https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] are provided to show how to use the Spring Data Cloud Datastore starter and template.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample[Simple Spring Boot Application] and more advanced https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] are provided to show how to use the Spring Data Cloud Datastore starter and template.
