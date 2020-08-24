@@ -26,7 +26,7 @@ dependencies {
 }
 ----
 
-We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
+We provide a link:https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
 To use the starter, see the coordinates below.
 
 
@@ -59,7 +59,7 @@ To setup Spring Data Cloud Datastore, you have to configure the following:
 
 ==== Cloud Datastore settings
 
-You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
+You can use the link:https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
 It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
