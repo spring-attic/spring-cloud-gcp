@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 the original author or authors.
+ * Copyright 2018-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.health;
 
+import java.util.Map;
+
+import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.autoconfigure.health.HealthContributorAutoConfiguration;
+import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -34,21 +38,23 @@ import org.springframework.context.annotation.Configuration;
  * {@link PubSubHealthIndicator}.
  *
  * @author Vinicius Carvalho
+ * @author Elena Felder
  *
  * @since 1.2.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({HealthIndicator.class, PubSubTemplate.class})
 @ConditionalOnBean(PubSubTemplate.class)
 @ConditionalOnEnabledHealthIndicator("pubsub")
 @AutoConfigureBefore(HealthContributorAutoConfiguration.class)
 @AutoConfigureAfter(GcpPubSubAutoConfiguration.class)
-public class PubSubHealthIndicatorAutoConfiguration {
+public class PubSubHealthIndicatorAutoConfiguration extends
+		CompositeHealthContributorConfiguration<PubSubHealthIndicator, PubSubTemplate> {
 
 	@Bean
-	@ConditionalOnMissingBean
-	public PubSubHealthIndicator pubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
-		return new PubSubHealthIndicator(pubSubTemplate);
+	@ConditionalOnMissingBean(name = { "pubSubHealthIndicator", "pubSubHealthContributor"})
+	public HealthContributor pubSubHealthContributor(Map<String, PubSubTemplate> pubSubTemplates) {
+		return createContributor(pubSubTemplates);
 	}
 
 }
