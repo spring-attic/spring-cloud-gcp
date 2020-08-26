@@ -944,6 +944,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		CompanyWithBooleanPrimitive companyWithBooleanPrimitive =
 						this.datastoreTemplate.findById(1L, CompanyWithBooleanPrimitive.class);
 		assertThat(companyWithBooleanPrimitive.name).isEqualTo(company.name);
+		assertThat(companyWithBooleanPrimitive.active).isFalse();
 	}
 }
 
@@ -1123,16 +1124,12 @@ class CompanyWithBooleanPrimitive {
 	@Id
 	Long id;
 
-	@Descendants
-	List<Employee> leaders;
-
 	String name;
 
 	boolean active;
 
-	CompanyWithBooleanPrimitive(Long id, List<Employee> leaders) {
+	CompanyWithBooleanPrimitive(Long id) {
 		this.id = id;
-		this.leaders = leaders;
 	}
 }
 

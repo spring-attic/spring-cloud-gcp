@@ -156,7 +156,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 					Object value = propertyValueProvider
 							.getPropertyValue(datastorePersistentProperty);
-					if (value !=null) {
+					if (value != null) {
 						accessor.setProperty(datastorePersistentProperty, value);
 					}
 				}
