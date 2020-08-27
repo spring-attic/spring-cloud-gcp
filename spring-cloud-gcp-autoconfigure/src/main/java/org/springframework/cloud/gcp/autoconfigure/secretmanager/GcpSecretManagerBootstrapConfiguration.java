@@ -48,7 +48,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  */
 @Configuration
 @EnableConfigurationProperties(GcpSecretManagerProperties.class)
-@ConditionalOnClass(SecretManagerServiceClient.class)
+@ConditionalOnClass({SecretManagerServiceClient.class, SecretManagerTemplate.class})
 @ConditionalOnProperty(value = "spring.cloud.gcp.secretmanager.enabled", matchIfMissing = true)
 public class GcpSecretManagerBootstrapConfiguration {
 
