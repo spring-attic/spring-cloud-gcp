@@ -934,6 +934,18 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		return IntStream.range(0, length).mapToObj(String::valueOf)
 						.collect(Collectors.joining(","));
 	}
+
+	@Test
+	public void newFieldTest() {
+		Company company = new Company(1L, Collections.emptyList());
+		company.name = "name1";
+		this.datastoreTemplate.save(company);
+
+		CompanyWithBooleanPrimitive companyWithBooleanPrimitive =
+						this.datastoreTemplate.findById(1L, CompanyWithBooleanPrimitive.class);
+		assertThat(companyWithBooleanPrimitive.name).isEqualTo(company.name);
+		assertThat(companyWithBooleanPrimitive.active).isFalse();
+	}
 }
 
 /**
@@ -1091,7 +1103,7 @@ class Event {
 	}
 }
 
-@Entity
+@Entity(name = "company")
 class Company {
 	@Id
 	Long id;
@@ -1099,9 +1111,25 @@ class Company {
 	@Descendants
 	List<Employee> leaders;
 
+	String name;
+
 	Company(Long id, List<Employee> leaders) {
 		this.id = id;
 		this.leaders = leaders;
+	}
+}
+
+@Entity(name = "company")
+class CompanyWithBooleanPrimitive {
+	@Id
+	Long id;
+
+	String name;
+
+	boolean active;
+
+	CompanyWithBooleanPrimitive(Long id) {
+		this.id = id;
 	}
 }
 
