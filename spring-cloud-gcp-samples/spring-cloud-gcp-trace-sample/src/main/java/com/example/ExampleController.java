@@ -44,6 +44,7 @@ public class ExampleController {
 	public String work(HttpServletRequest request) {
 		String meetUrl = request.getRequestURL().toString() + "/meet";
 		this.workService.visitMeetEndpoint(meetUrl);
+		this.workService.sendMessage("All work is done.");
 		return "finished";
 	}
 

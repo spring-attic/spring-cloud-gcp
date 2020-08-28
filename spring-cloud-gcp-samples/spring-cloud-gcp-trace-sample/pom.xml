@@ -44,6 +44,15 @@
             <artifactId>spring-cloud-gcp-starter-logging</artifactId>
         </dependency>
 
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.integration</groupId>
+			<artifactId>spring-integration-core</artifactId>
+		</dependency>
+
         <!-- Test-related dependencies. -->
         <dependency>
             <groupId>org.awaitility</groupId>
