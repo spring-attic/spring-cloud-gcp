@@ -265,7 +265,7 @@ If none is provided, the adapter waits indefinitely for a response.
 It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler` through the `setPublishFutureCallback()` method.
 These are useful to process the message ID, in case of success, or the error if any was thrown.
 
-To override the default destination you can use the `GcpPubSubHeaders.DESTINATION` header.
+To override the default topic you can use the `GcpPubSubHeaders.TOPIC` header.
 
 [source,java]
 ----
