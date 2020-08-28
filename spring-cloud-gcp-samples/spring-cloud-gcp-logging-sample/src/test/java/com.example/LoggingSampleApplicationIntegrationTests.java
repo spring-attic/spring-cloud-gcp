@@ -97,7 +97,7 @@ public class LoggingSampleApplicationIntegrationTests {
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
-		await().atMost(120, TimeUnit.SECONDS)
+		await().atMost(4, TimeUnit.MINUTES)
 				.pollInterval(2, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
 					Page<LogEntry> logEntryPage = this.logClient.listLogEntries(

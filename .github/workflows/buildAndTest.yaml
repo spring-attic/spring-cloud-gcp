@@ -62,6 +62,7 @@ jobs:
           - datastore
           - firestore
           - logging
+          - metrics
           - kotlin
           - pubsub
           - pubsub-emulator

@@ -34,7 +34,7 @@ By this point, we assume that a new release branch has been created for project 
 The latest version of the docs can be accessed at the `latest/` url:
 https://googleapis.dev/java/spring-cloud-gcp/latest/index.html
 
-1. Locate and open the `prod:cloud-java-frameworks/spring-cloud-gcp-legacy/publish_javadoc` Kokoro job.
+1. Locate and open the `prod:cloud-java-frameworks/spring-cloud-gcp/publish_javadoc` Kokoro job.
 
 2. Add a new Github SCM and fill out the following parameters:
 

@@ -25,6 +25,8 @@
 		<spring-cloud-build-tools.version>3.0.0-SNAPSHOT</spring-cloud-build-tools.version>
 		<puppycrawl-tools-checkstyle.version>8.32</puppycrawl-tools-checkstyle.version>
 		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+		<app-engine-maven-plugin.version>2.2.0</app-engine-maven-plugin.version>
+
 		<skip.surefire.tests>false</skip.surefire.tests>
 		<skip.failsafe.tests>false</skip.failsafe.tests>
 		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
@@ -61,6 +63,7 @@
 		<module>spring-cloud-gcp-security-firebase-sample</module>
 		<module>spring-cloud-gcp-secretmanager-sample</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>
+		<module>spring-cloud-gcp-metrics-sample</module>
 	</modules>
 
 	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
@@ -155,6 +158,11 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>com.google.cloud.tools</groupId>
+					<artifactId>appengine-maven-plugin</artifactId>
+					<version>${app-engine-maven-plugin.version}</version>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${maven-surefire-plugin.version}</version>
@@ -191,6 +199,11 @@
 				<configuration>
 					<skip>true</skip>
 				</configuration>
+			</plugin>
+			<plugin>
+				<!-- Enables repackaging the JAR into an executable. -->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

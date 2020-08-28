@@ -5,7 +5,7 @@
   "api_description": "Provides support for enabling writing metrics to Stackdriver Monitoring from Spring Boot applications.",
   "release_level": "ga",
   "language": "java",
-  "repo": "spring-cloud/spring-cloud-gcp",
+  "repo": "googlecloudplatform/spring-cloud-gcp",
   "repo_short": "spring-cloud-gcp",
   "distribution_name": "org.springframework.cloud:spring-cloud-gcp-starter-metrics"
 }

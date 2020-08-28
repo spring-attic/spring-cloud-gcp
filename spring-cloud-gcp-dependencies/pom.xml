@@ -16,13 +16,23 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<gcp-libraries-bom.version>5.3.0</gcp-libraries-bom.version>
+		<gcp-libraries-bom.version>8.1.0</gcp-libraries-bom.version>
 		<cloud-sql-socket-factory.version>1.0.16</cloud-sql-socket-factory.version>
-		<java-cfenv.version>1.1.3.RELEASE</java-cfenv.version>
+		<guava.version>29.0-jre</guava.version>
 	</properties>
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- Overriding Guava from libraries-bom; Spring Cloud GCP does not require Java 7 support -->
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava-bom</artifactId>
+				<version>${guava.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-core</artifactId>
@@ -167,6 +177,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-metrics</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -218,18 +233,6 @@
 				<version>${gcp-libraries-bom.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>io.pivotal.cfenv</groupId>
-				<artifactId>java-cfenv</artifactId>
-				<version>${java-cfenv.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>io.pivotal.cfenv</groupId>
-				<artifactId>java-cfenv-test-support</artifactId>
-				<version>${java-cfenv.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
