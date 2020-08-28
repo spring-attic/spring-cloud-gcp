@@ -27,7 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -106,7 +105,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PropertySourceLocator secretManagerPropertySourceLocator(
+	public SecretManagerPropertySourceLocator secretManagerPropertySourceLocator(
 			SecretManagerTemplate secretManagerTemplate) {
 		SecretManagerPropertySourceLocator propertySourceLocator =
 				new SecretManagerPropertySourceLocator(secretManagerTemplate, this.gcpProjectIdProvider);

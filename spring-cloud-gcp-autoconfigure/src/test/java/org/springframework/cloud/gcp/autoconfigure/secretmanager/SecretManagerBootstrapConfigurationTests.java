@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -172,6 +173,13 @@ public class SecretManagerBootstrapConfigurationTests {
 		@Bean
 		public static CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
+		}
+
+		// This is added in here to verify that the Secret Manager property source locator bean
+		// still gets created even if another PropertySourceLocator bean exists in the environment.
+		@Bean
+		public static PropertySourceLocator defaultPropertySourceLocator() {
+			return locatorEnvironment -> null;
 		}
 	}
 }

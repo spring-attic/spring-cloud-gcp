@@ -32,6 +32,7 @@ import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.EntityValue;
+import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.ListValue;
@@ -241,7 +242,7 @@ public class DefaultDatastoreEntityConverterTests {
 		this.thrown.expectMessage("Unable to read property boolField");
 		this.thrown.expectMessage(
 				"Unable to convert class " +
-				"com.google.common.collect.RegularImmutableList to class java.lang.Boolean");
+				"com.google.common.collect.SingletonImmutableList to class java.lang.Boolean");
 
 		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
@@ -613,9 +614,14 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setUnindexedField(2L);
 		item.setUnindexedStringListField(Arrays.asList("a", "b"));
 		item.setUnindexedMapField(new MapBuilder<String, String>().put("c", "C").put("d", "D").build());
+		item.setEmbeddedItem(new UnindexedTestDatastoreItem(2, new UnindexedTestDatastoreItem(3, null)));
+		item.setUnindexedItems(Collections.singletonList(new UnindexedTestDatastoreItem(4, new UnindexedTestDatastoreItem(5, null))));
 
+		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
+						new DatastoreMappingContext(),
+						new DatastoreServiceObjectToKeyFactory(() -> this.datastore));
 		Entity.Builder builder = getEntityBuilder();
-		ENTITY_CONVERTER.write(item, builder);
+		entityConverter.write(item, builder);
 		Entity entity = builder.build();
 
 		assertThat(entity.getLong("indexedField")).as("validate indexed field value")
@@ -642,6 +648,20 @@ public class DefaultDatastoreEntityConverterTests {
 				.isTrue();
 		assertThat(((EntityValue) entity.getValue("unindexedMapField")).get().getValue("d").excludeFromIndexes())
 				.isTrue();
+
+		//Multi-level embedded entities - exclusion from indexes
+		testMultiLevelEmbeddedEntityUnindexed(((EntityValue) entity.getValue("embeddedItem")).get());
+		//Multi-level embedded entities in a list - exclusion from indexes
+		testMultiLevelEmbeddedEntityUnindexed(
+						((EntityValue) (
+										(ListValue) entity.getValue("unindexedItems")).get().get(0)
+						).get());
+	}
+
+	private void testMultiLevelEmbeddedEntityUnindexed(FullEntity entity) {
+		assertThat(entity.getValue("indexedField").excludeFromIndexes()).isTrue();
+		assertThat(((EntityValue) entity.getValue("embeddedItem"))
+						.get().getValue("indexedField").excludeFromIndexes()).isTrue();
 	}
 
 	@Test

@@ -359,7 +359,7 @@ class Album {
 
 These classes can correspond to an existing pair of interleaved tables.
 The `@Interleaved` annotation may be applied to `Collection` properties and the inner type is resolved as the child entity type.
-The schema needed to create them can also be generated using the `SpannerSchemaUtils` and executed using the `SpannerDatabaseAdminTemplate`:
+The schema needed to create them can also be generated using the `SpannerSchemaUtils` and run by using the `SpannerDatabaseAdminTemplate`:
 
 [source,java]
 ----
@@ -469,7 +469,7 @@ Natively supported types:
 * `long[]`
 * `boolean[]`
 * `java.util.Date`
-* `java.util.Instant`
+* `java.time.Instant`
 * `java.sql.Date`
 * `java.time.LocalDate`
 * `java.time.LocalDateTime`
@@ -653,7 +653,7 @@ SpannerQueryOptions
 
 Cloud Spanner has SQL support for running read-only queries.
 All the query related methods start with `query` on `SpannerTemplate`.
-Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
+By using `SpannerTemplate`, you can run SQL queries that map to POJOs:
 
 [source,java]
 ----
@@ -664,7 +664,7 @@ List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELEC
 
 Spanner exposes a https://cloud.google.com/spanner/docs/reads[Read API] for reading single row or multiple rows in a table or in a secondary index.
 
-Using `SpannerTemplate` you can execute reads, for example:
+Using `SpannerTemplate` you can run reads, as the following example shows:
 
 [source,java]
 ----
@@ -730,7 +730,7 @@ SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).
 List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 ----
 
-Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
+Note that the above is equivalent of running `SELECT * FROM trades LIMIT 2 OFFSET 3`.
 
 ===== Sorting
 
@@ -831,10 +831,10 @@ this.spannerTemplate.update(t, "symbol", "action");
 
 ==== DML
 
-DML statements can be executed using `SpannerOperations.executeDmlStatement`.
+DML statements can be run by using `SpannerOperations.executeDmlStatement`.
 Inserts, updates, and deletions can affect any number of rows and entities.
 
-You can execute https://cloud.google.com/spanner/docs/dml-partitioned[partitioned DML] updates by using the `executePartitionedDmlStatement` method.
+You can run https://cloud.google.com/spanner/docs/dml-partitioned[partitioned DML] updates by using the `executePartitionedDmlStatement` method.
 Partitioned DML queries have performance benefits but also have restrictions and cannot be used inside transactions.
 
 ==== Transactions
@@ -919,7 +919,7 @@ If a method annotated with `@Transactional` calls another method also annotated,
 ==== DML Statements
 
 `SpannerTemplate` supports https://cloud.google.com/spanner/docs/dml-tasks:[DML] `Statements`.
-DML statements can also be executed in transactions via `performReadWriteTransaction` or using the `@Transactional` annotation.
+DML statements can also be run in transactions by using `performReadWriteTransaction` or by using the `@Transactional` annotation.
 
 === Repositories
 
@@ -1128,7 +1128,7 @@ However, to ensure the correct sort order of the final result set, sort options 
 
 [source, java]
 ----
-	@Query("SELECT * FROM trades") 
+	@Query("SELECT * FROM trades")
 	List<Trade> fetchTrades(Pageable pageable);
 
 	@Query("SELECT * FROM trades ORDER BY price DESC LIMIT 1")
@@ -1162,8 +1162,8 @@ Your query method can also return non-entity types:
   	List<String> getFirstStringList(@Param("action") String action);
 ----
 
-DML statements can also be executed by query methods, but the only possible return value is a `long` representing the number of affected rows.
-The `dmlStatement` boolean setting must be set on `@Query` to indicate that the query method is executed as a DML statement.
+DML statements can also be run by query methods, but the only possible return value is a `long` representing the number of affected rows.
+The `dmlStatement` boolean setting must be set on `@Query` to indicate that the query method is run as a DML statement.
 
 [source, java]
 ----

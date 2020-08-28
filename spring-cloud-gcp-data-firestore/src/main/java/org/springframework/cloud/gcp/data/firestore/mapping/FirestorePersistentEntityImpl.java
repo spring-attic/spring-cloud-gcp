@@ -53,7 +53,12 @@ public class FirestorePersistentEntityImpl<T>
 					"An ID property was required but does not exist for the type: "
 							+ getType());
 		}
-		return getIdProperty();
+		FirestorePersistentProperty idProperty = getIdProperty();
+		if (idProperty.getType() != String.class) {
+			throw new FirestoreDataException(
+							"An ID property is expected to be of String type; was " + idProperty.getType());
+		}
+		return idProperty;
 	}
 
 	private static <T> String getEntityCollectionName(TypeInformation<T> typeInformation) {

@@ -37,6 +37,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.metrics.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Monitoring for Micrometer.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.pubsub.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Pub/Sub components.",
@@ -46,12 +52,6 @@
       "name": "spring.cloud.gcp.pubsub.reactive.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Pub/Sub Reactive components.",
-      "defaultValue": true
-    },
-    {
-      "name": "spring.cloud.gcp.secretmanager.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Auto-configure Google Cloud Secret Manager components.",
       "defaultValue": true
     },
     {

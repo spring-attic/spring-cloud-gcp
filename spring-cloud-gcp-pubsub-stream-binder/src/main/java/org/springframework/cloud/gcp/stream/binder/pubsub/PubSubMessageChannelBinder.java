@@ -73,6 +73,7 @@ public class PubSubMessageChannelBinder
 
 		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 		messageHandler.setBeanFactory(getBeanFactory());
+		messageHandler.setSync(producerProperties.getExtension().isSync());
 		return messageHandler;
 	}
 

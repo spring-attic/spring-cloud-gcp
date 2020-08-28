@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.secretmanager.SecretManagerTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,11 @@ import static org.junit.Assume.assumeThat;
 		classes = SecretManagerApplication.class,
 		properties = {"spring.config.use-legacy-processing=true"})
 public class SecretManagerSampleIntegrationTests {
+
+	private static final String SECRET_TO_DELETE = "secret-manager-sample-delete-secret";
+
+	@Autowired
+	private SecretManagerTemplate secretManagerTemplate;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -74,5 +80,18 @@ public class SecretManagerSampleIntegrationTests {
 				"/getSecret?secretId=secret-manager-sample-secret", String.class);
 		assertThat(response.getBody()).contains(
 				"Secret ID: secret-manager-sample-secret | Value: 12345");
+	}
+
+	@Test
+	public void testDeleteSecret() {
+		secretManagerTemplate.createSecret(SECRET_TO_DELETE, "test");
+
+		MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+		params.add("secretId", SECRET_TO_DELETE);
+		params.add("projectId", "");
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(params, new HttpHeaders());
+
+		ResponseEntity<String> response = this.testRestTemplate.postForEntity("/deleteSecret", request, String.class);
+		assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 	}
 }

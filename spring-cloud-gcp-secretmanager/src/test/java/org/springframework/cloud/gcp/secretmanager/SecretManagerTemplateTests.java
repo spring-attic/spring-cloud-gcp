@@ -20,6 +20,7 @@ import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
+import com.google.cloud.secretmanager.v1beta1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
 import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
@@ -180,6 +181,39 @@ public class SecretManagerTemplateTests {
 		assertThat(result).isEqualTo("get after it.");
 	}
 
+	@Test
+	public void testEnableSecretVersion() {
+		this.secretManagerTemplate.enableSecretVersion("my-secret", "1");
+		verifyEnableSecretVersionRequest("my-secret", "1", "my-project");
+
+		this.secretManagerTemplate.enableSecretVersion("my-secret", "1", "custom-project");
+		verifyEnableSecretVersionRequest("my-secret", "1", "custom-project");
+	}
+
+	@Test
+	public void testDeleteSecret() {
+		this.secretManagerTemplate.deleteSecret("my-secret");
+		verifyDeleteSecretRequest("my-secret", "my-project");
+
+		this.secretManagerTemplate.deleteSecret("my-secret", "custom-project");
+		verifyDeleteSecretRequest("my-secret", "custom-project");
+	}
+
+	@Test
+	public void testDeleteSecretVersion() {
+		this.secretManagerTemplate.deleteSecretVersion("my-secret", "10", "custom-project");
+		verifyDeleteSecretVersionRequest("my-secret", "10", "custom-project");
+	}
+
+	@Test
+	public void testDisableSecretVersion() {
+		this.secretManagerTemplate.disableSecretVersion("my-secret", "1");
+		verifyDisableSecretVersionRequest("my-secret", "1", "my-project");
+
+		this.secretManagerTemplate.disableSecretVersion("my-secret", "1", "custom-project");
+		verifyDisableSecretVersionRequest("my-secret", "1", "custom-project");
+	}
+
 	private void verifyCreateSecretRequest(String secretId, String projectId) {
 		Secret secretToAdd = Secret.newBuilder()
 				.setReplication(
@@ -202,5 +236,40 @@ public class SecretManagerTemplateTests {
 				.setPayload(SecretPayload.newBuilder().setData(ByteString.copyFromUtf8(payload)))
 				.build();
 		verify(this.client).addSecretVersion(addSecretVersionRequest);
+	}
+
+	private void verifyEnableSecretVersionRequest(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		verify(this.client).enableSecretVersion(secretVersionName);
+	}
+
+	private void verifyDeleteSecretRequest(String secretId, String projectId) {
+		SecretName name = SecretName.of(projectId, secretId);
+		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+				.setName(name.toString())
+				.build();
+		verify(this.client).deleteSecret(request);
+	}
+
+	private void verifyDeleteSecretVersionRequest(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		verify(this.client).destroySecretVersion(secretVersionName);
+	}
+
+	private void verifyDisableSecretVersionRequest(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		verify(this.client).disableSecretVersion(secretVersionName);
 	}
 }

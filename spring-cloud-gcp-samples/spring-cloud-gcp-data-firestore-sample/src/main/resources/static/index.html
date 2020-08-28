@@ -37,16 +37,20 @@
     Some values are prefilled as an example of what you can type in.
   </p>
 
-  <div class="panel">
-    <b>Create and save a new User</b>
-    <form action="/users/saveUser" method="post">
-      Name: <input type="text" name="name" value="Joe Smith">
-      <br>
-      Age: <input type="text" name="age" value="44">
-      <br>
-      <input type="submit" value="submit">
-    </form>
-  </div>
+    <div class="panel">
+        <b>Create and save a new User</b>
+        <form action="/users/saveUser" method="post">
+            Name: <input type="text" name="name" value="Joe Smith">
+            <br>
+            Age: <input type="text" name="age" value="44">
+            <br>
+            Pets (comma-separated values {pet-type}-{name} for each pet, such as "fish-dory"): <input type="text" name="pets" value="dog-Dusty,cat-Tosha">
+            <br>
+            Phone numbers (comma-separated): <input type="text" name="phones" value="111-222-3334,555-444-3322">
+            <br>
+            <input type="submit" value="submit">
+        </form>
+    </div>
 
   <div class="panel">
     <a href="/users">Show all users</a>
@@ -56,6 +60,30 @@
     <b>Show all users with age</b>
     <form action="/users/age" method="get">
       Age: <input type="text" name="age" value="44">
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
+    <b>Show phone numbers by name (even if a user is removed, the associated phone numbers remain - because they are stored as a subcollection)</b>
+    <form action="/users/phones" method="get">
+      Age: <input type="text" name="name" value="Joe Smith">
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
+    <b>Remove user by name</b>
+    <form action="/users/removeUser" method="get">
+      Age: <input type="text" name="name" value="Joe Smith">
+      <input type="submit" value="submit">
+    </form>
+  </div>
+
+  <div class="panel">
+    <b>Remove phone numbers by user name</b>
+    <form action="/users/removePhonesForUser" method="get">
+      Age: <input type="text" name="name" value="Joe Smith">
       <input type="submit" value="submit">
     </form>
   </div>

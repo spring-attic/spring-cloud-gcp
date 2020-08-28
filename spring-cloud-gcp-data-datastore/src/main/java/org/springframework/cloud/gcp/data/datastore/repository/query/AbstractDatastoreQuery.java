@@ -20,7 +20,7 @@ import java.lang.reflect.Array;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -40,15 +40,15 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final DatastoreQueryMethod queryMethod;
 
-	final DatastoreTemplate datastoreTemplate;
+	final DatastoreOperations datastoreOperations;
 
 	final Class<T> entityType;
 
 	public AbstractDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreTemplate datastoreTemplate,
+							DatastoreOperations datastoreOperations,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		this.queryMethod = queryMethod;
-		this.datastoreTemplate = datastoreTemplate;
+		this.datastoreOperations = datastoreOperations;
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.entityType = entityType;
 	}
@@ -66,7 +66,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	 */
 	protected Object[] convertCollectionParamToCompatibleArray(List<?> param) {
 		List converted = param.stream()
-				.map((x) -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
+				.map((x) -> this.datastoreOperations.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
 						.get())
 				.collect(Collectors.toList());
 		return converted.toArray(
@@ -79,8 +79,8 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}
 
-	public DatastoreTemplate getDatastoreTemplate() {
-		return this.datastoreTemplate;
+	public DatastoreOperations getDatastoreOperations() {
+		return this.datastoreOperations;
 	}
 
 	boolean isPageQuery() {

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreException;
@@ -172,8 +173,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Test
 	public void testFindByExample() {
 		assertThat(this.testEntityRepository
-				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
-						ExampleMatcher.matching().withIgnorePaths("id"))))
+				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
 		assertThat(this.testEntityRepository
@@ -186,8 +186,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		Page<TestEntity> result1 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null),
-								ExampleMatcher.matching().withIgnorePaths("id")),
+						Example.of(new TestEntity(null, null, null, null, null)),
 						PageRequest.of(0, 2, Sort.by("size")));
 		assertThat(result1.getTotalElements()).isEqualTo(4);
 		assertThat(result1.getNumber()).isEqualTo(0);
@@ -198,8 +197,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		Page<TestEntity> result2 = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null),
-								ExampleMatcher.matching().withIgnorePaths("id")),
+						Example.of(new TestEntity(null, null, null, null, null)),
 						result1.getPageable().next());
 		assertThat(result2.getTotalElements()).isEqualTo(4);
 		assertThat(result2.getNumber()).isEqualTo(1);
@@ -210,19 +208,18 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null),
-								ExampleMatcher.matching().withIgnorePaths("id")),
+						Example.of(new TestEntity(null, null, null, null, null)),
 						Sort.by(Sort.Direction.ASC, "size")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository
 				.count(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
-						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+						ExampleMatcher.matching().withIgnorePaths("size", "blobField"))))
 				.isEqualTo(2);
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
-						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+						ExampleMatcher.matching().withIgnorePaths("size", "blobField"))))
 				.isEqualTo(true);
 
 		assertThat(this.testEntityRepository
@@ -231,8 +228,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.isEqualTo(false);
 
 		assertThat(this.testEntityRepository
-				.exists(Example.of(new TestEntity(null, "red", null, null, null),
-						ExampleMatcher.matching().withIgnorePaths("id"))))
+				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
 				.isEqualTo(true);
 	}
 
@@ -923,6 +919,21 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 			throw e;
 		}
 	}
+
+	@Test(timeout = 10000L)
+	public void testUnindex() {
+		SubEntity childSubEntity = new SubEntity();
+		childSubEntity.stringList = Collections.singletonList(generateString(1600));
+		childSubEntity.stringProperty = generateString(1600);
+		SubEntity parentSubEntity = new SubEntity();
+		parentSubEntity.embeddedSubEntities = Collections.singletonList(childSubEntity);
+		this.datastoreTemplate.save(parentSubEntity);
+	}
+
+	private String generateString(int length) {
+		return IntStream.range(0, length).mapToObj(String::valueOf)
+						.collect(Collectors.joining(","));
+	}
 }
 
 /**
@@ -971,6 +982,9 @@ class SubEntity {
 	List<String> stringList;
 
 	String stringProperty;
+
+	@Unindexed
+	List<SubEntity> embeddedSubEntities;
 }
 
 class PetOwner {

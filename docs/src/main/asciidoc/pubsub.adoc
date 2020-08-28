@@ -124,7 +124,6 @@ can't increase the RPC timeout higher than this amount. | No | 0
 If you are using Spring Boot Actuator, you can take advantage of the Cloud Pub/Sub health indicator called `pubsub`.
 The health indicator will verify whether Cloud Pub/Sub is up and accessible by your application.
 To enable it, all you need to do is add the https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[Spring Boot Actuator] to your project.
-To disable the Cloud Pub/Sub indicator, set `management.health.pubsub.enabled` to `false`.
 
 The `pubsub` indicator will then roll up to the overall application status visible at http://localhost:8080/actuator/health (use the `management.endpoint.health.show-details` property to view per-indicator details).
 
@@ -135,6 +134,9 @@ The `pubsub` indicator will then roll up to the overall application status visib
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ----
+
+NOTE: If your application already has actuator and Cloud Pub/Sub starters, this health indicator is enabled by default.
+To disable the Cloud Pub/Sub indicator, set `management.health.pubsub.enabled` to `false`.
 
 === Pub/Sub Operations & Template
 
@@ -227,7 +229,7 @@ Using these methods for acknowledging messages in batches is more efficient than
 
 . To acknowledge messages individually you can use the `ack()` or `nack()` method on each of them (to acknowledge or negatively acknowledge, correspondingly).
 
-NOTE: All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages as well as `PubSubSubscriberTemplate` are implemented asynchronously, returning a `ListenableFuture<Void>` to be able to process the asynchronous execution.
+NOTE: All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages, as well as `PubSubSubscriberTemplate`, are implemented asynchronously, returning a `ListenableFuture<Void>` to enable asynchronous processing.
 
 ==== JSON support
 
@@ -288,7 +290,7 @@ Instead, as many messages as possible (up to the requested number) are delivered
 
 Any exceptions thrown by the underlying message retrieval logic will be passed as an error to the stream.
 The error handling operators (`Flux#retry()`, `Flux#onErrorResume()` etc.) can be used to recover.
-	 
+
 The full range of Project Reactor operations can be applied to the stream.
 For example, if you only want to fetch 5 messages, you can use `limitRequest` operation to turn the infinite stream into a finite one:
 

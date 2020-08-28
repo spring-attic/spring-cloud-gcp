@@ -1,6 +1,6 @@
 === Channel Adapters for Cloud Pub/Sub
 
-The channel adapters for Google Cloud Pub/Sub connect your Spring https://docs.spring.io/spring-integration/reference/html/messaging-channels-section.html#channel[`MessageChannels`] to Google Cloud Pub/Sub topics and subscriptions.
+The channel adapters for Google Cloud Pub/Sub connect your Spring https://docs.spring.io/spring-integration/reference/html/channel.html[`MessageChannels`] to Google Cloud Pub/Sub topics and subscriptions.
 This enables messaging between different processes, applications or micro-services backed up by Google Cloud Pub/Sub.
 
 The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the `spring-cloud-gcp-pubsub` module and can be autoconfigured by using the `spring-cloud-gcp-starter-pubsub` module in combination with a Spring Integration dependency.

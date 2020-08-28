@@ -24,12 +24,14 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.data.domain.Example;
 
 /**
  * An interface of operations that can be done with Cloud Datastore.
  *
  * @author Chengyuan Zhao
+ * @author Vinicius Carvalho
  *
  * @since 1.1
  */
@@ -260,4 +262,32 @@ public interface DatastoreOperations {
 	 * @return result keys
 	 */
 	<T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+
+	/**
+	 * Get the {@link DatastoreEntityConverter} used by this template.
+	 * @return the converter.
+	 */
+	DatastoreEntityConverter getDatastoreEntityConverter();
+
+	/**
+	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
+	 * returned.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param <T> the type of object to retrieve.
+	 * @return a list of the objects found. If no keys could be found the list will be
+	 * empty.
+	 */
+	<T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass);
+
+	/**
+	 * Runs given query and applies given function to each entity in the result.
+	 * @param query the query to run.
+	 * @param entityFunc the function to apply to each found entity or key.
+	 * @param <A> the row type of the query. This type can be either {@code Key} or a
+	 * Cloud Datastore entity.
+	 * @param <T> the type to map each entity or key to.
+	 * @return the mapped entities or keys.
+	 */
+	<A, T> DatastoreResultsIterable<T> queryIterable(Query<A> query, Function<A, T> entityFunc);
 }

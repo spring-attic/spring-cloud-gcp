@@ -20,12 +20,16 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AbortedException;
+import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -108,7 +112,19 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
+				public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+					throw new IllegalStateException("Spanner transaction cannot execute DML " +
+							"because it is in readonly mode");
+				}
+
+				@Override
 				public long[] batchUpdate(Iterable<Statement> iterable) {
+					throw new IllegalStateException("Spanner transaction cannot execute DML " +
+							"because it is in readonly mode");
+				}
+
+				@Override
+				public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> iterable) {
 					throw new IllegalStateException("Spanner transaction cannot execute DML " +
 							"because it is in readonly mode");
 				}
@@ -123,6 +139,11 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
+				public AsyncResultSet readAsync(String s, KeySet keySet, Iterable<String> iterable, ReadOption... readOptions) {
+					return targetTransactionContext.readAsync(s, keySet, iterable, readOptions);
+				}
+
+				@Override
 				public ResultSet readUsingIndex(
 						String s,
 						String s1,
@@ -132,10 +153,25 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 					return targetTransactionContext.readUsingIndex(s, s1, keySet, iterable, readOptions);
 				}
 
+				@Override
+				public AsyncResultSet readUsingIndexAsync(
+						String s,
+						String s1,
+						KeySet keySet,
+						Iterable<String> iterable,
+						Options.ReadOption... readOptions) {
+					return targetTransactionContext.readUsingIndexAsync(s, s1, keySet, iterable, readOptions);
+				}
+
 				@Nullable
 				@Override
 				public Struct readRow(String s, Key key, Iterable<String> iterable) {
 					return targetTransactionContext.readRow(s, key, iterable);
+				}
+
+				@Override
+				public ApiFuture<Struct> readRowAsync(String s, Key key, Iterable<String> iterable) {
+					return targetTransactionContext.readRowAsync(s, key, iterable);
 				}
 
 				@Nullable
@@ -146,9 +182,19 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
+				public ApiFuture<Struct> readRowUsingIndexAsync(String s, String s1, Key key, Iterable<String> iterable) {
+					return targetTransactionContext.readRowUsingIndexAsync(s, s1, key, iterable);
+				}
+
+				@Override
 				public ResultSet executeQuery(
 						Statement statement, Options.QueryOption... queryOptions) {
 					return targetTransactionContext.executeQuery(statement, queryOptions);
+				}
+
+				@Override
+				public AsyncResultSet executeQueryAsync(Statement statement, QueryOption... queryOptions) {
+					return targetTransactionContext.executeQueryAsync(statement, queryOptions);
 				}
 
 				@Override

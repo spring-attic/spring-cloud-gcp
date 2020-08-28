@@ -38,6 +38,11 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.query.DefaultParameters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -144,17 +149,18 @@ public class SpannerStatementQueryTests {
 
 		// This dummy method was created so the metadata for the ARRAY param inner type is
 		// provided.
-		Method method = QueryHolder.class.getMethod("dummyMethod", Object.class, Object.class, Object.class,
+		Method method = QueryHolder.class.getMethod("repositoryMethod1", Object.class, Object.class, Object.class,
 				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
 				Object.class, Object.class, List.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1)).query((Class<Object>) any(), any(), any());
 	}
 
 	@Test
-	public void compoundNameConventionCountTest() {
+	public void compoundNameConventionCountTest() throws NoSuchMethodException {
 		when(this.queryMethod.getName()).thenReturn(
 				"existsDistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
@@ -166,6 +172,12 @@ public class SpannerStatementQueryTests {
 
 		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
+		Method method = QueryHolder.class.getMethod("repositoryMethod3",
+				Object.class, Object.class, Object.class,
+				Object.class, Object.class, Object.class,
+				Object.class, Object.class, Object.class,
+				Object.class, Object.class, Object.class);
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenAnswer((invocation) -> {
@@ -209,13 +221,74 @@ public class SpannerStatementQueryTests {
 	}
 
 	@Test
-	public void unspecifiedParametersTest() {
+	public void pageableTest() throws NoSuchMethodException {
+		Object[] params = new Object[] { 8.88, PageRequest.of(1, 10, Sort.by("traderId")) };
+		Method method = QueryHolder.class.getMethod("repositoryMethod5",
+				Double.class, Pageable.class);
+		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
+				+ "FROM trades WHERE ( price<@tag0 ) "
+				+ "ORDER BY trader_id ASC LIMIT 10 OFFSET 10";
+
+		runPageableOrSortTest(params, method, expectedSql);
+	}
+
+
+	@Test
+	public void sortTest() throws NoSuchMethodException {
+		Object[] params = new Object[] { 8.88, Sort.by(Order.desc("traderId"), Order.asc("price"), Order.desc("action")) };
+		Method method = QueryHolder.class.getMethod("repositoryMethod6",
+				Double.class, Sort.class);
+		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
+				+ "FROM trades WHERE ( price<@tag0 ) "
+				+ "ORDER BY trader_id DESC , price ASC , action DESC";
+
+		runPageableOrSortTest(params, method, expectedSql);
+	}
+
+	private void runPageableOrSortTest(Object[] params, Method method, String expectedSql) {
+		when(this.queryMethod.getName()).thenReturn(
+				"findByPriceLessThan");
+		this.partTreeSpannerQuery = spy(createQuery());
+
+		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
+				.thenReturn(Collections.singletonList(1L));
+
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
+
+		when(this.spannerTemplate.query((Class) any(), any(), any()))
+				.thenAnswer((invocation) -> {
+					Statement statement = invocation.getArgument(1);
+
+					assertThat(statement.getSql()).isEqualTo(expectedSql);
+
+					Map<String, Value> paramMap = statement.getParameters();
+
+					assertThat(paramMap.get("tag0").getFloat64()).isEqualTo(params[0]);
+					assertThat(paramMap).hasSize(1);
+
+					return null;
+				});
+
+		doReturn(Object.class).when(this.partTreeSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
+				any());
+
+		this.partTreeSpannerQuery.execute(params);
+		verify(this.spannerTemplate, times(1)).query((Class) any(),
+				any(), any());
+	}
+
+	@Test
+	public void unspecifiedParametersTest() throws NoSuchMethodException {
 		this.expectedEx.expect(IllegalArgumentException.class);
 		this.expectedEx.expectMessage("The number of tags does not match the number of params.");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
+		Method method = QueryHolder.class.getMethod("repositoryMethod4", Object.class, Object.class, Object.class);
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		// There are too few params specified, so the exception will occur.
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", };
@@ -224,7 +297,7 @@ public class SpannerStatementQueryTests {
 	}
 
 	@Test
-	public void unsupportedParamTypeTest() {
+	public void unsupportedParamTypeTest() throws NoSuchMethodException {
 		this.expectedEx.expect(IllegalArgumentException.class);
 		this.expectedEx.expectMessage("is not a supported type: class org.springframework." +
 				"cloud.gcp.data.spanner.repository.query.SpannerStatementQueryTests$Trade");
@@ -232,6 +305,10 @@ public class SpannerStatementQueryTests {
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
+		Method method = QueryHolder.class.getMethod("repositoryMethod2", Object.class, Object.class, Object.class,
+				Object.class, Object.class, Trade.class, Object.class);
+
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		// This parameter is an unsupported type for Spanner SQL.
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, new Trade(), "ignored", };
@@ -240,11 +317,14 @@ public class SpannerStatementQueryTests {
 	}
 
 	@Test
-	public void unSupportedPredicateTest() {
+	public void unSupportedPredicateTest() throws NoSuchMethodException {
 		this.expectedEx.expect(UnsupportedOperationException.class);
 		this.expectedEx.expectMessage("The statement type: BETWEEN (2): [IsBetween, " +
 				"Between] is not supported.");
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
+		Method method = Object.class.getMethod("toString");
+		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
+
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
@@ -272,10 +352,32 @@ public class SpannerStatementQueryTests {
 		}
 	}
 
+	//The methods in this class are used to emulate repository methods
 	private static class QueryHolder {
-		public long dummyMethod(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+		public long repositoryMethod1(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
 				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11, List<Integer> tag12) {
 			// tag12 is intentionally List<Integer> instead of List<Long> to trigger conversion.
+			return 0;
+		}
+
+		public long repositoryMethod2(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Trade tag5, Object tag6) {
+			return 0;
+		}
+
+		public long repositoryMethod3(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
+				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11) {
+			return 0;
+		}
+
+		public long repositoryMethod4(Object tag0, Object tag1, Object tag2) {
+			return 0;
+		}
+
+		public long repositoryMethod5(Double tag0, Pageable tag1) {
+			return 0;
+		}
+
+		public long repositoryMethod6(Double tag0, Sort tag1) {
 			return 0;
 		}
 	}

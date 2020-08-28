@@ -41,4 +41,14 @@ public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings 
 	public Credentials getCredentials() {
 		return this.credentials;
 	}
+
+	private String projectId;
+
+	public String getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
 }

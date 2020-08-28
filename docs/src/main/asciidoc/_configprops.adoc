@@ -33,6 +33,7 @@
 |spring.cloud.gcp.firestore.credentials.encoded-key |  | 
 |spring.cloud.gcp.firestore.credentials.location |  | 
 |spring.cloud.gcp.firestore.credentials.scopes |  | 
+|spring.cloud.gcp.firestore.emulator.enabled | false | Enables autoconfiguration to use the Firestore emulator.
 |spring.cloud.gcp.firestore.enabled | true | Auto-configure Google Cloud Firestore components.
 |spring.cloud.gcp.firestore.host-port | firestore.googleapis.com:443 | The host and port of the Firestore emulator service; can be overridden to specify an emulator.
 |spring.cloud.gcp.firestore.project-id |  | 
@@ -103,6 +104,8 @@
 |spring.cloud.gcp.spanner.credentials.location |  | 
 |spring.cloud.gcp.spanner.credentials.scopes |  | 
 |spring.cloud.gcp.spanner.database |  | 
+|spring.cloud.gcp.spanner.emulator-host | localhost:9010 | 
+|spring.cloud.gcp.spanner.emulator.enabled | false | Enables auto-configuration to use the Spanner emulator.
 |spring.cloud.gcp.spanner.enabled | true | Auto-configure Google Cloud Spanner components.
 |spring.cloud.gcp.spanner.fail-if-pool-exhausted | false | 
 |spring.cloud.gcp.spanner.instance-id |  | 

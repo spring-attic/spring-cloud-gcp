@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
+import com.google.api.gax.rpc.StatusCode.Code;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -53,7 +54,8 @@ public class PubSubHealthIndicator extends AbstractHealthIndicator {
 			this.pubSubTemplate.pull("subscription-" + UUID.randomUUID().toString(), 1, true);
 		}
 		catch (ApiException aex) {
-			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
+			Code errorCode = aex.getStatusCode().getCode();
+			if (errorCode == StatusCode.Code.NOT_FOUND || errorCode == Code.PERMISSION_DENIED) {
 				builder.up();
 			}
 			else {

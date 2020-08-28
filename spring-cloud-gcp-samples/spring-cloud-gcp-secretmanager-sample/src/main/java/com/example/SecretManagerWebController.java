@@ -39,9 +39,7 @@ public class SecretManagerWebController {
 	@Autowired
 	private SecretManagerTemplate secretManagerTemplate;
 
-	// Application secrets can be accessed using @Value and passing in the secret name.
-	// Note that the secret name is prefixed with "secrets" because of the prefix setting in
-	// bootstrap.properties.
+	// Application secrets can be accessed using @Value and using the "sm://" syntax.
 	@Value("${sm://application-secret}")
 	private String appSecret;
 
@@ -101,6 +99,22 @@ public class SecretManagerWebController {
 		map.put("applicationSecret", this.appSecret);
 		map.put("myApplicationSecret", this.myAppSecret);
 		map.put("message", "Secret created!");
+		return new ModelAndView("index.html", map);
+	}
+
+	@PostMapping("/deleteSecret")
+	public ModelAndView deleteSecret(
+			@RequestParam String secretId,
+			@RequestParam(required = false) String projectId,
+			ModelMap map) {
+		if (StringUtils.isEmpty(projectId)) {
+			this.secretManagerTemplate.deleteSecret(secretId);
+		}
+		else {
+			this.secretManagerTemplate.deleteSecret(secretId, projectId);
+		}
+		map.put("applicationSecret", this.appSecret);
+		map.put("message", "Secret deleted!");
 		return new ModelAndView("index.html", map);
 	}
 }

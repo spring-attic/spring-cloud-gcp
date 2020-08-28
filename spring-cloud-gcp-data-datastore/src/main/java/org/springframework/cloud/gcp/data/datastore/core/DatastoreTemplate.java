@@ -50,6 +50,7 @@ import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
+import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
@@ -73,6 +74,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.NullHandler;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
@@ -88,6 +90,7 @@ import org.springframework.util.TypeUtils;
  * An implementation of {@link DatastoreOperations}.
  *
  * @author Chengyuan Zhao
+ * @author Vinicius Carvalho
  *
  * @since 1.1
  */
@@ -122,10 +125,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
-	/**
-	 * Get the {@link DatastoreEntityConverter} used by this template.
-	 * @return the converter.
-	 */
+	@Override
 	public DatastoreEntityConverter getDatastoreEntityConverter() {
 		return this.datastoreEntityConverter;
 	}
@@ -261,15 +261,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				: null;
 	}
 
-	/**
-	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
-	 * returned.
-	 * @param query the query to execute.
-	 * @param entityClass the type of object to retrieve.
-	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
-	 */
+	@Override
 	public <T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = getDatastoreReadWriter().run(query);
 		DatastoreResultsIterable resultsIterable;
@@ -289,6 +281,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return (List<T>) queryIterable(query, entityFunc).getIterable();
 	}
 
+	@Override
 	public <A, T> DatastoreResultsIterable<T> queryIterable(Query<A> query, Function<A, T> entityFunc) {
 		QueryResults<A> results = getDatastoreReadWriter().run(query);
 		List resultsList = new ArrayList();
@@ -774,28 +767,12 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		matcherAccessor.getPropertySpecifiers();
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
-
-			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
-				// ID properties are not stored as regular fields in Datastore.
-				String fieldName = persistentProperty.getFieldName();
-				Value<?> value;
-				if (persistentProperty.isIdProperty()) {
-					PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(probe);
-					value = KeyValue.of(
-							createKey(persistentEntity.kindName(), accessor.getProperty(persistentProperty)));
-				}
-				else {
-					value = probeEntity.getValue(fieldName);
-				}
-				if (value instanceof NullValue
-						&& example.getMatcher().getNullHandler() != ExampleMatcher.NullHandler.INCLUDE) {
-					//skip null value
-					return;
-				}
-				filters.add(StructuredQuery.PropertyFilter.eq(fieldName, value));
+			if (!ignoredProperty(example, persistentProperty)) {
+				Value<?> value = getValue(example, probeEntity, persistentEntity, persistentProperty);
+				NullHandler nullHandler = example.getMatcher().getNullHandler();
+				addFilter(nullHandler, filters, persistentProperty.getFieldName(), value);
 			}
 		});
-
 
 		if (!filters.isEmpty()) {
 			builder.setFilter(
@@ -804,6 +781,43 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 		applyQueryOptions(builder, queryOptions, persistentEntity);
 		return builder.build();
+	}
+
+	private <T> Value<?> getValue(Example<T> example, FullEntity<IncompleteKey> probeEntity,
+					DatastorePersistentEntity<?> persistentEntity, DatastorePersistentProperty persistentProperty) {
+		Value<?> value;
+		if (persistentProperty.isIdProperty()) {
+			value = getIdValue(example, persistentEntity, persistentProperty);
+		}
+		else {
+			value = probeEntity.getValue(persistentProperty.getFieldName());
+		}
+		return value;
+	}
+
+	private <T> boolean ignoredProperty(Example<T> example, DatastorePersistentProperty persistentProperty) {
+		return example.getMatcher().isIgnoredPath(persistentProperty.getName());
+	}
+
+	private <T> Value<?> getIdValue(Example<T> example, DatastorePersistentEntity<?> persistentEntity,
+					DatastorePersistentProperty persistentProperty) {
+		// ID properties are not stored as regular fields in Datastore.
+		Value<?> value;
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(example.getProbe());
+		Object property = accessor.getProperty(persistentProperty);
+		value = property != null
+						? KeyValue.of(createKey(persistentEntity.kindName(), property))
+						: NullValue.of();
+		return value;
+	}
+
+	private <T> void addFilter(NullHandler nullHandler, LinkedList<Filter> filters, String fieldName, Value<?> value) {
+		if (value instanceof NullValue
+				&& nullHandler != ExampleMatcher.NullHandler.INCLUDE) {
+			//skip null value
+			return;
+		}
+		filters.add(PropertyFilter.eq(fieldName, value));
 	}
 
 	private <T> void validateExample(Example<T> example) {

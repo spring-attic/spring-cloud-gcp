@@ -17,6 +17,7 @@
 package com.example;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,32 +68,52 @@ public class FirestoreSampleApplicationIntegrationTests {
 
 	@Test
 	public void saveUserTest() {
+		restTemplate.getForEntity("/users/removePhonesForUser?name=Alpha", String.class);
 		User[] users = restTemplate.getForObject("/users", User[].class);
 		assertThat(users).isEmpty();
 
-		sendPostRequestForUser("Alpha", 49);
-		sendPostRequestForUser("Beta", 23);
-		sendPostRequestForUser("Delta", 49);
+		sendPostRequestForUser("Alpha", 49, "rat-Snowflake", "555666777,777666555");
+		sendPostRequestForUser("Beta", 23, "", "");
+		sendPostRequestForUser("Delta", 49, "fish-Dory,spider-Man", "");
 
-		users = restTemplate.getForObject("/users", User[].class);
-		List<String> names = Arrays.stream(users).map(User::getName).collect(Collectors.toList());
+		User[] allUsers = restTemplate.getForObject("/users", User[].class);
+		List<String> names = Arrays.stream(allUsers).map(User::getName).collect(Collectors.toList());
 		assertThat(names).containsExactlyInAnyOrder("Alpha", "Beta", "Delta");
 
-		users = restTemplate.getForObject("/users/age?age=49", User[].class);
-		List<String> filterNames = Arrays.stream(users).map(User::getName).collect(Collectors.toList());
-		assertThat(filterNames).containsExactlyInAnyOrder("Alpha", "Delta");
+		User[] users49 = restTemplate.getForObject("/users/age?age=49", User[].class);
+		assertThat(users49).containsExactlyInAnyOrder(
+				new User("Alpha", 49,
+						Collections.singletonList(new Pet("rat", "Snowflake"))),
+				new User("Delta", 49,
+						Arrays.asList(new Pet("fish", "Dory"),
+								new Pet("spider", "Man")))
+				);
+		PhoneNumber[] phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber))
+				.containsExactlyInAnyOrder("555666777", "777666555");
+
+		restTemplate.getForEntity("/users/removeUser?name=Alpha", String.class);
+		phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber))
+				.containsExactlyInAnyOrder("555666777", "777666555");
+
+		restTemplate.getForEntity("/users/removePhonesForUser?name=Alpha", String.class);
+		phoneNumbers = restTemplate.getForObject("/users/phones?name=Alpha", PhoneNumber[].class);
+		assertThat(Arrays.stream(phoneNumbers).map(PhoneNumber::getNumber)).isEmpty();
 	}
 
 	/**
 	 * Sends a POST request to the server which will create a new User in Firestore.
 	 */
-	private void sendPostRequestForUser(String name, int age) {
+	private void sendPostRequestForUser(String name, int age, String pets, String phoneNums) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("name", name);
 		map.add("age", age);
+		map.add("pets", pets);
+		map.add("phones", phoneNums);
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
 		this.restTemplate.postForEntity("/users/saveUser", request, String.class);

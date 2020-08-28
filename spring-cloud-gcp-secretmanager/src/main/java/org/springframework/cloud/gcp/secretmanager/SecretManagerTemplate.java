@@ -20,6 +20,7 @@ import com.google.api.gax.rpc.NotFoundException;
 import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
 import com.google.cloud.secretmanager.v1beta1.AddSecretVersionRequest;
 import com.google.cloud.secretmanager.v1beta1.CreateSecretRequest;
+import com.google.cloud.secretmanager.v1beta1.DeleteSecretRequest;
 import com.google.cloud.secretmanager.v1beta1.ProjectName;
 import com.google.cloud.secretmanager.v1beta1.Replication;
 import com.google.cloud.secretmanager.v1beta1.Secret;
@@ -98,6 +99,60 @@ public class SecretManagerTemplate implements SecretManagerOperations {
 		}
 
 		return true;
+	}
+
+	@Override
+	public void disableSecretVersion(String secretId, String version) {
+		disableSecretVersion(secretId, version, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
+	public void disableSecretVersion(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		this.secretManagerServiceClient.disableSecretVersion(secretVersionName);
+	}
+
+	@Override
+	public void enableSecretVersion(String secretId, String version) {
+		enableSecretVersion(secretId, version, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
+	public void enableSecretVersion(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		this.secretManagerServiceClient.enableSecretVersion(secretVersionName);
+	}
+
+	@Override
+	public void deleteSecret(String secretId) {
+		deleteSecret(secretId, this.projectIdProvider.getProjectId());
+	}
+
+	@Override
+	public void deleteSecret(String secretId, String projectId) {
+		SecretName name = SecretName.of(projectId, secretId);
+		DeleteSecretRequest request = DeleteSecretRequest.newBuilder()
+				.setName(name.toString())
+				.build();
+		this.secretManagerServiceClient.deleteSecret(request);
+	}
+
+	@Override
+	public void deleteSecretVersion(String secretId, String version, String projectId) {
+		SecretVersionName secretVersionName = SecretVersionName.newBuilder()
+				.setProject(projectId)
+				.setSecret(secretId)
+				.setSecretVersion(version)
+				.build();
+		this.secretManagerServiceClient.destroySecretVersion(secretVersionName);
 	}
 
 	ByteString getSecretByteString(String secretIdentifier) {

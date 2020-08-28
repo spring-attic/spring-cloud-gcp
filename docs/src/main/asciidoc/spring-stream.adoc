@@ -40,6 +40,10 @@ If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub St
 
 NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via `spring.cloud.gcp.pubsub.emulator-host`.
 
+==== Producer Synchronous Sending Configuration
+By default, this binder will send messages to Cloud Pub/Sub asynchronously.
+If synchronous sending is preferred (for example, to allow propagating errors back to the sender), set `spring.cloud.stream.gcp.pubsub.default.producer.sync` property to `true`.
+
 ==== Producer Destination Configuration
 
 If automatic resource creation is turned ON and the topic corresponding to the destination name does not exist, it will be created.

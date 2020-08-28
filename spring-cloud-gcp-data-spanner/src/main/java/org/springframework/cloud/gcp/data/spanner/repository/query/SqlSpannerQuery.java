@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -43,7 +44,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -193,53 +196,31 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	@Override
 	public List executeRawResult(Object[] parameters) {
-		List<Object> params = new ArrayList<>();
 
-		Pageable pageable = null;
-		Sort sort = null;
-
-		for (Object param : parameters) {
-			Class<?> paramClass = param.getClass();
-			if (isPageableOrSort(paramClass)) {
-				if (pageable != null || sort != null) {
-					throw new SpannerDataException(
-							"Only a single Pageable or Sort param is allowed.");
-				}
-				else if (Pageable.class.isAssignableFrom(paramClass)) {
-						pageable = (Pageable) param;
-				}
-				else {
-					sort = (Sort) param;
-				}
-			}
-			else {
-				params.add(param);
-			}
-		}
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+		Object[] params = StreamSupport.stream(paramAccessor.spliterator(), false).toArray();
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
-				params.toArray(), resolveEntityClassNames(this.sql, this.spannerMappingContext));
+						params, resolveEntityClassNames(this.sql, this.spannerMappingContext));
 
 		resolveSpELTags(queryTagValue);
 
 		return this.isDml
 				? Collections.singletonList(
 						this.spannerTemplate.executeDmlStatement(buildStatementFromQueryAndTags(queryTagValue)))
-				: executeReadSql(pageable, sort, queryTagValue);
+				: executeReadSql(paramAccessor.getPageable(), paramAccessor.getSort(), queryTagValue);
 	}
 
 	private List executeReadSql(Pageable pageable, Sort sort, QueryTagValue queryTagValue) {
 		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions()
 				.setAllowPartialRead(true);
 
-		if (pageable == null) {
-			if (sort != null) {
-				spannerQueryOptions.setSort(sort);
-			}
+		if (sort != null && sort.isSorted()) {
+			spannerQueryOptions.setSort(sort);
 		}
-		else {
-			spannerQueryOptions.setSort(pageable.getSort())
-					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
+
+		if (pageable != null && pageable.isPaged()) {
+			spannerQueryOptions.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
 		final Class<?> returnedType = getReturnedType();

@@ -42,6 +42,7 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -78,6 +79,7 @@ import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_
  *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
+ * @author Vinicius Carvalho
  *
  * @since 1.1
  */
@@ -109,7 +111,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param projectionFactory the projection factory that is used to get projection information.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreTemplate datastoreTemplate,
+								DatastoreOperations datastoreTemplate,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType, ProjectionFactory projectionFactory) {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, entityType);
 		this.tree = new PartTree(queryMethod.getName(), entityType);
@@ -187,7 +189,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private Object runQuery(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean requiresCount) {
 		ExecutionOptions options = new ExecutionOptions(returnedElementType, collectionType, requiresCount);
 
-		DatastoreResultsIterable rawResults = getDatastoreTemplate()
+		DatastoreResultsIterable rawResults = getDatastoreOperations()
 				.queryKeysOrEntities(
 						applyQueryBody(parameters, options.getQueryBuilder(),
 								requiresCount, options.isSingularResult(), null),
@@ -246,7 +248,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
-		DatastoreResultsIterable<?> resultList = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
+		DatastoreResultsIterable<?> resultList = this.datastoreOperations.queryKeysOrEntities(query, this.entityType);
 
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
@@ -254,13 +256,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
-		List datastoreResultsList = this.datastoreTemplate.query(queryNext, x -> x);
+		Iterable nextResult = this.datastoreOperations.query(queryNext, x -> x);
 
 		List<Object> result =
-				StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
+						StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
 
 		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, pageable, !datastoreResultsList.isEmpty()));
+				new SliceImpl(result, pageable, nextResult.iterator().hasNext()));
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {
@@ -268,16 +270,16 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			List list = (List) result;
 			return list.isEmpty() ? null : list.get(0);
 		}
-		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
+		return getDatastoreOperations().getDatastoreEntityConverter().getConversions()
 				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());
 	}
 
 	private void deleteFoundEntities(boolean deleteById, Iterable rawResults) {
 		if (deleteById) {
-			getDatastoreTemplate().deleteAllById(rawResults, this.entityType);
+			getDatastoreOperations().deleteAllById(rawResults, this.entityType);
 		}
 		else {
-			getDatastoreTemplate().deleteAll(rawResults);
+			getDatastoreOperations().deleteAll(rawResults);
 		}
 	}
 
@@ -378,12 +380,12 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		// which means that we store keys there
 		if (persistentProperty.isAssociation()
 				&& this.datastoreMappingContext.hasPersistentEntityFor(val.getClass())) {
-			return KeyValue.of(this.datastoreTemplate.getKey(val));
+			return KeyValue.of(this.datastoreOperations.getKey(val));
 		}
 		if (persistentProperty.isIdProperty()) {
-			return KeyValue.of(this.datastoreTemplate.createKey(this.datastorePersistentEntity.kindName(), val));
+			return KeyValue.of(this.datastoreOperations.createKey(this.datastorePersistentEntity.kindName(), val));
 		}
-		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(val);
+		return this.datastoreOperations.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(val);
 	}
 
 	private static class ExecutionResult {

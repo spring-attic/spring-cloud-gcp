@@ -33,9 +33,11 @@ import static org.assertj.core.api.Assertions.catchThrowable;
  * @author Daniel Zou
  */
 public class GcpStorageDisableTests {
+	private static final String PROJECT_NAME = "hollow-light-of-the-sealed-land";
 
 	ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
+			.withPropertyValues("spring.cloud.gcp.storage.project-id=" + PROJECT_NAME)
 			.withPropertyValues("spring.cloud.gcp.storage.enabled=false");
 
 	@Test

@@ -86,6 +86,64 @@ public interface SecretManagerOperations {
 	void createSecret(String secretId, byte[] payload, String projectId);
 
 	/**
+	 * Enables the specified secret version under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to enable.
+	 * @param version the version to enable
+	 */
+	void enableSecretVersion(String secretId, String version);
+
+	/**
+	 * Enables the secret version under the specified project.
+	 *
+	 * @param secretId the secret ID of the secret to enable.
+	 * @param version the version to enable
+	 * @param projectId unique identifier of your project.
+	 */
+	void enableSecretVersion(String secretId, String version, String projectId);
+
+	/**
+	 * Disables the specified secret version under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to disable.
+	 * @param version the version to disable
+	 */
+	void disableSecretVersion(String secretId, String version);
+
+	/**
+	 * Disables the secret version under the specified project.
+	 *
+	 * @param secretId the secret ID of the secret to disable.
+	 * @param version the version to disable
+	 * @param projectId unique identifier of your project.
+	 */
+	void disableSecretVersion(String secretId, String version, String projectId);
+
+	/**
+	 * Deletes the specified secret under the default-configured project.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 */
+	void deleteSecret(String secretId);
+
+	/**
+	 * Deletes the specified secret.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 * @param projectId the GCP project containing the secret to delete.
+	 */
+	void deleteSecret(String secretId, String projectId);
+
+	/**
+	 * Deletes the specified secret version.
+	 *
+	 * @param secretId the secret ID of the secret to delete.
+	 * @param version the version to delete
+	 * @param projectId the GCP project containing the secret to delete.
+	 */
+	void deleteSecretVersion(String secretId, String version, String projectId);
+
+	/**
 	 * Gets the secret payload of the specified {@code secretIdentifier} secret.
 	 *
 	 * <p>The {@code secretIdentifier} must either be a secret ID or a fully qualified
