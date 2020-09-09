@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Eddú Meléndez
+ * @author Øystein Urdahl Hardeng
  */
 @Configuration
 @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
@@ -161,7 +162,11 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 				LOGGER.warn("Ignoring provided spring.datasource.url. Overwriting it based on the " +
 						"spring.cloud.gcp.sql.instance-connection-name.");
 			}
-			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+			String jdbcUrl = cloudSqlJdbcInfoProvider.getJdbcUrl();
+			if (StringUtils.hasText(gcpCloudSqlProperties.getIpTypes())) {
+				jdbcUrl = String.format(jdbcUrl + "&ipTypes=%s", gcpCloudSqlProperties.getIpTypes());
+			}
+			properties.setUrl(jdbcUrl);
 
 			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
 				setCredentialsEncodedKeyProperty(gcpCloudSqlProperties);
