@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,7 @@ public final class SpannerTypeMapper {
 			.put(Type.Code.BYTES, ByteArray.class)
 			.put(Type.Code.DATE, com.google.cloud.Date.class)
 			.put(Type.Code.FLOAT64, Double.class)
+			.put(Type.Code.NUMERIC, BigDecimal.class)
 			.put(Type.Code.INT64, Long.class)
 			.put(Type.Code.STRING, String.class)
 			.put(Type.Code.STRUCT, Struct.class)
@@ -61,6 +63,7 @@ public final class SpannerTypeMapper {
 			.put(Type.Code.BYTES, ByteArray[].class)
 			.put(Type.Code.DATE, com.google.cloud.Date[].class)
 			.put(Type.Code.FLOAT64, double[].class)
+			.put(Type.Code.NUMERIC, BigDecimal[].class)
 			.put(Type.Code.INT64, long[].class)
 			.put(Type.Code.STRING, String[].class)
 			.put(Type.Code.STRUCT, Struct[].class)
@@ -71,7 +74,6 @@ public final class SpannerTypeMapper {
 		Map<Class, Type.Code> builderMap = new HashMap<>();
 		SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
-				.stream()
 				.forEach(
 						(type) -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		builderMap.put(double.class, Code.FLOAT64);
@@ -80,10 +82,9 @@ public final class SpannerTypeMapper {
 	}
 
 	static {
-		HashMap<Class, Type.Code> builderMap = new HashMap();
+		HashMap<Class, Type.Code> builderMap = new HashMap<>();
 		SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
-				.stream()
 				.forEach(
 						(type) -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);

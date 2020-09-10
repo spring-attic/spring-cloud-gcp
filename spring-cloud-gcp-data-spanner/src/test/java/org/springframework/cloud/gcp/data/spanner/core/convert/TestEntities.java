@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -110,6 +111,10 @@ public class TestEntities {
 
 		@Column(spannerCommitTimestamp = true)
 		Timestamp commitTimestamp;
+
+		BigDecimal bigDecimalField;
+
+		List<BigDecimal> bigDecimals;
 	}
 
 	/**

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ public class StructAccessor {
 				.put(Timestamp.class, AbstractStructReader::getTimestampList)
 				.put(Date.class, AbstractStructReader::getDateList)
 				.put(ByteArray.class, AbstractStructReader::getBytesList)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimalList)
 				.put(Struct.class, AbstractStructReader::getStructList)
 				.build();
 
@@ -71,6 +73,7 @@ public class StructAccessor {
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)
 				.put(boolean[].class, AbstractStructReader::getBooleanArray)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map is for
 				// the case where the field within the POJO is Struct.
@@ -91,6 +94,7 @@ public class StructAccessor {
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)
 				.put(boolean[].class, AbstractStructReader::getBooleanArray)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map
 				// is for
