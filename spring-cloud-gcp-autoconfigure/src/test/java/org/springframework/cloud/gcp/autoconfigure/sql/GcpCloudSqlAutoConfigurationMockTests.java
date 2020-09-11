@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author João André Martins
  * @author Artem Bilan
+ * @author Øystein Urdahl Hardeng
  */
 public class GcpCloudSqlAutoConfigurationMockTests {
 
@@ -202,4 +203,16 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				});
 	}
 
+	@Test
+	public void testIpTypes() {
+		this.contextRunner.withPropertyValues(
+				"spring.cloud.gcp.sql.instanceConnectionName=world:asia:japan",
+				"spring.cloud.gcp.sql.ip-types=PRIVATE")
+				.run((context) -> {
+					DataSourceProperties dataSourceProperties =
+							context.getBean(DataSourceProperties.class);
+					assertThat(dataSourceProperties.getUrl()).contains(
+							"&ipTypes=PRIVATE");
+				});
+	}
 }
