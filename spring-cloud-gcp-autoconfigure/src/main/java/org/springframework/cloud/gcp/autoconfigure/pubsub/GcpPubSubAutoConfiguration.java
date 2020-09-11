@@ -28,7 +28,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
-import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.retrying.RetrySettings.Builder;
 import com.google.api.gax.rpc.HeaderProvider;
@@ -37,6 +36,8 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.cloud.pubsub.v1.stub.PublisherStubSettings;
+import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings;
 import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -219,12 +220,12 @@ public class GcpPubSubAutoConfiguration {
 					ObjectProvider<FlowControlSettings> flowControlSettings,
 			@Qualifier("subscriberApiClock") ObjectProvider<ApiClock> apiClock,
 			@Qualifier("subscriberRetrySettings") ObjectProvider<RetrySettings> retrySettings,
-			TransportChannelProvider transportChannelProvider) {
+			@Qualifier("subscriberTransportChannelProvider") TransportChannelProvider subscriberTransportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider);
+		factory.setChannelProvider(subscriberTransportChannelProvider);
 		systemExecutorProvider.ifAvailable(factory::setSystemExecutorProvider);
 		flowControlSettings.ifAvailable(factory::setFlowControlSettings);
 		apiClock.ifAvailable(factory::setApiClock);
@@ -318,12 +319,12 @@ public class GcpPubSubAutoConfiguration {
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("publisherBatchSettings") ObjectProvider<BatchingSettings> batchingSettings,
 			@Qualifier("publisherRetrySettings") ObjectProvider<RetrySettings> retrySettings,
-			TransportChannelProvider transportChannelProvider) {
+			@Qualifier("publisherTransportChannelProvider") TransportChannelProvider publisherTransportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider);
+		factory.setChannelProvider(publisherTransportChannelProvider);
 		retrySettings.ifAvailable(factory::setRetrySettings);
 		batchingSettings.ifAvailable(factory::setBatchingSettings);
 		return factory;
@@ -352,12 +353,12 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TopicAdminSettings topicAdminSettings(
-			TransportChannelProvider transportChannelProvider) {
+			@Qualifier("publisherTransportChannelProvider") TransportChannelProvider publisherTransportChannelProvider) {
 		try {
 			return TopicAdminSettings.newBuilder()
 					.setCredentialsProvider(this.finalCredentialsProvider)
 					.setHeaderProvider(this.headerProvider)
-					.setTransportChannelProvider(transportChannelProvider)
+					.setTransportChannelProvider(publisherTransportChannelProvider)
 					.build();
 		}
 		catch (IOException ioe) {
@@ -368,13 +369,13 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriptionAdminClient subscriptionAdminClient(
-			TransportChannelProvider transportChannelProvider) {
+			@Qualifier("subscriberTransportChannelProvider") TransportChannelProvider subscriberTransportChannelProvider) {
 		try {
 			return SubscriptionAdminClient.create(
 					SubscriptionAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
 							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider)
+							.setTransportChannelProvider(subscriberTransportChannelProvider)
 							.build());
 		}
 		catch (IOException ioe) {
@@ -383,11 +384,19 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public TransportChannelProvider transportChannelProvider() {
-		return InstantiatingGrpcChannelProvider.newBuilder()
-			.setKeepAliveTime(Duration.ofMinutes(this.gcpPubSubProperties.getKeepAliveIntervalMinutes()))
-			.build();
+	@ConditionalOnMissingBean(name = "subscriberTransportChannelProvider")
+	public TransportChannelProvider subscriberTransportChannelProvider() {
+		return SubscriberStubSettings.defaultGrpcTransportProviderBuilder()
+				.setKeepAliveTime(Duration.ofMinutes(this.gcpPubSubProperties.getKeepAliveIntervalMinutes()))
+				.build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "publisherTransportChannelProvider")
+	public TransportChannelProvider publisherTransportChannelProvider() {
+		return PublisherStubSettings.defaultGrpcTransportProviderBuilder()
+				.setKeepAliveTime(Duration.ofMinutes(this.gcpPubSubProperties.getKeepAliveIntervalMinutes()))
+				.build();
 	}
 
 }
