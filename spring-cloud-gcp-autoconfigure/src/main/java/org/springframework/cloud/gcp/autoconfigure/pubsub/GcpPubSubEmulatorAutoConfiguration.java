@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,11 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.stub.PublisherStubSettings;
+import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.threeten.bp.Duration;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -34,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
  * to a running pub/sub emulator.
  *
  * @author Andreas Berger
+ * @author Mike Eltsufin
  */
 @Configuration
 @ConditionalOnProperty(prefix = "spring.cloud.gcp.pubsub", name = "emulator-host")
@@ -41,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubEmulatorAutoConfiguration {
 
-	@Bean
+	@Bean(name = {"subscriberTransportChannelProvider", "publisherTransportChannelProvider"})
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
