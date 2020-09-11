@@ -204,7 +204,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@Test
-	public void testAdditionalCloudSqlSocketFactoryConfiguration() {
+	public void testIpTypes() {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instanceConnectionName=world:asia:japan",
 				"spring.cloud.gcp.sql.ip-types=PRIVATE")
