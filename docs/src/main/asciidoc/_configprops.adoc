@@ -121,6 +121,7 @@
 |spring.cloud.gcp.sql.database-name |  | Name of the database in the Cloud SQL instance.
 |spring.cloud.gcp.sql.enabled | true | Auto-configure Google Cloud SQL support components.
 |spring.cloud.gcp.sql.instance-connection-name |  | Cloud SQL instance connection name. [GCP_PROJECT_ID]:[INSTANCE_REGION]:[INSTANCE_NAME].
+|spring.cloud.gcp.sql.ip-types |  | A comma delimited list of preferred IP types for connecting to the Cloud SQL instance.
 |spring.cloud.gcp.storage.auto-create-files |  | 
 |spring.cloud.gcp.storage.credentials.encoded-key |  | 
 |spring.cloud.gcp.storage.credentials.location |  | 

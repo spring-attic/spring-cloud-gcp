@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.sql;
 
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Provides default JDBC driver class name and constructs the JDBC URL for Cloud SQL v2
@@ -25,6 +26,7 @@ import org.springframework.util.Assert;
  *
  * @author Ray Tsang
  * @author João André Martins
+ * @author Øystein Urdahl Hardeng
  */
 public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 
@@ -48,8 +50,12 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	@Override
 	public String getJdbcUrl() {
-		return String.format(this.databaseType.getJdbcUrlTemplate(),
+		String jdbcUrl = String.format(this.databaseType.getJdbcUrlTemplate(),
 				this.properties.getDatabaseName(),
 				this.properties.getInstanceConnectionName());
+		if (StringUtils.hasText(properties.getIpTypes())) {
+			jdbcUrl = String.format(jdbcUrl + "&ipTypes=%s", properties.getIpTypes());
+		}
+		return jdbcUrl;
 	}
 }

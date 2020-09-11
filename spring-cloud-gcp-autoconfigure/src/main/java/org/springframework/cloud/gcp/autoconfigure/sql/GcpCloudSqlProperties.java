@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.cloud.gcp.core.Credentials;
  * Google Cloud SQL properties.
  *
  * @author João André Martins
+ * @author Øystein Urdahl Hardeng
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
 public class GcpCloudSqlProperties {
@@ -31,6 +32,9 @@ public class GcpCloudSqlProperties {
 
 	/** Cloud SQL instance connection name. [GCP_PROJECT_ID]:[INSTANCE_REGION]:[INSTANCE_NAME]. */
 	private String instanceConnectionName;
+
+	/** A comma delimited list of preferred IP types for connecting to the Cloud SQL instance. */
+	private String ipTypes;
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	private Credentials credentials = new Credentials();
@@ -49,6 +53,14 @@ public class GcpCloudSqlProperties {
 
 	public void setInstanceConnectionName(String instanceConnectionName) {
 		this.instanceConnectionName = instanceConnectionName;
+	}
+
+	public String getIpTypes() {
+		return this.ipTypes;
+	}
+
+	public void setIpTypes(String ipTypes) {
+		this.ipTypes = ipTypes;
 	}
 
 	public Credentials getCredentials() {
