@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Configuration;
  * to a running pub/sub emulator.
  *
  * @author Andreas Berger
+ * @author Mike Eltsufin
  */
 @Configuration
 @ConditionalOnProperty(prefix = "spring.cloud.gcp.pubsub", name = "emulator-host")
@@ -41,8 +42,8 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubEmulatorAutoConfiguration {
 
-	@Bean
-	@ConditionalOnMissingBean
+	@Bean(name = {"subscriberTransportChannelProvider", "publisherTransportChannelProvider"})
+	@ConditionalOnMissingBean(name = {"subscriberTransportChannelProvider", "publisherTransportChannelProvider"})
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
 				.forTarget("dns:///" + gcpPubSubProperties.getEmulatorHost())
