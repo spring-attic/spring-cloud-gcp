@@ -5,6 +5,28 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.6.BUILD-SNAPSHOT
+
+=== Pub/Sub
+
+* Differentiate between Publisher and Subscriber `TransportChannelProvider` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2520[#2520])
+ ** If you've been overwriting the auto-configured `transportChannelProvider` bean for Pub/Sub, you will need to rename it to `{"subscriberTransportChannelProvider", "publisherTransportChannelProvider"}`.
+
+== 1.2.5.RELEASE (2020-08-28)
+
+=== Secret Manager
+
+* Fixed: Spring GCP Secrets references not working when using Spring Cloud Server (https://github.com/spring-cloud/spring-cloud-gcp/issues/2483[#2483])
+* Fixed: Spring boot error when using google-cloud-secretmanager library without spring-cloud-gcp-starter-secretmanager (https://github.com/spring-cloud/spring-cloud-gcp/issues/2506[#2506])
+
+=== Pub/Sub
+
+* Added support for composite actuator contributor for multiple Pub/Sub templates (https://github.com/spring-cloud/spring-cloud-gcp/issues/2493[#2493])
+
+=== Datastore 
+
+* Added value nullity check to avoid NPE with primitive types (https://github.com/spring-cloud/spring-cloud-gcp/issues/2505[#2505])
+
 == 1.2.4.RELEASE (2020-07-31)
 
 === General

@@ -20,6 +20,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.mock;
  * Tests for Pub/Sub autoconfiguration.
  *
  * @author Elena Felder
+ * @author Mike Eltsufin
  */
 public class GcpPubSubAutoConfigurationTests {
 
@@ -47,8 +49,11 @@ public class GcpPubSubAutoConfigurationTests {
 			GcpPubSubProperties props = ctx.getBean(GcpPubSubProperties.class);
 			assertThat(props.getKeepAliveIntervalMinutes()).isEqualTo(5);
 
-			TransportChannelProvider tcp = ctx.getBean(TransportChannelProvider.class);
-			assertThat(((InstantiatingGrpcChannelProvider) tcp).getKeepAliveTime().toMinutes())
+			TransportChannelProvider subscriberTcp = ctx.getBean("subscriberTransportChannelProvider", TransportChannelProvider.class);
+			TransportChannelProvider publisherTcp = ctx.getBean("publisherTransportChannelProvider", TransportChannelProvider.class);
+			assertThat(((InstantiatingGrpcChannelProvider) subscriberTcp).getKeepAliveTime().toMinutes())
+					.isEqualTo(5);
+			assertThat(((InstantiatingGrpcChannelProvider) publisherTcp).getKeepAliveTime().toMinutes())
 					.isEqualTo(5);
 		});
 	}
@@ -64,9 +69,30 @@ public class GcpPubSubAutoConfigurationTests {
 			GcpPubSubProperties props = ctx.getBean(GcpPubSubProperties.class);
 			assertThat(props.getKeepAliveIntervalMinutes()).isEqualTo(2);
 
-			TransportChannelProvider tcp = ctx.getBean(TransportChannelProvider.class);
-			assertThat(((InstantiatingGrpcChannelProvider) tcp).getKeepAliveTime().toMinutes())
+			TransportChannelProvider subscriberTcp = ctx.getBean("subscriberTransportChannelProvider", TransportChannelProvider.class);
+			TransportChannelProvider publisherTcp = ctx.getBean("publisherTransportChannelProvider", TransportChannelProvider.class);
+			assertThat(((InstantiatingGrpcChannelProvider) subscriberTcp).getKeepAliveTime().toMinutes())
 					.isEqualTo(2);
+			assertThat(((InstantiatingGrpcChannelProvider) publisherTcp).getKeepAliveTime().toMinutes())
+					.isEqualTo(2);
+		});
+	}
+
+	@Test
+	public void maxInboundMessageSize_default() {
+		ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+				.withConfiguration(AutoConfigurations.of(GcpPubSubAutoConfiguration.class))
+				.withUserConfiguration(TestConfig.class);
+
+		contextRunner.run(ctx -> {
+
+			TransportChannelProvider subscriberTcp = ctx.getBean("subscriberTransportChannelProvider", TransportChannelProvider.class);
+			assertThat(FieldUtils.readField(subscriberTcp, "maxInboundMessageSize", true))
+					.isEqualTo(20 << 20);
+
+			TransportChannelProvider publisherTcp = ctx.getBean("publisherTransportChannelProvider", TransportChannelProvider.class);
+			assertThat(FieldUtils.readField(publisherTcp, "maxInboundMessageSize", true))
+					.isEqualTo(Integer.MAX_VALUE);
 		});
 	}
 
