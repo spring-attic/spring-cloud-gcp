@@ -14,31 +14,26 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.firestore.util;
+package org.springframework.cloud.gcp.data.firestore;
+
+import org.junit.Test;
+
+import org.springframework.cloud.gcp.data.firestore.util.Util;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dmitry Solomakha
+ * @since 1.2
  */
-public final class Util {
+public class UtilTests {
 
-	private Util() {
-	}
+	@Test
+	public void extractDatabasePathTest() {
+		String actualDbPath = "projects/MY_PROJECT/databases/MY_DB_ID";
+		String extractedDbPath = Util.extractDatabasePath(actualDbPath + "/abc/def");
 
-	public static String extractDatabasePath(String parent) {
-		//the parent looks like this: projects/{project_id}/databases/{database_id}/...
-		//and the database path is the first 4 segments, separated by /
-		StringBuilder sb = new StringBuilder();
-		int count = 0;
-		for (int i = 0; i < parent.length(); i++) {
-			char c = parent.charAt(i);
-			if (c == '/') {
-				count++;
-			}
-			if (count == 4) {
-				break;
-			}
-			sb.append(c);
-		}
-		return sb.toString();
+		assertThat(extractedDbPath).isEqualTo(actualDbPath);
 	}
 }
+
