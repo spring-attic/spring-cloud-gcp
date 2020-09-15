@@ -69,11 +69,11 @@ public class StructAccessor {
 				.put(double.class, AbstractStructReader::getDouble)
 				.put(Timestamp.class, AbstractStructReader::getTimestamp)
 				.put(Date.class, AbstractStructReader::getDate)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				.put(ByteArray.class, AbstractStructReader::getBytes)
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)
 				.put(boolean[].class, AbstractStructReader::getBooleanArray)
-				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map is for
 				// the case where the field within the POJO is Struct.
@@ -90,11 +90,11 @@ public class StructAccessor {
 				.put(double.class, AbstractStructReader::getDouble)
 				.put(Timestamp.class, AbstractStructReader::getTimestamp)
 				.put(Date.class, AbstractStructReader::getDate)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				.put(ByteArray.class, AbstractStructReader::getBytes)
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)
 				.put(boolean[].class, AbstractStructReader::getBooleanArray)
-				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map
 				// is for
