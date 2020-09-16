@@ -101,6 +101,7 @@ public class PubSubTemplateIntegrationTests {
 			pubSubTemplate.publish(topicName, "tatatatata", headers).get();
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
+			assertThat(pubsubMessage).isNotNull();
 			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("tatatatata"));
 			assertThat(pubsubMessage.getAttributesCount()).isEqualTo(2);
 			assertThat(pubsubMessage.getAttributesOrThrow("cactuar")).isEqualTo("tonberry");

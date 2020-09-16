@@ -209,7 +209,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						Sort.by(Sort.Direction.ASC, "size")))
+						Sort.by(Sort.Direction.ASC, "id")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository

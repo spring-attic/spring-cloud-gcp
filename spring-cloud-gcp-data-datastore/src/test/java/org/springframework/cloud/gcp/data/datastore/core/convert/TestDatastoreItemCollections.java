@@ -107,7 +107,7 @@ public class TestDatastoreItemCollections {
 	private List<List<Byte>> arraysToLists(Object[] arrays) {
 		List<List<Byte>> result = new ArrayList<>();
 		for (Object e : arrays) {
-			result.add(CollectionUtils.arrayToList(e));
+			result.add((List<Byte>) CollectionUtils.arrayToList(e));
 		}
 		return result;
 	}
