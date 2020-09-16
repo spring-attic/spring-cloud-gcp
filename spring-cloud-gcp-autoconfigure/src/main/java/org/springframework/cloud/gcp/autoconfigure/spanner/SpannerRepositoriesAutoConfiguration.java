@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author João André Martins
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(SpannerRepository.class)
 @ConditionalOnMissingBean({ SpannerRepositoryFactoryBean.class,
 		SpannerRepositoryConfigurationExtension.class })

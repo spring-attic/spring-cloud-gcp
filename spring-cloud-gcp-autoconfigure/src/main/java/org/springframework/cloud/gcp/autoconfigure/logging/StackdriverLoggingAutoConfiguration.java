@@ -42,7 +42,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ HandlerInterceptorAdapter.class, LoggingAppender.class, TraceIdExtractor.class })
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.SleuthProperties")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)

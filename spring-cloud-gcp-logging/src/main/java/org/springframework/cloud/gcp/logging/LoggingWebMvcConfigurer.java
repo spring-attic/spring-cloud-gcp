@@ -29,7 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
 
 	private final TraceIdLoggingWebMvcInterceptor interceptor;

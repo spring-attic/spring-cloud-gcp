@@ -35,7 +35,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(DatastoreTransactionManager.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.datastore.enabled", matchIfMissing = true)
 @AutoConfigureBefore(TransactionAutoConfiguration.class)
@@ -44,7 +44,7 @@ public class DatastoreTransactionManagerAutoConfiguration {
 	/**
 	 * Configuration class.
 	 */
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class DatastoreTransactionManagerConfiguration {
 
 		private final DatastoreProvider datastore;

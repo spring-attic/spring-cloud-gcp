@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpPubSubAutoConfiguration.class)
 @ConditionalOnClass({Flux.class, PubSubSubscriberTemplate.class})
 @ConditionalOnProperty(

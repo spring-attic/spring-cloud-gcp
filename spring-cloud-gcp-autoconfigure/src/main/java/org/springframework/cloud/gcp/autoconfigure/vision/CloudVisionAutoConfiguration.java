@@ -43,7 +43,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * @author Daniel Zou
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(CloudVisionProperties.class)
 @ConditionalOnClass(CloudVisionTemplate.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.vision.enabled", matchIfMissing = true)

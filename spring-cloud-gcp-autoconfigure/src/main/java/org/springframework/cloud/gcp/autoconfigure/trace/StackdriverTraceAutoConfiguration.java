@@ -74,7 +74,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @author Chengyuan Zhao
  * @author Tim Ysewyn
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(
 		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
@@ -234,7 +234,7 @@ public class StackdriverTraceAutoConfiguration {
 	/**
 	 * Configuration for Sleuth.
 	 */
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
 			havingValue = "true", matchIfMissing = true)
 	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
