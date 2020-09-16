@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.2.2
  */
-@Configuration(proxyBeanMethods = false)(proxyBeanMethods = false)
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({HealthIndicator.class, PubSubTemplate.class})
 @ConditionalOnBean(PubSubTemplate.class)
 @ConditionalOnEnabledHealthIndicator("pubsub")
