@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @deprecated use {@link org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer}
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Deprecated
 public class LoggingWebMvcConfigurer extends org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer {
 	public LoggingWebMvcConfigurer(TraceIdLoggingWebMvcInterceptor interceptor,

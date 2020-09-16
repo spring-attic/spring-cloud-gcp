@@ -75,7 +75,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @author Daniel Zou
  * @author Maurice Zeijen
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.pubsub.enabled", matchIfMissing = true)
 @ConditionalOnClass(PubSubTemplate.class)

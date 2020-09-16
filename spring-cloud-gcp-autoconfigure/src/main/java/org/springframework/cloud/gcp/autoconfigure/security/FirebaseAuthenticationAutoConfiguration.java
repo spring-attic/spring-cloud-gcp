@@ -48,7 +48,7 @@ import org.springframework.web.client.RestTemplate;
  * @author Vinicius Carvalho
  * @since 1.2.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(FirebaseTokenValidator.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.firebase.enabled", matchIfMissing = true)
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)

@@ -48,7 +48,7 @@ import org.springframework.context.annotation.Import;
  *
  * @see GoogleStorageProtocolResolver
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ GoogleStorageProtocolResolverSettings.class, Storage.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
