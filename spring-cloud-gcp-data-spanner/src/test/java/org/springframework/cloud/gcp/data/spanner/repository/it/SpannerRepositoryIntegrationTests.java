@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
@@ -104,6 +105,10 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		final String identifier = trade.getTradeDetail().getId();
 		final String traderId = trade.getTraderId();
+
+		Optional<Trade> fetchedTrade = tradeRepository.fetchById(trade.getId());
+		assertThat(fetchedTrade.get().getBigDecimalField()).isEqualTo(trade.getBigDecimalField());
+		assertThat(fetchedTrade.get().getBigDecimals()).isEqualTo(trade.getBigDecimals());
 
 		long count = subTradeRepository.countBy(identifier, traderId);
 		assertThat(count)

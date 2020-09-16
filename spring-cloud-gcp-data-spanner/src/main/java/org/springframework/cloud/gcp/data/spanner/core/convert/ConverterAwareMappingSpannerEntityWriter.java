@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,7 +58,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			new HashSet<Class>(
 					Arrays.asList(
 							Boolean.class, Integer.class, Long.class, Float.class, Double.class, String.class,
-							ByteArray.class, Timestamp.class, com.google.cloud.Date.class)));
+							ByteArray.class, Timestamp.class, com.google.cloud.Date.class, BigDecimal.class)));
 
 	/**
 	 * A map of types to functions that binds them to `ValueBinder` objects.
@@ -73,6 +74,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(Boolean.class, ValueBinder::toBoolArray);
 		map.put(Long.class, ValueBinder::toInt64Array);
 		map.put(Double.class, ValueBinder::toFloat64Array);
+		map.put(BigDecimal.class, ValueBinder::toNumericArray);
 		map.put(Timestamp.class, ValueBinder::toTimestampArray);
 		map.put(Date.class, ValueBinder::toDateArray);
 		map.put(ByteArray.class, ValueBinder::toBytesArray);
@@ -89,6 +91,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		map.put(long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
 		map.put(Double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		map.put(double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
+		map.put(BigDecimal.class, (BiFunction<ValueBinder, BigDecimal, ?>) ValueBinder::to);
 		map.put(Timestamp.class,
 				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		map.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
