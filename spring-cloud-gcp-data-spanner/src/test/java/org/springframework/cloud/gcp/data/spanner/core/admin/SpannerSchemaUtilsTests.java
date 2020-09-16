@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.OptionalLong;
 
@@ -76,7 +77,8 @@ public class SpannerSchemaUtilsTests {
 				+ "primitiveDoubleField FLOAT64 , bigDoubleField FLOAT64 , bigLongField INT64 , "
 				+ "primitiveIntField INT64 , bigIntField INT64 , bytes BYTES(MAX) , "
 				+ "bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
-				+ "doubles ARRAY<FLOAT64> , commitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true) ) " +
+				+ "doubles ARRAY<FLOAT64> , commitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true) , "
+				+ "bigDecimalField NUMERIC , bigDecimals ARRAY<NUMERIC> ) " +
 				"PRIMARY KEY ( id , id_2 , id3 )";
 
 		assertThat(this.spannerSchemaUtils.getCreateTableDdlString(TestEntity.class))
@@ -123,6 +125,20 @@ public class SpannerSchemaUtilsTests {
 		assertColumnDdl(double[].class, null,
 				"doubles", OptionalLong.of(111L),
 				"doubles ARRAY<FLOAT64>");
+	}
+
+	@Test
+	public void ddlForNumericList() {
+		assertColumnDdl(List.class, BigDecimal.class,
+				"bigDecimals", OptionalLong.empty(),
+				"bigDecimals ARRAY<NUMERIC>");
+	}
+
+	@Test
+	public void createDdlNumeric() {
+		assertColumnDdl(BigDecimal.class, null,
+				"bigDecimal", OptionalLong.empty(),
+				"bigDecimal NUMERIC");
 	}
 
 	@Test
@@ -242,6 +258,10 @@ public class SpannerSchemaUtilsTests {
 		// anyway
 		@Column(spannerCommitTimestamp = true)
 		double commitTimestamp;
+
+		BigDecimal bigDecimalField;
+
+		List<BigDecimal> bigDecimals;
 	}
 
 	private static class EmbeddedColumns {

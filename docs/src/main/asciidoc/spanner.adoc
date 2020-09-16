@@ -210,7 +210,7 @@ public class Trade {
 
 	private String action;
 
-	private Double price;
+	private BigDecimal price;
 
 	private Double shares;
 
@@ -229,7 +229,7 @@ CREATE TABLE trades (
     trade_id STRING(MAX),
     action STRING(15),
     symbol STRING(10),
-    price FLOAT64,
+    price NUMERIC,
     shares FLOAT64
 ) PRIMARY KEY (trader_id, trade_id)
 ----
@@ -969,7 +969,7 @@ public class MyApplication {
 		t.symbol = stock;
 		t.action = action;
 		t.traderId = traderId;
-		t.price = 100.0;
+		t.price = new BigDecimal("100.0");
 		t.shares = 12345.6;
 		this.spannerTemplate.insert(t);
 

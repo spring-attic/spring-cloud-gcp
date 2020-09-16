@@ -17,11 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
@@ -100,26 +102,28 @@ public class SpannerStatementQueryTests {
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
-						+ "AndPriceGreaterThanAndPriceLessThanEqualAndPriceInOrderByIdDesc");
+						+ "AndPriceGreaterThanAndPriceLessThanEqualAndPriceIn"
+						+ "AndValueLessThanOrderByIdDesc");
 		this.partTreeSpannerQuery = spy(createQuery());
 
 		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123",
 				8, // an int is not a natively supported type, and is intentionally used to use custom
 					// converters
 				3.33, "ignored",
-				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, Arrays.asList(1, 2) };
+				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, Arrays.asList(1, 2), BigDecimal.ONE };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
 				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedQuery =
-							"SELECT DISTINCT shares, trader_id, ticker, price, action, id "
+							"SELECT DISTINCT shares, trader_id, ticker, price, action, id, value "
 									+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 AND price IN UNNEST(@tag12) ) ORDER BY id DESC LIMIT 3";
+									+ "price>@tag10 AND price<=@tag11 AND price IN UNNEST(@tag12) "
+									+ "AND value<@tag13 ) ORDER BY id DESC LIMIT 3";
 
 					assertThat(statement.getSql()).isEqualTo(expectedQuery);
 
@@ -137,7 +141,11 @@ public class SpannerStatementQueryTests {
 					assertThat(paramMap.get("tag9").getString()).isEqualTo(params[9]);
 					assertThat(paramMap.get("tag10").getFloat64()).isEqualTo(params[10]);
 					assertThat(paramMap.get("tag11").getFloat64()).isEqualTo(params[11]);
-					assertThat(paramMap.get("tag12").getInt64Array()).isEqualTo(Arrays.asList(1L, 2L));
+					assertThat(paramMap.get("tag12").getInt64Array())
+							.isEqualTo(((List<Integer>) params[12])
+									.stream().map(Long::valueOf)
+									.collect(Collectors.toList()));
+					assertThat(paramMap.get("tag13").getNumeric()).isEqualTo(params[13]);
 
 					return null;
 				});
@@ -151,7 +159,7 @@ public class SpannerStatementQueryTests {
 		// provided.
 		Method method = QueryHolder.class.getMethod("repositoryMethod1", Object.class, Object.class, Object.class,
 				Object.class, Object.class, Object.class, Object.class, Object.class, Object.class, Object.class,
-				Object.class, Object.class, List.class);
+				Object.class, Object.class, List.class, BigDecimal.class);
 		when(this.queryMethod.getMethod()).thenReturn(method);
 		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
@@ -184,7 +192,7 @@ public class SpannerStatementQueryTests {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedSql = "SELECT EXISTS"
-							+ "(SELECT DISTINCT shares, trader_id, ticker, price, action, id "
+							+ "(SELECT DISTINCT shares, trader_id, ticker, price, action, id, value "
 							+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 							+ "AND ticker=@tag1 ) OR "
 							+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
@@ -225,7 +233,7 @@ public class SpannerStatementQueryTests {
 		Object[] params = new Object[] { 8.88, PageRequest.of(1, 10, Sort.by("traderId")) };
 		Method method = QueryHolder.class.getMethod("repositoryMethod5",
 				Double.class, Pageable.class);
-		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
+		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id, value "
 				+ "FROM trades WHERE ( price<@tag0 ) "
 				+ "ORDER BY trader_id ASC LIMIT 10 OFFSET 10";
 
@@ -238,7 +246,7 @@ public class SpannerStatementQueryTests {
 		Object[] params = new Object[] { 8.88, Sort.by(Order.desc("traderId"), Order.asc("price"), Order.desc("action")) };
 		Method method = QueryHolder.class.getMethod("repositoryMethod6",
 				Double.class, Sort.class);
-		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id "
+		String expectedSql = "SELECT shares, trader_id, ticker, price, action, id, value "
 				+ "FROM trades WHERE ( price<@tag0 ) "
 				+ "ORDER BY trader_id DESC , price ASC , action DESC";
 
@@ -350,12 +358,15 @@ public class SpannerStatementQueryTests {
 			BUY,
 			SELL
 		}
+
+		BigDecimal value;
 	}
 
 	//The methods in this class are used to emulate repository methods
 	private static class QueryHolder {
 		public long repositoryMethod1(Object tag0, Object tag1, Object tag2, Object tag3, Object tag4, Object tag5,
-				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11, List<Integer> tag12) {
+				Object tag6, Object tag7, Object tag8, Object tag9, Object tag10, Object tag11, List<Integer> tag12,
+				BigDecimal bigDecimal) {
 			// tag12 is intentionally List<Integer> instead of List<Long> to trigger conversion.
 			return 0;
 		}
