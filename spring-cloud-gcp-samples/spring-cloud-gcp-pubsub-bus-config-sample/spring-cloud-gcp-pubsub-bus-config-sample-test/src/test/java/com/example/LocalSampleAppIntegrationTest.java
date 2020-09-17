@@ -99,7 +99,7 @@ public class LocalSampleAppIntegrationTest {
 		waitForLogMessage(this.configServerOutput, "Refresh for: *");
 		assertConfigServerValue(UPDATED_MESSAGE);
 
-		waitForLogMessage(this.configClientOutput, "Keys refreshed [example.message]");
+		waitForLogMessage(this.configClientOutput, "Keys refreshed");
 		assertConfigClientValue(UPDATED_MESSAGE);
 	}
 
