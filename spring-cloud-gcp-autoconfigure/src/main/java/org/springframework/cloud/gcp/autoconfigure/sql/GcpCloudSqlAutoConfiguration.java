@@ -67,7 +67,7 @@ import org.springframework.util.StringUtils;
 		JndiDataSourceAutoConfiguration.class,
 		XADataSourceAutoConfiguration.class })
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
+public class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
