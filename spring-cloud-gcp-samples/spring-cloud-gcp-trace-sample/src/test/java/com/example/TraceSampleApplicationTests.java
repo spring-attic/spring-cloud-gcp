@@ -132,7 +132,7 @@ public class TraceSampleApplicationTests {
 				.build();
 
 		String logFilter = String.format(
-				"trace=projects/%s/traces/%s and logName=projects/%s/logs/spring.log and timestamp>=\"%s\"",
+				"trace=projects/%s/traces/%s AND logName=projects/%s/logs/spring.log AND timestamp>=\"%s\"",
 				this.projectIdProvider.getProjectId(), uuidString,
 				this.projectIdProvider.getProjectId(), startDateTime.toStringRfc3339());
 
