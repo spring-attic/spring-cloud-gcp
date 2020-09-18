@@ -59,7 +59,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class LoggingSampleApplicationIntegrationTests {
 
-	private static final String LOG_FILTER_FORMAT = "trace:%s and logName=projects/%s/logs/spring.log and timestamp>=\"%s\"";
+	private static final String LOG_FILTER_FORMAT = "trace:%s AND logName=projects/%s/logs/spring.log AND timestamp>=\"%s\"";
 
 	@Autowired
 	private GcpProjectIdProvider projectIdProvider;
