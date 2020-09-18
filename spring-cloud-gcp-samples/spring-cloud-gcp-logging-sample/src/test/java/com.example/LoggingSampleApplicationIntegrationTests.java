@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
@@ -58,7 +59,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class LoggingSampleApplicationIntegrationTests {
 
-	private static final String LOG_FILTER_FORMAT = "trace:%s";
+	private static final String LOG_FILTER_FORMAT = "trace:%s and logName=projects/%s/logs/spring.log and timestamp>=\"%s\"";
 
 	@Autowired
 	private GcpProjectIdProvider projectIdProvider;
@@ -86,6 +87,7 @@ public class LoggingSampleApplicationIntegrationTests {
 
 	@Test
 	public void testLogRecordedInStackDriver() {
+		DateTime startDateTime = new DateTime(System.currentTimeMillis());
 		String url = String.format("http://localhost:%s/log", this.port);
 		String traceHeader = "gcp-logging-test-" + Instant.now().toEpochMilli();
 
@@ -95,7 +97,8 @@ public class LoggingSampleApplicationIntegrationTests {
 				url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
-		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
+		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader,
+				this.projectIdProvider.getProjectId(), startDateTime.toStringRfc3339());
 
 		await().atMost(4, TimeUnit.MINUTES)
 				.pollInterval(2, TimeUnit.SECONDS)
