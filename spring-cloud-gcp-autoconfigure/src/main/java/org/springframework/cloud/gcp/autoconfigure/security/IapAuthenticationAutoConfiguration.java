@@ -74,7 +74,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.iap.enabled", matchIfMissing = true)
 @ConditionalOnClass({AudienceValidator.class})
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)

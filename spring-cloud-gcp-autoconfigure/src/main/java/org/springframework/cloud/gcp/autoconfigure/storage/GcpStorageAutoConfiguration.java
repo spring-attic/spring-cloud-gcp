@@ -48,12 +48,12 @@ import org.springframework.context.annotation.Import;
  *
  * @see GoogleStorageProtocolResolver
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ GoogleStorageProtocolResolverSettings.class, Storage.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
-public abstract class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
+public class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
 	private final GcpProjectIdProvider gcpProjectIdProvider;
 

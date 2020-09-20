@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty("spring.cloud.gcp.datastore.emulator.enabled")
 @AutoConfigureBefore(GcpDatastoreAutoConfiguration.class)
 @EnableConfigurationProperties(GcpDatastoreProperties.class)

@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Import;
  *
  * @since 1.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(FirestoreReactiveRepository.class)
 @ConditionalOnMissingBean({ FirestoreRepositoryFactoryBean.class,
 		FirestoreRepositoryConfigurationExtension.class })

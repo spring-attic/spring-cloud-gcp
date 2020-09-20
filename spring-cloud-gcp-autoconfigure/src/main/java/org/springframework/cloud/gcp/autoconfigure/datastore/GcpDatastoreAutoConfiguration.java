@@ -61,7 +61,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.datastore.enabled", matchIfMissing = true)
 @ConditionalOnClass({ DatastoreOperations.class, Datastore.class })

@@ -57,7 +57,7 @@ import org.springframework.util.StringUtils;
  * @author Chengyuan Zhao
  * @author Eddú Meléndez
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
@@ -67,7 +67,7 @@ import org.springframework.util.StringUtils;
 		JndiDataSourceAutoConfiguration.class,
 		XADataSourceAutoConfiguration.class })
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
+public class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
@@ -130,7 +130,7 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 	 * The Configuration to populated {@link DataSourceProperties} bean
 	 * based on the cloud-specific properties.
 	 */
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	@Import({GcpCloudSqlAutoConfiguration.MySqlJdbcInfoProviderConfiguration.class,
 			GcpCloudSqlAutoConfiguration.PostgreSqlJdbcInfoProviderConfiguration.class })
 	static class CloudSqlDataSourcePropertiesConfiguration {

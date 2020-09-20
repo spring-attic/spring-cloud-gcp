@@ -50,7 +50,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 1.2.3
  * @author Daniel Zou
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty("spring.cloud.gcp.firestore.emulator.enabled")
 @AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
 @EnableConfigurationProperties(GcpFirestoreProperties.class)

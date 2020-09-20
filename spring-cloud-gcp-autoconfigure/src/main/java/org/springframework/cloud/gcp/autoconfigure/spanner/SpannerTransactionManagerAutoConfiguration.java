@@ -39,7 +39,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(SpannerTransactionManager.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
 @AutoConfigureBefore(TransactionAutoConfiguration.class)
@@ -48,7 +48,7 @@ public class SpannerTransactionManagerAutoConfiguration {
 	/**
 	 * Config settings.
 	 */
-	@Configuration
+	@Configuration(proxyBeanMethods = false)
 	static class DatabaseClientTransactionManagerConfiguration {
 
 		private final Supplier<DatabaseClient> databaseClientProvider;
