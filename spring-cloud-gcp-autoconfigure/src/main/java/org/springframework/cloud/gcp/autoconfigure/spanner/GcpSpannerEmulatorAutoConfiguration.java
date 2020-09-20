@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
  * @author Eddú Meléndez
  * @since 1.2.3
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(GcpSpannerAutoConfiguration.class)
 @EnableConfigurationProperties(GcpSpannerProperties.class)
 @ConditionalOnProperty(prefix = "spring.cloud.gcp.spanner.emulator", name = "enabled", havingValue = "true")

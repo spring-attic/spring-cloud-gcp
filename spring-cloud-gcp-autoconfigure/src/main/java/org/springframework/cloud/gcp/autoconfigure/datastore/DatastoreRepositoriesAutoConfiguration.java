@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Import;
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(DatastoreRepository.class)
 @ConditionalOnMissingBean({ DatastoreRepositoryFactoryBean.class,
 		DatastoreRepositoryConfigurationExtension.class })

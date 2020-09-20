@@ -58,7 +58,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
  *
  * @author Chengyuan Zhao
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
 @ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,

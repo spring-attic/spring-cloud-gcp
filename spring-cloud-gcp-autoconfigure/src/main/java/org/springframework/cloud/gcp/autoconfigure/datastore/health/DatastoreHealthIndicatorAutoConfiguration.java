@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass({ Datastore.class, HealthIndicator.class })
 @ConditionalOnBean(value = Datastore.class, parameterizedContainer = Supplier.class)
 @ConditionalOnEnabledHealthIndicator("datastore")

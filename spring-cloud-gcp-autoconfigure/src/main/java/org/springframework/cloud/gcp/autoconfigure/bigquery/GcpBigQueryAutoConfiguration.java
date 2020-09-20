@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Daniel Zou
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.bigquery.enabled", matchIfMissing = true)
 @ConditionalOnClass({ BigQuery.class, BigQueryTemplate.class })

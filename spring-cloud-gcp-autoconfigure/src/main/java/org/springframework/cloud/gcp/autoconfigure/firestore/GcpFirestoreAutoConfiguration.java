@@ -53,7 +53,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.2
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.firestore.enabled", matchIfMissing = true)
 @ConditionalOnClass({ Firestore.class })
