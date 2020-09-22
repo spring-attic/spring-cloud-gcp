@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
@@ -71,6 +72,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  * Spring Boot's default {@code OAuth2ResourceServerWebSecurityConfiguration} will add this customization.
  *
  * @author Elena Felder
+ * @author Eddú Meléndez
  *
  * @since 1.1
  */
@@ -132,10 +134,12 @@ public class IapAuthenticationAutoConfiguration {
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties,
 			@Qualifier("iapJwtDelegatingValidator") DelegatingOAuth2TokenValidator<Jwt> validator) {
 
-		NimbusJwtDecoderJwkSupport jwkSupport
-				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
-		jwkSupport.setJwtValidator(validator);
+		NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
+				.withJwkSetUri(properties.getRegistry())
+				.jwsAlgorithm(SignatureAlgorithm.from(properties.getAlgorithm()))
+				.build();
+		jwtDecoder.setJwtValidator(validator);
 
-		return jwkSupport;
+		return jwtDecoder;
 	}
 }
