@@ -76,7 +76,7 @@
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
 
 		<!-- Checkstyle version settings. Keep in sync with spring-cloud-gcp-samples/pom.xml -->
-		<spring-javaformat-checkstyle.version>0.0.23</spring-javaformat-checkstyle.version>
+		<spring-javaformat-checkstyle.version>0.0.25</spring-javaformat-checkstyle.version>
 	</properties>
 
 	<dependencyManagement>
