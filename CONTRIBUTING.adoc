@@ -14,8 +14,6 @@ Run `./mvnw clean test` in the root directory of the project to run the tests.
 The `./mvnw` is a self-contained https://maven.apache.org/[Maven] wrapper that allows you to build the project without having Maven installed on your local machine.
 +
 You can run the tests of a specific module by using the `-f` flag like this: `./mvnw clean test -f spring-cloud-gcp-pubsub`
-+
-If you are contributing to a sample application, please use `full-checkstyle` maven profile to validate code style locally: `./mvnw clean test -P full-checkstyle`.
 
 3. (Optional) Install the https://cloud.google.com/sdk/docs/[Google Cloud SDK].
 The Google Cloud SDK a set of tools that you can use to manage resources and applications hosted on Google Cloud Platform.
