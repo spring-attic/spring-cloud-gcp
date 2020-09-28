@@ -43,7 +43,6 @@ jobs:
           --batch-mode \
           --fail-at-end \
           --threads 1.5C \
-          --activate-profiles full-checkstyle \
           test
     - name: Archive logs
       if: always()
