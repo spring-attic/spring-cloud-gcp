@@ -55,7 +55,11 @@ jobs:
 
   integrationTests:
     if: |
-      github.event_name == 'push' && github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
+      github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' &&
+      (
+        github.event_name == 'push' ||
+        github.event == null
+      )
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
