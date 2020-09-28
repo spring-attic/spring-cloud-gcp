@@ -85,7 +85,8 @@
 							<dependency>
 								<groupId>io.spring.javaformat</groupId>
 								<artifactId>spring-javaformat-checkstyle</artifactId>
-								<version>0.0.9</version>
+								<!-- Keep in sync with spring-javaformat-checkstyle.version in pom.xml -->
+								<version>0.0.25</version>
 							</dependency>
 							<dependency>
 								<groupId>org.springframework.cloud</groupId>
