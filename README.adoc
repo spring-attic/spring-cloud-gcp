@@ -132,10 +132,3 @@ These properties are optional and, if not specified, Spring Boot will attempt to
 For details on how Spring Boot finds these properties, refer to the https://cloud.spring.io/spring-cloud-gcp[documentation].
 
 NOTE: If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core Starter find the correct credentials for those environments.
-
-== Feedback
-
-We would love to hear your feedback about this project.
-If you have any questions or issues, please post the https://github.com/spring-cloud/spring-cloud-gcp/issues:here.
-
-Take the https://www.techvalidate.com/registration/google-spring-cloud-gcp-customer-survey[*Spring Cloud GCP 5 Minute Customer Survey*] to help us improve the project.
