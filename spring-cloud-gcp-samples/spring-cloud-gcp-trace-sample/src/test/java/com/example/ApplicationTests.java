@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
@@ -115,6 +116,8 @@ public class ApplicationTests {
 
 	@Test
 	public void testTracesAreLoggedCorrectly() {
+		DateTime startDateTime = new DateTime(System.currentTimeMillis());
+
 		HttpHeaders headers = new HttpHeaders();
 
 		String uuidString = UUID.randomUUID().toString().replaceAll("-", "");
@@ -128,7 +131,9 @@ public class ApplicationTests {
 				.build();
 
 		String logFilter = String.format(
-				"trace=projects/%s/traces/%s", this.projectIdProvider.getProjectId(), uuidString);
+				"trace=projects/%s/traces/%s AND logName=projects/%s/logs/spring.log AND timestamp>=\"%s\"",
+				this.projectIdProvider.getProjectId(), uuidString,
+				this.projectIdProvider.getProjectId(), startDateTime.toStringRfc3339());
 
 		await().atMost(120, TimeUnit.SECONDS)
 				.pollInterval(Duration.TWO_SECONDS)
