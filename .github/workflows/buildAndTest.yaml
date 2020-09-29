@@ -4,7 +4,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '30 5 * * *' # 05:30 every day
+    - cron: '30 9 * * *' # 09:30 UTC every day
 
 jobs:
   unitTests:
@@ -58,7 +58,7 @@ jobs:
       github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' &&
       (
         github.event_name == 'push' ||
-        github.event == null
+        github.event_name == 'scheduled'
       )
     runs-on: ubuntu-latest
     strategy:
