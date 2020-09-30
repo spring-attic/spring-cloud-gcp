@@ -3,13 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.springframework.cloud</groupId>
-		<artifactId>spring-cloud-build</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
-		<relativePath/><!-- lookup parent from repository -->
-	</parent>
-
 	<groupId>com.google.cloud</groupId>
 	<artifactId>spring-cloud-gcp</artifactId>
 	<version>2.0.0-SNAPSHOT</version>
@@ -60,23 +53,33 @@
 	</modules>
 
 	<properties>
+		<app-engine-maven-plugin.version>2.3.0</app-engine-maven-plugin.version>
+		<asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
+		<errorprone.version>2.3.4</errorprone.version>
+		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
+		<java-cfenv.version>2.1.2.RELEASE</java-cfenv.version>
+		<javadoc.failOnError>false</javadoc.failOnError>
+		<javadoc.failOnWarnings>false</javadoc.failOnWarnings>
+		<kotlin.version>1.3.31</kotlin.version>
+		<maven-checkstyle-plugin.failOnViolation>true</maven-checkstyle-plugin.failOnViolation>
+		<maven-checkstyle-plugin.failsOnError>true</maven-checkstyle-plugin.failsOnError>
+		<maven-checkstyle-plugin.skip>false</maven-checkstyle-plugin.skip>
+		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
+		<maven-failsafe-plugin.version>2.22.1</maven-failsafe-plugin.version>
+		<maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+		<maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
+		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud.version>2020.0.0-SNAPSHOT</spring-cloud.version>
-		<spring-cloud-sleuth.version>2.2.4.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
-		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
-		<app-engine-maven-plugin.version>2.3.0</app-engine-maven-plugin.version>
-		<kotlin.version>1.3.31</kotlin.version>
-		<errorprone.version>2.3.4</errorprone.version>
-		<java-cfenv.version>2.1.2.RELEASE</java-cfenv.version>
-
-		<skip.surefire.tests>false</skip.surefire.tests>
 		<skip.failsafe.tests>false</skip.failsafe.tests>
-		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
-		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-
-		<!-- Checkstyle version settings. Keep in sync with spring-cloud-gcp-samples/pom.xml -->
+		<skip.surefire.tests>false</skip.surefire.tests>
+		<spring-cloud-build.version>3.0.0-SNAPSHOT</spring-cloud-build.version>
+		<spring-cloud-sleuth.version>2.2.4.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
+		<spring-cloud.version>2020.0.0-SNAPSHOT</spring-cloud.version>
 		<spring-javaformat-checkstyle.version>0.0.25</spring-javaformat-checkstyle.version>
+		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
 	</properties>
 
 	<dependencyManagement>
@@ -85,6 +88,14 @@
 				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
 				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-build-dependencies</artifactId>
+				<version>${spring-cloud-build.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -209,6 +220,60 @@
 							<include>${integration-test.pattern}</include>
 						</includes>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${maven-jar-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>${maven-checkstyle-plugin.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>io.spring.javaformat</groupId>
+							<artifactId>spring-javaformat-checkstyle</artifactId>
+							<version>${spring-javaformat-checkstyle.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>org.springframework.cloud</groupId>
+							<artifactId>spring-cloud-build-tools</artifactId>
+							<version>${spring-cloud-build.version}</version>
+						</dependency>
+					</dependencies>
+					<executions>
+						<execution>
+							<id>checkstyle-validation</id>
+							<phase>validate</phase>
+							<inherited>true</inherited>
+							<configuration>
+								<skip>${maven-checkstyle-plugin.skip}</skip>
+								<configLocation>checkstyle.xml</configLocation>
+								<headerLocation>checkstyle-header.txt</headerLocation>
+								<propertyExpansion>
+									checkstyle.build.directory=${project.build.directory}
+									checkstyle.suppressions.file=https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml
+									checkstyle.additional.suppressions.file=${maven.multiModuleProjectDirectory}/src/checkstyle/checkstyle-suppressions.xml
+								</propertyExpansion>
+								<consoleOutput>true</consoleOutput>
+								<includeTestSourceDirectory>true</includeTestSourceDirectory>
+								<failsOnError>${maven-checkstyle-plugin.failsOnError}
+								</failsOnError>
+								<failOnViolation>
+									${maven-checkstyle-plugin.failOnViolation}
+								</failOnViolation>
+							</configuration>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
