@@ -192,14 +192,14 @@ public interface PubSubSubscriberOperations {
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
 	 */
-	ListenableFuture<Void> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> ack(Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The messages must have the same project id.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
 	 */
-	ListenableFuture<Void> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> nack(Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Modify the ack deadline of a batch of messages. The messages must have the same project id.
@@ -209,7 +209,7 @@ public interface PubSubSubscriberOperations {
 	 * @since 1.1
 	 */
 	ListenableFuture<Void> modifyAckDeadline(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 
 }
