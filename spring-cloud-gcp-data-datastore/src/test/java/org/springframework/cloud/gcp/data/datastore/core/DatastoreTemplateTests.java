@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
 import com.google.cloud.datastore.DatastoreReaderWriter;
@@ -825,6 +826,43 @@ public class DatastoreTemplateTests {
 		KeyQuery keyQuery = GqlQuery.newKeyQueryBuilder().build();
 		this.datastoreTemplate.queryKeys(keyQuery).iterator();
 		verify(this.datastore, times(1)).run(keyQuery);
+	}
+
+	@Test
+	public void nextPageTest() {
+		assertThat(nextPageTest(true)).isTrue();
+		assertThat(nextPageTest(false)).isFalse();
+	}
+
+	private boolean nextPageTest(boolean hasNextPage) {
+		QueryResults<Key> queryResults = mock(QueryResults.class);
+		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
+		doAnswer((invocation) -> {
+			Arrays.asList(this.key1, this.key2).iterator()
+					.forEachRemaining(invocation.getArgument(0));
+			return null;
+		}).when(queryResults).forEachRemaining(any());
+		Cursor cursor = Cursor.copyFrom("abc".getBytes());
+		when(queryResults.getCursorAfter()).thenReturn(cursor);
+
+		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").build();
+		when(this.datastore
+				.run(eq(query)))
+				.thenReturn(queryResults);
+
+		QueryResults<Key> nextPageQueryResults = mock(QueryResults.class);
+		when(nextPageQueryResults.hasNext()).thenReturn(hasNextPage);
+
+		KeyQuery nextPageQuery =
+				query.toBuilder().setStartCursor(cursor).setOffset(0).setLimit(1).build();
+
+		when(this.datastore
+				.run(eq(nextPageQuery)))
+				.thenReturn(nextPageQueryResults);
+
+		DatastoreNextPageAwareResultsIterable<Key> resultsIterable =
+				(DatastoreNextPageAwareResultsIterable<Key>) this.datastoreTemplate.nextPageAwareQuery(query, TestEntity.class);
+		return resultsIterable.hasNextPage();
 	}
 
 	@Test

@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -42,6 +41,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
@@ -512,7 +512,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(true);
 
 		verify(this.datastoreTemplate, times(1))
-				.query(any(), (Function) any());
+				.nextPageAwareQuery(any(), any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -537,7 +537,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.query(isA(EntityQuery.class), (Function) any());
+				.nextPageAwareQuery(isA(EntityQuery.class), any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -562,7 +562,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(false);
 
 		verify(this.datastoreTemplate, times(1))
-				.query(isA(EntityQuery.class), (Function) any());
+				.nextPageAwareQuery(isA(EntityQuery.class), any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -598,7 +598,7 @@ public class PartTreeDatastoreQueryTests {
 	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.nextPageAwareQuery(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -607,27 +607,8 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+			return new DatastoreNextPageAwareResultsIterable<>(new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor), hasNext);
 		});
-		when(this.datastoreTemplate.query((com.google.cloud.datastore.Query<Object>) any(), any()))
-				.thenAnswer(invocation -> {
-					EntityQuery statement = invocation.getArgument(0);
-					EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
-							.setFilter(FILTER)
-							.setKind("trades")
-							.setStartCursor(cursor)
-							.setOrderBy(OrderBy.desc("__key__")).setLimit(1).build();
-
-					assertThat(statement).isEqualTo(expected);
-					return hasNext ? datastoreMatchingRecords.subList(0, 1) : Collections.emptyList();
-		});
-		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
-				(invocation) -> {
-					List<Object> list = new ArrayList<>();
-					invocation.<Iterator>getArgument(0).forEachRemaining(list::add);
-					return list;
-				}
-		);
 	}
 
 	@Test

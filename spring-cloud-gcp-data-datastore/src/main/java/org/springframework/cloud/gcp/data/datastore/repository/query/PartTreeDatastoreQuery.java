@@ -42,6 +42,7 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
@@ -65,7 +66,6 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 
-import static com.google.cloud.datastore.Query.newEntityQueryBuilder;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
@@ -248,21 +248,19 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
-		DatastoreResultsIterable<?> resultList = this.datastoreOperations.queryKeysOrEntities(query, this.entityType);
-
-		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-
-		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
-
-		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
-		Iterable nextResult = this.datastoreOperations.query(queryNext, x -> x);
+		DatastoreNextPageAwareResultsIterable<?> results = this.datastoreOperations.nextPageAwareQuery(query, this.entityType);
 
 		List<Object> result =
-						StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
+				StreamSupport.stream(results.spliterator(), false).collect(Collectors.toList());
 
 		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, pageable, nextResult.iterator().hasNext()));
+				new SliceImpl(result, getPageable(parameters, results.getCursor()), results.hasNextPage()));
+	}
+
+	private Pageable getPageable(Object[] parameters, Cursor cursor) {
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), cursor, null);
+		return pageable;
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {

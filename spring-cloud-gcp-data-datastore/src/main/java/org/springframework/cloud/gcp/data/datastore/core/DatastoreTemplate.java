@@ -35,6 +35,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.BaseKey;
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
@@ -274,6 +275,21 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
+	}
+
+	@Override
+	public <T> DatastoreNextPageAwareResultsIterable<?> nextPageAwareQuery(StructuredQuery query, Class<T> entityClass) {
+		DatastoreResultsIterable resultsIterable = queryKeysOrEntities(query, entityClass);
+
+		return new DatastoreNextPageAwareResultsIterable(resultsIterable, nextPageExists(query, resultsIterable.getCursor()));
+	}
+
+	private boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
+		QueryResults results = getDatastoreReadWriter().run(
+				query.toBuilder().setStartCursor(cursorAfter).setLimit(1).setOffset(0)
+						.build());
+
+		return results.hasNext();
 	}
 
 	@Override

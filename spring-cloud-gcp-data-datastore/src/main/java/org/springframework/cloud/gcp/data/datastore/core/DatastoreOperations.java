@@ -23,6 +23,7 @@ import java.util.function.Function;
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.StructuredQuery;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.data.domain.Example;
@@ -142,8 +143,7 @@ public interface DatastoreOperations {
 	 * @param query the query to execute.
 	 * @param entityClass the type of object to retrieve.
 	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
+	 * @return an iterable containing found entities
 	 */
 	<T> Iterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass);
 
@@ -275,10 +275,19 @@ public interface DatastoreOperations {
 	 * @param query the query to execute.
 	 * @param entityClass the type of object to retrieve.
 	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
+	 * @return an iterable containing found objects and a cursor
 	 */
 	<T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass);
+
+	/**
+	 * Finds objects by using a StructuredQuery. If the query is a key-query, then keys are
+	 * returned. It runs additional query to determine if the next page exists.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param <T> the type of object to retrieve.
+	 * @return an iterable containing found objects, a cursor; the iterable can be used to determine if the next page exists
+	 */
+	<T> DatastoreNextPageAwareResultsIterable<?> nextPageAwareQuery(StructuredQuery query, Class<T> entityClass);
 
 	/**
 	 * Runs given query and applies given function to each entity in the result.
