@@ -84,7 +84,7 @@ You may use the following field types when defining your persistent entities or 
 
 Spring Data Repositories can be configured via the `@EnableReactiveFirestoreRepositories` annotation on your main `@Configuration` class.
 With our Spring Boot Starter for Spring Data Cloud Firestore, `@EnableReactiveFirestoreRepositories` is automatically added.
-It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-firestore/src/main/java/org/springframework/cloud/gcp/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java[`@EnableReactiveFirestoreRepositories`].
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-firestore/src/main/java/com/google/cloud/spring/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java[`@EnableReactiveFirestoreRepositories`].
 
 ==== Autoconfiguration
 
@@ -101,9 +101,9 @@ Spring Data Cloud Firestore allows you to map domain POJOs to https://firebase.g
 [source,java,indent=0]
 ----
 import com.google.cloud.firestore.annotation.DocumentId;
-import org.springframework.cloud.gcp.data.firestore.Document;
+import com.google.cloud.spring.data.firestore.Document;
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/User.java[tag=class_definition]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/entities/User.java[tag=class_definition]
 ----
 
 `@Document(collectionName = "usersCollection")` annotation configures the collection name for the documents of this type.
@@ -125,7 +125,7 @@ Example:
 
 [source,java,indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/User.java[tag=embedded_class_collections]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/entities/User.java[tag=embedded_class_collections]
 ----
 
 === Reactive Repositories
@@ -137,7 +137,7 @@ For example:
 [source,java]
 ----
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/entities/UserRepository.java[tag=repository]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/entities/UserRepository.java[tag=repository]
 
 ----
 
@@ -151,9 +151,9 @@ NOTE: You can refer to nested fields using https://docs.spring.io/spring-data/jp
 ----
 public class MyApplication {
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire]
 
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_built_in]
 }
 
 ----
@@ -204,7 +204,7 @@ The Template API provides support for:
 [source, java]
 ----
 public class MyApplication {
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_part_tree]
 }
 ----
 
@@ -232,7 +232,7 @@ In order to use it, you would need to autowire `ReactiveFirestoreTransactionMana
 [source, java]
 ----
 public class MyApplication {
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_tx_manager]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_tx_manager]
 }
 ----
 
@@ -241,14 +241,14 @@ Note that you can switch between read-only and read-write transactions using `Tr
 
 [source, java, indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_transactional_operator]
 ----
 
 When you have an instance of  `TransactionalOperator`, you can invoke a sequence of Firestore operations in a transaction by using `operator::transactional`:
 
 [source, java, indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_operations_in_a_transaction]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=repository_operations_in_a_transaction]
 ----
 
 NOTE: Read operations in a transaction can only happen before write operations.
@@ -272,7 +272,7 @@ One way to use this feature is illustrated here. You would need to do the follow
 
 [source, java, indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/UserService.java[tag=user_service]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/UserService.java[tag=user_service]
 ----
 
 [start=3]
@@ -280,14 +280,14 @@ include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/spring
 
 [source, java, indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTestsConfiguration.java[tag=user_service_bean]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreIntegrationTestsConfiguration.java[tag=user_service_bean]
 ----
 
 After that, you can autowire your service like so:
 [source, java]
 ----
 public class MyApplication {
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_user_service]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreRepositoryIntegrationTests.java[tag=autowire_user_service]
 }
 ----
 
@@ -315,7 +315,7 @@ FirestoreReactiveOperations firestoreTemplate;
 Then you can use this object to create a `FirestoreReactiveOperations` object with a custom parent:
 [source,java,indent=0]
 ----
-include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/org/springframework/cloud/gcp/data/firestore/it/FirestoreIntegrationTests.java[tag=subcollection]
+include::{project-root}/spring-cloud-gcp-data-firestore/src/test/java/com/google/cloud/spring/data/firestore/it/FirestoreIntegrationTests.java[tag=subcollection]
 
 ----
 
@@ -355,9 +355,9 @@ The starter automatically configures and registers a `Firestore` bean in the Spr
  @Autowired
  Firestore firestore;
 
-include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=write]
+include::{project-root}/docs/src/test/java/com/google/cloud/spring/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=write]
 
-include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=read]
+include::{project-root}/docs/src/test/java/com/google/cloud/spring/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=read]
 ----
 
 === Emulator Usage
@@ -381,5 +381,5 @@ From this point onward, your application will connect to your locally running em
 
 Spring Cloud GCP provides Firestore sample applications to demonstrate API usage:
 
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[Reactive Firestore Repository sample application]:
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[Firestore Client Library sample application]
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[Reactive Firestore Repository sample application]:
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[Firestore Client Library sample application]

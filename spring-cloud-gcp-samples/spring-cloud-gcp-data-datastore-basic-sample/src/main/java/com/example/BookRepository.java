@@ -18,7 +18,7 @@ package com.example;
 
 import java.util.List;
 
-import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
 
 /**
  * This interface contains custom-defined query methods of which implementations are generated for you.

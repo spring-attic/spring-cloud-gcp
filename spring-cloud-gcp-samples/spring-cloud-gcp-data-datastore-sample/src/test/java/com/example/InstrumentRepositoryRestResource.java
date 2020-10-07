@@ -17,8 +17,8 @@
 package com.example;
 
 import com.google.cloud.datastore.Key;
+import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
 
-import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**

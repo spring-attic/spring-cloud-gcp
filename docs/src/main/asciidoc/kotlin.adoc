@@ -22,5 +22,5 @@ Once your Kotlin project is properly configured, the Spring Cloud GCP libraries 
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample[Kotlin sample application] is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample[Kotlin sample application] is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.
 

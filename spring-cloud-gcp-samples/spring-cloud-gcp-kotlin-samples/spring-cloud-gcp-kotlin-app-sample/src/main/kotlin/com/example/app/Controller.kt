@@ -18,7 +18,7 @@ package com.example.app
 
 import com.example.data.Person
 import com.example.data.PersonRepository
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate
+import com.google.cloud.spring.pubsub.core.PubSubTemplate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam

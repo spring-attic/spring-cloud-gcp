@@ -7,5 +7,5 @@
   "language": "java",
   "repo": "googlecloudplatform/spring-cloud-gcp",
   "repo_short": "spring-cloud-gcp",
-  "distribution_name": "org.springframework.cloud:spring-cloud-gcp-starter-metrics"
+  "distribution_name": "com.google.cloud:spring-cloud-gcp-starter-metrics"
 }

@@ -18,6 +18,7 @@ package com.example;
 
 import java.util.concurrent.TimeUnit;
 
+import com.google.cloud.spring.data.datastore.core.DatastoreTemplate;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -27,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;

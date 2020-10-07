@@ -18,13 +18,13 @@ package com.example;
 
 import java.util.List;
 
+import com.google.cloud.spring.vision.CloudVisionTemplate;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,7 +56,7 @@ public class VisionController {
 	 * @param imageUrl the URL of the image
 	 * @param map the model map to use
 	 * @return a string with the list of labels and percentage of certainty
-	 * @throws org.springframework.cloud.gcp.vision.CloudVisionException if the Vision API call
+	 * @throws com.google.cloud.spring.vision.CloudVisionException if the Vision API call
 	 *    produces an error
 	 */
 	@GetMapping("/extractLabels")

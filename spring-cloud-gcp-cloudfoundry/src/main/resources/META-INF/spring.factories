@@ -1,2 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
-org.springframework.cloud.gcp.cloudfoundry.GcpCloudFoundryEnvironmentPostProcessor
+com.google.cloud.spring.cloudfoundry.GcpCloudFoundryEnvironmentPostProcessor

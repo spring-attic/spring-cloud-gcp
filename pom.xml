@@ -13,9 +13,9 @@
 	<packaging>pom</packaging>
 
 	<scm>
-		<url>https://github.com/spring-cloud/spring-cloud-gcp</url>
-		<connection>scm:git:git://github.com/spring-cloud/spring-cloud-gcp.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/spring-cloud/spring-cloud-gcp.git</developerConnection>
+		<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp</url>
+		<connection>scm:git:git://github.com/GoogleCloudPlatform/spring-cloud-gcp.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/GoogleCloudPlatform/spring-cloud-gcp.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 

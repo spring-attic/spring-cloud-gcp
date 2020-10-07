@@ -16,9 +16,10 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import com.google.cloud.spring.data.datastore.core.mapping.DiscriminatorField;
+import com.google.cloud.spring.data.datastore.core.mapping.DiscriminatorValue;
+import com.google.cloud.spring.data.datastore.core.mapping.Entity;
+
 import org.springframework.data.annotation.Id;
 
 /**

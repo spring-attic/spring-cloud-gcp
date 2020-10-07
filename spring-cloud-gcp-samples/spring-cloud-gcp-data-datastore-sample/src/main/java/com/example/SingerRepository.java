@@ -18,8 +18,9 @@ package com.example;
 
 import java.util.List;
 
-import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
-import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
+import com.google.cloud.spring.data.datastore.repository.query.Query;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.query.Param;

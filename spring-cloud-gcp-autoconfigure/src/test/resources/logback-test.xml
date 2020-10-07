@@ -3,7 +3,7 @@
 
 	<property name="projectId" value="test-project"/>
 
-	<include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml"/>
+	<include resource="com/google/cloud/spring/logging/logback-json-appender.xml"/>
 
 	<logger name="StackdriverJsonLayoutLoggerTests" level="WARN">
 		<appender-ref ref="CONSOLE_JSON"/>
@@ -19,7 +19,7 @@
 		</layout>
 	</appender>
 
-	<logger name="org.springframework.cloud.gcp" level="warn">
+	<logger name="com.google.cloud.spring" level="warn">
 		<appender-ref ref="STDOUT" />
 	</logger>
 </configuration>

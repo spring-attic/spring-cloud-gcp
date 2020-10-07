@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.data.firestore.FirestoreTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

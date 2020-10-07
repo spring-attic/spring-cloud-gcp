@@ -19,10 +19,10 @@ package com.example;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.cloud.spring.core.GcpProjectIdProvider;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.web.bind.annotation.GetMapping;

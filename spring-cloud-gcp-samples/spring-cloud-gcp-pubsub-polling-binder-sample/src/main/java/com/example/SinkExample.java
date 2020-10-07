@@ -16,12 +16,12 @@
 
 package com.example;
 
+import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.binder.PollableMessageSource;
 import org.springframework.core.ParameterizedTypeReference;

@@ -19,6 +19,7 @@ package com.example;
 import java.util.List;
 import java.util.Map;
 
+import com.google.cloud.spring.core.util.MapBuilder;
 import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;

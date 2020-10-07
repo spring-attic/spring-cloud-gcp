@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.awaitility.Awaitility;
 import org.junit.AfterClass;
@@ -30,7 +31,6 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 

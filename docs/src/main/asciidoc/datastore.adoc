@@ -26,7 +26,7 @@ dependencies {
 }
 ----
 
-We provide a link:https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
+We provide a link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
 To use the starter, see the coordinates below.
 
 
@@ -81,7 +81,7 @@ The following configuration options are available:
 
 Spring Data Repositories can be configured via the `@EnableDatastoreRepositories` annotation on your main `@Configuration` class.
 With our Spring Boot Starter for Spring Data Cloud Datastore, `@EnableDatastoreRepositories` is automatically added.
-It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/com/google/cloud/spring/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
 
 ==== Autoconfiguration
 
@@ -448,7 +448,7 @@ This corresponds to a simple pair of Java entities:
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import com.google.cloud.spring.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 @Entity("parents")
@@ -479,8 +479,8 @@ We can store trees in Cloud Datastore using this feature:
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import com.google.cloud.spring.data.datastore.core.mapping.Embedded;
+import com.google.cloud.spring.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 @Entity
@@ -519,7 +519,7 @@ To do that, we need to create a field of type `List<EmbeddableTreeNode>`:
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import com.google.cloud.spring.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 public class EmbeddableTreeNode {
@@ -555,8 +555,8 @@ Instead, the relationship is captured in the descendants' keys, which refer to t
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import com.google.cloud.spring.data.datastore.core.mapping.Descendants;
+import com.google.cloud.spring.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 @Entity("orders")
@@ -765,7 +765,7 @@ To disable indexing on a particular field, `@Unindexed` annotation can be used.
 Example:
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+import com.google.cloud.spring.data.datastore.core.mapping.Unindexed;
 
 public class ExampleItem {
 	long indexedField;

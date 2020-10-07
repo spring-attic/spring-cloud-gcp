@@ -16,7 +16,7 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
+import com.google.cloud.spring.data.spanner.repository.SpannerRepository;
 
 /**
  * A sample repository.

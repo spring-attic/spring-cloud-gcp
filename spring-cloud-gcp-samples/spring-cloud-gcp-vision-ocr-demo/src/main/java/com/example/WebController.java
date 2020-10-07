@@ -22,6 +22,9 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.api.client.util.ByteStreams;
 import com.google.cloud.WriteChannel;
+import com.google.cloud.spring.storage.GoogleStorageLocation;
+import com.google.cloud.spring.vision.DocumentOcrResultSet;
+import com.google.cloud.spring.vision.DocumentOcrTemplate;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -31,9 +34,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gcp.storage.GoogleStorageLocation;
-import org.springframework.cloud.gcp.vision.DocumentOcrResultSet;
-import org.springframework.cloud.gcp.vision.DocumentOcrTemplate;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.ui.ModelMap;

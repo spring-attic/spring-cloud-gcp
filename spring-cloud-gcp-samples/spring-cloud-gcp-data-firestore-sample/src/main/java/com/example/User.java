@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.google.cloud.firestore.annotation.DocumentId;
-
-import org.springframework.cloud.gcp.data.firestore.Document;
+import com.google.cloud.spring.data.firestore.Document;
 
 /**
  * Example POJO to demonstrate Spring Cloud GCP Spring Data Firestore operations.

@@ -154,5 +154,5 @@ The trace logs can be viewed by going to the https://console.cloud.google.com/tr
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
 
