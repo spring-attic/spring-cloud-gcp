@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -60,6 +61,9 @@ public class ReactiveReceiverApplicationTest {
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
+	@Autowired
+	private PubSubTemplate pubSubTemplate;
+
 	@BeforeClass
 	public static void prepare() {
 		assumeThat("PUB/SUB-sample integration tests disabled. Use '-Dit.pubsub=true' to enable them.",
@@ -68,6 +72,11 @@ public class ReactiveReceiverApplicationTest {
 
 	@Test
 	public void testSample() throws UnsupportedEncodingException {
+		// clear any old messages
+		System.out.println("Cleared " +
+				pubSubTemplate.pullAndAck("exampleSubscription", 1000, true).size() +
+				" old messages");
+
 		String messagePostingUrl = UriComponentsBuilder.newInstance()
 			.scheme("http")
 			.host("localhost")
@@ -92,7 +101,7 @@ public class ReactiveReceiverApplicationTest {
 			.retrieve()
 			.bodyToFlux(String.class)
 			.limitRequest(2)
-			.collectList().block(Duration.ofSeconds(10));
+			.collectList().block(Duration.ofSeconds(20));
 
 		assertThat(streamedMessages).containsExactlyInAnyOrder("reactive test msg 0", "reactive test msg 1");
 	}
