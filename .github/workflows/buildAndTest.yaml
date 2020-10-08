@@ -3,6 +3,7 @@ name: Build And Test
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '30 9 * * *' # 09:30 UTC every day
 
