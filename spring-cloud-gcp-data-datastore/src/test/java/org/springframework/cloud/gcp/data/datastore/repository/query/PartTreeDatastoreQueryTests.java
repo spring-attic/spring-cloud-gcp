@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
@@ -512,10 +511,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(true);
 
 		verify(this.datastoreTemplate, times(1))
-				.nextPageAwareQuery(any(), any());
-
-		verify(this.datastoreTemplate, times(0))
-				.queryKeysOrEntities(isA(KeyQuery.class), any());
+				.queryKeysOrEntities(any(), any());
 	}
 
 	@Test
@@ -537,10 +533,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.nextPageAwareQuery(isA(EntityQuery.class), any());
-
-		verify(this.datastoreTemplate, times(0))
-				.queryKeysOrEntities(isA(KeyQuery.class), any());
+				.queryKeysOrEntities(isA(EntityQuery.class), any());
 	}
 
 	@Test
@@ -562,10 +555,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(false);
 
 		verify(this.datastoreTemplate, times(1))
-				.nextPageAwareQuery(isA(EntityQuery.class), any());
-
-		verify(this.datastoreTemplate, times(0))
-				.queryKeysOrEntities(isA(KeyQuery.class), any());
+				.queryKeysOrEntities(isA(EntityQuery.class), any());
 	}
 
 	private void preparePageResults(int offset, Integer limit, Cursor cursor,
@@ -598,7 +588,7 @@ public class PartTreeDatastoreQueryTests {
 	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.nextPageAwareQuery(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -607,7 +597,9 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return new DatastoreNextPageAwareResultsIterable<>(new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor), hasNext);
+			DatastoreResultsIterable datastoreResultsIterable = new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+			datastoreResultsIterable.setHasNextPageQuery(() -> hasNext);
+			return datastoreResultsIterable;
 		});
 	}
 

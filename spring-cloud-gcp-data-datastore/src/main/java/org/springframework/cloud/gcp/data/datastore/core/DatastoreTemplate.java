@@ -273,15 +273,15 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			resultsIterable = new DatastoreResultsIterable<>(convertEntitiesForRead(results, entityClass),
 					results.getCursorAfter());
 		}
+		if (query instanceof StructuredQuery) {
+			resultsIterable.setHasNextPageQuery(
+					((StructuredQuery) query).getLimit() != null
+							? () -> nextPageExists((StructuredQuery) query, results.getCursorAfter())
+							: () -> Boolean.FALSE
+					);
+		}
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
-	}
-
-	@Override
-	public <T> DatastoreNextPageAwareResultsIterable<?> nextPageAwareQuery(StructuredQuery query, Class<T> entityClass) {
-		DatastoreResultsIterable resultsIterable = queryKeysOrEntities(query, entityClass);
-
-		return new DatastoreNextPageAwareResultsIterable(resultsIterable, nextPageExists(query, resultsIterable.getCursor()));
 	}
 
 	private boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {

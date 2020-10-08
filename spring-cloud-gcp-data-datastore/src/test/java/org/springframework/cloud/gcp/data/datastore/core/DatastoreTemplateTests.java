@@ -845,7 +845,7 @@ public class DatastoreTemplateTests {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		when(queryResults.getCursorAfter()).thenReturn(cursor);
 
-		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").build();
+		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").setLimit(2).build();
 		when(this.datastore
 				.run(eq(query)))
 				.thenReturn(queryResults);
@@ -860,9 +860,9 @@ public class DatastoreTemplateTests {
 				.run(eq(nextPageQuery)))
 				.thenReturn(nextPageQueryResults);
 
-		DatastoreNextPageAwareResultsIterable<Key> resultsIterable =
-				(DatastoreNextPageAwareResultsIterable<Key>) this.datastoreTemplate.nextPageAwareQuery(query, TestEntity.class);
-		return resultsIterable.hasNextPage();
+		DatastoreResultsIterable<Key> resultsIterable =
+				(DatastoreResultsIterable<Key>) this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
+		return resultsIterable.getHasNextPage().get();
 	}
 
 	@Test

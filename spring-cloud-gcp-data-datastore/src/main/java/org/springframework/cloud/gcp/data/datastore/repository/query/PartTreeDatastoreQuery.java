@@ -42,7 +42,6 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
@@ -245,22 +244,24 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
-		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
-				.setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
-		DatastoreNextPageAwareResultsIterable<?> results = this.datastoreOperations.nextPageAwareQuery(query, this.entityType);
-
-		List<Object> result =
-				StreamSupport.stream(results.spliterator(), false).collect(Collectors.toList());
+		DatastoreResultsIterable<?> results =
+				this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
 
 		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, getPageable(parameters, results.getCursor()), results.hasNextPage()));
+				new SliceImpl(results.toList(),
+						getPageable(parameters, results.getCursor()),
+						results.getHasNextPage().orElse(Boolean.FALSE)));
+	}
+
+	private StructuredQuery buildSliceQuey(Object[] parameters) {
+		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
+				.setKind(this.datastorePersistentEntity.kindName());
+		return applyQueryBody(parameters, builder, false, false, null);
 	}
 
 	private Pageable getPageable(Object[] parameters, Cursor cursor) {
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), cursor, null);
-		return pageable;
+		return DatastorePageable.from(paramAccessor.getPageable(), cursor, null);
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {

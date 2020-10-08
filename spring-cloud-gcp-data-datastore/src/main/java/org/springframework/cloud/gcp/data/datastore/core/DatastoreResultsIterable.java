@@ -16,9 +16,16 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.google.cloud.datastore.Cursor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Lazy;
 
 /**
  * @author Dmitry Solomakha
@@ -27,6 +34,10 @@ public class DatastoreResultsIterable<T> implements Iterable<T> {
 	private final Iterator<T> iterator;
 	private final Cursor cursor;
 	private Iterable<T> iterable;
+
+	@Autowired
+	private DatastoreOperations datastoreOperations;
+	private Supplier<Optional<Boolean>> hasNextPage = Optional::empty;
 
 	public DatastoreResultsIterable(Iterable<T> iterable, Cursor cursor) {
 		this(iterable.iterator(), cursor);
@@ -49,5 +60,21 @@ public class DatastoreResultsIterable<T> implements Iterable<T> {
 
 	public Iterable<T> getIterable() {
 		return this.iterable;
+	}
+
+	public Optional<Boolean> getHasNextPage() {
+		return hasNextPage.get();
+	}
+
+	public void setHasNextPageQuery(Supplier<Boolean> query) {
+		this.hasNextPage = Lazy.of(() -> Optional.of(query.get()));
+	}
+
+	public List<T> toList() {
+		List<T> results = new ArrayList<>();
+		while (iterator.hasNext()) {
+			results.add(iterator.next());
+		}
+		return results;
 	}
 }

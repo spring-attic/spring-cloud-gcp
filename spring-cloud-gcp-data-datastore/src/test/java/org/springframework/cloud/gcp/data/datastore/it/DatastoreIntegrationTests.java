@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -276,13 +276,13 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.setFilter(PropertyFilter.eq("color", "red"))
 				.setLimit(2).build();
 
-		DatastoreNextPageAwareResultsIterable<?> results =
-				this.datastoreTemplate.nextPageAwareQuery(query, TestEntity.class);
+		DatastoreResultsIterable<?> results =
+				this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
 
 		List<TestEntity> testEntities = new ArrayList<>();
 
-		((DatastoreNextPageAwareResultsIterable<TestEntity>) results).forEach(testEntities::add);
-		assertThat(results.hasNextPage()).isTrue();
+		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
+		assertThat(results.getHasNextPage().get()).isTrue();
 
 		query = StructuredQuery.newEntityQueryBuilder().setKind(persistentEntity.kindName())
 				.setFilter(PropertyFilter.eq("color", "red"))
@@ -290,11 +290,11 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.setLimit(2).build();
 
 		results =
-				this.datastoreTemplate.nextPageAwareQuery(query, TestEntity.class);
+				this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
 
-		((DatastoreNextPageAwareResultsIterable<TestEntity>) results).forEach(testEntities::add);
+		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
 
-		assertThat(results.hasNextPage()).isFalse();
+		assertThat(results.getHasNextPage().get()).isFalse();
 		assertThat(testEntities).contains(testEntityA, testEntityC, testEntityD);
 	}
 
