@@ -43,7 +43,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Chengyuan Zhao
  * @author Serhat Soydan
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "spring.cloud.gcp.core.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ public class StructAccessor {
 				.put(Timestamp.class, AbstractStructReader::getTimestampList)
 				.put(Date.class, AbstractStructReader::getDateList)
 				.put(ByteArray.class, AbstractStructReader::getBytesList)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimalList)
 				.put(Struct.class, AbstractStructReader::getStructList)
 				.build();
 
@@ -67,6 +69,7 @@ public class StructAccessor {
 				.put(double.class, AbstractStructReader::getDouble)
 				.put(Timestamp.class, AbstractStructReader::getTimestamp)
 				.put(Date.class, AbstractStructReader::getDate)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				.put(ByteArray.class, AbstractStructReader::getBytes)
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)
@@ -87,6 +90,7 @@ public class StructAccessor {
 				.put(double.class, AbstractStructReader::getDouble)
 				.put(Timestamp.class, AbstractStructReader::getTimestamp)
 				.put(Date.class, AbstractStructReader::getDate)
+				.put(BigDecimal.class, AbstractStructReader::getBigDecimal)
 				.put(ByteArray.class, AbstractStructReader::getBytes)
 				.put(double[].class, AbstractStructReader::getDoubleArray)
 				.put(long[].class, AbstractStructReader::getLongArray)

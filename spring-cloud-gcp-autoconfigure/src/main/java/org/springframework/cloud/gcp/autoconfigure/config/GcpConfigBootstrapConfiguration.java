@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @since 1.1
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(GcpConfigProperties.class)
 public class GcpConfigBootstrapConfiguration {

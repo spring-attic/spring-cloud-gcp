@@ -42,7 +42,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Eddú Meléndez
  * @since 1.2.4
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(StackdriverMetricsExportAutoConfiguration.class)
 @ConditionalOnClass({StepMeterRegistry.class, StackdriverConfig.class})
 @ConditionalOnBean(Clock.class)

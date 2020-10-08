@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -173,7 +174,10 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
 				.to(Value.bytes(ByteArray.copyFrom("string1"))).set("momentsInTime")
 				.to(Value.timestampArray(timestamps))
-				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
+				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1)))
+				.set("bigDecimalField").to(Value.numeric(BigDecimal.TEN))
+				.set("bigDecimals").to(Value.numericArray(Arrays.asList(BigDecimal.ONE, BigDecimal.ZERO)))
+				.build();
 
 		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key12"))
 				.set("id2").to(Value.string("key22")).set("id3").to(Value.string("key32"))
@@ -195,7 +199,10 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.set("momentsInTime").to(Value.timestampArray(timestamps)).set("bytes")
 				.to(Value.bytes(ByteArray.copyFrom("string2")))
-				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
+				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1)))
+				.set("bigDecimalField").to(Value.numeric(new BigDecimal("0.0001")))
+				.set("bigDecimals").to(Value.numericArray(Arrays.asList(new BigDecimal("-0.999"), new BigDecimal("10.9001"))))
+				.build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -230,6 +237,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t1.momentsInTime).isEqualTo(instants);
 		assertThat(t1.bytes).isEqualTo(ByteArray.copyFrom("string1"));
 		assertThat(t1.commitTimestamp).isEqualTo(Timestamp.ofTimeMicroseconds(1));
+		assertThat(t1.bigDecimalField).isEqualTo(BigDecimal.TEN);
+		assertThat(t1.bigDecimals).containsExactly(BigDecimal.ONE, BigDecimal.ZERO);
 
 		assertThat(t2.id).isEqualTo("key12");
 		assertThat(t2.testEmbeddedColumns.id2).isEqualTo("key22");
@@ -249,6 +258,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.stringList).containsExactly("string");
 		assertThat(t2.bytes).isEqualTo(ByteArray.copyFrom("string2"));
 		assertThat(t2.commitTimestamp).isEqualTo(Timestamp.ofTimeMicroseconds(1));
+		assertThat(t2.bigDecimalField).isEqualTo(new BigDecimal("0.0001"));
+		assertThat(t2.bigDecimals).containsExactly(new BigDecimal("-0.999"), new BigDecimal("10.9001"));
 	}
 
 	@Test

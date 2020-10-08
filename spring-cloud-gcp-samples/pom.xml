@@ -23,7 +23,6 @@
 
 		<!-- Checkstyle version settings. Keep in sync with ../pom.xml -->
 		<spring-cloud-build-tools.version>3.0.0-SNAPSHOT</spring-cloud-build-tools.version>
-		<puppycrawl-tools-checkstyle.version>8.32</puppycrawl-tools-checkstyle.version>
 		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
 		<app-engine-maven-plugin.version>2.2.0</app-engine-maven-plugin.version>
 	</properties>
@@ -60,63 +59,6 @@
 		<module>spring-cloud-gcp-metrics-sample</module>
 	</modules>
 
-	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
-	<profiles>
-		<profile>
-			<id>full-checkstyle</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>${maven-checkstyle-plugin.version}</version>
-						<dependencies>
-							<dependency>
-								<groupId>com.puppycrawl.tools</groupId>
-								<artifactId>checkstyle</artifactId>
-								<version>${puppycrawl-tools-checkstyle.version}</version>
-							</dependency>
-							<dependency>
-								<groupId>io.spring.javaformat</groupId>
-								<artifactId>spring-javaformat-checkstyle</artifactId>
-								<version>0.0.9</version>
-							</dependency>
-							<dependency>
-								<groupId>org.springframework.cloud</groupId>
-								<artifactId>spring-cloud-build-tools</artifactId>
-								<version>${spring-cloud-build-tools.version}</version>
-							</dependency>
-						</dependencies>
-						<executions>
-							<execution>
-								<id>checkstyle-validation</id>
-								<phase>validate</phase>
-								<configuration>
-									<propertyExpansion>
-										checkstyle.build.directory=${project.build.directory}
-										checkstyle.suppressions.file=${checkstyle.suppressions.file}
-										checkstyle.additional.suppressions.file=${checkstyle.additional.suppressions.file}
-									</propertyExpansion>
-									<configLocation>checkstyle.xml</configLocation>
-									<headerLocation>checkstyle-header.txt</headerLocation>
-									<consoleOutput>true</consoleOutput>
-									<includeTestSourceDirectory>true</includeTestSourceDirectory>
-									<failsOnError>true</failsOnError>
-									<failOnViolation>true</failOnViolation>
-									<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-									<violationSeverity>warning</violationSeverity>
-								</configuration>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -138,6 +80,43 @@
 				<!-- Enables repackaging the JAR into an executable. -->
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.cloud</groupId>
+						<artifactId>spring-cloud-build-tools</artifactId>
+						<version>${spring-cloud-build-tools.version}</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>checkstyle-validation</id>
+						<phase>validate</phase>
+						<configuration>
+							<propertyExpansion>
+								checkstyle.build.directory=${project.build.directory}
+								checkstyle.suppressions.file=${checkstyle.suppressions.file}
+								checkstyle.additional.suppressions.file=${checkstyle.additional.suppressions.file}
+							</propertyExpansion>
+							<configLocation>checkstyle.xml</configLocation>
+							<headerLocation>checkstyle-header.txt</headerLocation>
+							<consoleOutput>true</consoleOutput>
+							<includeTestSourceDirectory>true</includeTestSourceDirectory>
+							<failsOnError>true</failsOnError>
+							<failOnViolation>true</failOnViolation>
+							<suppressionsLocation>../src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+							<violationSeverity>warning</violationSeverity>
+						</configuration>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  * @author Daniel Zou
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(Binder.class)
 @EnableConfigurationProperties(PubSubExtendedBindingProperties.class)
 public class PubSubBinderConfiguration {

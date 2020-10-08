@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,6 +151,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		timestamps.add(t2);
 		timestamps.add(t3);
 
+		t.bigDecimalField = new BigDecimal("1000000.00001");
+		t.bigDecimals = Arrays.asList(new BigDecimal("999999999.0025"), BigDecimal.ZERO);
+
 		WriteBuilder writeBuilder = mock(WriteBuilder.class);
 
 		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
@@ -246,6 +250,14 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(commitTimestampBinder.to((Timestamp) any())).thenReturn(null);
 		when(writeBuilder.set(eq("commitTimestamp"))).thenReturn(commitTimestampBinder);
 
+		ValueBinder<WriteBuilder> bigDecimalFieldBinder = mock(ValueBinder.class);
+		when(bigDecimalFieldBinder.to((BigDecimal) any())).thenReturn(null);
+		when(writeBuilder.set(eq("bigDecimalField"))).thenReturn(bigDecimalFieldBinder);
+
+		ValueBinder<WriteBuilder> bigDecimalsBinder = mock(ValueBinder.class);
+		when(bigDecimalsBinder.toNumericArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("bigDecimals"))).thenReturn(bigDecimalsBinder);
+
 		this.spannerEntityWriter.write(t, writeBuilder::set);
 
 		verify(idBinder, times(1)).to(eq(t.id));
@@ -273,6 +285,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		// the positive value set earlier must not be passed to Spanner. it must be replaced by
 		// the dummy value.
 		verify(commitTimestampBinder, times(1)).to(eq(Value.COMMIT_TIMESTAMP));
+
+		verify(bigDecimalFieldBinder, times(1)).to(eq(t.bigDecimalField));
+		verify(bigDecimalsBinder, times(1)).toNumericArray(eq(t.bigDecimals));
 
 	}
 

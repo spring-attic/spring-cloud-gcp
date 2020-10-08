@@ -32,7 +32,7 @@ script:
       ./mvnw test -B -P codecov ${INTEGRATION_TEST_FLAGS} && bash <(curl -s https://codecov.io/bash) -F integration;
     fi;
 install:
-  - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -Dspring.profiles.active=spring -P full-checkstyle -B -V
+  - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -Dspring.profiles.active=spring -B -V
 before_install:
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;

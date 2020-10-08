@@ -61,7 +61,7 @@
 		<java-cfenv.version>2.1.2.RELEASE</java-cfenv.version>
 
 		<!-- Checkstyle version settings. Keep in sync with spring-cloud-gcp-samples/pom.xml -->
-		<spring-javaformat-checkstyle.version>0.0.23</spring-javaformat-checkstyle.version>
+		<spring-javaformat-checkstyle.version>0.0.25</spring-javaformat-checkstyle.version>
 	</properties>
 
 	<dependencyManagement>

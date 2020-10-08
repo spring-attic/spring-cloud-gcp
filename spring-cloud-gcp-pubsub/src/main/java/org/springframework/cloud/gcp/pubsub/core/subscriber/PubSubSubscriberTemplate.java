@@ -374,7 +374,7 @@ public class PubSubSubscriberTemplate
 	 */
 	@Override
 	public ListenableFuture<Void> ack(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+			Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
 
 		return doBatchedAsyncOperation(acknowledgeablePubsubMessages, this::ack);
@@ -389,7 +389,7 @@ public class PubSubSubscriberTemplate
 	 */
 	@Override
 	public ListenableFuture<Void> nack(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+			Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return modifyAckDeadline(acknowledgeablePubsubMessages, 0);
 	}
 
@@ -402,7 +402,7 @@ public class PubSubSubscriberTemplate
 	 */
 	@Override
 	public ListenableFuture<Void> modifyAckDeadline(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
+			Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
 		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
 
@@ -453,7 +453,7 @@ public class PubSubSubscriberTemplate
 	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	private ListenableFuture<Void> doBatchedAsyncOperation(
-			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			Collection<? extends AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			BiFunction<String, List<String>, ApiFuture<Empty>> asyncOperation) {
 
 		Map<ProjectSubscriptionName, List<String>> groupedMessages
