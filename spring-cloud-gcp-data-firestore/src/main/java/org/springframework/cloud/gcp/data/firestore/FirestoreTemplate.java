@@ -328,20 +328,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return Mono.subscriberContext().flatMapMany(ctx -> {
 			FirestorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(clazz);
 
-			StructuredQuery.Builder builder = queryBuilder != null ? queryBuilder : StructuredQuery.newBuilder();
+			StructuredQuery.Builder builder = queryBuilder != null ? queryBuilder.clone() : StructuredQuery.newBuilder();
 			builder.addFrom(StructuredQuery.CollectionSelector.newBuilder()
 					.setCollectionId(persistentEntity.collectionName()).build());
 			if (projection != null) {
 				builder.setSelect(projection);
 			}
-			RunQueryRequest.Builder buider = RunQueryRequest.newBuilder()
+			RunQueryRequest.Builder requestBuilder = RunQueryRequest.newBuilder()
 					.setParent(this.parent)
 					.setStructuredQuery(builder.build());
 
-			doIfTransaction(ctx, resourceHolder -> buider.setTransaction(resourceHolder.getTransactionId()));
+			doIfTransaction(ctx, resourceHolder -> requestBuilder.setTransaction(resourceHolder.getTransactionId()));
 
 			return ObservableReactiveUtil
-					.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(buider.build(), obs))
+					.<RunQueryResponse>streamingCall(obs -> this.firestore.runQuery(requestBuilder.build(), obs))
 					.filter(RunQueryResponse::hasDocument)
 					.map(RunQueryResponse::getDocument);
 		});
