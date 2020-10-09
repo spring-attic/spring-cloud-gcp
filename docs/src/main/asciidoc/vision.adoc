@@ -29,7 +29,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
+  implementation("org.springframework.cloud:spring-cloud-gcp-starter-vision")
 }
 ----
 
@@ -68,8 +68,8 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
+  implementation("org.springframework.cloud:spring-cloud-gcp-starter-vision")
+  implementation("org.springframework.cloud:spring-cloud-gcp-starter-storage")
 }
 ----
 

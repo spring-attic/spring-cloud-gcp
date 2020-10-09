@@ -19,7 +19,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub'
+    implementation("org.springframework.cloud:spring-cloud-gcp-starter-pubsub")
 }
 ----
 

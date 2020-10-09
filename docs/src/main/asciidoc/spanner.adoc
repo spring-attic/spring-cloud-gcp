@@ -20,7 +20,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+    implementation("org.springframework.cloud:spring-cloud-gcp-data-spanner")
 }
 ----
 
@@ -43,7 +43,7 @@ Gradle:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
+    implementation("org.springframework.cloud:spring-cloud-gcp-starter-data-spanner")
 }
 ----
 
