@@ -34,8 +34,11 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 # change to release version
 ./mvnw versions:set -DremoveSnapshot
 
+./mvw clean install -B \
+  -DskipTests=true
+
 # stage release
-./mvnw clean deploy -B \
+./mvnw deploy -B \
   -DskipTests=true \
   --settings ${MAVEN_SETTINGS_FILE} \
   -Dgpg.executable=gpg \

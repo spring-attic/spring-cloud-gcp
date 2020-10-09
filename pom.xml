@@ -73,8 +73,9 @@
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<skip.failsafe.tests>false</skip.failsafe.tests>
-		<skip.surefire.tests>false</skip.surefire.tests>
+		<skip.failsafe.tests>${skipTests}</skip.failsafe.tests>
+		<skip.surefire.tests>${skipTests}</skip.surefire.tests>
+		<skipTests>false</skipTests>
 		<spring-cloud-build.version>3.0.0-SNAPSHOT</spring-cloud-build.version>
 		<spring-cloud-sleuth.version>2.2.4.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud.version>2020.0.0-SNAPSHOT</spring-cloud.version>
