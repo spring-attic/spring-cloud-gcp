@@ -15,7 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
-set -eo pipefail
+set -eov pipefail
 
 dir=$(dirname "$0")
 
@@ -29,7 +29,7 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 # run unit tests
-./mvnw verify -B -V -P disable-integration-tests
+./mvnw verify -B -V
 
 # change to release version
 ./mvnw versions:set -DremoveSnapshot
