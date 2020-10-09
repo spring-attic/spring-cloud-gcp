@@ -34,7 +34,7 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
 # change to release version
 ./mvnw versions:set -DremoveSnapshot
 
-./mvw clean install -B \
+./mvnw clean install -B \
   -DskipTests=true
 
 # stage release
