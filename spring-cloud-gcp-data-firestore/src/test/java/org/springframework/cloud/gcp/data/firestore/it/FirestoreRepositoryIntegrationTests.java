@@ -308,4 +308,19 @@ public class FirestoreRepositoryIntegrationTests {
 		assertThat(this.userRepository.findAll().map(User::getAge).collectList().block())
 				.containsExactlyInAnyOrder(28, 59);
 	}
+
+	@Test
+	public void testDoubleSub() {
+		User alice = new User("Alice", 29);
+		User bob = new User("Bob", 60);
+		this.userRepository.save(alice).then(this.userRepository.save(bob)).block();
+
+		Mono<User> aUser = this.userRepository.findByAge(29).next();
+
+		Flux<String> stringFlux = userRepository.findAll()
+				.flatMap(user ->
+						aUser.flatMap(user1 -> Mono.just(user.getName() + " " + user1.getName())));
+		List<String> list = stringFlux.collectList().block();
+		assertThat(list).contains("Alice Alice", "Bob Alice");
+	}
 }
