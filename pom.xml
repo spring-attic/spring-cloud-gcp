@@ -74,6 +74,7 @@
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<skip.failsafe.tests>${skipTests}</skip.failsafe.tests>
 		<skip.surefire.tests>${skipTests}</skip.surefire.tests>
 		<skipTests>false</skipTests>
@@ -276,6 +277,11 @@
 							</goals>
 						</execution>
 					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>flatten-maven-plugin</artifactId>
+					<version>${maven-flatten-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
