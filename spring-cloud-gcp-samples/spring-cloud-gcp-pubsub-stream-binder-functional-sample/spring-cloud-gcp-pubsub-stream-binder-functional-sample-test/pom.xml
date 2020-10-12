@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample-test</artifactId>
-  <name>Integration Test for Spring Cloud GCP Pub/Sub Stream Binder Functional Code Sample</name>
+  <name>Spring Cloud GCP Integration Test Pub/Sub Stream Binder Functional Code Sample</name>
 
   <dependencies>
 

@@ -11,6 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-pubsub-bus-config-sample-test</artifactId>
+  <name>Spring Cloud GCP Pub/Sub Bus Config Sample Test</name>
 
   <dependencies>
     <dependency>
