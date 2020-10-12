@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eo pipefail
+set -eov pipefail
 
 if [[ -z "${CREDENTIALS}" ]]; then
   CREDENTIALS=${KOKORO_KEYSTORE_DIR}/73713_docuploader_service_account

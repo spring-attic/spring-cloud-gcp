@@ -15,7 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 
-set -eo pipefail
+set -eov pipefail
 
 # Get secrets from keystore and set and environment variables
 setup_environment_secrets() {
