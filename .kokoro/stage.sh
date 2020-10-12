@@ -29,21 +29,21 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 # run unit tests
-./mvnw verify -B -V
+./mvnw verify --show-version --batch-mode
 
 # change to release version
-./mvnw versions:set -DremoveSnapshot
+./mvnw versions:set -DremoveSnapshot -DprocessAllModules
 
-./mvnw clean install -B \
-  -DskipTests=true
+# build and install the jars locally
+./mvnw clean install -DskipTests=true --batch-mode
 
 # stage release
-./mvnw deploy -B \
+./mvnw deploy --batch-mode \
   -DskipTests=true \
   --settings ${MAVEN_SETTINGS_FILE} \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
   -Dgpg.homedir=${GPG_HOMEDIR} \
-  -P release
+  --activate-profiles release
 
 popd
