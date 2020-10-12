@@ -28,12 +28,14 @@ MAVEN_SETTINGS_FILE=$(realpath .)/settings.xml
 setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
-./mvnw clean deploy -B \
-  -DskipTests=true \
+./mvnw clean deploy \
   --settings ${MAVEN_SETTINGS_FILE} \
+  -DskipTests=true \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
   -Dgpg.homedir=${GPG_HOMEDIR} \
-  -P release
+  -DautoReleaseAfterClose=true
+  --activate-profiles release
+  --batch-mode
 
 popd
