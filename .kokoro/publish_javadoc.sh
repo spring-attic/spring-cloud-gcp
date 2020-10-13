@@ -19,7 +19,7 @@ PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceSt
 python3 -m pip install --user gcp-docuploader
 
 # Build the javadocs
-./mvnw clean javadoc:aggregate
+./mvnw clean javadoc:aggregate --activate-profiles release
 
 # Move into generated docs directory
 pushd target/site/apidocs/
