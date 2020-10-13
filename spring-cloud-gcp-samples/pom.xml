@@ -101,6 +101,8 @@
 						<extensions>true</extensions>
 						<configuration>
 							<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 						</configuration>
 					</plugin>
 				</plugins>
