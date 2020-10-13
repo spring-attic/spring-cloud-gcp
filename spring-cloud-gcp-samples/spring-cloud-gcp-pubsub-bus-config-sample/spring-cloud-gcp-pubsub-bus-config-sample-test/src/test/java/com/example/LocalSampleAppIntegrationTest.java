@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,6 +52,8 @@ import static org.junit.Assume.assumeThat;
  * @since 1.2
  */
 public class LocalSampleAppIntegrationTest {
+
+	private static final Log LOGGER = LogFactory.getLog("LocalSampleAppIntegrationTest");
 
 	static final String CONFIG_DIR = "/tmp/config";
 
@@ -85,21 +89,21 @@ public class LocalSampleAppIntegrationTest {
 
 		startConfigServer();
 
-		waitForLogMessage(this.configServerOutput, "Monitoring for local config changes: [" + CONFIG_DIR + "]");
-		waitForLogMessage(this.configServerOutput, "Started PubSubConfigServerApplication");
+		waitForLogMessage(this.configServerOutput, Source.SERVER, "Monitoring for local config changes: [" + CONFIG_DIR + "]");
+		waitForLogMessage(this.configServerOutput, Source.SERVER, "Started PubSubConfigServerApplication");
 		assertConfigServerValue(INITIAL_MESSAGE);
 
 		startConfigClient();
 
-		waitForLogMessage(this.configClientOutput, "Located property source");
-		waitForLogMessage(this.configClientOutput, "Started PubSubConfigApplication");
+		waitForLogMessage(this.configClientOutput, Source.CLIENT, "Located property source");
+		waitForLogMessage(this.configClientOutput, Source.CLIENT, "Started PubSubConfigApplication");
 		assertConfigClientValue(INITIAL_MESSAGE);
 
 		writeMessageToFile(UPDATED_MESSAGE);
-		waitForLogMessage(this.configServerOutput, "Refresh for: *");
+		waitForLogMessage(this.configServerOutput, Source.SERVER, "Refresh for: *");
 		assertConfigServerValue(UPDATED_MESSAGE);
 
-		waitForLogMessage(this.configClientOutput, "Keys refreshed");
+		waitForLogMessage(this.configClientOutput, Source.CLIENT, "Keys refreshed");
 		assertConfigClientValue(UPDATED_MESSAGE);
 	}
 
@@ -140,31 +144,34 @@ public class LocalSampleAppIntegrationTest {
 	}
 
 	private void startConfigServer() throws IOException {
-		ProcessBuilder serverBuilder = new ProcessBuilder("mvn", "spring-boot:run",
+		LOGGER.info("Starting config server...");
+		ProcessBuilder serverBuilder = new ProcessBuilder("../../../mvnw", "spring-boot:run",
 				"-f", "../spring-cloud-gcp-pubsub-bus-config-sample-server-local");
 		this.configServerProcess = serverBuilder.start();
 		this.configServerOutput = new BufferedReader(new InputStreamReader(this.configServerProcess.getInputStream()));
-
+		LOGGER.info("Config server started.");
 	}
 
 	private void startConfigClient() throws IOException {
-
-		ProcessBuilder serverBuilder = new ProcessBuilder("mvn", "spring-boot:run",
+		LOGGER.info("Starting config client...");
+		ProcessBuilder serverBuilder = new ProcessBuilder("../../../mvnw", "spring-boot:run",
 				"-f", "../spring-cloud-gcp-pubsub-bus-config-sample-client");
 		this.configClientProcess = serverBuilder.start();
 		this.configClientOutput = new BufferedReader(new InputStreamReader(this.configClientProcess.getInputStream()));
-
+		LOGGER.info("Config client started.");
 	}
 
 	private static void writeMessageToFile(String value) {
 		File properties = new File(CONFIG_FILE);
 
+		String message = "example.message = " + value;
 		try (FileOutputStream fos = new FileOutputStream(properties)) {
-			fos.write(("example.message = " + value).getBytes());
+			fos.write(message.getBytes());
 		}
 		catch (IOException e) {
 			fail("Could not write message to file", e);
 		}
+		LOGGER.info("Wrote message " + message + " to file " + CONFIG_FILE);
 	}
 
 	private void assertConfigServerValue(String message) {
@@ -179,19 +186,22 @@ public class LocalSampleAppIntegrationTest {
 		assertThat(value).isEqualTo(message);
 	}
 
-	private void waitForLogMessage(BufferedReader reader, String message) {
+	private void waitForLogMessage(BufferedReader reader, Source source, String message) {
+		LOGGER.info("Waiting for message " + message);
 		Awaitility.await(message)
 			.atMost(60, TimeUnit.SECONDS)
 			.until(() -> {
 				// drain all lines up to the one requested, or until no more lines in reader.
 				while (reader.ready()) {
 					String line = reader.readLine();
+					LOGGER.debug(source.toString() + ": " + line);
 
 					if (line == null) {
 						return false;
 					}
 
 					if (line.contains(message)) {
+						LOGGER.info("Found message: " + message);
 						return true;
 					}
 				}
@@ -199,4 +209,7 @@ public class LocalSampleAppIntegrationTest {
 			});
 	}
 
+	private enum Source {
+		SERVER, CLIENT
+	}
 }
