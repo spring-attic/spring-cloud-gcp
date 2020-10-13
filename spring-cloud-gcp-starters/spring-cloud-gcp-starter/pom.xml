@@ -10,8 +10,8 @@
 	<name>Spring Cloud GCP Support Starter</name>
 	<description>Starter for Google Cloud</description>
 	<organization>
-		<name>Pivotal Software, Inc.</name>
-		<url>https://www.spring.io</url>
+		<name>Google</name>
+		<url>https://cloud.google.com</url>
 	</organization>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>

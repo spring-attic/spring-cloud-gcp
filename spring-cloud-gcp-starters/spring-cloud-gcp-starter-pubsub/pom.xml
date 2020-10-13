@@ -9,10 +9,10 @@
 	<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 	<name>Spring Cloud GCP Pub/Sub Starter</name>
 	<description>Starter for Google Cloud Pub/Sub messaging</description>
-	<url>https://github.com/googlecloudplatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub</url>
+	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub</url>
 	<organization>
-		<name>Pivotal Software, Inc.</name>
-		<url>https://www.spring.io</url>
+		<name>Google</name>
+		<url>https://cloud.google.com</url>
 	</organization>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>

@@ -13,8 +13,8 @@
 	<description>Spring Cloud GCP Starters</description>
 	<artifactId>spring-cloud-gcp-starters</artifactId>
 	<organization>
-		<name>Pivotal Software, Inc.</name>
-		<url>https://www.spring.io</url>
+		<name>Google</name>
+		<url>https://cloud.google.com</url>
 	</organization>
 	<properties>
 		<main.basedir>${basedir}/..</main.basedir>
