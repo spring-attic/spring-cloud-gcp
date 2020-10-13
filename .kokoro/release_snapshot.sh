@@ -34,8 +34,8 @@ create_settings_xml_file $MAVEN_SETTINGS_FILE
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
   -Dgpg.homedir=${GPG_HOMEDIR} \
-  -DautoReleaseAfterClose=true
-  --activate-profiles release
+  -DautoReleaseAfterClose=true \
+  --activate-profiles release \
   --batch-mode
 
 popd
