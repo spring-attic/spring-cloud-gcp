@@ -341,6 +341,46 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>linkage-check</id>
+			<!-- Not running as part of normal build because 'install' task interferes this rule when
+			    running Maven with multi-thread -->
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<version>3.0.0-M3</version>
+						<dependencies>
+							<dependency>
+								<groupId>com.google.cloud.tools</groupId>
+								<artifactId>linkage-checker-enforcer-rules</artifactId>
+								<version>1.5.3</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>enforce-linkage-checker</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+								<configuration>
+									<fail>true</fail>
+									<rules>
+										<LinkageCheckerRule
+											implementation="com.google.cloud.tools.dependencies.enforcer.LinkageCheckerRule">
+											<dependencySection>DEPENDENCY_MANAGEMENT</dependencySection>
+											<reportOnlyReachable>true</reportOnlyReachable>
+										</LinkageCheckerRule>
+									</rules>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 </project>

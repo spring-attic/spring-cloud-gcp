@@ -139,3 +139,47 @@ jobs:
         with:
           name: Test logs - ${{ matrix.it}}
           path: "**/target/failsafe-reports/*"
+
+  linkageCheck:
+    if: |
+      github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'schedule'
+      )
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: install
+        # install before running Linkage Checker
+        run: |
+          ./mvnw \
+             --batch-mode \
+             --show-version \
+             --threads 1.5C \
+             --define skipTests=true \
+             --define maven.javadoc.skip=true \
+             --errors \
+             install
+      - name: run linkage checker
+        run: |
+          ./mvnw \
+            --activate-profiles linkage-check \
+            --batch-mode \
+            --show-version \
+            --threads 1.5C \
+            --define skipTests=true \
+            --define maven.javadoc.skip=true \
+            --errors \
+            verify
