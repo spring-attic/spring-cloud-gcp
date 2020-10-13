@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2019 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,35 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import com.google.cloud.datastore.Cursor;
 
-/**
- * @author Dmitry Solomakha
- */
-public interface DatastoreResultsIterable<T> extends Iterable<T> {
+public class DatastoreSimpleResultsIterable<T> implements DatastoreResultsIterable<T> {
+	private final Iterator<T> iterator;
+	private final Cursor cursor;
+	private Iterable<T> iterable;
+
+	public DatastoreSimpleResultsIterable(Iterable<T> iterable, Cursor cursor) {
+		this(iterable.iterator(), cursor);
+		this.iterable = iterable;
+	}
+
+	public DatastoreSimpleResultsIterable(Iterator<T> iterator, Cursor cursor) {
+		this.iterator = iterator;
+		this.cursor = cursor;
+	}
+
 	@Override
-	Iterator<T> iterator();
+	public Iterator<T> iterator() {
+		return this.iterator;
+	}
 
-	Cursor getCursor();
+	public Cursor getCursor() {
+		return this.cursor;
+	}
 
-	Iterable<T> getIterable();
-
-	default List<T> toList() {
-		List<T> results = new ArrayList<>();
-		while (iterator().hasNext()) {
-			results.add(iterator().next());
-		}
-		return results;
+	public Iterable<T> getIterable() {
+		return this.iterable;
 	}
 }

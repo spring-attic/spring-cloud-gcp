@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -282,7 +283,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		List<TestEntity> testEntities = new ArrayList<>();
 
 		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
-		assertThat(results.getHasNextPage().get()).isTrue();
+		assertThat(((DatastoreNextPageAwareResultsIterable) results).hasNextPage()).isTrue();
 
 		query = StructuredQuery.newEntityQueryBuilder().setKind(persistentEntity.kindName())
 				.setFilter(PropertyFilter.eq("color", "red"))
@@ -294,7 +295,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
 
-		assertThat(results.getHasNextPage().get()).isFalse();
+		assertThat(((DatastoreNextPageAwareResultsIterable) results).hasNextPage()).isFalse();
 		assertThat(testEntities).contains(testEntityA, testEntityC, testEntityD);
 	}
 

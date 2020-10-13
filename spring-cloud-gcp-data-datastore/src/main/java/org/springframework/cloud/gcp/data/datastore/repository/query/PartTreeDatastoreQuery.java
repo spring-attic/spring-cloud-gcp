@@ -42,6 +42,7 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
@@ -244,13 +245,14 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
-		DatastoreResultsIterable<?> results =
-				this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
+		DatastoreNextPageAwareResultsIterable<?> results =
+				(DatastoreNextPageAwareResultsIterable<?>)
+						this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
 
 		return (Slice) this.processRawObjectForProjection(
 				new SliceImpl(results.toList(),
 						getPageable(parameters, results.getCursor()),
-						results.getHasNextPage().orElse(Boolean.FALSE)));
+						results.hasNextPage()));
 	}
 
 	private StructuredQuery buildSliceQuey(Object[] parameters) {

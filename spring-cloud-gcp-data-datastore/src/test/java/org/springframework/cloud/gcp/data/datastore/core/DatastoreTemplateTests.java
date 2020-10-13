@@ -860,9 +860,9 @@ public class DatastoreTemplateTests {
 				.run(eq(nextPageQuery)))
 				.thenReturn(nextPageQueryResults);
 
-		DatastoreResultsIterable<Key> resultsIterable =
-				(DatastoreResultsIterable<Key>) this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
-		return resultsIterable.getHasNextPage().get();
+		DatastoreNextPageAwareResultsIterable<Key> resultsIterable =
+				(DatastoreNextPageAwareResultsIterable<Key>) this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
+		return resultsIterable.hasNextPage();
 	}
 
 	@Test

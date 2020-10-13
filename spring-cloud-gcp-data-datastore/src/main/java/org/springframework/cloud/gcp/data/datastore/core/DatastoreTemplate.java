@@ -258,7 +258,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		List<T> convertedResults = convertEntitiesForRead(results, entityClass);
 		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
 		return results != null
-				? new DatastoreResultsIterable<>(convertedResults, results.getCursorAfter())
+				? new DatastoreSimpleResultsIterable<>(convertedResults, results.getCursorAfter())
 				: null;
 	}
 
@@ -267,24 +267,21 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		QueryResults results = getDatastoreReadWriter().run(query);
 		DatastoreResultsIterable resultsIterable;
 		if (results.getResultClass() == Key.class) {
-			resultsIterable = new DatastoreResultsIterable(results, results.getCursorAfter());
+			resultsIterable = new DatastoreSimpleResultsIterable(results, results.getCursorAfter());
 		}
 		else {
-			resultsIterable = new DatastoreResultsIterable<>(convertEntitiesForRead(results, entityClass),
+			resultsIterable = new DatastoreSimpleResultsIterable<>(convertEntitiesForRead(results, entityClass),
 					results.getCursorAfter());
 		}
 		if (query instanceof StructuredQuery) {
-			resultsIterable.setHasNextPageQuery(
-					((StructuredQuery) query).getLimit() != null
-							? () -> nextPageExists((StructuredQuery) query, results.getCursorAfter())
-							: () -> Boolean.FALSE
-					);
+			resultsIterable = new DatastoreNextPageAwareResultsIterable(
+					resultsIterable, results.getCursorAfter(), (StructuredQuery) query, this);
 		}
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
 	}
 
-	private boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
+	public boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
 		QueryResults results = getDatastoreReadWriter().run(
 				query.toBuilder().setStartCursor(cursorAfter).setLimit(1).setOffset(0)
 						.build());
@@ -305,7 +302,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		results.forEachRemaining(e -> {
 			resultsList.add(entityFunc.apply(e));
 		});
-		DatastoreResultsIterable<T> resultsIterable = new DatastoreResultsIterable<>(resultsList,
+		DatastoreResultsIterable<T> resultsIterable = new DatastoreSimpleResultsIterable<>(resultsList,
 				results.getCursorAfter());
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
