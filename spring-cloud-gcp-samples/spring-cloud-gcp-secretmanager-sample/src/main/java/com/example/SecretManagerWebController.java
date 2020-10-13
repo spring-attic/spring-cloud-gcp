@@ -17,6 +17,8 @@
 package com.example;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class SecretManagerWebController {
+	private static final Log LOGGER = LogFactory.getLog(SecretManagerWebController.class);
 
 	@Autowired
 	private Environment environment;
@@ -53,6 +56,9 @@ public class SecretManagerWebController {
 	public ModelAndView renderIndex(ModelMap map) {
 		map.put("applicationSecret", this.appSecret);
 		map.put("myApplicationSecret", this.myAppSecret);
+
+		LOGGER.warn("warning");
+
 		return new ModelAndView("index.html", map);
 	}
 

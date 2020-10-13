@@ -30,13 +30,18 @@
       <artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
     </dependency>
 
-    <!-- Test-related dependencies. -->
-    <dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-starter-logging</artifactId>
+		</dependency>
+
+		<!-- Test-related dependencies. -->
+		<dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
+		<dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
