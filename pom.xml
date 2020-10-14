@@ -85,9 +85,9 @@
 		<skip.failsafe.tests>${skipTests}</skip.failsafe.tests>
 		<skip.surefire.tests>${skipTests}</skip.surefire.tests>
 		<skipTests>false</skipTests>
-		<spring-cloud-build.version>3.0.0-SNAPSHOT</spring-cloud-build.version>
+		<spring-cloud-build.version>3.0.0-M4</spring-cloud-build.version>
 		<spring-cloud-sleuth.version>2.2.4.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
-		<spring-cloud.version>2020.0.0-SNAPSHOT</spring-cloud.version>
+		<spring-cloud-dependencies.version>2020.0.0-M4</spring-cloud-dependencies.version>
 		<spring-javaformat-checkstyle.version>0.0.25</spring-javaformat-checkstyle.version>
 		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
 	</properties>
@@ -122,7 +122,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>${spring-cloud-dependencies.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

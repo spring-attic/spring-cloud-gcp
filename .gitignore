@@ -31,3 +31,4 @@ dependency-reduced-pom.xml
 .DS_Store
 
 .flattened-pom.xml
+*.versionsBackup
