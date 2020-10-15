@@ -242,17 +242,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return persistentProperty.getFieldName();
 	}
 
-//	private Slice executeSliceQuery(Object[] parameters) {
-//		DatastoreNextPageAwareResultsIterable<?> results =
-//				(DatastoreNextPageAwareResultsIterable<?>)
-//						this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
-//
-//		return (Slice) this.processRawObjectForProjection(
-//				new SliceImpl(results.toList(),
-//						getPageable(parameters, results.getCursor()),
-//						results.hasNextPage()));
-//	}
-
 	private Slice executeSliceQuery(Object[] parameters) {
 		Slice<?> results =
 				this.datastoreOperations.queryKeysOrEntitiesSlice(
