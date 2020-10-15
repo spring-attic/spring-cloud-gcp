@@ -83,6 +83,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -845,7 +847,7 @@ public class DatastoreTemplateTests {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		when(queryResults.getCursorAfter()).thenReturn(cursor);
 
-		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").setLimit(2).build();
+		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").setLimit(1).build();
 		when(this.datastore
 				.run(eq(query)))
 				.thenReturn(queryResults);
@@ -860,9 +862,9 @@ public class DatastoreTemplateTests {
 				.run(eq(nextPageQuery)))
 				.thenReturn(nextPageQueryResults);
 
-		DatastoreNextPageAwareResultsIterable<Key> resultsIterable =
-				(DatastoreNextPageAwareResultsIterable<Key>) this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
-		return resultsIterable.hasNextPage();
+		Slice<Key> resultsSlice =
+				(Slice<Key>) this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 1));
+		return resultsSlice.hasNext();
 	}
 
 	@Test

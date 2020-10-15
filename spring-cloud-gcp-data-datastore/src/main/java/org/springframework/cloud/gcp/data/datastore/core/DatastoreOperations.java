@@ -21,11 +21,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.StructuredQuery;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 /**
  * An interface of operations that can be done with Cloud Datastore.
@@ -267,6 +271,27 @@ public interface DatastoreOperations {
 	 * @return the converter.
 	 */
 	DatastoreEntityConverter getDatastoreEntityConverter();
+
+	/**
+	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
+	 * returned.
+	 * Resulting Slice can be used to get a Pageable for the next page or to determine if next page exists.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param pageable that indicates page number and page size
+	 * @param <T> the type of object to retrieve.
+	 * @return a Slice containing found objects
+	 */
+	<T> Slice<?> queryKeysOrEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable);
+
+	/**
+	 * Runs a query that checks if there is at least one entry after the cursor.
+	 *
+	 * @param query the query that returned the cursor
+	 * @param cursorAfter the cursor
+	 * @return true if next page exists for the given query and cursor
+	 */
+	boolean nextPageExists(StructuredQuery query, Cursor cursorAfter);
 
 	/**
 	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are

@@ -25,15 +25,35 @@ import com.google.cloud.datastore.Cursor;
 /**
  * @author Dmitry Solomakha
  */
-public interface DatastoreResultsIterable<T> extends Iterable<T> {
+public class DatastoreResultsIterable<T> implements Iterable<T> {
+	private final Iterator<T> iterator;
+	private final Cursor cursor;
+	private Iterable<T> iterable;
+
+	public DatastoreResultsIterable(Iterable<T> iterable, Cursor cursor) {
+		this(iterable.iterator(), cursor);
+		this.iterable = iterable;
+	}
+
+	public DatastoreResultsIterable(Iterator<T> iterator, Cursor cursor) {
+		this.iterator = iterator;
+		this.cursor = cursor;
+	}
+
 	@Override
-	Iterator<T> iterator();
+	public Iterator<T> iterator() {
+		return this.iterator;
+	}
 
-	Cursor getCursor();
+	public Cursor getCursor() {
+		return this.cursor;
+	}
 
-	Iterable<T> getIterable();
+	public Iterable<T> getIterable() {
+		return this.iterable;
+	}
 
-	default List<T> toList() {
+	public List<T> toList() {
 		List<T> results = new ArrayList<>();
 		while (iterator().hasNext()) {
 			results.add(iterator().next());

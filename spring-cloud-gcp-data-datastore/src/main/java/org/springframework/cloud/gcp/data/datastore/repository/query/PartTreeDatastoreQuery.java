@@ -42,7 +42,6 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.core.util.MapBuilder;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
@@ -54,7 +53,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.projection.ProjectionFactory;
@@ -244,15 +242,25 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return persistentProperty.getFieldName();
 	}
 
-	private Slice executeSliceQuery(Object[] parameters) {
-		DatastoreNextPageAwareResultsIterable<?> results =
-				(DatastoreNextPageAwareResultsIterable<?>)
-						this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
+//	private Slice executeSliceQuery(Object[] parameters) {
+//		DatastoreNextPageAwareResultsIterable<?> results =
+//				(DatastoreNextPageAwareResultsIterable<?>)
+//						this.datastoreOperations.queryKeysOrEntities(buildSliceQuey(parameters), this.entityType);
+//
+//		return (Slice) this.processRawObjectForProjection(
+//				new SliceImpl(results.toList(),
+//						getPageable(parameters, results.getCursor()),
+//						results.hasNextPage()));
+//	}
 
-		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(results.toList(),
-						getPageable(parameters, results.getCursor()),
-						results.hasNextPage()));
+	private Slice executeSliceQuery(Object[] parameters) {
+		Slice<?> results =
+				this.datastoreOperations.queryKeysOrEntitiesSlice(
+						buildSliceQuey(parameters),
+						this.entityType,
+						getPageable(parameters));
+
+		return (Slice) this.processRawObjectForProjection(results);
 	}
 
 	private StructuredQuery buildSliceQuey(Object[] parameters) {
@@ -261,9 +269,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return applyQueryBody(parameters, builder, false, false, null);
 	}
 
-	private Pageable getPageable(Object[] parameters, Cursor cursor) {
+	private Pageable getPageable(Object[] parameters) {
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-		return DatastorePageable.from(paramAccessor.getPageable(), cursor, null);
+		return paramAccessor.getPageable();
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {

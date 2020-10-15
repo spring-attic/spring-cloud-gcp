@@ -41,8 +41,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreSimpleResultsIterable;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -58,6 +57,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.projection.ProjectionInformation;
@@ -89,7 +89,7 @@ public class PartTreeDatastoreQueryTests {
 
 	private static final Object[] EMPTY_PARAMETERS = new Object[0];
 
-	private static final DatastoreSimpleResultsIterable<Object> EMPTY_RESPONSE = new DatastoreSimpleResultsIterable<>(
+	private static final DatastoreResultsIterable<Object> EMPTY_RESPONSE = new DatastoreResultsIterable<>(
 			Collections.emptyIterator(), null);
 	static final CompositeFilter FILTER = CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
 			PropertyFilter.eq("ticker", "abcd"),
@@ -512,7 +512,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(true);
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(any(), any());
+				.queryKeysOrEntitiesSlice(any(), any(), any());
 	}
 
 	@Test
@@ -534,7 +534,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(isA(EntityQuery.class), any());
+				.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any());
 	}
 
 	@Test
@@ -556,7 +556,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(false);
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(isA(EntityQuery.class), any());
+				.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any());
 	}
 
 	private void preparePageResults(int offset, Integer limit, Cursor cursor,
@@ -571,7 +571,7 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(limit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return new DatastoreSimpleResultsIterable(pageResults.iterator(), Cursor.copyFrom("abc".getBytes()));
+			return new DatastoreResultsIterable(pageResults.iterator(), Cursor.copyFrom("abc".getBytes()));
 		});
 
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
@@ -582,14 +582,14 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("__key__")).build();
 
 			assertThat(statement).isEqualTo(expected);
-			return new DatastoreSimpleResultsIterable(fullResults.iterator(), Cursor.copyFrom("def".getBytes()));
+			return new DatastoreResultsIterable(fullResults.iterator(), Cursor.copyFrom("def".getBytes()));
 		});
 	}
 
 	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -598,10 +598,11 @@ public class PartTreeDatastoreQueryTests {
 					.setOrderBy(OrderBy.desc("__key__")).setLimit(queryLimit).build();
 
 			assertThat(statement).isEqualTo(expected);
-			DatastoreSimpleResultsIterable datastoreSimpleResultsIterable = new DatastoreSimpleResultsIterable(datastoreMatchingRecords.iterator(), cursor);
-			return new DatastoreNextPageAwareResultsIterable(
-					datastoreSimpleResultsIterable, cursor,
-					StructuredQuery.newKeyQueryBuilder().build(), this.datastoreTemplate);
+			return new SliceImpl(
+					new DatastoreResultsIterable(
+							datastoreMatchingRecords.iterator(), cursor).toList(),
+					Pageable.unpaged(),
+					hasNext);
 		});
 		when(this.datastoreTemplate.nextPageExists(any(), any())).thenReturn(hasNext);
 
@@ -670,7 +671,7 @@ public class PartTreeDatastoreQueryTests {
 					.build();
 
 			assertThat(statement).isEqualTo(expected);
-			return new DatastoreSimpleResultsIterable(datastoreMatchingRecords.iterator(), cursor);
+			return new DatastoreResultsIterable(datastoreMatchingRecords.iterator(), cursor);
 		});
 	}
 
@@ -790,7 +791,7 @@ public class PartTreeDatastoreQueryTests {
 			assertThat(statement).isEqualTo(expected);
 
 			List<Trade> results = Collections.singletonList(trade);
-			return new DatastoreSimpleResultsIterable(results.iterator(), null);
+			return new DatastoreResultsIterable(results.iterator(), null);
 		});
 
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
@@ -822,7 +823,7 @@ public class PartTreeDatastoreQueryTests {
 			assertThat(statement).isEqualTo(expected);
 
 			List<Trade> results = Collections.singletonList(trade);
-			return new DatastoreSimpleResultsIterable(results.iterator(), null);
+			return new DatastoreResultsIterable(results.iterator(), null);
 		});
 
 		assertThat(this.partTreeDatastoreQuery.execute(params)).isEqualTo(trade);
@@ -875,7 +876,7 @@ public class PartTreeDatastoreQueryTests {
 
 		this.partTreeDatastoreQuery = createQuery(false, false, projectionInformation);
 		when(this.datastoreTemplate.queryKeysOrEntities(any(), Mockito.<Class<Trade>>any()))
-				.thenReturn(new DatastoreSimpleResultsIterable<>(
+				.thenReturn(new DatastoreResultsIterable<>(
 						results != null ? results.iterator() : Collections.emptyIterator(), null));
 	}
 

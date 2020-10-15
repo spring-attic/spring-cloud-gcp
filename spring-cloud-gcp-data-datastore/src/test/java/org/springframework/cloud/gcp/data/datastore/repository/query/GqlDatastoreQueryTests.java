@@ -36,7 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreSimpleResultsIterable;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -312,7 +312,7 @@ public class GqlDatastoreQueryTests {
 			params.add(paramMap);
 
 
-			return new DatastoreSimpleResultsIterable(Collections.emptyList(), cursor);
+			return new DatastoreResultsIterable(Collections.emptyList(), cursor);
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
@@ -369,12 +369,12 @@ public class GqlDatastoreQueryTests {
 				assertThat(paramMap.get("price").get()).isEqualTo(1L);
 				assertThat(paramMap.get("limit").get()).isEqualTo(2L);
 				assertThat(paramMap.get("offset").get()).isEqualTo(0L);
-				return new DatastoreSimpleResultsIterable(Collections.emptyList(), cursor);
+				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
 			}
 			else if (statement.getQueryString().equals(gql)) {
 				assertThat(paramMap.size()).isEqualTo(1);
 				assertThat(paramMap.get("price").get()).isEqualTo(1L);
-				return new DatastoreSimpleResultsIterable(Arrays.asList(1L, 2L), cursor);
+				return new DatastoreResultsIterable(Arrays.asList(1L, 2L), cursor);
 			}
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
@@ -427,7 +427,7 @@ public class GqlDatastoreQueryTests {
 				assertThat(((Value) paramMap.get("price")).get()).isEqualTo(1L);
 				assertThat(((Value) paramMap.get("limit")).get()).isEqualTo(2L);
 				assertThat(paramMap.get("offset")).isEqualTo(cursorInPageable);
-				return new DatastoreSimpleResultsIterable(Collections.emptyList(), cursor);
+				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());

@@ -70,12 +70,16 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSav
 import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.cloud.gcp.data.datastore.repository.query.DatastorePageable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.NullHandler;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
@@ -258,8 +262,34 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		List<T> convertedResults = convertEntitiesForRead(results, entityClass);
 		maybeEmitEvent(new AfterQueryEvent(convertedResults, query));
 		return results != null
-				? new DatastoreSimpleResultsIterable<>(convertedResults, results.getCursorAfter())
+				? new DatastoreResultsIterable<>(convertedResults, results.getCursorAfter())
 				: null;
+	}
+
+	@Override
+	public <T> Slice<?> queryKeysOrEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable) {
+		DatastoreResultsIterable<?> results = queryKeysOrEntities(applyPageable(query, pageable), entityClass);
+		return new SliceImpl<>(results.toList(),
+				DatastorePageable.from(pageable, results.getCursor(), null),
+				nextPageExists(query, results.getCursor()));
+	}
+
+	private StructuredQuery applyPageable(StructuredQuery query, Pageable pageable) {
+		if (pageable == Pageable.unpaged()) {
+			return query;
+		}
+		Cursor cursor = null;
+		if (pageable instanceof DatastorePageable) {
+			cursor = ((DatastorePageable) pageable).toCursor();
+		}
+		StructuredQuery.Builder builder = query.toBuilder();
+		if (cursor != null) {
+			builder.setStartCursor(cursor).setOffset(0);
+		}
+		else {
+			builder.setOffset(Math.toIntExact(pageable.getOffset()));
+		}
+		return builder.setLimit(pageable.getPageSize()).build();
 	}
 
 	@Override
@@ -267,20 +297,17 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		QueryResults results = getDatastoreReadWriter().run(query);
 		DatastoreResultsIterable resultsIterable;
 		if (results.getResultClass() == Key.class) {
-			resultsIterable = new DatastoreSimpleResultsIterable(results, results.getCursorAfter());
+			resultsIterable = new DatastoreResultsIterable(results, results.getCursorAfter());
 		}
 		else {
-			resultsIterable = new DatastoreSimpleResultsIterable<>(convertEntitiesForRead(results, entityClass),
+			resultsIterable = new DatastoreResultsIterable<>(convertEntitiesForRead(results, entityClass),
 					results.getCursorAfter());
-		}
-		if (query instanceof StructuredQuery) {
-			resultsIterable = new DatastoreNextPageAwareResultsIterable(
-					resultsIterable, results.getCursorAfter(), (StructuredQuery) query, this);
 		}
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
 	}
 
+	@Override
 	public boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
 		QueryResults results = getDatastoreReadWriter().run(
 				query.toBuilder().setStartCursor(cursorAfter).setLimit(1).setOffset(0)
@@ -302,7 +329,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		results.forEachRemaining(e -> {
 			resultsList.add(entityFunc.apply(e));
 		});
-		DatastoreResultsIterable<T> resultsIterable = new DatastoreSimpleResultsIterable<>(resultsList,
+		DatastoreResultsIterable<T> resultsIterable = new DatastoreResultsIterable<>(resultsList,
 				results.getCursorAfter());
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;

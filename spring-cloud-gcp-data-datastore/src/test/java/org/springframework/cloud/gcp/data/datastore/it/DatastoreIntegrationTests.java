@@ -46,8 +46,6 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreNextPageAwareResultsIterable;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreResultsIterable;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -277,25 +275,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.setFilter(PropertyFilter.eq("color", "red"))
 				.setLimit(2).build();
 
-		DatastoreResultsIterable<?> results =
-				this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
+		Slice<?> results =
+				this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 2));
 
 		List<TestEntity> testEntities = new ArrayList<>();
 
 		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
-		assertThat(((DatastoreNextPageAwareResultsIterable) results).hasNextPage()).isTrue();
-
-		query = StructuredQuery.newEntityQueryBuilder().setKind(persistentEntity.kindName())
-				.setFilter(PropertyFilter.eq("color", "red"))
-				.setStartCursor(results.getCursor())
-				.setLimit(2).build();
+		assertThat(results.hasNext()).isTrue();
 
 		results =
-				this.datastoreTemplate.queryKeysOrEntities(query, TestEntity.class);
+				this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, results.nextPageable());
 
 		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
 
-		assertThat(((DatastoreNextPageAwareResultsIterable) results).hasNextPage()).isFalse();
+		assertThat(results.hasNext()).isFalse();
 		assertThat(testEntities).contains(testEntityA, testEntityC, testEntityD);
 	}
 
