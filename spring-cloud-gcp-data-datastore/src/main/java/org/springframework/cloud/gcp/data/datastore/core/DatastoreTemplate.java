@@ -44,6 +44,7 @@ import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
@@ -267,8 +268,21 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
-	public <T> Slice<?> queryKeysOrEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable) {
-		DatastoreResultsIterable<?> results = queryKeysOrEntities(applyPageable(query, pageable), entityClass);
+	public <T> Slice<Key> queryKeysSlice(KeyQuery query, Class<T> entityClass, Pageable pageable) {
+		return buildSlice(query, pageable, Key.class);
+	}
+
+	@Override
+	public <T> Slice<T> queryEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable) {
+		if (query instanceof KeyQuery) {
+			throw new DatastoreDataException("query must be an EntityQuery or a ProjectionEntityQuery");
+		}
+		return buildSlice(query, pageable, entityClass);
+	}
+
+	private <T> SliceImpl<T> buildSlice(StructuredQuery query, Pageable pageable, Class<T> entityClass) {
+		DatastoreResultsIterable<T> results = (DatastoreResultsIterable<T>)
+				queryKeysOrEntities(applyPageable(query, pageable), entityClass);
 		return new SliceImpl<>(results.toList(),
 				DatastorePageable.from(pageable, results.getCursor(), null),
 				nextPageExists(query, results.getCursor()));
@@ -307,8 +321,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return resultsIterable;
 	}
 
-	@Override
-	public boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
+	private boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
 		QueryResults results = getDatastoreReadWriter().run(
 				query.toBuilder().setStartCursor(cursorAfter).setLimit(1).setOffset(0)
 						.build());

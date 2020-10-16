@@ -863,7 +863,7 @@ public class DatastoreTemplateTests {
 				.thenReturn(nextPageQueryResults);
 
 		Slice<Key> resultsSlice =
-				(Slice<Key>) this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 1));
+				this.datastoreTemplate.queryKeysSlice(query, TestEntity.class, PageRequest.of(0, 1));
 		return resultsSlice.hasNext();
 	}
 

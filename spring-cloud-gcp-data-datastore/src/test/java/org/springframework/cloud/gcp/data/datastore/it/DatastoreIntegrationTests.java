@@ -275,18 +275,18 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.setFilter(PropertyFilter.eq("color", "red"))
 				.setLimit(2).build();
 
-		Slice<?> results =
-				this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 2));
+		Slice<TestEntity> results =
+				this.datastoreTemplate.queryEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 2));
 
 		List<TestEntity> testEntities = new ArrayList<>();
 
-		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
+		testEntities.addAll(results.toList());
 		assertThat(results.hasNext()).isTrue();
 
 		results =
-				this.datastoreTemplate.queryKeysOrEntitiesSlice(query, TestEntity.class, results.nextPageable());
+				this.datastoreTemplate.queryEntitiesSlice(query, TestEntity.class, results.nextPageable());
 
-		testEntities.addAll((Collection<? extends TestEntity>) results.toList());
+		testEntities.addAll(results.toList());
 
 		assertThat(results.hasNext()).isFalse();
 		assertThat(testEntities).contains(testEntityA, testEntityC, testEntityD);

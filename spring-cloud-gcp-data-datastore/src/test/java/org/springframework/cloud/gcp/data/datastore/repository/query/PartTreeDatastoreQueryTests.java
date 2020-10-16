@@ -512,7 +512,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(true);
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntitiesSlice(any(), any(), any());
+				.queryEntitiesSlice(any(), any(), any());
 	}
 
 	@Test
@@ -534,7 +534,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any());
+				.queryEntitiesSlice(isA(EntityQuery.class), any(), any());
 	}
 
 	@Test
@@ -556,7 +556,7 @@ public class PartTreeDatastoreQueryTests {
 		assertThat(result.hasNext()).isEqualTo(false);
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any());
+				.queryEntitiesSlice(isA(EntityQuery.class), any(), any());
 	}
 
 	private void preparePageResults(int offset, Integer limit, Cursor cursor,
@@ -589,7 +589,7 @@ public class PartTreeDatastoreQueryTests {
 	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.queryKeysOrEntitiesSlice(isA(EntityQuery.class), any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryEntitiesSlice(isA(EntityQuery.class), any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -604,8 +604,6 @@ public class PartTreeDatastoreQueryTests {
 					Pageable.unpaged(),
 					hasNext);
 		});
-		when(this.datastoreTemplate.nextPageExists(any(), any())).thenReturn(hasNext);
-
 	}
 
 	@Test

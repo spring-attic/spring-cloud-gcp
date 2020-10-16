@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.google.cloud.datastore.BaseEntity;
-import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
 
@@ -273,25 +273,26 @@ public interface DatastoreOperations {
 	DatastoreEntityConverter getDatastoreEntityConverter();
 
 	/**
-	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
-	 * returned.
-	 * Resulting Slice can be used to get a Pageable for the next page or to determine if next page exists.
+	 * Finds keys by using a Cloud Datastore query.
+	 * Resulting Slice can be used to get a Pageable for the next page or to determine if the next page exists.
 	 * @param query the query to execute.
 	 * @param entityClass the type of object to retrieve.
 	 * @param pageable that indicates page number and page size
 	 * @param <T> the type of object to retrieve.
 	 * @return a Slice containing found objects
 	 */
-	<T> Slice<?> queryKeysOrEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable);
+	<T> Slice<Key> queryKeysSlice(KeyQuery query, Class<T> entityClass, Pageable pageable);
 
 	/**
-	 * Runs a query that checks if there is at least one entry after the cursor.
-	 *
-	 * @param query the query that returned the cursor
-	 * @param cursorAfter the cursor
-	 * @return true if next page exists for the given query and cursor
+	 * Finds entities by using a Cloud Datastore query.
+	 * Resulting Slice can be used to get a Pageable for the next page or to determine if the next page exists.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param pageable that indicates page number and page size
+	 * @param <T> the type of object to retrieve.
+	 * @return a Slice containing found objects
 	 */
-	boolean nextPageExists(StructuredQuery query, Cursor cursorAfter);
+	<T> Slice<T> queryEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable);
 
 	/**
 	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are

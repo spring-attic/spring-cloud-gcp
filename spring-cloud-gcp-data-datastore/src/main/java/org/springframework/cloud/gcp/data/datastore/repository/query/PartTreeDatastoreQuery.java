@@ -31,6 +31,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.Query;
@@ -243,9 +244,16 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
-		Slice<?> results =
-				this.datastoreOperations.queryKeysOrEntitiesSlice(
-						buildSliceQuey(parameters),
+		StructuredQuery structuredQuery = buildSliceQuey(parameters);
+		Slice<?> results = structuredQuery instanceof KeyQuery
+				?
+				this.datastoreOperations.queryKeysSlice(
+						(KeyQuery) structuredQuery,
+						this.entityType,
+						getPageable(parameters))
+				:
+				this.datastoreOperations.queryEntitiesSlice(
+						structuredQuery,
 						this.entityType,
 						getPageable(parameters));
 
