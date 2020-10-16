@@ -49,6 +49,7 @@ import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.PathElement;
+import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
@@ -274,10 +275,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> Slice<T> queryEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable) {
-		if (query instanceof KeyQuery) {
-			throw new DatastoreDataException("query must be an EntityQuery or a ProjectionEntityQuery");
+		if (query instanceof EntityQuery || query instanceof ProjectionEntityQuery) {
+			return buildSlice(query, pageable, entityClass);
 		}
-		return buildSlice(query, pageable, entityClass);
+		throw new DatastoreDataException("query must be an EntityQuery or a ProjectionEntityQuery");
 	}
 
 	private <T> SliceImpl<T> buildSlice(StructuredQuery query, Pageable pageable, Class<T> entityClass) {
