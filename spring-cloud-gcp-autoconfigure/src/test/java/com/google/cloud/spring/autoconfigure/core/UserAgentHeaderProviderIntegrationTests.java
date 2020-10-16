@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spring.core;
+package com.google.cloud.spring.autoconfigure.core;
 
 import java.util.regex.Pattern;
 
+import com.google.cloud.spring.core.UserAgentHeaderProvider;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class UserAgentHeaderProviderIT {
+public class UserAgentHeaderProviderIntegrationTests {
 
 	/**
 	 * This test is check if the generated User-Agent header is in the right format.
@@ -39,7 +40,7 @@ public class UserAgentHeaderProviderIT {
 	public void testGetHeaders() {
 		UserAgentHeaderProvider subject = new UserAgentHeaderProvider(this.getClass());
 
-		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
+		String versionRegex = "\\d+\\.\\d+\\.\\d+(\\-SNAPSHOT)?";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
 		assertThat(subject.getHeaders().get("User-Agent")).matches(
 				Pattern.compile("Spring/" + versionRegex + " spring-cloud-gcp-core/" + versionRegex));
