@@ -482,6 +482,7 @@
 								<compilerArgs>
 									<arg>-XDcompilePolicy=simple</arg>
 									<arg>-Xplugin:ErrorProne</arg>
+									<arg>-parameters</arg>
 								</compilerArgs>
 								<annotationProcessorPaths>
 									<path>
@@ -518,6 +519,7 @@
 									<!-- Disable serialversionuid warnings -->
 									<compilerArg>-Xlint:-serial</compilerArg>
 									<!--compilerArg>-Werror</compilerArg-->
+									<arg>-parameters</arg>
 								</compilerArgs>
 							</configuration>
 							<dependencies>
