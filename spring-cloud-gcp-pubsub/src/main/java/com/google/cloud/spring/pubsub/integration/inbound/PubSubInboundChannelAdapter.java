@@ -18,7 +18,6 @@ package com.google.cloud.spring.pubsub.integration.inbound;
 
 import java.util.Map;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.spring.pubsub.core.subscriber.PubSubSubscriberOperations;
 import com.google.cloud.spring.pubsub.integration.AckMode;
@@ -126,23 +125,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		// Send the original message downstream so that the user can decide on when to
 		// ack/nack, or just have access to the original message for any other reason.
 		messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
-
-		if (this.ackMode == AckMode.MANUAL) {
-			// Deprecated mechanism for manual (n)acking.
-			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, new AckReplyConsumer() {
-				@Override
-				public void ack() {
-					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to ack.");
-					message.ack();
-				}
-
-				@Override
-				public void nack() {
-					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to nack.");
-					message.nack();
-				}
-			});
-		}
 
 		try {
 			sendMessage(getMessageBuilderFactory()

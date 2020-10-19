@@ -188,6 +188,7 @@ public class PubSubInboundChannelAdapterTests {
 		verify(this.mockMessageChannel).send(argument.capture());
 		MessageHeaders headers = argument.getValue().getHeaders();
 		assertThat(headers).containsKey(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+		assertThat(headers.get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNotNull();
 		assertThat(headers.get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(mockAcknowledgeableMessage);
 	}
 

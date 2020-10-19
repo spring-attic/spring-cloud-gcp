@@ -48,7 +48,6 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
-			"!" + GcpPubSubHeaders.ACKNOWLEDGEMENT,
 			"!" + GcpPubSubHeaders.ORIGINAL_MESSAGE,
 			"!" + NativeMessageHeaderAccessor.NATIVE_HEADERS,
 			"*"};

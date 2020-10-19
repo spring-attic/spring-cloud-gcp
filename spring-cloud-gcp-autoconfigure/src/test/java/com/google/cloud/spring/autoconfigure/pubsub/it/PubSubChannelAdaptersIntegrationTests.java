@@ -23,7 +23,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration;
 import com.google.cloud.spring.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import com.google.cloud.spring.core.Credentials;
@@ -263,15 +262,13 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				Message<?> message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNotNull();
-				AckReplyConsumer acker =
-						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
+				BasicAcknowledgeablePubsubMessage acker =
+						(BasicAcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 				assertThat(acker).isNotNull();
 				acker.ack();
 
 				message = channel.receive(RECEIVE_TIMEOUT_MS);
 				assertThat(message).isNull();
-
-				assertThat(this.outputCaptureRule.getOut()).contains("ACKNOWLEDGEMENT header is deprecated");
 		});
 	}
 

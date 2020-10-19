@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
@@ -43,18 +42,6 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @since 1.1
  */
 public interface PubSubSubscriberOperations {
-
-	/**
-	 * Subscribe to a subscription with a given message receiver.
-	 *
-	 * @param messageReceiver the message receiver with which to subscribe
-	 * @param subscription canonical subscription name, e.g., "subscriptionName", or the fully-qualified
-	 * subscription name in the {@code projects/<project_name>/subscriptions/<subscription_name>} format
-	 * @return the subscriber
-	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
-	 */
-	@Deprecated
-	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
 
 	/**
 	 * Add a callback method to an existing subscription.

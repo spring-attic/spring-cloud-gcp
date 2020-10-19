@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.spring.pubsub.core.publisher.PubSubPublisherTemplate;
 import com.google.cloud.spring.pubsub.core.subscriber.PubSubSubscriberTemplate;
@@ -132,12 +131,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
 		return this.pubSubPublisherTemplate.publish(topic, pubsubMessage);
-	}
-
-	@Override
-	@Deprecated
-	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
-		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver);
 	}
 
 	@Override

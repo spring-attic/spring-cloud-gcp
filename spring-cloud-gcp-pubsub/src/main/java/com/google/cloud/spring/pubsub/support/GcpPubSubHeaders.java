@@ -28,14 +28,6 @@ public abstract class GcpPubSubHeaders {
 	private static final String PREFIX = "gcp_pubsub_";
 
 	/**
-	 * The ack header text.
-	 *
-	 * @deprecated as of 1.1, use {@link #ORIGINAL_MESSAGE} instead.
-	 */
-	@Deprecated
-	public static final String ACKNOWLEDGEMENT = PREFIX + "acknowledgement";
-
-	/**
 	 * The topic header text.
 	 */
 	public static final String TOPIC = PREFIX + "topic";

@@ -32,7 +32,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
@@ -150,18 +149,6 @@ public class PubSubSubscriberTemplate
 	public void setAsyncPullExecutor(Executor asyncPullExecutor) {
 		Assert.notNull(asyncPullExecutor, "asyncPullExecutor can't be null.");
 		this.asyncPullExecutor = asyncPullExecutor;
-	}
-
-	@Override
-	@Deprecated
-	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
-		Assert.hasText(subscription, "The subscription can't be null or empty.");
-		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
-
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
-		subscriber.startAsync();
-		return subscriber;
 	}
 
 	@Override

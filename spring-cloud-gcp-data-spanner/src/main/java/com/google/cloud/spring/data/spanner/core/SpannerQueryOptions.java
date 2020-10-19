@@ -72,14 +72,4 @@ public class SpannerQueryOptions extends AbstractSpannerRequestOptions<QueryOpti
 		super.setAllowPartialRead(allowPartialRead);
 		return this;
 	}
-
-	/**
-	 * @deprecated  as of 1.2. Please use {@code getOptions}.
-	 * @return the array of query request options.
-	 */
-	@Deprecated
-	public QueryOption[] getQueryOptions() {
-		return this.getOptions();
-	}
-
 }
