@@ -31,8 +31,10 @@ import java.util.stream.IntStream;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.DatastoreReaderWriter;
+import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.ProjectionEntityQuery;
+import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorField;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorValue;
@@ -104,6 +108,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@SpyBean
 	private DatastoreTemplate datastoreTemplate;
+
+	@Autowired
+	private DatastoreMappingContext mappingContext;
 
 	@Autowired
 	private TransactionalTemplateService transactionalTemplateService;
@@ -257,6 +264,32 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		results.addAll(slice.getContent());
 
 		assertThat(results).containsExactlyInAnyOrder(this.testEntityA, this.testEntityC, this.testEntityD);
+	}
+
+	@Test
+	public void testNextPageAwareQuery() {
+		DatastorePersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntity(TestEntity.class);
+
+		EntityQuery query = StructuredQuery.newEntityQueryBuilder().setKind(persistentEntity.kindName())
+				.setFilter(PropertyFilter.eq("color", "red"))
+				.setLimit(2).build();
+
+		Slice<TestEntity> results =
+				this.datastoreTemplate.queryEntitiesSlice(query, TestEntity.class, PageRequest.of(0, 2));
+
+		List<TestEntity> testEntities = new ArrayList<>();
+
+		testEntities.addAll(results.toList());
+		assertThat(results.hasNext()).isTrue();
+
+		results =
+				this.datastoreTemplate.queryEntitiesSlice(query, TestEntity.class, results.nextPageable());
+
+		testEntities.addAll(results.toList());
+
+		assertThat(results.hasNext()).isFalse();
+		assertThat(testEntities).contains(testEntityA, testEntityC, testEntityD);
 	}
 
 	@Test

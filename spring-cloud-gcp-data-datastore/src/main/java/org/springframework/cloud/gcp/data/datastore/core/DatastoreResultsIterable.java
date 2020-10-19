@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.google.cloud.datastore.Cursor;
 
@@ -49,5 +51,13 @@ public class DatastoreResultsIterable<T> implements Iterable<T> {
 
 	public Iterable<T> getIterable() {
 		return this.iterable;
+	}
+
+	public List<T> toList() {
+		List<T> results = new ArrayList<>();
+		while (iterator().hasNext()) {
+			results.add(iterator().next());
+		}
+		return results;
 	}
 }

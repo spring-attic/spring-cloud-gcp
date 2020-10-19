@@ -35,6 +35,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.BaseKey;
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
@@ -43,10 +44,12 @@ import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.PathElement;
+import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
@@ -69,12 +72,16 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.event.BeforeSav
 import org.springframework.cloud.gcp.data.datastore.core.util.KeyUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.SliceUtil;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.cloud.gcp.data.datastore.repository.query.DatastorePageable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.NullHandler;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
@@ -262,6 +269,45 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	@Override
+	public <T> Slice<Key> queryKeysSlice(KeyQuery query, Class<T> entityClass, Pageable pageable) {
+		return buildSlice(query, pageable, Key.class);
+	}
+
+	@Override
+	public <T> Slice<T> queryEntitiesSlice(StructuredQuery query, Class<T> entityClass, Pageable pageable) {
+		if (query instanceof EntityQuery || query instanceof ProjectionEntityQuery) {
+			return buildSlice(query, pageable, entityClass);
+		}
+		throw new DatastoreDataException("query must be an EntityQuery or a ProjectionEntityQuery");
+	}
+
+	private <T> SliceImpl<T> buildSlice(StructuredQuery query, Pageable pageable, Class<T> entityClass) {
+		DatastoreResultsIterable<T> results = (DatastoreResultsIterable<T>)
+				queryKeysOrEntities(applyPageable(query, pageable), entityClass);
+		return new SliceImpl<>(results.toList(),
+				DatastorePageable.from(pageable, results.getCursor(), null),
+				nextPageExists(query, results.getCursor()));
+	}
+
+	private StructuredQuery applyPageable(StructuredQuery query, Pageable pageable) {
+		if (pageable == Pageable.unpaged()) {
+			return query;
+		}
+		Cursor cursor = null;
+		if (pageable instanceof DatastorePageable) {
+			cursor = ((DatastorePageable) pageable).toCursor();
+		}
+		StructuredQuery.Builder builder = query.toBuilder();
+		if (cursor != null) {
+			builder.setStartCursor(cursor).setOffset(0);
+		}
+		else {
+			builder.setOffset(Math.toIntExact(pageable.getOffset()));
+		}
+		return builder.setLimit(pageable.getPageSize()).build();
+	}
+
+	@Override
 	public <T> DatastoreResultsIterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = getDatastoreReadWriter().run(query);
 		DatastoreResultsIterable resultsIterable;
@@ -274,6 +320,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
 		return resultsIterable;
+	}
+
+	private boolean nextPageExists(StructuredQuery query, Cursor cursorAfter) {
+		QueryResults results = getDatastoreReadWriter().run(
+				query.toBuilder().setStartCursor(cursorAfter).setLimit(1).setOffset(0)
+						.build());
+
+		return results.hasNext();
 	}
 
 	@Override
