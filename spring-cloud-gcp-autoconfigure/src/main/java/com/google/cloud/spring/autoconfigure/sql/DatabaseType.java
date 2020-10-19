@@ -26,7 +26,7 @@ public enum DatabaseType {
 	/**
 	 * MySQL constants.
 	 */
-	MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?"
+	MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
 			+ "&cloudSqlInstance=%s"),
 
