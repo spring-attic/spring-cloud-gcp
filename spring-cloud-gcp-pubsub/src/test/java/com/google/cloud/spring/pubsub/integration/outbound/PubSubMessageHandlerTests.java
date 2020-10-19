@@ -19,7 +19,6 @@ package com.google.cloud.spring.pubsub.integration.outbound;
 import com.google.cloud.spring.core.util.MapBuilder;
 import com.google.cloud.spring.pubsub.core.PubSubOperations;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -134,7 +133,7 @@ public class PubSubMessageHandlerTests {
 	public void testPublishCallback() {
 		ListenableFutureCallback<String> callbackSpy = spy(new ListenableFutureCallback<String>() {
 			@Override
-			public void onFailure(@NotNull Throwable ex) {
+			public void onFailure(Throwable ex) {
 
 			}
 

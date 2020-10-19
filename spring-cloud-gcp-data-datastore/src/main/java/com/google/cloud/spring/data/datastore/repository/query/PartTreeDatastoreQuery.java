@@ -31,6 +31,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.Query;
@@ -53,7 +54,6 @@ import com.google.cloud.spring.data.datastore.core.mapping.DatastorePersistentPr
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyPath;
 import org.springframework.data.projection.ProjectionFactory;
@@ -65,7 +65,6 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
 import org.springframework.util.Assert;
 
-import static com.google.cloud.datastore.Query.newEntityQueryBuilder;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.GREATER_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
@@ -245,24 +244,31 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private Slice executeSliceQuery(Object[] parameters) {
+		StructuredQuery structuredQuery = buildSliceQuey(parameters);
+		Slice<?> results = structuredQuery instanceof KeyQuery
+				?
+				this.datastoreOperations.queryKeysSlice(
+						(KeyQuery) structuredQuery,
+						this.entityType,
+						getPageable(parameters))
+				:
+				this.datastoreOperations.queryEntitiesSlice(
+						structuredQuery,
+						this.entityType,
+						getPageable(parameters));
+
+		return (Slice) this.processRawObjectForProjection(results);
+	}
+
+	private StructuredQuery buildSliceQuey(Object[] parameters) {
 		StructuredQuery.Builder builder = getEntityOrProjectionQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery query = applyQueryBody(parameters, builder, false, false, null);
-		DatastoreResultsIterable<?> resultList = this.datastoreOperations.queryKeysOrEntities(query, this.entityType);
+		return applyQueryBody(parameters, builder, false, false, null);
+	}
 
+	private Pageable getPageable(Object[] parameters) {
 		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-
-		Pageable pageable = DatastorePageable.from(paramAccessor.getPageable(), resultList.getCursor(), null);
-
-		EntityQuery.Builder builderNext = newEntityQueryBuilder().setKind(this.datastorePersistentEntity.kindName());
-		StructuredQuery queryNext = applyQueryBody(parameters, builderNext, false, true, resultList.getCursor());
-		Iterable nextResult = this.datastoreOperations.query(queryNext, x -> x);
-
-		List<Object> result =
-						StreamSupport.stream(resultList.spliterator(), false).collect(Collectors.toList());
-
-		return (Slice) this.processRawObjectForProjection(
-				new SliceImpl(result, pageable, nextResult.iterator().hasNext()));
+		return paramAccessor.getPageable();
 	}
 
 	Object convertResultCollection(Object result, Class<?> collectionType) {
