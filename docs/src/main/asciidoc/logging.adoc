@@ -15,7 +15,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-logging'
+    implementation("org.springframework.cloud:spring-cloud-gcp-starter-logging")
 }
 ----
 

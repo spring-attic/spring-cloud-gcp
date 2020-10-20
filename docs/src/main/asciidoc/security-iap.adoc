@@ -48,7 +48,7 @@ Starter Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-security-iap'
+    implementation("org.springframework.cloud:spring-cloud-gcp-starter-security-iap")
 }
 ----
 

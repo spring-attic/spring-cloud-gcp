@@ -27,8 +27,8 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
-    compile group: 'org.springframework.integration', name: 'spring-integration-file'
+    implementation("org.springframework.cloud:spring-cloud-gcp-starter-storage")
+    implementation("org.springframework.integration:spring-integration-file")
 }
 ----
 

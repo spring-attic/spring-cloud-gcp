@@ -23,7 +23,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-firestore'
+  implementation("org.springframework.cloud:spring-cloud-gcp-data-firestore")
 }
 ----
 
@@ -42,7 +42,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-firestore'
+  implementation("org.springframework.cloud:spring-cloud-gcp-starter-data-firestore")
 }
 ----
 
@@ -342,7 +342,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-firestore'
+  implementation("org.springframework.cloud:spring-cloud-gcp-starter-firestore")
 }
 ----
 

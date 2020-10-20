@@ -113,7 +113,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 ----
 
