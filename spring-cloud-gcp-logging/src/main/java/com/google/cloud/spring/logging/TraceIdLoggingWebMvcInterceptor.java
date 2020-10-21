@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.cloud.spring.logging.extractors.TraceIdExtractor;
 
 import org.springframework.util.Assert;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * {@link org.springframework.web.servlet.HandlerInterceptor} that extracts the request
@@ -36,7 +36,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
+public class TraceIdLoggingWebMvcInterceptor implements HandlerInterceptor {
 
 	private final TraceIdExtractor traceIdExtractor;
 

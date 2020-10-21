@@ -25,8 +25,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import brave.Tracing;
-import brave.http.HttpClientParser;
-import brave.http.HttpServerParser;
+import brave.TracingCustomizer;
+import brave.handler.SpanHandler;
+import brave.http.HttpRequestParser;
+import brave.http.HttpTracingCustomizer;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.auth.Credentials;
@@ -49,13 +51,12 @@ import zipkin2.CheckResult;
 import zipkin2.codec.Encoding;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.AsyncReporter;
-import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
-import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -90,22 +91,17 @@ public class StackdriverTraceAutoConfigurationTests {
 			.withPropertyValues("spring.cloud.gcp.project-id=proj",
 					"spring.sleuth.sampler.probability=1.0");
 
-	private Reporter doNothingReporter = r -> { /*do nothing!*/ };
-
 	@Test
 	public void test() {
 		this.contextRunner
 				.withBean(
-						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
-						Reporter.class,
-						() ->  doNothingReporter)
+						StackdriverTraceAutoConfiguration.SPAN_HANDLER_BEAN_NAME,
+						SpanHandler.class,
+						() ->  SpanHandler.NOOP)
 				.run((context) -> {
-			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
-			assertThat(sleuthProperties.isTraceId128()).isTrue();
-			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
-			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
-			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
-			assertThat(context.getBean(Sender.class)).isNotNull();
+			assertThat(context.getBean(HttpRequestParser.class)).isNotNull();
+			assertThat(context.getBean(HttpTracingCustomizer.class)).isNotNull();
+			assertThat(context.getBean(StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME, Sender.class)).isNotNull();
 			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
 		});
 	}
@@ -113,28 +109,30 @@ public class StackdriverTraceAutoConfigurationTests {
 	@Test
 	public void supportsMultipleReporters() {
 		this.contextRunner
-				.withUserConfiguration(MultipleReportersConfig.class)
+				.withConfiguration(AutoConfigurations.of(
+						StackdriverTraceAutoConfiguration.class,
+						GcpContextAutoConfiguration.class,
+						TraceAutoConfiguration.class,
+						RefreshAutoConfiguration.class))
+				.withUserConfiguration(MultipleSpanHandlersConfig.class)
 				.run((context) -> {
-			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
-			assertThat(sleuthProperties.isTraceId128()).isTrue();
-			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
-			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
-			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
+			assertThat(context.getBean(HttpRequestParser.class)).isNotNull();
+			assertThat(context.getBean(HttpTracingCustomizer.class)).isNotNull();
 			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
 			assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
 			assertThat(context.getBeansOfType(Sender.class)).containsKeys("stackdriverSender",
 					"otherSender");
-			assertThat(context.getBeansOfType(Reporter.class)).hasSize(2);
-			assertThat(context.getBeansOfType(Reporter.class)).containsKeys("stackdriverReporter",
-					"otherReporter");
+			assertThat(context.getBeansOfType(SpanHandler.class)).hasSize(3);
+			assertThat(context.getBeansOfType(SpanHandler.class)).containsKeys("stackdriverSpanHandler",
+					"otherSpanHandler", "spanIgnoringSpanHandler");
 
 			brave.Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
 					.tag("foo", "bar").start();
 			span.finish();
 			String spanId = span.context().spanIdString();
 
-			MultipleReportersConfig.GcpTraceService gcpTraceService
-					= context.getBean(MultipleReportersConfig.GcpTraceService.class);
+			MultipleSpanHandlersConfig.GcpTraceService gcpTraceService
+					= context.getBean(MultipleSpanHandlersConfig.GcpTraceService.class);
 			await().atMost(10, TimeUnit.SECONDS)
 					.pollInterval(Duration.ONE_SECOND)
 					.untilAsserted(() -> {
@@ -147,8 +145,8 @@ public class StackdriverTraceAutoConfigurationTests {
 								.getValue()).isEqualTo("bar");
 					});
 
-			MultipleReportersConfig.OtherSender sender
-					= (MultipleReportersConfig.OtherSender) context.getBean("otherSender");
+			MultipleSpanHandlersConfig.OtherSender sender
+					= (MultipleSpanHandlersConfig.OtherSender) context.getBean("otherSender");
 			await().atMost(10, TimeUnit.SECONDS)
 					.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
 		});
@@ -166,8 +164,8 @@ public class StackdriverTraceAutoConfigurationTests {
 						Sender.class,
 						() -> senderMock)
 				.run(context -> {
-					Reporter<Span> asyncReporter = context.getBean(Reporter.class);
-					assertThat(asyncReporter).isNotNull();
+					SpanHandler spanHandler = context.getBean(StackdriverTraceAutoConfiguration.SPAN_HANDLER_BEAN_NAME, SpanHandler.class);
+					assertThat(spanHandler).isNotNull();
 					verify(senderMock, times(1)).check();
 				});
 	}
@@ -176,9 +174,9 @@ public class StackdriverTraceAutoConfigurationTests {
 	public void defaultSchedulerUsedWhenNoneProvided() {
 		this.contextRunner
 				.withBean(
-						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
-						Reporter.class,
-						() ->  doNothingReporter)
+						StackdriverTraceAutoConfiguration.SPAN_HANDLER_BEAN_NAME,
+						SpanHandler.class,
+						() ->  SpanHandler.NOOP)
 				.run(context -> {
 					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
 					assertThat(executorProvider.getExecutor()).isNotNull();
@@ -193,9 +191,9 @@ public class StackdriverTraceAutoConfigurationTests {
 
 		this.contextRunner
 				.withBean(
-						StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME,
-						Reporter.class,
-						() ->  doNothingReporter)
+						StackdriverTraceAutoConfiguration.SPAN_HANDLER_BEAN_NAME,
+						SpanHandler.class,
+						() ->  SpanHandler.NOOP)
 				.withBean("traceSenderThreadPool", ThreadPoolTaskScheduler.class, () -> threadPoolTaskSchedulerMock)
 				.run(context -> {
 					final ExecutorProvider executorProvider = context.getBean("traceExecutorProvider", ExecutorProvider.class);
@@ -230,7 +228,7 @@ public class StackdriverTraceAutoConfigurationTests {
 	/**
 	 * Spring config for tests with multiple reporters.
 	 */
-	static class MultipleReportersConfig {
+	static class MultipleSpanHandlersConfig {
 
 		private static final String GRPC_SERVER_NAME = "in-process-grpc-server-name";
 
@@ -253,8 +251,15 @@ public class StackdriverTraceAutoConfigurationTests {
 		}
 
 		@Bean
-		Reporter<zipkin2.Span> otherReporter(OtherSender otherSender) {
-			return AsyncReporter.create(otherSender);
+		TracingCustomizer otherTracingCustomizer(SpanHandler otherSpanHandler) {
+			return builder -> builder.addSpanHandler(otherSpanHandler);
+		}
+
+		@Bean
+		SpanHandler otherSpanHandler(OtherSender otherSender) {
+			AsyncReporter reporter = AsyncReporter.create(otherSender);
+			SpanHandler spanHandler = AsyncZipkinSpanHandler.create(reporter);
+			return spanHandler;
 		}
 
 		@Bean
@@ -318,6 +323,10 @@ public class StackdriverTraceAutoConfigurationTests {
 				responseObserver.onNext(Empty.getDefaultInstance());
 				responseObserver.onCompleted();
 			}
+
+		}
+
+		static class OtherSpanHandler extends SpanHandler {
 
 		}
 

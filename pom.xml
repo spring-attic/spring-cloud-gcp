@@ -86,7 +86,6 @@
 		<skip.surefire.tests>${skipTests}</skip.surefire.tests>
 		<skipTests>false</skipTests>
 		<spring-cloud-build.version>3.0.0-M4</spring-cloud-build.version>
-		<spring-cloud-sleuth.version>2.2.4.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-dependencies.version>2020.0.0-M4</spring-cloud-dependencies.version>
 		<spring-javaformat-checkstyle.version>0.0.25</spring-javaformat-checkstyle.version>
 		<zipkin-gcp.version>0.17.0</zipkin-gcp.version>
@@ -106,15 +105,6 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-build-dependencies</artifactId>
 				<version>${spring-cloud-build.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<!-- TODO: remove after upgrading to latest Sleuth -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-sleuth-dependencies</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

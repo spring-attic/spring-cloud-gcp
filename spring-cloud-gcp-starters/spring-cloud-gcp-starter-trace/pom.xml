@@ -52,5 +52,9 @@
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-core-grpc</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.zipkin.reporter2</groupId>
+			<artifactId>zipkin-reporter-brave</artifactId>
+		</dependency>
 	</dependencies>
 </project>

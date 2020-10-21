@@ -22,16 +22,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
+import brave.TracingCustomizer;
 import brave.baggage.BaggagePropagation;
-import brave.http.HttpClientParser;
-import brave.http.HttpServerParser;
+import brave.handler.SpanHandler;
+import brave.http.HttpRequestParser;
+import brave.http.HttpTracingCustomizer;
 import brave.propagation.B3Propagation;
+import brave.propagation.Propagation;
 import brave.propagation.stackdriver.StackdriverTracePropagation;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.cloud.spring.autoconfigure.trace.sleuth.StackdriverHttpClientParser;
-import com.google.cloud.spring.autoconfigure.trace.sleuth.StackdriverHttpServerParser;
+import com.google.cloud.spring.autoconfigure.trace.sleuth.StackdriverHttpRequestParser;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
 import com.google.cloud.spring.core.UserAgentHeaderProvider;
@@ -47,6 +49,7 @@ import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.ReporterMetrics;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
 
@@ -56,13 +59,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
-import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
@@ -75,8 +75,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  * @author Tim Ysewyn
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(
-		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
+@EnableConfigurationProperties({ GcpTraceProperties.class })
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore(TraceAutoConfiguration.class)
@@ -95,6 +94,16 @@ public class StackdriverTraceAutoConfiguration {
 	 * systems.
 	 */
 	public static final String SENDER_BEAN_NAME = "stackdriverSender";
+
+	/**
+	 * Stackdriver span handler bean name. Name of the bean matters for supporting multiple tracing systems.
+	 */
+	public static final String SPAN_HANDLER_BEAN_NAME = "stackdriverSpanHandler";
+
+	/**
+	 * Stackdriver customizer bean name. Name of the bean matters for supporting multiple tracing systems.
+	 */
+	public static final String CUSTOMIZER_BEAN_NAME = "stackdriverTracingCustomizer";
 
 	private GcpProjectIdProvider finalProjectIdProvider;
 
@@ -116,12 +125,26 @@ public class StackdriverTraceAutoConfiguration {
 						: credentialsProvider;
 	}
 
+	@Bean(CUSTOMIZER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = CUSTOMIZER_BEAN_NAME)
+	public TracingCustomizer stackdriverTracingCustomizer(@Qualifier(SPAN_HANDLER_BEAN_NAME) SpanHandler spanHandler) {
+		return builder -> builder
+					.supportsJoin(false)
+					.traceId128Bit(true)
+					.addSpanHandler(spanHandler);
+	}
+
+	@Bean(SPAN_HANDLER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = SPAN_HANDLER_BEAN_NAME)
+	public SpanHandler stackdriverSpanHandler(@Qualifier(REPORTER_BEAN_NAME) Reporter<Span> stackdriverReporter) {
+		SpanHandler spanHandler = AsyncZipkinSpanHandler.create(stackdriverReporter);
+		return spanHandler;
+	}
+
 	@Bean
-	@Primary
-	public SleuthProperties stackdriverSleuthProperties(SleuthProperties sleuthProperties) {
-		sleuthProperties.setSupportsJoin(false);
-		sleuthProperties.setTraceId128(true);
-		return sleuthProperties;
+	@ConditionalOnMissingBean
+	ReporterMetrics sleuthReporterMetrics() {
+		return ReporterMetrics.NOOP_METRICS;
 	}
 
 	@Bean
@@ -220,8 +243,8 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public BaggagePropagation.FactoryBuilder baggagePropagationFactoryBuilder() {
-		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.newFactory(
-				B3Propagation.newFactoryBuilder().injectFormat(B3Propagation.Format.MULTI).build()));
+		Propagation.Factory primary = B3Propagation.newFactoryBuilder().injectFormat(B3Propagation.Format.MULTI).build();
+		return BaggagePropagation.newFactoryBuilder(StackdriverTracePropagation.newFactory(primary));
 	}
 
 	@PreDestroy
@@ -240,20 +263,17 @@ public class StackdriverTraceAutoConfiguration {
 	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
 	public static class StackdriverTraceHttpAutoconfiguration {
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
-				havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
-		HttpClientParser stackdriverHttpClientParser() {
-			return new StackdriverHttpClientParser();
+		HttpRequestParser stackdriverHttpRequestParser() {
+			return new StackdriverHttpRequestParser();
 		}
 
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
-				havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
-		HttpServerParser stackdriverHttpServerParser() {
-			return new StackdriverHttpServerParser();
+		HttpTracingCustomizer stackdriverHttpTracingCustomizer(HttpRequestParser stackdriverHttpRequestParser) {
+			return builder -> builder.clientRequestParser(stackdriverHttpRequestParser);
 		}
 	}
-
 }

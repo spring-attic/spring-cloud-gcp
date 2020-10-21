@@ -102,7 +102,7 @@ This is required by Stackdriver Trace.
 - Does not use Span joins.
 Span joins will share the span ID between the client and server Spans.
 Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
-- Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver related fields.
+- Uses `StackdriverHttpRequestParser` by default to populate Stackdriver related fields.
 
 === Overriding the auto-configuration
 

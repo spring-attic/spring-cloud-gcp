@@ -37,6 +37,7 @@ import com.google.devtools.cloudtrace.v1.TraceServiceGrpc.TraceServiceBlockingSt
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -64,6 +65,7 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  * @author Mike Eltsufin
  */
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class TraceSampleApplicationIntegrationTests {
@@ -117,7 +119,7 @@ public class TraceSampleApplicationIntegrationTests {
 
 	@Test
 	public void testTracesAreLoggedCorrectly() {
-		DateTime startDateTime = new DateTime(System.currentTimeMillis());
+		DateTime startDateTime = new DateTime(System.currentTimeMillis() - 60000); // Time is hard.
 
 		HttpHeaders headers = new HttpHeaders();
 
@@ -141,21 +143,35 @@ public class TraceSampleApplicationIntegrationTests {
 				.ignoreExceptions()
 				.untilAsserted(() -> {
 
+			log.debug("Getting trace...");
 			Trace trace = this.traceServiceStub.getTrace(getTraceRequest);
+			log.debug("Found trace!");
+
 			assertThat(trace.getTraceId()).isEqualTo(uuidString);
 			assertThat(trace.getSpansCount()).isEqualTo(8);
+			log.debug("Trace spans match.");
 
 			// verify custom tags
 			assertThat(trace.getSpans(0).getLabelsMap().get("environment")).isEqualTo("QA");
 			assertThat(trace.getSpans(0).getLabelsMap().get("session-id")).isNotNull();
+			log.debug("Trace labels match.");
 
 			List<LogEntry> logEntries = new ArrayList<>();
+			log.debug("Finding logs with filter: " + logFilter);
 			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()
 					.forEach((le) -> {
 						logEntries.add(le);
-						assertThat(le.getTrace()).matches(
-								"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
-						assertThat(le.getSpanId()).matches("([a-z0-9]){16}");
+						log.debug("Found log entry: " + le.toString());
+
+						String wantTraceRegex = "projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}";
+						log.debug("Want trace " + wantTraceRegex + " and got " + le.getTrace());
+						assertThat(le.getTrace()).matches(wantTraceRegex);
+
+						String wantSpanRegex = "([a-z0-9]){16}";
+						log.debug("Want span " + wantSpanRegex + " and got " + le.getSpanId());
+						assertThat(le.getSpanId()).matches(wantSpanRegex);
+
+						log.debug("Log trace and span match.");
 					});
 
 
@@ -165,7 +181,9 @@ public class TraceSampleApplicationIntegrationTests {
 					.collect(Collectors.toList());
 
 			assertThat(logContents).contains("starting busy work");
+			log.debug("Found 'starting' line");
 			assertThat(logContents).contains("finished busy work");
+			log.debug("Found 'finishing' line");
 		});
 	}
 }

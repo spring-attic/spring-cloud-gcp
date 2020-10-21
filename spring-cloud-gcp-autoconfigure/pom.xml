@@ -162,6 +162,11 @@
             <artifactId>spring-cloud-sleuth-core</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter-brave</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Firestore -->
         <dependency>

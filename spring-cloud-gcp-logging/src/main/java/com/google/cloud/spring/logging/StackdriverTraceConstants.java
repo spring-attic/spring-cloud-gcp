@@ -52,17 +52,17 @@ public interface StackdriverTraceConstants {
 	String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at.
+	 * The name of the MDC parameter Spring Sleuth is storing the trace id at.
 	 */
-	String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
+	String MDC_FIELD_TRACE_ID = "traceId";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span id at.
+	 * The name of the MDC parameter Spring Sleuth is storing the span id at.
 	 */
-	String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
+	String MDC_FIELD_SPAN_ID = "spanId";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at.
+	 * The name of the MDC parameter Spring Sleuth is storing the span export information at.
 	 */
 	String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
