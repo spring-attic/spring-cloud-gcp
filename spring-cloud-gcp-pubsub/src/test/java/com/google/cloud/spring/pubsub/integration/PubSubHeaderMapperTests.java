@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.integration.history.MessageHistory;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 
@@ -49,6 +50,7 @@ public class PubSubHeaderMapperTests {
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
 		originalHeaders.put(NativeMessageHeaderAccessor.NATIVE_HEADERS, "deerhunter");
+		originalHeaders.put(MessageHistory.HEADER_NAME, "I've traveled to the moon");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
 
 		Map<String, String> filteredHeaders = new HashMap<>();
