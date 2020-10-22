@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
+import org.springframework.integration.history.MessageHistory;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.utils.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
@@ -50,6 +51,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 			"!" + GcpPubSubHeaders.ACKNOWLEDGEMENT,
 			"!" + GcpPubSubHeaders.ORIGINAL_MESSAGE,
 			"!" + NativeMessageHeaderAccessor.NATIVE_HEADERS,
+			"!" + MessageHistory.HEADER_NAME,
 			"*"};
 
 	/**
