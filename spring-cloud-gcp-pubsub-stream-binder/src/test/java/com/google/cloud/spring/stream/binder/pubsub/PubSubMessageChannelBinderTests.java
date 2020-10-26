@@ -18,6 +18,7 @@ package com.google.cloud.spring.stream.binder.pubsub;
 
 import com.google.cloud.spring.pubsub.PubSubAdmin;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubMessageSource;
 import com.google.cloud.spring.pubsub.integration.outbound.PubSubMessageHandler;
 import com.google.cloud.spring.stream.binder.pubsub.config.PubSubBinderConfiguration;
 import com.google.cloud.spring.stream.binder.pubsub.properties.PubSubConsumerProperties;
@@ -90,6 +91,7 @@ public class PubSubMessageChannelBinderTests {
 				this.properties);
 
 		when(producerDestination.getName()).thenReturn("test-topic");
+		when(consumerDestination.getName()).thenReturn("test-subscription");
 	}
 
 	@Test
@@ -129,6 +131,20 @@ public class PubSubMessageChannelBinderTests {
 							errorChannel
 					);
 					assertThat(messageHandler.isSync()).isTrue();
+				});
+	}
+
+	@Test
+	public void consumerMaxFetchPropertyPropagatesToMessageSource() {
+		baseContext
+				.withPropertyValues("spring.cloud.stream.gcp.pubsub.default.consumer.maxFetchSize=20")
+				.run(ctx -> {
+					PubSubMessageChannelBinder binder = ctx.getBean(PubSubMessageChannelBinder.class);
+					PubSubExtendedBindingProperties props = ctx.getBean("pubSubExtendedBindingProperties", PubSubExtendedBindingProperties.class);
+
+					PubSubMessageSource source = binder.createPubSubMessageSource(consumerDestination,
+							new ExtendedConsumerProperties<>(props.getExtendedConsumerProperties("test")));
+					assertThat(source.getMaxFetchSize()).isEqualTo(20);
 				});
 	}
 

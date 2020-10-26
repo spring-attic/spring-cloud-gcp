@@ -128,8 +128,16 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination,
 			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
-		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
+		PubSubMessageSource source = createPubSubMessageSource(destination, consumerProperties);
+		return new PolledConsumerResources(source,
 				registerErrorInfrastructure(destination, group, consumerProperties, true));
+	}
+
+	protected PubSubMessageSource createPubSubMessageSource(ConsumerDestination destination,
+			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
+		PubSubMessageSource source = new PubSubMessageSource(this.pubSubTemplate, destination.getName());
+		source.setMaxFetchSize(consumerProperties.getExtension().getMaxFetchSize());
+		return source;
 	}
 
 }

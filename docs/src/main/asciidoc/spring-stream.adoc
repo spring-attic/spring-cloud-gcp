@@ -191,6 +191,9 @@ public class SinkExample {
 }
 ----
 
+By default, the polling will only get 1 message at a time.
+Use the `spring.cloud.stream.gcp.pubsub.default.consumer.maxFetchSize` property to fetch additional messages per network roundtrip.
+
 === Sample
 
 Sample applications are available:

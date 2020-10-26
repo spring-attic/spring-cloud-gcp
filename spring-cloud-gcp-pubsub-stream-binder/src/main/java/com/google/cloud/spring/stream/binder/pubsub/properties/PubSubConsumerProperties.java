@@ -30,11 +30,21 @@ public class PubSubConsumerProperties extends PubSubCommonProperties {
 
 	private AckMode ackMode = AckMode.AUTO;
 
+	private Integer maxFetchSize = 1;
+
 	public AckMode getAckMode() {
 		return ackMode;
 	}
 
 	public void setAckMode(AckMode ackMode) {
 		this.ackMode = ackMode;
+	}
+
+	public Integer getMaxFetchSize() {
+		return maxFetchSize;
+	}
+
+	public void setMaxFetchSize(Integer maxFetchSize) {
+		this.maxFetchSize = maxFetchSize;
 	}
 }
