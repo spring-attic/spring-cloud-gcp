@@ -31,6 +31,7 @@ import com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration;
 import com.google.cloud.spring.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import com.google.cloud.spring.pubsub.PubSubAdmin;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.outbound.PubSubMessageHandler;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.JacksonPubSubMessageConverter;
@@ -41,13 +42,17 @@ import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
+import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -72,7 +77,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	@Test
 	public void testCreatePublishPullNextAndDelete() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
 			//tag::publish[]
 			Map<String, String> headers = Collections.singletonMap("key1", "val1");
 			pubSubTemplate.publish(topicName, "message", headers).get();
@@ -118,7 +123,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 						.pollInterval(Duration.TWO_SECONDS)
 						.untilAsserted(() -> assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull());
 
-				pubSubTest.run(pubSubTemplate, subscriptionName, topicName);
+				pubSubTest.run(context, pubSubTemplate, subscriptionName, topicName);
 			}
 			finally {
 				//tag::list_subscriptions[]
@@ -153,7 +158,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	@Test
 	public void subscribeSimpleTest() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
 			pubSubTemplate.publish(topicName, "message");
 
 			Logger logger = new Logger();
@@ -174,7 +179,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	@Test
 	public void testPubSubTemplatePull() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
 
 			pubSubTemplate.publish(topicName, "message");
 			Logger logger = new Logger();
@@ -206,7 +211,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	@Test
 	public void testPubSubTemplateLoadsMessageConverter() {
-		pubSubTest((PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
 			// tag::json_publish[]
 			TestUser user = new TestUser();
 			user.setUsername("John");
@@ -241,6 +246,26 @@ public class PubSubTemplateDocumentationIntegrationTests {
 		}, JsonPayloadTestConfiguration.class);
 	}
 
+	@Test
+	public void testSpelExpressionMessageRouting() {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+
+			PubSubMessageHandler adapter = context.getBean(PubSubMessageHandler.class);
+
+			String payload = "payload";
+			GenericMessage<String> message = new GenericMessage<>(payload, Collections.singletonMap("sendToTopic", topicName));
+			adapter.handleMessage(message);
+
+			await().atMost(Duration.ONE_MINUTE)
+					.pollInterval(Duration.TWO_SECONDS)
+					.untilAsserted(() -> {
+				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
+				assertThat(pubsubMessage).isNotNull();
+				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8(payload));
+			});
+		}, MessageHandlerTestConfiguration.class);
+	}
+
 	/**
 	 * Beans for test.
 	 */
@@ -255,6 +280,35 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			return new JacksonPubSubMessageConverter(new ObjectMapper());
 		}
 		//end::json_bean[]
+	}
+
+	@Configuration
+	static class MessageHandlerTestConfiguration {
+
+		// This bean needs to go through a proper @Configuration class because it has an package-private "onInit()"
+		// method that needs to be called to work with SpEL expressions.
+		@Bean
+		public PubSubMessageHandler pubSubMessageHandler(PubSubTemplate pubSubTemplate) {
+
+			// tag::message_router[]
+			PubSubMessageHandler adapter = new PubSubMessageHandler(pubSubTemplate, "myDefaultTopic");
+			adapter.setTopicExpressionString("headers['sendToTopic']");
+			// end::message_router[]
+
+			// tag::adapter_callback[]
+			adapter.setPublishCallback(new ListenableFutureCallback<String>() {
+				@Override
+				public void onFailure(@NotNull Throwable ex) {
+				}
+
+				@Override
+				public void onSuccess(String result) {
+				}
+			});
+			// end::adapter_callback[]
+
+			return adapter;
+		}
 	}
 
 	/**
@@ -286,7 +340,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 	// end::json_convertible_class[]
 
 	interface PubSubTest {
-		void run(PubSubTemplate pubSubTemplate, String subscription, String topic)
+		void run(AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscription, String topic)
 				throws ExecutionException, InterruptedException;
 	}
 

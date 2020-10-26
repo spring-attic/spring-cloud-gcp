@@ -16,11 +16,10 @@
 
 package com.google.cloud.spring.pubsub.integration.outbound;
 
-import java.util.Map;
-
 import com.google.cloud.spring.core.util.MapBuilder;
 import com.google.cloud.spring.pubsub.core.PubSubOperations;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +30,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
-import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
@@ -39,8 +37,9 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -79,7 +78,7 @@ public class PubSubMessageHandlerTests {
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
 		future.set("benfica");
 		when(this.pubSubTemplate.publish(eq("testTopic"),
-				eq("testPayload".getBytes()), isA(Map.class)))
+				eq("testPayload".getBytes()), anyMap()))
 				.thenReturn(future);
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
@@ -89,7 +88,7 @@ public class PubSubMessageHandlerTests {
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"), eq("testPayload".getBytes()), isA(Map.class));
+				.publish(eq("testTopic"), eq("testPayload".getBytes()), anyMap());
 	}
 
 	@Test
@@ -102,7 +101,22 @@ public class PubSubMessageHandlerTests {
 						.build());
 		this.adapter.handleMessage(dynamicMessage);
 		verify(this.pubSubTemplate, times(1))
-			.publish(eq("dynamicTopic"),	eq("testPayload".getBytes()), isA(Map.class));
+			.publish(eq("dynamicTopic"), eq("testPayload".getBytes()), anyMap());
+	}
+
+	@Test
+	public void testSendToExpressionTopic() {
+		this.adapter.setTopicExpressionString("headers['sendToTopic']");
+		this.adapter.onInit();
+		Message<?> expressionMessage = new GenericMessage<byte[]>("testPayload".getBytes(),
+				new MapBuilder<String, Object>()
+						.put("key1", "value1")
+						.put("key2", "value2")
+						.put("sendToTopic", "expressionTopic")
+						.build());
+		this.adapter.handleMessage(expressionMessage);
+		verify(this.pubSubTemplate, times(1))
+				.publish(eq("expressionTopic"), eq("testPayload".getBytes()), anyMap());
 	}
 
 	@Test
@@ -113,14 +127,14 @@ public class PubSubMessageHandlerTests {
 
 		this.adapter.handleMessage(this.message);
 		verify(timeout, times(1)).getValue(
-				eq(null), eq(this.message), eq(Long.class));
+				isNull(), eq(this.message), eq(Long.class));
 	}
 
 	@Test
 	public void testPublishCallback() {
 		ListenableFutureCallback<String> callbackSpy = spy(new ListenableFutureCallback<String>() {
 			@Override
-			public void onFailure(Throwable ex) {
+			public void onFailure(@NotNull Throwable ex) {
 
 			}
 
@@ -206,18 +220,6 @@ public class PubSubMessageHandlerTests {
 		this.adapter.setTopicExpression(expected);
 
 		assertThat(this.adapter.getTopicExpression()).isEqualTo(expected);
-	}
-
-	// this test could be more comprehensive
-	@Test
-	public void testTopicExpressionString() {
-		String expressionString = "@topic";
-
-		this.adapter.setTopicExpressionString(expressionString);
-
-		Expression exp = this.adapter.getTopicExpression();
-
-		assertThat(exp.getClass()).isEqualTo(SpelExpression.class);
 	}
 
 	@Test
