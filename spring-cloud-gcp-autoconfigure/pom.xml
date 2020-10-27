@@ -317,4 +317,23 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>spring-cloud-gcp-ci-it</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <spring.cloud.gcp.firestore.project-id>spring-cloud-gcp-ci-firestore</spring.cloud.gcp.firestore.project-id>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

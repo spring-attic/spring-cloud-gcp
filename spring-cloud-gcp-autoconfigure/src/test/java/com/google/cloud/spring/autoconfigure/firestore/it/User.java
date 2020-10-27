@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.cloud.spring.sample.firestore;
+package com.google.cloud.spring.autoconfigure.firestore.it;
 
 import java.util.List;
 import java.util.Objects;

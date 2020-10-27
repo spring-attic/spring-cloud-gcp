@@ -79,9 +79,12 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			//end::publish[]
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
-			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
-			assertThat(pubsubMessage.getAttributesCount()).isEqualTo(1);
-			assertThat(pubsubMessage.getAttributesOrThrow("key1")).isEqualTo("val1");
+			await().atMost(new Duration(30, TimeUnit.SECONDS)).untilAsserted(() -> {
+				assertThat(pubsubMessage).isNotNull();
+				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
+				assertThat(pubsubMessage.getAttributesCount()).isEqualTo(1);
+				assertThat(pubsubMessage.getAttributesOrThrow("key1")).isEqualTo("val1");
+			});
 		});
 	}
 
@@ -103,9 +106,17 @@ public class PubSubTemplateDocumentationIntegrationTests {
 				//tag::create_topic[]
 				pubSubAdmin.createTopic(topicName);
 				//end::create_topic[]
+				await().atMost(Duration.ONE_MINUTE)
+						.pollInterval(Duration.TWO_SECONDS)
+						.untilAsserted(() -> assertThat(pubSubAdmin.getTopic(topicName)).isNotNull());
+
 				//tag::create_subscription[]
 				pubSubAdmin.createSubscription(subscriptionName, topicName);
 				//end::create_subscription[]
+
+				await().atMost(Duration.ONE_MINUTE)
+						.pollInterval(Duration.TWO_SECONDS)
+						.untilAsserted(() -> assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull());
 
 				pubSubTest.run(pubSubTemplate, subscriptionName, topicName);
 			}

@@ -355,9 +355,9 @@ The starter automatically configures and registers a `Firestore` bean in the Spr
  @Autowired
  Firestore firestore;
 
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=write]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/firestore/it/FirestoreDocumentationIntegrationTests.java[tag=write]
 
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/sample/firestore/FirestoreDocumentationIntegrationTests.java[tag=read]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/firestore/it/FirestoreDocumentationIntegrationTests.java[tag=read]
 ----
 
 === Emulator Usage

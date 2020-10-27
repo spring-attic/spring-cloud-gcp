@@ -154,7 +154,7 @@ Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=publish]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=publish]
 ----
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
@@ -170,7 +170,7 @@ The subscription name could either be a canonical subscription name within the c
 Subscribe to a subscription with a message handler:
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=subscribe]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=subscribe]
 ----
 ===== Subscribe methods
 `PubSubTemplate` provides the following subscribe methods:
@@ -196,7 +196,7 @@ This is different from subscribing to a subscription, in the sense that subscrib
 Pull up to 10 messages:
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=pull]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=pull]
 ----
 
 ===== Pull methods
@@ -237,7 +237,7 @@ For serialization and deserialization of POJOs using Jackson JSON, configure a `
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_bean]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_bean]
 ----
 
 NOTE: Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
@@ -247,20 +247,20 @@ Assuming you have the following class defined:
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_convertible_class]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_convertible_class]
 ----
 
 You can serialize objects to JSON on publish automatically:
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_publish]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_publish]
 ----
 
 And that's how you convert messages to objects on pull:
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_pull]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=json_pull]
 ----
 
 
@@ -366,7 +366,7 @@ Here is an example of how to list every Google Cloud Pub/Sub topic name in a pro
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=list_topics]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=list_topics]
 ----
 
 ==== Creating a subscription
@@ -437,7 +437,7 @@ Here is an example of how to list every subscription name in a project:
 
 [source,java,indent=0]
 ----
-include::{project-root}/docs/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=list_subscriptions]
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=list_subscriptions]
 ----
 
 === Sample
