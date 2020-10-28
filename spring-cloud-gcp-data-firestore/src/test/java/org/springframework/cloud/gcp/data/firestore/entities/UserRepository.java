@@ -34,6 +34,8 @@ import org.springframework.data.domain.Sort;
 public interface UserRepository extends FirestoreReactiveRepository<User> {
 	Flux<User> findByAge(Integer age);
 
+	Flux<User> findByAgeNot(Integer age);
+
 	Flux<User> findByHomeAddressCountry(String country);
 
 	Flux<User> findByFavoriteDrink(String drink);
