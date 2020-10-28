@@ -601,8 +601,9 @@
 							<execution>
 								<id>aggregate</id>
 								<goals>
-									<goal>aggregate</goal>
+									<goal>aggregate-no-fork</goal>
 								</goals>
+								<phase>package</phase>
 							</execution>
 						</executions>
 						<configuration>

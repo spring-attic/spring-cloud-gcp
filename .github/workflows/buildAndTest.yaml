@@ -7,6 +7,7 @@ on:
   schedule:
     - cron: '30 9 * * *' # 09:30 UTC every day
 
+
 jobs:
   unitTests:
     # We want to run on external PRs, but not on our own internal PRs as they'll be run
@@ -55,8 +56,9 @@ jobs:
       continue-on-error: true
       uses: actions/upload-artifact@v2
       with:
-        name: Test logs - ${{ matrix.it}}
+        name: Unit Test Logs - Java ${{ matrix.java }}
         path: "**/target/surefire-reports/*"
+
 
   integrationTests:
     if: |
@@ -137,8 +139,9 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
-          name: Test logs - ${{ matrix.it}}
+          name: Integration Test Logs - ${{ matrix.it}}
           path: "**/target/failsafe-reports/*"
+
 
   releaseCheck:
     if: |
@@ -165,12 +168,24 @@ jobs:
         run: |
           ./mvnw \
             --batch-mode \
-            --activate-profiles release \
+            --activate-profiles release,docs \
             -DskipTests \
             -Dgpg.skip \
             -Dcheckstyle.skip \
             clean \
             package
+      - name: Archive Artifacts
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: Release Artifacts
+          path: |
+            **/.flattened-pom.xml
+            **/target/**.jar
+            target/site/apidocs
+            **/target/generated-docs
+            !spring-cloud-gcp-samples
 
 
   linkageCheck:
