@@ -213,6 +213,7 @@ In the example above the query method implementations in `UserRepository` are ge
 Cloud Firestore only supports filter components joined by AND, and the following operations:
 
 * `equals`
+* `is not equal`
 * `greater than or equals`
 * `greater than`
 * `less than or equals`
@@ -220,6 +221,7 @@ Cloud Firestore only supports filter components joined by AND, and the following
 * `is null`
 * `contains` (accepts a `List` with up to 10 elements, or a singular value)
 * `in` (accepts a `List` with up to 10 elements)
+* `not in` (accepts a `List` with up to 10 elements)
 
 NOTE:  If `in` operation is used in combination with `contains` operation, the argument to `contains` operation has to be a singular value.
 
