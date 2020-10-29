@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.firestore.v1.StructuredQuery;
-import com.google.firestore.v1.StructuredQuery.FieldFilter.Operator;
 import com.google.firestore.v1.StructuredQuery.FieldReference;
 import com.google.protobuf.Int32Value;
 
