@@ -228,6 +228,27 @@ public class FirestoreRepositoryIntegrationTests {
 				.block();
 
 		assertThat(pagedUsers).isEmpty();
+
+		pagedUsers = this.userRepository.findByAgeNotIn(Arrays.asList(17, 22, 33))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).isEmpty();
+
+		pagedUsers = this.userRepository.findByAgeNotIn(Arrays.asList(10, 20, 30))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactlyInAnyOrder("Cloud", "Squall");
+
+		pagedUsers = this.userRepository.findByAgeNotIn(Arrays.asList(17, 33))
+				.map(User::getName)
+				.collectList()
+				.block();
+
+		assertThat(pagedUsers).containsExactly("Cloud");
 	}
 
 	@Test

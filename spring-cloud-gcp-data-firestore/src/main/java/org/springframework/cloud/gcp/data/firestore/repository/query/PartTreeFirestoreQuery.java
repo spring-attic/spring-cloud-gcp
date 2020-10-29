@@ -55,6 +55,7 @@ import static org.springframework.data.repository.query.parser.Part.Type.IN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN;
 import static org.springframework.data.repository.query.parser.Part.Type.LESS_THAN_EQUAL;
 import static org.springframework.data.repository.query.parser.Part.Type.NEGATING_SIMPLE_PROPERTY;
+import static org.springframework.data.repository.query.parser.Part.Type.NOT_IN;
 import static org.springframework.data.repository.query.parser.Part.Type.SIMPLE_PROPERTY;
 
 /**
@@ -91,6 +92,8 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 									StructuredQuery.FieldFilter.Operator.ARRAY_CONTAINS_ANY))
 					.put(NEGATING_SIMPLE_PROPERTY,
 							new OperatorSelector(StructuredQuery.FieldFilter.Operator.NOT_EQUAL))
+					.put(NOT_IN,
+							new OperatorSelector(StructuredQuery.FieldFilter.Operator.NOT_IN))
 					.build();
 
 	public PartTreeFirestoreQuery(FirestoreQueryMethod queryMethod, FirestoreReactiveOperations reactiveOperations,
