@@ -22,7 +22,6 @@
 |spring.cloud.gcp.datastore.credentials.encoded-key |  | 
 |spring.cloud.gcp.datastore.credentials.location |  | 
 |spring.cloud.gcp.datastore.credentials.scopes |  | 
-|spring.cloud.gcp.datastore.emulator-host |  | @deprecated use <code>spring.cloud.gcp.datastore.host</code> instead. @see #host
 |spring.cloud.gcp.datastore.emulator.consistency | 0.9 | Consistency to use creating the Datastore server instance. Default: {@code 0.9}
 |spring.cloud.gcp.datastore.emulator.enabled | false | If enabled the Datastore client will connect to an local datastore emulator.
 |spring.cloud.gcp.datastore.emulator.port | 8081 | Is the datastore emulator port. Default: {@code 8081}
