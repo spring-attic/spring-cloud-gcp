@@ -213,6 +213,7 @@ In the example above the query method implementations in `UserRepository` are ge
 Cloud Firestore only supports filter components joined by AND, and the following operations:
 
 * `equals`
+* `is not equal`
 * `greater than or equals`
 * `greater than`
 * `less than or equals`
