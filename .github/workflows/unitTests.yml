@@ -1,0 +1,46 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 10 * * *' # 10:30 UTC every day
+
+jobs:
+  unitTest:
+    # We want to run on external PRs, but not on our own internal PRs as they'll be run
+    # by the push to the branch.
+    if: |
+      ( github.event_name == 'push' ||
+        github.event.pull_request.head.repo.full_name != 'GoogleCloudPlatform/spring-cloud-gcp' )
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [8, 11, 15]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Unit Tests
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --fail-at-end \
+            --threads 1.5C \
+            test
+      - name: Archive logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: Unit Test Logs - Java ${{ matrix.java }}
+          path: "**/target/surefire-reports/*"
