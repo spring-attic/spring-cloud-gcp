@@ -40,7 +40,7 @@ public class UserAgentHeaderProviderIntegrationTests {
 	public void testGetHeaders() {
 		UserAgentHeaderProvider subject = new UserAgentHeaderProvider(this.getClass());
 
-		String versionRegex = "\\d+\\.\\d+\\.\\d+(\\-SNAPSHOT)?";
+		String versionRegex = "\\d+\\.\\d+\\.\\d+(\\-RC\\d+)?(\\-SNAPSHOT)?";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
 		assertThat(subject.getHeaders().get("User-Agent")).matches(
 				Pattern.compile("Spring/" + versionRegex + " spring-cloud-gcp-core/" + versionRegex));
