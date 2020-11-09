@@ -80,7 +80,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 								.getReadConverter().convert(x, simpleConvertedType))
 						.collect(Collectors.toList())
 				: this.spannerTemplate.getSpannerEntityProcessor().getReadConverter()
-						.convert(results.get(0), simpleConvertedType);
+						.convert(results.size() > 0 ? results.get(0) : null, simpleConvertedType);
 	}
 
 	Class<?> getReturnedType() {
