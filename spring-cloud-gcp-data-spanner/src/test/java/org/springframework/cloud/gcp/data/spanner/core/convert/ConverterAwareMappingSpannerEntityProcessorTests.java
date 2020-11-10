@@ -76,6 +76,25 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 
 	private SpannerEntityProcessor spannerEntityProcessor;
 
+	private final Converter<LocalDateTime, Timestamp> LOCAL_DATE_TIME_WRITE_CONVERTER = new Converter<LocalDateTime, Timestamp>() {
+		@Nullable
+		@Override
+		public Timestamp convert(LocalDateTime localDateTime) {
+			return Timestamp.parseTimestamp(localDateTime.toString());
+		}
+	};
+
+	private final Converter<Timestamp, LocalDateTime> LOCAL_DATE_TIME_READ_CONVERTER = new Converter<Timestamp, LocalDateTime>() {
+		@Nullable
+		@Override
+		public LocalDateTime convert(Timestamp timestamp) {
+			return Instant
+					.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
+					.atZone(ZoneId.of("UTC"))
+					.toLocalDateTime();
+		}
+	};
+
 	@Before
 	public void setUp() {
 		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
@@ -86,47 +105,26 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 	public void customTimeConverter() {
 		ConverterAwareMappingSpannerEntityProcessor processorWithCustomConverters =
 				new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext(),
-						Arrays.asList(new LocalDateTimeWriteConverter()),
-						Arrays.asList(new LocalDateTimeReadConverter()));
+						Arrays.asList(LOCAL_DATE_TIME_WRITE_CONVERTER),
+						Arrays.asList(LOCAL_DATE_TIME_READ_CONVERTER));
 
 		Timestamp sourceValue = Timestamp.parseTimestamp("2019-10-12T07:20:50.52Z");
 		LocalDateTime dateTime = processorWithCustomConverters.getReadConverter().convert(sourceValue, LocalDateTime.class);
-		assertThat(dateTime).isEqualTo(new LocalDateTimeReadConverter().convert(sourceValue));
+		assertThat(dateTime).isEqualTo(LOCAL_DATE_TIME_READ_CONVERTER.convert(sourceValue));
 
 		Timestamp timestamp = processorWithCustomConverters.getWriteConverter().convert(dateTime, Timestamp.class);
-		assertThat(timestamp).isEqualTo(new LocalDateTimeWriteConverter().convert(dateTime));
+		assertThat(timestamp).isEqualTo(LOCAL_DATE_TIME_WRITE_CONVERTER.convert(dateTime));
 
 		ConverterAwareMappingSpannerEntityProcessor processor =
 				new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext());
 
 		Timestamp sourceValue2 = Timestamp.parseTimestamp("2019-10-12T07:20:50.52Z");
 		LocalDateTime dateTime2 = processor.getReadConverter().convert(sourceValue2, LocalDateTime.class);
-		assertThat(dateTime2).isNotEqualTo(new LocalDateTimeReadConverter().convert(sourceValue2));
+		assertThat(dateTime2).isNotEqualTo(LOCAL_DATE_TIME_READ_CONVERTER.convert(sourceValue2));
 
 		Timestamp timestamp2 = processor.getWriteConverter().convert(dateTime2, Timestamp.class);
-		assertThat(timestamp2).isNotEqualTo(new LocalDateTimeWriteConverter().convert(dateTime2));
+		assertThat(timestamp2).isNotEqualTo(LOCAL_DATE_TIME_WRITE_CONVERTER.convert(dateTime2));
 
-	}
-
-	class LocalDateTimeReadConverter implements Converter<com.google.cloud.Timestamp, LocalDateTime> {
-
-		@Nullable
-		@Override
-		public LocalDateTime convert(com.google.cloud.Timestamp timestamp) {
-			return Instant
-					.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
-					.atZone(ZoneId.of("UTC"))
-					.toLocalDateTime();
-		}
-	}
-
-	class LocalDateTimeWriteConverter implements Converter<LocalDateTime, com.google.cloud.Timestamp> {
-
-		@Nullable
-		@Override
-		public com.google.cloud.Timestamp convert(LocalDateTime localDateTime) {
-			return com.google.cloud.Timestamp.parseTimestamp(localDateTime.toString());
-		}
 	}
 
 
