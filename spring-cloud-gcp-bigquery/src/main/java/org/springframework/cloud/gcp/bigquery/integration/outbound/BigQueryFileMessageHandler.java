@@ -30,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.Schema;
 
 import org.springframework.cloud.gcp.bigquery.core.BigQueryTemplate;
 import org.springframework.cloud.gcp.bigquery.integration.BigQuerySpringMessageHeaders;
@@ -63,6 +64,8 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 
 	private Expression formatOptionsExpression;
 
+	private Expression tableSchemaExpression;
+
 	private Duration timeout = Duration.ofMinutes(5);
 
 	private boolean sync = false;
@@ -78,6 +81,10 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 		this.formatOptionsExpression =
 				new FunctionExpression<Message>(
 						message -> message.getHeaders().get(BigQuerySpringMessageHeaders.FORMAT_OPTIONS));
+
+		this.tableSchemaExpression =
+				new FunctionExpression<Message>(
+						message -> message.getHeaders().get(BigQuerySpringMessageHeaders.TABLE_SCHEMA));
 	}
 
 	@Override
@@ -123,6 +130,23 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	}
 
 	/**
+	 * Sets the SpEL expression used to determine the {@link Schema} for the handler.
+	 * @param tableSchemaExpression the SpEL expression used to evaluate the {@link Schema}.
+	 */
+	public void setTableSchemaExpression(Expression tableSchemaExpression) {
+		Assert.notNull(formatOptionsExpression, "The table schema expression cannot be null.");
+		this.tableSchemaExpression = tableSchemaExpression;
+	}
+
+	/**
+	 * Sets the {@link Schema} of the table to load for the handler.
+	 * @param schema the schema of the table to load.
+	 */
+	public void setTableSchema(Schema schema) {
+		this.formatOptionsExpression = new ValueExpression<>(schema);
+	}
+
+	/**
 	 * Sets the {@link Duration} to wait for a file to be loaded into BigQuery before timing out
 	 * when waiting synchronously.
 	 * @param timeout the {@link Duration} timeout to wait for a file to load
@@ -154,13 +178,15 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 				this.tableNameExpression.getValue(this.evaluationContext, message, String.class);
 		FormatOptions formatOptions =
 				this.formatOptionsExpression.getValue(this.evaluationContext, message, FormatOptions.class);
+		Schema schema =
+				this.tableSchemaExpression.getValue(this.evaluationContext, message, Schema.class);
 
 		Assert.notNull(tableName, "BigQuery table name must not be null.");
 		Assert.notNull(formatOptions, "Data file formatOptions must not be null.");
 
 		try (InputStream inputStream = convertToInputStream(message.getPayload())) {
-			ListenableFuture<Job> jobFuture = this.bigQueryTemplate.writeDataToTable(tableName, inputStream,
-					formatOptions);
+			ListenableFuture<Job> jobFuture =
+					this.bigQueryTemplate.writeDataToTable(tableName, inputStream, formatOptions, schema);
 
 			if (this.sync) {
 				return jobFuture.get(this.timeout.getSeconds(), TimeUnit.SECONDS);

@@ -28,6 +28,7 @@ import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.JobStatus.State;
+import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
@@ -124,16 +125,26 @@ public class BigQueryTemplate implements BigQueryOperations {
 	@Override
 	public ListenableFuture<Job> writeDataToTable(
 			String tableName, InputStream inputStream, FormatOptions dataFormatOptions) {
+		return this.writeDataToTable(tableName, inputStream, dataFormatOptions, null);
+	}
+
+	@Override
+	public ListenableFuture<Job> writeDataToTable(
+			String tableName, InputStream inputStream, FormatOptions dataFormatOptions, Schema schema) {
+
 		TableId tableId = TableId.of(datasetName, tableName);
 
-		WriteChannelConfiguration writeChannelConfiguration = WriteChannelConfiguration
+		WriteChannelConfiguration.Builder writeChannelConfiguration = WriteChannelConfiguration
 				.newBuilder(tableId)
 				.setFormatOptions(dataFormatOptions)
-				.setAutodetect(this.autoDetectSchema)
 				.setWriteDisposition(this.writeDisposition)
-				.build();
+				.setAutodetect(this.autoDetectSchema);
 
-		TableDataWriteChannel writer = bigQuery.writer(writeChannelConfiguration);
+		if (schema != null) {
+			writeChannelConfiguration.setSchema(schema);
+		}
+
+		TableDataWriteChannel writer = bigQuery.writer(writeChannelConfiguration.build());
 
 		try (OutputStream sink = Channels.newOutputStream(writer)) {
 			// Write data from data input file to BigQuery
@@ -163,15 +174,20 @@ public class BigQueryTemplate implements BigQueryOperations {
 		SettableListenableFuture<Job> result = new SettableListenableFuture<>();
 
 		ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(() -> {
-			Job job = pendingJob.reload();
-			if (State.DONE.equals(job.getStatus().getState())) {
-				if (job.getStatus().getError() != null) {
-					result.setException(
-							new BigQueryException(job.getStatus().getError().getMessage()));
+			try {
+				Job job = pendingJob.reload();
+				if (State.DONE.equals(job.getStatus().getState())) {
+					if (job.getStatus().getError() != null) {
+						result.setException(
+								new BigQueryException(job.getStatus().getError().getMessage()));
+					}
+					else {
+						result.set(job);
+					}
 				}
-				else {
-					result.set(job);
-				}
+			}
+			catch (Exception e) {
+				result.setException(new BigQueryException(e.getMessage()));
 			}
 		}, this.jobPollInterval);
 
