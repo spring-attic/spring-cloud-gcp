@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
-	<name>Spring Cloud GCP Stream</name>
+	<name>Spring Cloud GCP Stream Module</name>
 	<description>Google Cloud Pub/Sub Binder for Spring Cloud Stream</description>
 
 	<dependencies>

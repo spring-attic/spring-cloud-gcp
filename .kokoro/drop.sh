@@ -35,9 +35,9 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 ./mvnw nexus-staging:drop \
-  --settings=settings.xml \
+  --batch-mode \
+  --settings  ${MAVEN_SETTINGS_FILE} \
   -DstagingRepositoryId=${STAGING_REPOSITORY_ID} \
-  --activate-profiles release \
-  --batch-mode
+  -Drelease=true
 
 popd

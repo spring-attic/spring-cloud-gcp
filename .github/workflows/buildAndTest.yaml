@@ -168,10 +168,21 @@ jobs:
         run: |
           ./mvnw \
             --batch-mode \
-            --activate-profiles release,docs \
+            -Drelease=true \
             -DskipTests \
             -Dgpg.skip \
             -Dcheckstyle.skip \
+            clean \
+            package
+      - name: docsCheck
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles docs,spring \
+            -DskipTests \
+            -Dgpg.skip \
+            -Dcheckstyle.skip \
+            --projects docs \
             clean \
             package
       - name: Archive Artifacts

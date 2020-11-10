@@ -34,28 +34,6 @@
 		</repository>
 	</distributionManagement>
 
-	<modules>
-		<module>docs</module>
-		<module>spring-cloud-gcp-dependencies</module>
-		<module>spring-cloud-gcp-pubsub</module>
-		<module>spring-cloud-gcp-core</module>
-		<module>spring-cloud-gcp-cloudfoundry</module>
-		<module>spring-cloud-gcp-storage</module>
-		<module>spring-cloud-gcp-starters</module>
-		<module>spring-cloud-gcp-samples</module>
-		<module>spring-cloud-gcp-autoconfigure</module>
-		<module>spring-cloud-gcp-pubsub-stream-binder</module>
-		<module>spring-cloud-gcp-data-spanner</module>
-		<module>spring-cloud-gcp-data-datastore</module>
-		<module>spring-cloud-gcp-security-iap</module>
-		<module>spring-cloud-gcp-vision</module>
-		<module>spring-cloud-gcp-logging</module>
-		<module>spring-cloud-gcp-data-firestore</module>
-		<module>spring-cloud-gcp-bigquery</module>
-		<module>spring-cloud-gcp-security-firebase</module>
-		<module>spring-cloud-gcp-secretmanager</module>
-	</modules>
-
 	<properties>
 		<app-engine-maven-plugin.version>2.3.0</app-engine-maven-plugin.version>
 		<asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
@@ -328,19 +306,43 @@
 
 	<profiles>
 		<profile>
+			<id>default</id>
+			<activation>
+				<property>
+					<name>!release</name>
+				</property>
+			</activation>
+			<modules>
+				<!-- POM Modules-->
+				<module>spring-cloud-gcp-starters</module>
+				<module>spring-cloud-gcp-dependencies</module>
+
+				<!-- Code Modules -->
+				<module>spring-cloud-gcp-autoconfigure</module>
+				<module>spring-cloud-gcp-bigquery</module>
+				<module>spring-cloud-gcp-cloudfoundry</module>
+				<module>spring-cloud-gcp-core</module>
+				<module>spring-cloud-gcp-data-datastore</module>
+				<module>spring-cloud-gcp-data-firestore</module>
+				<module>spring-cloud-gcp-data-spanner</module>
+				<module>spring-cloud-gcp-logging</module>
+				<module>spring-cloud-gcp-pubsub</module>
+				<module>spring-cloud-gcp-pubsub-stream-binder</module>
+				<module>spring-cloud-gcp-security-iap</module>
+				<module>spring-cloud-gcp-storage</module>
+				<module>spring-cloud-gcp-secretmanager</module>
+				<module>spring-cloud-gcp-security-firebase</module>
+				<module>spring-cloud-gcp-vision</module>
+
+				<!-- Docs and Samples -->
+				<module>docs</module>
+				<module>spring-cloud-gcp-samples</module>
+			</modules>
+		</profile>
+
+		<profile>
 			<id>spring</id>
 			<repositories>
-				<repository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/snapshot</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</repository>
 				<repository>
 					<id>spring-milestones</id>
 					<name>Spring Milestones</name>
@@ -371,17 +373,6 @@
 			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/snapshot</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</pluginRepository>
-				<pluginRepository>
 					<id>spring-milestones</id>
 					<name>Spring Milestones</name>
 					<url>https://repo.spring.io/milestone</url>
@@ -410,7 +401,6 @@
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>
-
 		<!-- Code Coverage -->
 		<profile>
 			<id>codecov</id>
@@ -533,6 +523,33 @@
 		<!-- Handles deploying snapshots and releases. -->
 		<profile>
 			<id>release</id>
+			<activation>
+				<property>
+					<name>release</name>
+				</property>
+			</activation>
+			<modules>
+				<!-- POM Modules-->
+				<module>spring-cloud-gcp-starters</module>
+				<module>spring-cloud-gcp-dependencies</module>
+
+				<!-- Code Modules-->
+				<module>spring-cloud-gcp-autoconfigure</module>
+				<module>spring-cloud-gcp-bigquery</module>
+				<module>spring-cloud-gcp-cloudfoundry</module>
+				<module>spring-cloud-gcp-core</module>
+				<module>spring-cloud-gcp-data-datastore</module>
+				<module>spring-cloud-gcp-data-firestore</module>
+				<module>spring-cloud-gcp-data-spanner</module>
+				<module>spring-cloud-gcp-logging</module>
+				<module>spring-cloud-gcp-pubsub</module>
+				<module>spring-cloud-gcp-pubsub-stream-binder</module>
+				<module>spring-cloud-gcp-security-iap</module>
+				<module>spring-cloud-gcp-storage</module>
+				<module>spring-cloud-gcp-secretmanager</module>
+				<module>spring-cloud-gcp-security-firebase</module>
+				<module>spring-cloud-gcp-vision</module>
+			</modules>
 			<build>
 				<pluginManagement>
 					<plugins>

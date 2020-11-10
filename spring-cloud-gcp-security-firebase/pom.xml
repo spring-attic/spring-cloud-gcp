@@ -11,7 +11,7 @@
 
 
     <artifactId>spring-cloud-gcp-security-firebase</artifactId>
-    <name>Spring Cloud GCP Firebase Auth module</name>
+    <name>Spring Cloud GCP Firebase Auth Module</name>
     <description>Integrate Firebase Authentication with Spring Security OAuth2 support</description>
     <dependencies>
         <dependency>

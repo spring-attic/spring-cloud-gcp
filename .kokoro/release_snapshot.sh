@@ -29,13 +29,13 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 ./mvnw clean deploy \
+  --batch-mode \
   --settings ${MAVEN_SETTINGS_FILE} \
   -DskipTests=true \
   -Dgpg.executable=gpg \
   -Dgpg.passphrase=${GPG_PASSPHRASE} \
   -Dgpg.homedir=${GPG_HOMEDIR} \
   -DautoReleaseAfterClose=true \
-  --activate-profiles release \
-  --batch-mode
+  -Drelease=true
 
 popd
