@@ -16,6 +16,8 @@
 
 package com.google.cloud.spring.autoconfigure.pubsub;
 
+import javax.annotation.PreDestroy;
+
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -41,14 +43,22 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureBefore(GcpPubSubAutoConfiguration.class)
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubEmulatorAutoConfiguration {
+	private ManagedChannel channel;
 
 	@Bean(name = {"subscriberTransportChannelProvider", "publisherTransportChannelProvider"})
 	@ConditionalOnMissingBean(name = {"subscriberTransportChannelProvider", "publisherTransportChannelProvider"})
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
-		ManagedChannel channel = ManagedChannelBuilder
+		this.channel = ManagedChannelBuilder
 				.forTarget("dns:///" + gcpPubSubProperties.getEmulatorHost())
 				.usePlaintext()
 				.build();
-		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(this.channel));
+	}
+
+	@PreDestroy
+	public void closeManagedChannel() {
+		if (this.channel != null) {
+			this.channel.shutdown();
+		}
 	}
 }
