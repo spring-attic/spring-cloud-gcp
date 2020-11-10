@@ -17,7 +17,7 @@ PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceSt
 
 # Install docuploader package
 python3 -m pip install --upgrade six
-python3 -m pip install --user gcp-docuploader
+python3 -m pip install gcp-docuploader
 
 # Build the javadocs
 ./mvnw clean javadoc:aggregate
@@ -32,7 +32,7 @@ python3 -m docuploader create-metadata \
 
 python3 -m docuploader upload . \
     --credentials ${CREDENTIALS} \
-    --staging-bucket docs-staging
+    --staging-bucket test-docs-staging
 
 popd
 popd
