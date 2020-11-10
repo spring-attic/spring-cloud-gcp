@@ -59,6 +59,9 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id")
 	Optional<Trade> fetchById(@Param("id") String id);
 
+	@Query("SELECT symbol FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: WHERE id = @id")
+	Optional<String> fetchSymbolById(@Param("id") String id);
+
 	@Query(dmlStatement = true, value = "UPDATE :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:" +
 			" set action = @action WHERE id = @id")
 	long updateActionTradeById(@Param("id") String id, @Param("action") String act);
