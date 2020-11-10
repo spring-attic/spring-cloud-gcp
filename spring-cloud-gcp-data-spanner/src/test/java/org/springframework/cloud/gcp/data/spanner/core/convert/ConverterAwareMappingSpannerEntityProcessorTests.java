@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,6 +81,54 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
 				new SpannerMappingContext());
 	}
+
+	@Test
+	public void customTimeConverter() {
+		ConverterAwareMappingSpannerEntityProcessor processorWithCustomConverters =
+				new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext(),
+						Arrays.asList(new LocalDateTimeWriteConverter()),
+						Arrays.asList(new LocalDateTimeReadConverter()));
+
+		Timestamp sourceValue = Timestamp.parseTimestamp("2019-10-12T07:20:50.52Z");
+		LocalDateTime dateTime = processorWithCustomConverters.getReadConverter().convert(sourceValue, LocalDateTime.class);
+		assertThat(dateTime).isEqualTo(new LocalDateTimeReadConverter().convert(sourceValue));
+
+		Timestamp timestamp = processorWithCustomConverters.getWriteConverter().convert(dateTime, Timestamp.class);
+		assertThat(timestamp).isEqualTo(new LocalDateTimeWriteConverter().convert(dateTime));
+
+		ConverterAwareMappingSpannerEntityProcessor processor =
+				new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext());
+
+		Timestamp sourceValue2 = Timestamp.parseTimestamp("2019-10-12T07:20:50.52Z");
+		LocalDateTime dateTime2 = processor.getReadConverter().convert(sourceValue2, LocalDateTime.class);
+		assertThat(dateTime2).isNotEqualTo(new LocalDateTimeReadConverter().convert(sourceValue2));
+
+		Timestamp timestamp2 = processor.getWriteConverter().convert(dateTime2, Timestamp.class);
+		assertThat(timestamp2).isNotEqualTo(new LocalDateTimeWriteConverter().convert(dateTime2));
+
+	}
+
+	class LocalDateTimeReadConverter implements Converter<com.google.cloud.Timestamp, LocalDateTime> {
+
+		@Nullable
+		@Override
+		public LocalDateTime convert(com.google.cloud.Timestamp timestamp) {
+			return Instant
+					.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
+					.atZone(ZoneId.of("UTC"))
+					.toLocalDateTime();
+		}
+	}
+
+	class LocalDateTimeWriteConverter implements Converter<LocalDateTime, com.google.cloud.Timestamp> {
+
+		@Nullable
+		@Override
+		public com.google.cloud.Timestamp convert(LocalDateTime localDateTime) {
+			return com.google.cloud.Timestamp.parseTimestamp(localDateTime.toString());
+		}
+	}
+
 
 	@Test
 	public void canConvertDefaultTypesNoCustomConverters() {

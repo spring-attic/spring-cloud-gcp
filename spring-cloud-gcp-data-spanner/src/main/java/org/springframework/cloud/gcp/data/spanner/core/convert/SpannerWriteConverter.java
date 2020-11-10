@@ -41,9 +41,10 @@ public class SpannerWriteConverter extends SpannerCustomConverter {
 	}
 
 	public SpannerWriteConverter(Collection<Converter> readConverters) {
-		this(getCustomConversions(Stream.concat(
-					SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream(),
-					Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream())
+		this(getCustomConversions(
+				Stream.concat(
+						Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream(),
+						SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream())
 						.collect(Collectors.toList())));
 	}
 
