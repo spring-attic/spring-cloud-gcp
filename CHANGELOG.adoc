@@ -15,7 +15,7 @@ For a detailed view of what has changed, refer to the https://github.com/spring-
 
 === General
 
-* Added proxyBeanMethods = false to configuration classes for better GraalVM support (https://github.com/spring-cloud/spring-cloud-gcp/issues/2525[#2525])
+* Added `proxyBeanMethods = false` to configuration classes for better GraalVM support (https://github.com/spring-cloud/spring-cloud-gcp/issues/2525[#2525])
 * Updated `gcp-libraries-bom.version` to 13.4.0 (https://github.com/spring-cloud/spring-cloud-gcp/issues/2571[#2571])
 
 === Pub/Sub
