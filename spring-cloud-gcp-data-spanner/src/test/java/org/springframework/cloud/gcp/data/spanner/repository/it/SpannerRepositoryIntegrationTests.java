@@ -106,7 +106,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(nonEmpty.isPresent()).isTrue();
 		assertThat(nonEmpty.get()).isEqualTo("ABCD");
 
-		Optional<String> empty = tradeRepository.fetchSymbolById(trade.getId()+"doesNotExist");
+		Optional<String> empty = tradeRepository.fetchSymbolById(trade.getId() + "doesNotExist");
 		assertThat(empty.isPresent()).isFalse();
 	}
 
