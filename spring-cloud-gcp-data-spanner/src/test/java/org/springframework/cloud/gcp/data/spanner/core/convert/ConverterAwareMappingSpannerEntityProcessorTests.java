@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.cloud.ByteArray;
@@ -80,7 +81,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		@Nullable
 		@Override
 		public Timestamp convert(LocalDateTime localDateTime) {
-			return Timestamp.parseTimestamp(localDateTime.toString());
+			return Timestamp.parseTimestamp("1999-01-01T01:01:01.01Z");
 		}
 	};
 
@@ -89,7 +90,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		@Override
 		public LocalDateTime convert(Timestamp timestamp) {
 			return Instant
-					.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos())
+					.ofEpochSecond(1000, 99)
 					.atZone(ZoneId.of("UTC"))
 					.toLocalDateTime();
 		}
@@ -105,8 +106,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 	public void customTimeConverter() {
 		ConverterAwareMappingSpannerEntityProcessor processorWithCustomConverters =
 				new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext(),
-						Arrays.asList(LOCAL_DATE_TIME_WRITE_CONVERTER),
-						Arrays.asList(LOCAL_DATE_TIME_READ_CONVERTER));
+						Collections.singletonList(LOCAL_DATE_TIME_WRITE_CONVERTER),
+						Collections.singletonList(LOCAL_DATE_TIME_READ_CONVERTER));
 
 		Timestamp sourceValue = Timestamp.parseTimestamp("2019-10-12T07:20:50.52Z");
 		LocalDateTime dateTime = processorWithCustomConverters.getReadConverter().convert(sourceValue, LocalDateTime.class);
