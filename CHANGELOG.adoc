@@ -5,12 +5,41 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 1.2.7.BUILD-SNAPSHOT
+
+=== Pub/Sub
+
+* Fixed Pub/Sub emulator `ManagedChannel` shutdown (https://github.com/spring-cloud/spring-cloud-gcp/issues/2583[#2583])
+
 == 1.2.6.RELEASE (2020-11-09)
+
+=== General
+
+* Added proxyBeanMethods = false to configuration classes for better GraalVM support (https://github.com/spring-cloud/spring-cloud-gcp/issues/2525[#2525])
+* Updated `gcp-libraries-bom.version` to 13.4.0 (https://github.com/spring-cloud/spring-cloud-gcp/issues/2571[#2571])
 
 === Pub/Sub
 
 * Differentiate between Publisher and Subscriber `TransportChannelProvider` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2520[#2520])
  ** If you've been overwriting the auto-configured `transportChannelProvider` bean for Pub/Sub, you will need to rename it to `{"subscriberTransportChannelProvider", "publisherTransportChannelProvider"}`.
+* Better generics for ack operations in `PubSubSubscriberOperations` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2539[#2539])
+ ** This a minor breaking change if you have a custom implementation of `PubSubSubscriberOperations`.
+* Fixed: With MessageHistory enabled, sending a Pub/Sub message and consuming it in a subscription fails due to `IllegalArgumentException` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2562[#2562])
+
+=== Cloud SQL
+
+* Added support for configuring Cloud SQL ipTypes with the `spring.cloud.gcp.sql.ip-types` property (https://github.com/spring-cloud/spring-cloud-gcp/issues/2513[#2513])
+* Fixed: starter-sql-mysql doesn't override `spring.datasource.url` (https://github.com/spring-cloud/spring-cloud-gcp/issues/2537[#2537])
+
+=== Spanner
+
+* Added NUMERIC data type support for Spanner (BigDecimal) (https://github.com/spring-cloud/spring-cloud-gcp/issues/2515[#2515])
+
+=== Firestore
+
+* Fixed: StructuredQuery.from cannot have more than one collection selector (https://github.com/spring-cloud/spring-cloud-gcp/issues/2510[#2510])
+* Added query methods that return `Slice` to `DatastoreTemplate` to allow pagination (https://github.com/spring-cloud/spring-cloud-gcp/issues/2541[#2541])
+* Added support for `is not equal` and `not in` filters in method name based queries (https://github.com/spring-cloud/spring-cloud-gcp/issues/2563[#2563])
 
 == 1.2.5.RELEASE (2020-08-28)
 
