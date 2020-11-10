@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-vision-ocr-demo</artifactId>
-	<name>Spring Cloud GCP Vision OCR Demo</name>
+	<name>Spring Cloud GCP Code Sample - Vision OCR</name>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
 	<dependencyManagement>

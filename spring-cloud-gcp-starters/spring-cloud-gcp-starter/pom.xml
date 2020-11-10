@@ -7,7 +7,7 @@
 		<version>2.0.0-RC1-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter</artifactId>
-	<name>Spring Cloud GCP Support Starter</name>
+	<name>Spring Cloud GCP Starter - Support</name>
 	<description>Starter for Google Cloud</description>
 	<organization>
 		<name>Google</name>

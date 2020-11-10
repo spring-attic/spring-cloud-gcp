@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-metrics-sample</artifactId>
-    <name>Spring Cloud GCP Metrics Code Sample</name>
+    <name>Spring Cloud GCP Code Sample - Metrics</name>
 
     <parent>
         <!-- Your own application should inherit from spring-boot-starter-parent -->

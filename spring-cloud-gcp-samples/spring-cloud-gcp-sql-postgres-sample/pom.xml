@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-sql-postgres-sample</artifactId>
-	<name>Spring Cloud GCP SQL Postgres Sample</name>
+	<name>Spring Cloud GCP Code Sample - Postgres</name>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
 	<dependencyManagement>

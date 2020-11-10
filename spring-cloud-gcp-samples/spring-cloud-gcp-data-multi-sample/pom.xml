@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.google.cloud</groupId>
-    <name>Spring Cloud GCP Multi-Spring-Data-Module Code Sample</name>
+    <name>Spring Cloud GCP Code Sample - Multi-Spring-Data-Module</name>
     <artifactId>spring-cloud-gcp-data-multi-sample</artifactId>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->

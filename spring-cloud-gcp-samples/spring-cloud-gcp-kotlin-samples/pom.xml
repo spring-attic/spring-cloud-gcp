@@ -14,7 +14,7 @@
 	<artifactId>spring-cloud-gcp-kotlin-samples</artifactId>
 	<version>2.0.0-RC1-SNAPSHOT</version>
 
-	<name>Spring Cloud GCP Kotlin Samples</name>
+	<name>Spring Cloud GCP Code Samples - Kotlin</name>
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>

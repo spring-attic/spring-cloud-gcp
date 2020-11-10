@@ -9,7 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<name>Spring Cloud GCP Secret Manager Starter</name>
+	<name>Spring Cloud GCP Starter - Secret Manager</name>
 	<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
 	<description>Starter for GCP Secret Manager</description>
 	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-secretmanager</url>

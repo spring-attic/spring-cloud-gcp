@@ -17,7 +17,7 @@
     </properties>
 
     <modelVersion>4.0.0</modelVersion>
-    <name>Spring Cloud GCP Security Firebase Sample</name>
+    <name>Spring Cloud GCP Code Sample - Firebase Security</name>
     <description>Spring Cloud Firebase Security Sample</description>
     <artifactId>spring-cloud-gcp-security-firebase-sample</artifactId>
 

@@ -5,7 +5,7 @@
 
     <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-security-iap-sample</artifactId>
-    <name>Spring Cloud GCP Security IAP Sample</name>
+    <name>Spring Cloud GCP Code Sample - IAP</name>
     <description>Spring Cloud IAP Security Sample</description>
 
     <parent>

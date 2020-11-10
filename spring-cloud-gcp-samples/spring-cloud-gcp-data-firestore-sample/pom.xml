@@ -10,7 +10,7 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <name>Spring Cloud GCP with Spring Data Firestore Code Sample</name>
+  <name>Spring Cloud GCP Code Sample - Spring Data Firestore</name>
   <artifactId>spring-cloud-gcp-data-firestore-sample</artifactId>
 
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->

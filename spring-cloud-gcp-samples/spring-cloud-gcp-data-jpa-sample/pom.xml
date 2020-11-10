@@ -10,7 +10,7 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<name>Spring Cloud GCP with Spring Data JPA Code Sample</name>
+	<name>Spring Cloud GCP Code Sample - Spring Data JPA</name>
 	<artifactId>spring-cloud-gcp-data-jpa-sample</artifactId>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->

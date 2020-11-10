@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</artifactId>
-  <name>Spring Cloud GCP Pub/Sub Stream Binder Functional Code Sample - Sink</name>
+  <name>Spring Cloud GCP Code Sample - Pub/Sub Stream Binder Sink</name>
 
 
   <dependencies>

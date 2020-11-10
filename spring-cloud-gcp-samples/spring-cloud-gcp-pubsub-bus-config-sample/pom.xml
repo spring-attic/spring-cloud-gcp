@@ -12,7 +12,7 @@
     <artifactId>spring-cloud-gcp-pubsub-bus-config-sample</artifactId>
     <groupId>com.google.cloud</groupId>
     <packaging>pom</packaging>
-    <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
+    <name>Spring Cloud GCP Code Sample - Pub/Sub Bus Configuration Management</name>
 
     <properties>
         <spring-cloud-config.version>3.0.0-M4</spring-cloud-config.version>

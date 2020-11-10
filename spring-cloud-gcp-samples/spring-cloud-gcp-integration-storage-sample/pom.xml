@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spring-cloud-gcp-integration-storage-sample</artifactId>
-    <name>Spring Cloud GCP Integration Storage Sample</name>
+    <name>Spring Cloud GCP Code Sample - Spring Integration Storage</name>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
     <dependencyManagement>

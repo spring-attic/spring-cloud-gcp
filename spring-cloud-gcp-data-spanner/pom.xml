@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.google.cloud</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner</artifactId>
-	<name>Spring Cloud GCP Cloud Spanner Module</name>
+	<name>Spring Cloud GCP Module - Cloud Spanner</name>
 	<description>Spring Cloud GCP Cloud Spanner Module</description>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>

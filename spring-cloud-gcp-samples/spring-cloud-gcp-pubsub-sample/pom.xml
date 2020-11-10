@@ -12,7 +12,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-pubsub-sample</artifactId>
-	<name>Spring Cloud GCP Pub/Sub Code Sample</name>
+	<name>Spring Cloud GCP Code Sample - Pub/Sub</name>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
 	<dependencyManagement>

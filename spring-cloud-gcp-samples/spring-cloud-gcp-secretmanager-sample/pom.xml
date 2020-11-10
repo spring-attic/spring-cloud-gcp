@@ -12,7 +12,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>spring-cloud-gcp-secretmanager-sample</artifactId>
-  <name>Spring Cloud GCP Secret Manager Sample</name>
+  <name>Spring Cloud GCP Code Sample - Secret Manager</name>
 
   <dependencies>
     <dependency>

@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-logging</artifactId>
-	<name>Spring Cloud GCP Stackdriver Logging Module</name>
+	<name>Spring Cloud GCP Module - Stackdriver Logging</name>
 	<description>Spring Cloud GCP Stackdriver Logging</description>
 
 	<dependencies>

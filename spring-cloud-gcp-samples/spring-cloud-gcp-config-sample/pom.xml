@@ -13,7 +13,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.google.cloud</groupId>
     <artifactId>spring-cloud-gcp-config-sample</artifactId>
-    <name>Spring Cloud GCP Runtime Configuration Code Sample</name>
+    <name>Spring Cloud GCP Code Sample - Runtime Configuration</name>
 
     <dependencies>
         <dependency>

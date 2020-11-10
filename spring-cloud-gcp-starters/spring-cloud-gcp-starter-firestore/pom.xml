@@ -9,7 +9,7 @@
 		<version>2.0.0-RC1-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter-firestore</artifactId>
-	<name>Spring Cloud GCP Cloud Firestore Starter</name>
+	<name>Spring Cloud GCP Starter - Firestore</name>
 	<description>Starter for Google Cloud Firestore</description>
 	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-firestore</url>
 

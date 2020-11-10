@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>spring-cloud-gcp-cloudfoundry</artifactId>
-    <name>Spring Cloud GCP Cloud Foundry</name>
+    <name>Spring Cloud GCP Module - Cloud Foundry</name>
     <description>Spring Cloud GCP Cloud Foundry Module</description>
 
     <dependencies>

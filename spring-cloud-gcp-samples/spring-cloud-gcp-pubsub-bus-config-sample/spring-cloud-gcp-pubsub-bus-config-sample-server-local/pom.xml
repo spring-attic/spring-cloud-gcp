@@ -11,7 +11,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-pubsub-bus-config-sample-server-local</artifactId>
-  <name>Spring Cloud GCP Pub/Sub Bus Sample (Local Configuration)</name>
+  <name>Spring Cloud GCP Code Sample - Spring Cloud Config with Pub/Sub Bus (Local Configuration)</name>
 
   <dependencies>
     <dependency>

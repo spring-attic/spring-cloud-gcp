@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>spring-cloud-gcp-starter-bigquery</artifactId>
-  <name>Spring Cloud GCP BigQuery Starter</name>
+  <name>Spring Cloud GCP Starter - BigQuery</name>
   <description>Starter for Google Cloud BigQuery</description>
   <url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-bigquery</url>
 

@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-starter-metrics</artifactId>
-	<name>Spring Cloud GCP Stackdriver Monitoring Starter</name>
+	<name>Spring Cloud GCP Starter - Stackdriver Metrics</name>
 	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-metrics</url>
 
 	<dependencies>

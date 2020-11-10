@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-pubsub-reactive-sample</artifactId>
-	<name>Spring Cloud GCP Pub/Sub Reactive Code Sample</name>
+	<name>Spring Cloud GCP Code Sample - Pub/Sub Reactive</name>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
 	<dependencyManagement>
