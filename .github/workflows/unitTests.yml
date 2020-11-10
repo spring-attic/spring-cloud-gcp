@@ -13,7 +13,7 @@ jobs:
     # by the push to the branch.
     if: |
       ( github.event_name == 'push' ||
-        github.event.pull_request.head.repo.full_name != 'GoogleCloudPlatform/spring-cloud-gcp' )
+        github.event.pull_request.head.repo.full_name != 'spring-cloud/spring-cloud-gcp' )
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
