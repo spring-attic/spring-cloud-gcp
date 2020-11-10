@@ -21,10 +21,13 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobStatus;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import org.junit.After;
@@ -79,6 +82,30 @@ public class BigQueryTemplateIntegrationTests {
 	public void cleanupTestEnvironment() {
 		// Clear the previous dataset before beginning the test.
 		this.bigQuery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
+	}
+
+	@Test
+	public void testLoadFileWithSchema() throws Exception {
+		Schema schema = Schema.of(
+				Field.of("CountyId", StandardSQLTypeName.INT64),
+				Field.of("State", StandardSQLTypeName.STRING),
+				Field.of("County", StandardSQLTypeName.STRING)
+		);
+
+		ListenableFuture<Job> bigQueryJobFuture =
+				bigQueryTemplate.writeDataToTable(
+						TABLE_NAME, dataFile.getInputStream(), FormatOptions.csv(), schema);
+
+		Job job = bigQueryJobFuture.get();
+		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
+
+		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
+				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
+		TableResult result = this.bigQuery.query(queryJobConfiguration);
+
+		assertThat(result.getTotalRows()).isEqualTo(1);
+		assertThat(
+				result.getValues().iterator().next().get("State").getStringValue()).isEqualTo("Alabama");
 	}
 
 	@Test

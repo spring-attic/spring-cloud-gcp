@@ -40,6 +40,11 @@ public final class BigQuerySpringMessageHeaders {
 	 */
 	public static final String FORMAT_OPTIONS = PREFIX + "format_options";
 
+	/**
+	 * The schema of the table to load. Not needed if relying on auto-detecting the schema.
+	 */
+	public static final String TABLE_SCHEMA = PREFIX + "table_schema";
+
 	private BigQuerySpringMessageHeaders() {
 	}
 }
