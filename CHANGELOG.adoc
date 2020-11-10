@@ -5,7 +5,7 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/spring-cloud/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
-== 1.2.6.BUILD-SNAPSHOT
+== 1.2.6.RELEASE (2020-11-09)
 
 === Pub/Sub
 
