@@ -6,7 +6,7 @@ if [[ -z "${CREDENTIALS}" ]]; then
 fi
 
 # Set the version of python to 3.6
-pyenv global 3.6.1
+pyenv global 3.7.2
 
 # Get into the spring-cloud-gcp repo directory
 dir=$(dirname "$0")
@@ -16,6 +16,7 @@ pushd $dir/../
 PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
 
 # Install docuploader package
+python3 -m pip install --upgrade six
 python3 -m pip install --user gcp-docuploader
 
 # Build the javadocs
