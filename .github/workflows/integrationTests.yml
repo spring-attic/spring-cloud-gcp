@@ -1,0 +1,101 @@
+name: Integration Test
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 10 * * *' # 10:30 UTC every day
+
+
+jobs:
+  integrationTests:
+    if: |
+      github.repository == 'spring-cloud/spring-cloud-gcp' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'schedule'
+      )
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Setup gcloud
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: latest
+          project_id: spring-cloud-gcp-ci
+          service_account_key: ${{ secrets.SPRING_CLOUD_GCP_CI_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Install pubsub-emulator
+        run: |
+          gcloud components install pubsub-emulator beta && \
+            gcloud components update
+
+      - name: Mvn install # Need this when the directory/pom structure changes
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+
+      - name: Wait our turn for running integration tests
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          continue-after-seconds: 1200 # 30 min
+
+      - name: Integration Tests
+        env:
+          GOOGLE_CLOUD_PROJECT: spring-cloud-gcp-ci
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --define maven.javadoc.skip=true \
+              -Dit.pubsub-emulator=true  \
+              -Dit.spanner=true  \
+              -Dit.storage=true  \
+              -Dit.config=true  \
+              -Dit.pubsub=true  \
+              -Dit.logging=true \
+              -Dit.cloudsql=true  \
+              -Dit.datastore=true  \
+              -Dit.trace=true  \
+              -Dit.kotlin=true  \
+              -Dit.vision=true  \
+              -Dit.firestore=true  \
+              -Dit.bigquery=true  \
+              -Dit.secretmanager=true  \
+              -Dit.metrics=true \
+              -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql \
+              -Dspring.cloud.gcp.sql.database-name=code_samples_test_db \
+              -Dspring.datasource.password=test \
+              -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample \
+              -Dgcs-read-bucket=gcp-storage-bucket-sample-input \
+              -Dgcs-write-bucket=gcp-storage-bucket-sample-output \
+              -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample \
+            verify
+
+      - name: Archive logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: Integration Test Logs
+          path: "**/target/failsafe-reports/*"
