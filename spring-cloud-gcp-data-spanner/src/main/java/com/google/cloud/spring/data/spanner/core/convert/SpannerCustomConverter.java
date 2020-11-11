@@ -59,8 +59,11 @@ public abstract class SpannerCustomConverter {
 
 	@SuppressWarnings("unchecked")
 	public <T> T convert(Object sourceValue, Class<T> targetType) {
-		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		Class<T> boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
+		if (sourceValue == null) {
+			return this.conversionService.convert(null, boxedTargetType);
+		}
+		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		return boxedTargetType.isAssignableFrom(boxedSourceType)
 						? (T) sourceValue
 						: this.conversionService.convert(sourceValue, boxedTargetType);
