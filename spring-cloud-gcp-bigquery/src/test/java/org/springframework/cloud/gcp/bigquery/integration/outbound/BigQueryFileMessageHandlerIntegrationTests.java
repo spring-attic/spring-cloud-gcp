@@ -22,9 +22,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FormatOptions;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import org.awaitility.Duration;
@@ -83,6 +87,46 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 	public void setup() {
 		// Clear the previous dataset before beginning the test.
 		this.bigquery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
+	}
+
+	@Test
+	public void testLoadFileWithSchema() throws InterruptedException, ExecutionException {
+		Schema schema = Schema.of(
+				Field.newBuilder("CountyId", StandardSQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
+				Field.newBuilder("State", StandardSQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
+				Field.newBuilder("County", StandardSQLTypeName.STRING).setMode(Mode.NULLABLE).build()
+		);
+
+		HashMap<String, Object> messageHeaders = new HashMap<>();
+		messageHeaders.put(BigQuerySpringMessageHeaders.TABLE_NAME, TABLE_NAME);
+		messageHeaders.put(BigQuerySpringMessageHeaders.FORMAT_OPTIONS, FormatOptions.csv());
+		messageHeaders.put(BigQuerySpringMessageHeaders.TABLE_SCHEMA, schema);
+
+		Message<File> message = MessageBuilder.createMessage(
+				new File("src/test/resources/data.csv"),
+				new MessageHeaders(messageHeaders));
+
+		ListenableFuture<Job> jobFuture =
+				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
+
+		// Assert that a BigQuery polling task is scheduled successfully.
+		await().atMost(Duration.FIVE_SECONDS)
+				.untilAsserted(
+						() -> assertThat(
+								this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1));
+		jobFuture.get();
+
+		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
+				.newBuilder("SELECT * FROM test_dataset.test_table").build();
+		TableResult result = this.bigquery.query(queryJobConfiguration);
+
+		assertThat(result.getTotalRows()).isEqualTo(1);
+		assertThat(
+				result.getValues().iterator().next().get("State").getStringValue()).isEqualTo("Alabama");
+		assertThat(result.getSchema()).isEqualTo(schema);
+
+		// This asserts that the BigQuery job polling task is no longer in the scheduler.
+		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
 	}
 
 	@Test
