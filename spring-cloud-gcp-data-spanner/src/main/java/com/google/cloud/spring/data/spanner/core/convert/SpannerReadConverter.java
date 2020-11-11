@@ -43,9 +43,9 @@ public class SpannerReadConverter extends SpannerCustomConverter {
 	public SpannerReadConverter(Collection<Converter> readConverters) {
 		this(getCustomConversions(
 				Stream.<Converter>concat(
-						SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS.stream(),
-						Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream())
-					.collect(Collectors.toList())));
+						Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream(),
+						SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS.stream())
+						.collect(Collectors.toList())));
 
 	}
 
