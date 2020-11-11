@@ -29,13 +29,13 @@ setup_environment_secrets
 create_settings_xml_file $MAVEN_SETTINGS_FILE
 
 # run unit tests
-./mvnw verify --show-version --batch-mode -Drelease=true
+./mvnw verify --show-version --batch-mode
 
 # change to release version
-./mvnw versions:set --batch-mode -DremoveSnapshot -DprocessAllModules -Drelease=true
+./mvnw versions:set --batch-mode -DremoveSnapshot -DprocessAllModules
 
 # build and install the jars locally
-./mvnw clean install --batch-mode -DskipTests=true -Drelease=true
+./mvnw clean install --batch-mode -DskipTests=true
 
 # stage release
 ./mvnw deploy \
