@@ -25,15 +25,18 @@ jobs:
         java: [8, 11, 15]
     steps:
     - uses: actions/checkout@v2
+
     - uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
+
     - uses: actions/cache@v2
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
+
     - name: Mvn install # Need this when the directory/pom structure changes
       run: |
         ./mvnw \
@@ -51,13 +54,23 @@ jobs:
           --fail-at-end \
           --threads 1.5C \
           test
+
+    - name: Aggregate Report
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --define aggregate=true \
+          surefire-report:report-only
+
     - name: Archive logs
       if: always()
       continue-on-error: true
       uses: actions/upload-artifact@v2
       with:
         name: Unit Test Logs - Java ${{ matrix.java }}
-        path: "**/target/surefire-reports/*"
+        path: |
+          **/target/surefire-reports/*
+          **/target/site
 
 
   integrationTests:
@@ -134,13 +147,23 @@ jobs:
             --define skip.surefire.tests=true \
             --define it.${{ matrix.it }}=true \
             verify
+
+      - name: Aggregate Report
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --define aggregate=true \
+            surefire-report:failsafe-report-only
+
       - name: Archive logs
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
           name: Integration Test Logs - ${{ matrix.it}}
-          path: "**/target/failsafe-reports/*"
+          path: |
+            **/target/failsafe-reports/*
+            **/target/site
 
 
   releaseCheck:
