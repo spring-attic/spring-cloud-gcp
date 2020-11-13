@@ -18,6 +18,7 @@ package com.example;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.google.cloud.spring.core.util.MapBuilder;
 import org.awaitility.Duration;
@@ -61,9 +62,12 @@ public class PubSubJsonPayloadSampleApplicationIntegrationTests {
 
 	@Test
 	public void testReceivesJsonPayload() {
+		Random random = new Random();
+		int age = random.nextInt(200);
+
 		Map<String, String> params = new MapBuilder<String, String>()
 				.put("name", "Bob")
-				.put("age", "25")
+				.put("age", String.valueOf(age))
 				.build();
 
 		this.testRestTemplate.postForObject(
@@ -77,7 +81,7 @@ public class PubSubJsonPayloadSampleApplicationIntegrationTests {
 					new ParameterizedTypeReference<List<Person>>() {
 					});
 
-			assertThat(response.getBody()).containsExactly(new Person("Bob", 25));
+			assertThat(response.getBody()).containsOnlyOnce(new Person("Bob", age));
 		});
 	}
 }
