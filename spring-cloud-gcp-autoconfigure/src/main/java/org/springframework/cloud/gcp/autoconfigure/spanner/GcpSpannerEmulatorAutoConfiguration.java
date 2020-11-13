@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.Assert;
@@ -31,6 +32,7 @@ import org.springframework.util.Assert;
  * Provides auto-configuration to use the Spanner emulator if enabled.
  *
  * @author Eddú Meléndez
+ * @author Eddy Kioi
  * @since 1.2.3
  */
 @Configuration(proxyBeanMethods = false)
@@ -41,7 +43,15 @@ public class GcpSpannerEmulatorAutoConfiguration {
 
 	private final GcpSpannerProperties properties;
 
-	public GcpSpannerEmulatorAutoConfiguration(GcpSpannerProperties properties) {
+	private final String projectId;
+
+	public GcpSpannerEmulatorAutoConfiguration(GcpSpannerProperties properties,
+			GcpProjectIdProvider projectIdProvider) {
+
+		this.projectId = (properties.getProjectId() != null)
+				? properties.getProjectId()
+				: projectIdProvider.getProjectId();
+
 		this.properties = properties;
 	}
 
@@ -50,7 +60,7 @@ public class GcpSpannerEmulatorAutoConfiguration {
 	public SpannerOptions spannerOptions() {
 		Assert.notNull(this.properties.getEmulatorHost(), "`spring.cloud.gcp.spanner.emulator-host` must be set.");
 		return SpannerOptions.newBuilder()
-				.setProjectId(this.properties.getProjectId())
+				.setProjectId(this.projectId)
 				.setCredentials(NoCredentials.getInstance())
 				.setEmulatorHost(this.properties.getEmulatorHost()).build();
 	}
