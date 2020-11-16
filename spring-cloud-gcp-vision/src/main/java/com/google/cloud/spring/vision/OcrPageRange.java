@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.vision;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,7 +97,7 @@ final class OcrPageRange {
 			throws InvalidProtocolBufferException {
 
 		AnnotateFileResponse.Builder annotateFileResponseBuilder = AnnotateFileResponse.newBuilder();
-		String jsonContent = new String(blob.getContent());
+		String jsonContent = new String(blob.getContent(), StandardCharsets.UTF_8);
 		JsonFormat.parser().ignoringUnknownFields().merge(jsonContent, annotateFileResponseBuilder);
 
 		AnnotateFileResponse annotateFileResponse = annotateFileResponseBuilder.build();

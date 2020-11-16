@@ -16,14 +16,16 @@ Run the sample application from Maven:
 $ mvn spring-boot:run
 ----
 
-Then, issue a request to `localhost:8080/` endpoint and verify that a label appears in Stackdriver:
+Then, issue a request to `localhost:8080/{custom metric name}` endpoint and verify that the metric appears in Stackdriver:
 
 ----
-$ curl localhost:8080/
+$ curl localhost:8080/my_ping_counter
 ----
 
+Metrics are reported to Stackdriver every 60 seconds.
+So, wait a minute for the custom metric to be reported.
 To see the metrics, navigate to the https://console.cloud.google.com/monitoring/metrics-explorer[Monitoring section of the Cloud Console].
-Select the `custom/ping` metric to see the tracked metric.
+Select the `custom/my_ping_counter` metric to see the tracked metric.
 
 === Running on Google Cloud Platform
 

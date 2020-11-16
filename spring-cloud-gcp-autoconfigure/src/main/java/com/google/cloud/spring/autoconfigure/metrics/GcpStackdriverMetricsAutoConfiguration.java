@@ -19,13 +19,16 @@ package com.google.cloud.spring.autoconfigure.metrics;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
+import com.google.cloud.spring.core.UserAgentHeaderProvider;
 import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.instrument.step.StepMeterRegistry;
 import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.export.ConditionalOnEnabledMetricsExport;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.stackdriver.StackdriverMetricsExportAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.stackdriver.StackdriverProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -47,8 +50,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 @AutoConfigureBefore(StackdriverMetricsExportAutoConfiguration.class)
 @AutoConfigureAfter(MetricsAutoConfiguration.class)
-@ConditionalOnClass({StepMeterRegistry.class, StackdriverConfig.class})
+@ConditionalOnClass(StackdriverMeterRegistry.class)
 @ConditionalOnBean(Clock.class)
+@ConditionalOnEnabledMetricsExport("stackdriver")
 @EnableConfigurationProperties({GcpMetricsProperties.class, StackdriverProperties.class})
 @ConditionalOnProperty(value = "spring.cloud.gcp.metrics.enabled", matchIfMissing = true, havingValue = "true")
 public class GcpStackdriverMetricsAutoConfiguration {
@@ -73,6 +77,21 @@ public class GcpStackdriverMetricsAutoConfiguration {
 	@ConditionalOnMissingBean
 	public StackdriverConfig stackdriverConfig() {
 		return new GcpStackdriverPropertiesConfigAdapter(this.stackdriverProperties, this.projectId, this.credentialsProvider);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public MetricServiceSettings metricServiceSettings() throws IOException {
+		return MetricServiceSettings.newBuilder().setHeaderProvider(new UserAgentHeaderProvider(GcpStackdriverMetricsAutoConfiguration.class)).build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public StackdriverMeterRegistry stackdriverMeterRegistry(StackdriverConfig stackdriverConfig, Clock clock, MetricServiceSettings metricServiceSettings) {
+		return StackdriverMeterRegistry.builder(stackdriverConfig)
+				.clock(clock)
+				.metricServiceSettings(() -> metricServiceSettings)
+				.build();
 	}
 
 }

@@ -82,7 +82,7 @@ public class MetricsSampleApplicationIntegrationTests {
 		String id = "integration_test_" + UUID.randomUUID().toString().replace('-', '_');
 		String url = String.format("http://localhost:%s/%s", this.port, id);
 
-		ResponseEntity<String> responseEntity = this.testRestTemplate.postForEntity(url, null, String.class);
+		ResponseEntity<String> responseEntity = this.testRestTemplate.getForEntity(url, String.class, String.class);
 		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
 		String metricType = "custom.googleapis.com/" + id;

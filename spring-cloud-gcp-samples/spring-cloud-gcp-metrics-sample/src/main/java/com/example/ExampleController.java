@@ -18,8 +18,8 @@ package com.example;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,9 +31,9 @@ public class ExampleController {
 		this.meterRegistry = meterRegistry;
 	}
 
-	@PostMapping("/{id}")
+	@GetMapping("/{id}")
 	public String counter(@PathVariable String id) {
 		this.meterRegistry.counter(id).increment();
-		return "Ping return successfully";
+		return "Incremented " + id + " counter successfully";
 	}
 }
