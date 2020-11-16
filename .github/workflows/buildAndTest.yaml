@@ -139,6 +139,20 @@ jobs:
         with:
           continue-after-seconds: 1200 # 30 min
       - name: Integration Tests
+        id: intTest1
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles spring-cloud-gcp-ci-it \
+            --define maven.javadoc.skip=true \
+            --define skip.surefire.tests=true \
+            --define it.${{ matrix.it }}=true \
+            verify
+
+      - name: Retry on Failure
+        id: intTest2
+        if: steps.intTest1.outcome == 'failure'
         run: |
           ./mvnw \
             --batch-mode \
