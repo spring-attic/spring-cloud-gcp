@@ -19,9 +19,11 @@ package org.springframework.cloud.gcp.autoconfigure.metrics;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.cloud.monitoring.v3.MetricServiceSettings;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.step.StepMeterRegistry;
 import io.micrometer.stackdriver.StackdriverConfig;
+import io.micrometer.stackdriver.StackdriverMeterRegistry;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.export.stackdriver.StackdriverMetricsExportAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.stackdriver.StackdriverProperties;
@@ -33,6 +35,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,6 +73,21 @@ public class GcpStackdriverMetricsAutoConfiguration {
 	@ConditionalOnMissingBean
 	public StackdriverConfig stackdriverConfig() {
 		return new GcpStackdriverPropertiesConfigAdapter(this.stackdriverProperties, this.projectId, this.credentialsProvider);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public MetricServiceSettings metricServiceSettings() throws IOException {
+		return MetricServiceSettings.newBuilder().setHeaderProvider(new UserAgentHeaderProvider(GcpStackdriverMetricsAutoConfiguration.class)).build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public StackdriverMeterRegistry stackdriverMeterRegistry(StackdriverConfig stackdriverConfig, Clock clock, MetricServiceSettings metricServiceSettings) {
+		return StackdriverMeterRegistry.builder(stackdriverConfig)
+				.clock(clock)
+				.metricServiceSettings(() -> metricServiceSettings)
+				.build();
 	}
 
 }

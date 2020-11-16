@@ -22,5 +22,9 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-stackdriver</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 	</dependencies>
 </project>
