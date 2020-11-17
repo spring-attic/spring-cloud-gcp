@@ -18,6 +18,7 @@ package com.google.cloud.spring.bigquery.core;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -58,7 +59,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(classes = BigQueryTestConfiguration.class)
 public class BigQueryTemplateIntegrationTests {
 
-	private static final String TABLE_NAME = "template_test_table";
+	private static final String SELECT_FORMAT = "SELECT * FROM %s";
 
 	@Autowired
 	BigQuery bigQuery;
@@ -69,6 +70,10 @@ public class BigQueryTemplateIntegrationTests {
 	@Value("data.csv")
 	Resource dataFile;
 
+	private String tableName;
+
+	private String selectQuery;
+
 	@BeforeClass
 	public static void prepare() {
 		assumeThat(
@@ -78,10 +83,16 @@ public class BigQueryTemplateIntegrationTests {
 	}
 
 	@Before
+	public void generateRandomTableName() {
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		this.tableName = "template_test_table_" + uuid;
+		this.selectQuery = String.format(SELECT_FORMAT, DATASET_NAME + "." + tableName);
+	}
+
 	@After
 	public void cleanupTestEnvironment() {
-		// Clear the previous dataset before beginning the test.
-		this.bigQuery.delete(TableId.of(DATASET_NAME, TABLE_NAME));
+		// Delete table after test.
+		this.bigQuery.delete(TableId.of(DATASET_NAME, tableName));
 	}
 
 	@Test
@@ -94,13 +105,13 @@ public class BigQueryTemplateIntegrationTests {
 
 		ListenableFuture<Job> bigQueryJobFuture =
 				bigQueryTemplate.writeDataToTable(
-						TABLE_NAME, dataFile.getInputStream(), FormatOptions.csv(), schema);
+						tableName, dataFile.getInputStream(), FormatOptions.csv(), schema);
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
 
-		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
-				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
+		QueryJobConfiguration queryJobConfiguration =
+				QueryJobConfiguration.newBuilder(this.selectQuery).build();
 		TableResult result = this.bigQuery.query(queryJobConfiguration);
 
 		assertThat(result.getTotalRows()).isEqualTo(1);
@@ -111,13 +122,14 @@ public class BigQueryTemplateIntegrationTests {
 	@Test
 	public void testLoadFile() throws IOException, ExecutionException, InterruptedException {
 		ListenableFuture<Job> bigQueryJobFuture =
-				bigQueryTemplate.writeDataToTable(TABLE_NAME, dataFile.getInputStream(), FormatOptions.csv());
+				bigQueryTemplate.writeDataToTable(
+						this.tableName, dataFile.getInputStream(), FormatOptions.csv());
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
 
-		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
-				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
+		QueryJobConfiguration queryJobConfiguration =
+				QueryJobConfiguration.newBuilder(this.selectQuery).build();
 		TableResult result = this.bigQuery.query(queryJobConfiguration);
 
 		assertThat(result.getTotalRows()).isEqualTo(1);
@@ -132,13 +144,14 @@ public class BigQueryTemplateIntegrationTests {
 		ByteArrayInputStream byteStream = new ByteArrayInputStream(byteArray);
 
 		ListenableFuture<Job> bigQueryJobFuture =
-				bigQueryTemplate.writeDataToTable(TABLE_NAME, byteStream, FormatOptions.csv());
+				bigQueryTemplate.writeDataToTable(
+						this.tableName, byteStream, FormatOptions.csv());
 
 		Job job = bigQueryJobFuture.get();
 		assertThat(job.getStatus().getState()).isEqualTo(JobStatus.State.DONE);
 
-		QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration
-				.newBuilder("SELECT * FROM test_dataset.template_test_table").build();
+		QueryJobConfiguration queryJobConfiguration =
+				QueryJobConfiguration.newBuilder(this.selectQuery).build();
 		TableResult result = this.bigQuery.query(queryJobConfiguration);
 
 		assertThat(result.getTotalRows()).isEqualTo(1);
