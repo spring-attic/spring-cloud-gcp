@@ -64,6 +64,7 @@ import org.springframework.data.projection.ProjectionInformation;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.support.DefaultRepositoryMetadata;
 import org.springframework.data.repository.query.DefaultParameters;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -862,6 +863,7 @@ public class PartTreeDatastoreQueryTests {
 		if (mockOptionalNullable) {
 			DefaultRepositoryMetadata mockMetadata = mock(DefaultRepositoryMetadata.class);
 			doReturn(m.getReturnType()).when(mockMetadata).getReturnedDomainClass(m);
+			doReturn(ClassTypeInformation.fromReturnTypeOf(m)).when(mockMetadata).getReturnType(m);
 			DatastoreQueryMethod datastoreQueryMethod =
 					new DatastoreQueryMethod(m,
 							mockMetadata,
