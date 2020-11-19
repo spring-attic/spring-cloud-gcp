@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.google.firestore.v1.CommitRequest;
+import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -209,9 +211,17 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				return Flux.from(instances).doOnNext(t -> writes.add(createUpdateWrite(t)));
 			}
 
-			Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream, inputs, this::buildWriteRequest);
+			return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
+					.flatMap(ts -> {
+						CommitRequest.Builder builder = CommitRequest.newBuilder()
+								.setDatabase(this.databasePath);
+
+						ts.forEach(e -> builder.addWrites(createUpdateWrite(e)));
+
+						return ObservableReactiveUtil
+								.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+								.thenMany(Flux.fromIterable(ts));
+					});
 		});
 	}
 
@@ -291,10 +301,17 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(documentNames).doOnNext(t -> writes.add(createDeleteWrite(t)));
 			}
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream,
-					documentNames.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout),
-					this::buildDeleteRequest);
+			return Flux.from(documentNames).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
+					.flatMap(ts -> {
+						CommitRequest.Builder builder = CommitRequest.newBuilder()
+								.setDatabase(this.databasePath);
+
+						ts.forEach(e -> builder.addWrites(createDeleteWrite(e)));
+
+						return ObservableReactiveUtil
+								.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+								.thenMany(Flux.fromIterable(ts));
+					});
 		});
 	}
 
