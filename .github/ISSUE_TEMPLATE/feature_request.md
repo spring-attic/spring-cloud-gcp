@@ -7,14 +7,8 @@ assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is and what version of Spring Cloud you are using. Ex. I'm always frustrated when [...]
+**ATTENTION**
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+Please file all issues in our new repo (Spring Cloud GCP 2.0+): [https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/new/choose.](https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/new/choose)
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+We are not accepting new feature requests for Spring Cloud GCP 1.x.

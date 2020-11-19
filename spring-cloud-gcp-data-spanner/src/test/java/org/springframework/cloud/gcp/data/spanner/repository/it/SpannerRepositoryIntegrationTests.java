@@ -98,6 +98,19 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	}
 
 	@Test
+	public void queryOptionalSingleValueTest() {
+		Trade trade = Trade.aTrade(null, 0);
+		this.spannerOperations.insert(trade);
+
+		Optional<String> nonEmpty = tradeRepository.fetchSymbolById(trade.getId());
+		assertThat(nonEmpty.isPresent()).isTrue();
+		assertThat(nonEmpty.get()).isEqualTo("ABCD");
+
+		Optional<String> empty = tradeRepository.fetchSymbolById(trade.getId() + "doesNotExist");
+		assertThat(empty.isPresent()).isFalse();
+	}
+
+	@Test
 	public void queryMethodsTest() {
 		final int subTrades = 42;
 		Trade trade = Trade.aTrade(null, subTrades);

@@ -127,6 +127,7 @@
 |spring.cloud.gcp.storage.credentials.location |  | 
 |spring.cloud.gcp.storage.credentials.scopes |  | 
 |spring.cloud.gcp.storage.enabled | true | Auto-configure Google Cloud Storage components.
+|spring.cloud.gcp.storage.project-id |  | 
 |spring.cloud.gcp.trace.authority |  | HTTP/2 authority the channel claims to be connecting to.
 |spring.cloud.gcp.trace.compression |  | Compression to use for the call.
 |spring.cloud.gcp.trace.credentials.encoded-key |  | 

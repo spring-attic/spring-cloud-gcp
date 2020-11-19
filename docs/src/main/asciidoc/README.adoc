@@ -1,4 +1,5 @@
-image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp.svg?branch=master&label=master["Master Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp"]
+image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Unit%20Tests/badge.svg?branch=master["Master (Unit Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Unit+Tests&quot;"]
+image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=master["Master (Integration Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Integration+Tests&quot;"]
 image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp.svg?branch=1.1.x&label=1.1.x["1.1.x Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp"]
 image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp.svg?branch=1.0.x&label=1.0.x["1.0.x Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp"]
 
@@ -64,7 +65,7 @@ This will allow you to not specify versions for any of the Maven dependencies an
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.2.5.RELEASE</version>
+            <version>1.2.6.RELEASE</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -106,7 +107,7 @@ We offer `BUILD-SNAPSHOT` versions that always reflect the latest code changes t
 </repositories>
 ----
 
-For example, the `1.2.6.BUILD-SNAPSHOT` is available from this repository.
+For example, the `1.2.7.BUILD-SNAPSHOT` is available from this repository.
 
 == Spring Boot Starters
 
