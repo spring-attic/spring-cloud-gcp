@@ -15,7 +15,7 @@ jobs:
         github.event_name == 'push' ||
         github.event_name == 'schedule'
       )
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
     steps:
@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Setup gcloud
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@master
         with:
           version: latest
           project_id: spring-cloud-gcp-ci
