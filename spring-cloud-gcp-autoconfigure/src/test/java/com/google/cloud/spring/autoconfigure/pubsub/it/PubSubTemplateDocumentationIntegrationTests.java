@@ -81,9 +81,10 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			Map<String, String> headers = Collections.singletonMap("key1", "val1");
 			pubSubTemplate.publish(topicName, "message", headers).get();
 			//end::publish[]
-			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 			await().atMost(new Duration(30, TimeUnit.SECONDS)).untilAsserted(() -> {
+				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
+
 				assertThat(pubsubMessage).isNotNull();
 				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
 				assertThat(pubsubMessage.getAttributesCount()).isEqualTo(1);

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import brave.Tracing;
 import brave.TracingCustomizer;
 import brave.handler.SpanHandler;
 import brave.http.HttpRequestParser;
@@ -57,7 +56,10 @@ import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
+import org.springframework.cloud.sleuth.api.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
+import org.springframework.cloud.sleuth.brave.autoconfig.TraceBraveAutoConfiguration;
+import org.springframework.cloud.sleuth.brave.bridge.TraceBraveBridgeAutoConfiguation;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -110,6 +112,8 @@ public class StackdriverTraceAutoConfigurationTests {
 	public void supportsMultipleReporters() {
 		this.contextRunner
 				.withConfiguration(AutoConfigurations.of(
+						TraceBraveAutoConfiguration.class,
+						TraceBraveBridgeAutoConfiguation.class,
 						StackdriverTraceAutoConfiguration.class,
 						GcpContextAutoConfiguration.class,
 						TraceAutoConfiguration.class,
@@ -124,12 +128,12 @@ public class StackdriverTraceAutoConfigurationTests {
 					"otherSender");
 			assertThat(context.getBeansOfType(SpanHandler.class)).hasSize(3);
 			assertThat(context.getBeansOfType(SpanHandler.class)).containsKeys("stackdriverSpanHandler",
-					"otherSpanHandler", "spanIgnoringSpanHandler");
+					"otherSpanHandler", "compositeSpanHandler");
 
-			brave.Span span = context.getBean(Tracing.class).tracer().nextSpan().name("foo")
+			org.springframework.cloud.sleuth.api.Span span = context.getBean(Tracer.class).nextSpan().name("foo")
 					.tag("foo", "bar").start();
-			span.finish();
-			String spanId = span.context().spanIdString();
+			span.end();
+			String spanId = span.context().spanId();
 
 			MultipleSpanHandlersConfig.GcpTraceService gcpTraceService
 					= context.getBean(MultipleSpanHandlersConfig.GcpTraceService.class);

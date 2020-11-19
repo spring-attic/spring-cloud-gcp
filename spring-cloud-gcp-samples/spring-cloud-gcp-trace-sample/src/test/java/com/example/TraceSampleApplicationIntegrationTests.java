@@ -140,7 +140,7 @@ public class TraceSampleApplicationIntegrationTests {
 
 		await().atMost(4, TimeUnit.MINUTES)
 				.pollInterval(Duration.TWO_SECONDS)
-				.ignoreExceptions()
+				.ignoreExceptionsMatching(e -> e.getMessage().contains("Requested entity was not found"))
 				.untilAsserted(() -> {
 
 			log.debug("Getting trace...");
