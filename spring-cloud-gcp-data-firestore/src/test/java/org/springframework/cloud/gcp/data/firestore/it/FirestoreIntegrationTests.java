@@ -221,8 +221,9 @@ public class FirestoreIntegrationTests {
 
 	@Test
 	public void saveAllBulkTest() {
+		int numEntities = 1000;
 		Flux<User> users = Flux.create(sink -> {
-			for (int i = 0; i < 10000; i++) {
+			for (int i = 0; i < numEntities; i++) {
 				sink.next(new User(UUID.randomUUID().toString(), i));
 			}
 			sink.complete();
@@ -232,7 +233,7 @@ public class FirestoreIntegrationTests {
 
 		this.firestoreTemplate.saveAll(users).blockLast();
 
-		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(10000);
+		assertThat(this.firestoreTemplate.findAll(User.class).count().block()).isEqualTo(numEntities);
 	}
 
 	@Test
