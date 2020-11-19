@@ -111,7 +111,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Setup gcloud
-        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@master
         with:
           version: latest
           project_id: spring-cloud-gcp-ci
