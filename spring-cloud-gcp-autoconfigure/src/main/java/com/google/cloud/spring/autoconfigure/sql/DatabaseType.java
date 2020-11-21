@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package com.google.cloud.spring.autoconfigure.sql;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public enum DatabaseType {
 	/**
@@ -28,22 +29,25 @@ public enum DatabaseType {
 	 */
 	MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
-			+ "&cloudSqlInstance=%s"),
+			+ "&cloudSqlInstance=%s", "root"),
 
 	/**
 	 * Postgresql constants.
 	 */
 	POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
-			+ "&cloudSqlInstance=%s");
+			+ "&cloudSqlInstance=%s", "postgres");
 
 	private final String jdbcDriverName;
 
 	private final String jdbcUrlTemplate;
 
-	DatabaseType(String jdbcDriverName, String jdbcUrlTemplate) {
+	private final String defaultUsername;
+
+	DatabaseType(String jdbcDriverName, String jdbcUrlTemplate, String defaultUsername) {
 		this.jdbcDriverName = jdbcDriverName;
 		this.jdbcUrlTemplate = jdbcUrlTemplate;
+		this.defaultUsername = defaultUsername;
 	}
 
 	public String getJdbcDriverName() {
@@ -52,5 +56,9 @@ public enum DatabaseType {
 
 	public String getJdbcUrlTemplate() {
 		return this.jdbcUrlTemplate;
+	}
+
+	public String getDefaultUsername() {
+		return defaultUsername;
 	}
 }

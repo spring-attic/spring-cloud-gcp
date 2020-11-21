@@ -59,7 +59,8 @@ public class GcpConfigIntegrationTests {
 				.properties("spring.cloud.gcp.config.enabled=true",
 						"spring.application.name=myapp",
 						"spring.profiles.active=dontexist,prod",
-						"spring.config.use-legacy-processing=true")
+						"spring.config.use-legacy-processing=true",
+						"spring.cloud.gcp.sql.enabled=false")
 				.run();
 
 		assertThat(this.context.getEnvironment().getProperty("myapp.queue-size"))

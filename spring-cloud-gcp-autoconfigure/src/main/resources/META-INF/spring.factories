@@ -11,7 +11,6 @@ com.google.cloud.spring.autoconfigure.datastore.GcpDatastoreAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.firestore.GcpFirestoreAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.firestore.GcpFirestoreEmulatorAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.datastore.health.DatastoreHealthIndicatorAutoConfiguration,\
-com.google.cloud.spring.autoconfigure.sql.GcpCloudSqlAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.storage.GcpStorageAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.trace.StackdriverTraceAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.datastore.DatastoreRepositoriesAutoConfiguration,\
@@ -29,3 +28,6 @@ com.google.cloud.spring.autoconfigure.metrics.GcpStackdriverMetricsAutoConfigura
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 com.google.cloud.spring.autoconfigure.config.GcpConfigBootstrapConfiguration,\
 com.google.cloud.spring.autoconfigure.secretmanager.GcpSecretManagerBootstrapConfiguration
+
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.google.cloud.spring.autoconfigure.sql.CloudSqlEnvironmentPostProcessor

@@ -52,7 +52,8 @@ public class SecretManagerBootstrapConfigurationTests {
 					TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 					.properties(
 							"spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME,
-							"spring.config.use-legacy-processing=true")
+							"spring.config.use-legacy-processing=true",
+							"spring.cloud.gcp.sql.enabled=false")
 					.web(WebApplicationType.NONE);
 
 	@Test
@@ -99,6 +100,7 @@ public class SecretManagerBootstrapConfigurationTests {
 						TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 						.properties("spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME)
 						.properties("spring.cloud.gcp.secretmanager.enabled=false")
+						.properties("spring.cloud.gcp.sql.enabled=false")
 						.web(WebApplicationType.NONE);
 
 		try (ConfigurableApplicationContext c = disabledConfigurationApp.run()) {

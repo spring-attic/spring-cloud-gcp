@@ -59,32 +59,32 @@ In other words, properties like the SQL username, `spring.datasource.username`, 
 There is also some configuration specific to Google Cloud SQL:
 
 |===
-| Property name | Description | Default value
-| `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | `true`
-| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. |
-| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL instance's project ID, region and name, each separated by a colon.
-For example, `my-project-id:my-region:my-instance-name`. |
-| `spring.cloud.gcp.sql.ip-types` | Allows you to specify a comma delimited list of preferred IP types for connecting to a Cloud SQL instance. Left unconfigured Cloud SQL Socket Factory will default it to `PUBLIC,PRIVATE`. See https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#specifying-ip-types[Cloud SQL Socket Factory - Specifying IP Types] | `PUBLIC,PRIVATE`
+| Property name | Description | Required | Default value
+| `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | No | `true`
+| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. | Yes |
+| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL instance's project ID, region and name, each separated by a colon. | Yes |
+For example, `my-project-id:my-region:my-instance-name`.
+| `spring.cloud.gcp.sql.ip-types` | Allows you to specify a comma delimited list of preferred IP types for connecting to a Cloud SQL instance. Left unconfigured Cloud SQL Socket Factory will default it to `PUBLIC,PRIVATE`. See https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory#specifying-ip-types[Cloud SQL Socket Factory - Specifying IP Types] | No | `PUBLIC,PRIVATE`
 | `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials private key file.
-Used to authenticate and authorize new connections to a Google Cloud SQL instance.
+Used to authenticate and authorize new connections to a Google Cloud SQL instance. | No
 | Default credentials provided by the Spring GCP Boot starter
 | `spring.cloud.gcp.sql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
-Used to authenticate and authorize new connections to a Google Cloud SQL instance.
+Used to authenticate and authorize new connections to a Google Cloud SQL instance. | No
 | Default credentials provided by the Spring GCP Boot starter
+| `spring.datasource.username` | Database username | No | MySQL: `root`; PostgreSQL: `postgres`
+| `spring.datasource.password` | Database password | No | `null`
+| `spring.datasource.driver-class-name` | JDBC driver to use. | No | MySQL: `com.mysql.cj.jdbc.Driver`; PostgreSQL: `org.postgresql.Driver`
 |===
 
 NOTE: If you provide your own `spring.datasource.url`, it will be ignored, unless you disable Cloud SQL auto configuration with `spring.cloud.gcp.sql.enabled=false`.
 
 ==== `DataSource` creation flow
 
-Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a `CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class name.
-If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties related to building the JDBC URL or driver class are ignored.
+Spring Boot starter for Google Cloud SQL registers a `CloudSqlEnvironmentPostProcessor` that provides a correctly formatted `spring.datasource.url` property to the environment based on the properties defined above.
+It also provides defaults for `spring.datasource.username` and `spring.datasource.driver-class-name`, which can be overridden.
+The starter also configures credentials for the JDBC connection based on the properties above.
 
-The `DataSourceProperties` object provided by Spring Boot Autoconfigure is mutated in order to use the JDBC URL and driver class names provided by `CloudSqlJdbcInfoProvider`, unless those values were provided in the properties.
-It is in the `DataSourceProperties` mutation step that the credentials factory is registered in a system property to be `SqlCredentialFactory`.
-
-`DataSource` creation is delegated to
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html[Spring Boot].
+The user properties and the properties provided by the `CloudSqlEnvironmentPostProcessor` are then used by https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html[Spring Boot] to create the `DataSource`.
 You can select the type of connection pool (e.g., Tomcat, HikariCP, etc.) by https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[adding their dependency to the classpath].
 
 Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured and operational `JdbcTemplate` object that you can use to interact with your SQL database.
