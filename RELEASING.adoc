@@ -1,35 +1,57 @@
 = Spring Cloud GCP release process
 
-The actual release process is triggered by the release admin and happens together with the rest of the Spring Cloud release.
-In order to simplify that process, here is a list of prerequisites to be performed before asking the release admin to run the release scripts.
+The actual release process is triggered by the release admin.
+As opposed to the 1.x releases, the 2.0 release happens independent of the Spring Cloud release train.
+To simplify the process, perform this list of prerequisites before asking the release admin to run the release scripts.
 
-. Ensure that modules that shouldn't be released have the `maven-deploy-plugin` configuration set to `<skip>true</skip>`.
+. Ensure that modules that shouldn't be released are not included in the `<modules>` block in the `release` profile of `pom.xml`.
 For GA releases this should be configured under the `central` Maven profile.
 +
 [source,xml]
 ----
-<build>
-    <plugins>
-        <plugin>
-            <artifactId>maven-deploy-plugin</artifactId>
-            <configuration>
-                <skip>true</skip>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
+<profile>
+    <id>release</id>
+    <modules>
+        <!-- POM Modules-->
+        <module>spring-cloud-gcp-starters</module>
+        <module>spring-cloud-gcp-dependencies</module>
+
+        <!-- Code Modules-->
+        <module>spring-cloud-gcp-autoconfigure</module>
+        <module>spring-cloud-gcp-bigquery</module>
+        <module>spring-cloud-gcp-cloudfoundry</module>
+        <module>spring-cloud-gcp-core</module>
+        <module>spring-cloud-gcp-data-datastore</module>
+        <module>spring-cloud-gcp-data-firestore</module>
+        <module>spring-cloud-gcp-data-spanner</module>
+        <module>spring-cloud-gcp-logging</module>
+        <module>spring-cloud-gcp-pubsub</module>
+        <module>spring-cloud-gcp-pubsub-stream-binder</module>
+        <module>spring-cloud-gcp-security-iap</module>
+        <module>spring-cloud-gcp-storage</module>
+        <module>spring-cloud-gcp-secretmanager</module>
+        <module>spring-cloud-gcp-security-firebase</module>
+        <module>spring-cloud-gcp-vision</module>
+        ...
+    </modules>
+    ...
+</profile>
 ----
 
-. Wait for the release scripts to have been run by the release admin.
+. Ensure all Maven commands listed in `.kokoro/stage.sh` script can be executed successfully locally.
+You can add `-Dgpg.skip` in place of the actual GPG key locally.
 
-. Make sure that the release tag was automatically added by the release process.
+. Invoke the Kokoro `stage` job.
+Log in to OSS Sonatype and verify the contents of the staged package.
 
-. Make sure that the link:https://github.com/spring-io/initializr/blob/master/initializr-service/src/main/resources/application.yml[Spring Boot Initializr] is updated to support the new version of Spring Cloud GCP.
+. Invoke to the Kokoko `promote` job.
+
+. Make sure that the link:https://github.com/spring-io/start.spring.io/blob/master/start-site/src/main/resources/application.yml[Spring Boot Initializr] is updated to support the new version of Spring Cloud GCP.
 
 == Uploading Javadocs
 
 After releasing a new version of Spring Cloud GCP, you will need to upload the javadocs for the released version.
-By this point, we assume that a new release branch has been created for project (such as `1.1.x`, `1.2.x`, etc.).
+By this point, we assume that a new release branch has been created for project (such as `2.0.x`, `2.1.x`, etc.).
 
 The latest version of the docs can be accessed at the `latest/` url:
 https://googleapis.dev/java/spring-cloud-gcp/latest/index.html
@@ -51,6 +73,9 @@ All uploaded javadocs will be published under the following URL:
 https://googleapis.dev/java/spring-cloud-gcp/{BRANCH_VERSION_NAME}/index.html
 ----
 +
-Example: If you published the javadocs for version `1.2.2.BUILD-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/1.2.2.BUILD-SNAPSHOT/index.html
+Example: If you published the javadocs for version `2.0.0-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/2.0.0-SNAPSHOT/index.html
 
 5. For GA releases, ask on the https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter] for the Spring team to update the https://spring.io/projects/spring-cloud-gcp#learn[API Documentation link] to point to the published Javadocs of the correct version.
+
+6. Smoke test changes by running through a handful of our link:https://codelabs.developers.google.com/spring[Spring Cloud GCP codelabs] with the newly release version.
+Update the instructions as needed.
