@@ -52,7 +52,7 @@ public class SecretManagerBootstrapConfigurationTests {
 					TestBootstrapConfiguration.class, GcpSecretManagerBootstrapConfiguration.class)
 					.properties(
 							"spring.cloud.gcp.secretmanager.project-id=" + PROJECT_NAME,
-							"spring.config.use-legacy-processing=true",
+							"spring.cloud.bootstrap.enabled=true",
 							"spring.cloud.gcp.sql.enabled=false")
 					.web(WebApplicationType.NONE);
 

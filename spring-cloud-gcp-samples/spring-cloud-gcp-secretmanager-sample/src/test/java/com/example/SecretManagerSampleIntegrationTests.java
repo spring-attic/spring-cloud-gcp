@@ -38,8 +38,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		classes = SecretManagerApplication.class,
-		properties = {"spring.config.use-legacy-processing=true"})
+		classes = SecretManagerApplication.class)
 public class SecretManagerSampleIntegrationTests {
 
 	private static final String SECRET_TO_DELETE = "secret-manager-sample-delete-secret";
