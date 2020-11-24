@@ -1,12 +1,20 @@
 = Spring Cloud GCP release process
 
-The actual release process is triggered by the release admin.
+All scripts can be found in the `.kokoro` directory.
+
+
+## Snapshots
+
+A commit to the `master` branch will automatically trigger the `prod:cloud-java-frameworks/spring-cloud-gcp/continuous` job that will publish snapshots to link:https://oss.sonatype.org/content/repositories/snapshots/com/google/cloud/spring-cloud-gcp/[Sonatype Snapshots repository].
+
+
+## Releases
+
 As opposed to the 1.x releases, the 2.0 release happens independent of the Spring Cloud release train.
 To simplify the process, perform this list of prerequisites before asking the release admin to run the release scripts.
 
 . Ensure that modules that shouldn't be released are not included in the `<modules>` block in the `release` profile of `pom.xml`.
-For GA releases this should be configured under the `central` Maven profile.
-+
+
 [source,xml]
 ----
 <profile>
@@ -38,20 +46,42 @@ For GA releases this should be configured under the `central` Maven profile.
 </profile>
 ----
 
-. Ensure all Maven commands listed in `.kokoro/stage.sh` script can be executed successfully locally.
-You can add `-Dgpg.skip` in place of the actual GPG key locally.
+. Run the `prod:cloud-java-frameworks/spring-cloud-gcp/stage` Kokoro job.
 
-. Invoke the Kokoro `stage` job.
-Log in to OSS Sonatype and verify the contents of the staged package.
+. In the build logs, find the ID of the staging repository. You should see a log line that looks something like this:
+```
+[INFO]  * Created staging repository with ID "comgooglecloud-1416".
+```
+The `{STAGING_ID}` in this case is `comgooglecloud-1416`.
 
-. Invoke to the Kokoko `promote` job.
+. Verify staged artifacts by going to `https://oss.sonatype.org/content/repositories/{STAGING_ID}/com/google/cloud/`
++
+NOTE: You can also view all staged artifacts at http://oss.sonatype.org.
+To get access to `com.google.cloud` group ID, please make a request similar to https://issues.sonatype.org/browse/OSSRH-52371[this one] and ask someone who already has access to this group ID to vouch for you in the issue comments.
 
-. Make sure that the link:https://github.com/spring-io/start.spring.io/blob/master/start-site/src/main/resources/application.yml[Spring Boot Initializr] is updated to support the new version of Spring Cloud GCP.
+. If you want to drop the staged artifacts, run the `prod:cloud-java-frameworks/spring-cloud-gcp/drop` Kokoro job.
+Provide the staging repository ID as an environment variable (i.e. `STAGING_REPOSITORY_ID=comgooglecloud-1416`).
+
+. If you want to release the staged artifacts, run the `prod:cloud-java-frameworks/spring-cloud-gcp/promote` Kokoro job.
+Providing the staging repository ID as an environment variable (i.e. `STAGING_REPOSITORY_ID=comgooglecloud-1416`).
+
+. Verify that the new version has been published to Maven Central by checking https://repo.maven.apache.org/maven2/com/google/cloud/spring-cloud-gcp/[here].
+This might take a while.
+
+. https://github.com/GoogleCloudPlatform/spring-cloud-gcp/releases[Create] a new release on GitHub.
+
+. Publish the Javadocs (see section below).
+
+. Publish the Reference documentation (see section below).
+
+. Increment the project base _patch_ version. For example, from `2.0.0-SNAPSHOT` to `2.0.1-SNAPSHOT`, do:
+```
+$ ./mvnw versions:set -DprocessAllModules -DnewVersion=2.0.1-SNAPSHOT
+```
 
 == Uploading Javadocs
 
 After releasing a new version of Spring Cloud GCP, you will need to upload the javadocs for the released version.
-By this point, we assume that a new release branch has been created for project (such as `2.0.x`, `2.1.x`, etc.).
 
 The latest version of the docs can be accessed at the `latest/` url:
 https://googleapis.dev/java/spring-cloud-gcp/latest/index.html
@@ -75,7 +105,11 @@ https://googleapis.dev/java/spring-cloud-gcp/{BRANCH_VERSION_NAME}/index.html
 +
 Example: If you published the javadocs for version `2.0.0-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/2.0.0-SNAPSHOT/index.html
 
-5. For GA releases, ask on the https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter] for the Spring team to update the https://spring.io/projects/spring-cloud-gcp#learn[API Documentation link] to point to the published Javadocs of the correct version.
 
-6. Smoke test changes by running through a handful of our link:https://codelabs.developers.google.com/spring[Spring Cloud GCP codelabs] with the newly release version.
+== Updating Spring Documentation
+. (TODO): Update GitHub Pages to publish the refdoc for the newly released version.
+
+. For GA releases, ask on the https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter] for the Spring team to update the https://spring.io/projects/spring-cloud-gcp#learn[API Documentation link] to point to the newly published Ref doc and Javadocs.
+
+. Smoke test changes by running through a handful of our link:https://codelabs.developers.google.com/spring[Spring Cloud GCP codelabs] with the newly release version.
 Update the instructions as needed.
