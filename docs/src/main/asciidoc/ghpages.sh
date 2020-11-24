@@ -54,7 +54,7 @@ function retrieve_current_branch() {
 
 # Switches to the provided value of the release version. We always prefix it with `v`
 function switch_to_tag() {
-    git checkout v${VERSION}
+    git checkout ${VERSION}
 }
 
 # Build the docs if switch is on
