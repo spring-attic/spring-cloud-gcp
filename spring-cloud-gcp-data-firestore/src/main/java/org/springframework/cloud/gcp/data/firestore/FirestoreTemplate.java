@@ -306,6 +306,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				});
 	}
 
+	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
+		return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
+				.flatMap(batch -> {
+					CommitRequest.Builder builder = CommitRequest.newBuilder()
+							.setDatabase(this.databasePath);
+
+					batch.forEach(e -> builder.addWrites(converterToWrite.apply(e)));
+
+					return ObservableReactiveUtil
+							.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+							.thenMany(Flux.fromIterable(batch));
+				});
+	}
+
 	private Write createDeleteWrite(String documentId) {
 		return Write.newBuilder().setDelete(documentId).build();
 	}
