@@ -20,7 +20,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import com.google.firestore.v1.CommitRequest;
+import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -31,9 +34,6 @@ import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Write;
 import com.google.firestore.v1.Write.Builder;
-import com.google.firestore.v1.WriteRequest;
-import com.google.firestore.v1.WriteResponse;
-import io.grpc.stub.StreamObserver;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -208,10 +208,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(instances).doOnNext(t -> writes.add(createUpdateWrite(t)));
 			}
-
-			Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream, inputs, this::buildWriteRequest);
+			return commitWrites(instances, this::createUpdateWrite);
 		});
 	}
 
@@ -291,28 +288,22 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(documentNames).doOnNext(t -> writes.add(createDeleteWrite(t)));
 			}
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream,
-					documentNames.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout),
-					this::buildDeleteRequest);
+			return commitWrites(documentNames, this::createDeleteWrite);
 		});
 	}
 
-	// Visible for Testing
-	WriteRequest buildDeleteRequest(
-			List<String> documentIds, WriteResponse writeResponse) {
+	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
+		return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
+				.flatMap(batch -> {
+					CommitRequest.Builder builder = CommitRequest.newBuilder()
+							.setDatabase(this.databasePath);
 
-		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
+					batch.forEach(e -> builder.addWrites(converterToWrite.apply(e)));
 
-		if (isUsingStreamTokens()) {
-			writeRequestBuilder
-					.setStreamId(writeResponse.getStreamId())
-					.setStreamToken(writeResponse.getStreamToken());
-		}
-
-		documentIds.stream().map(this::createDeleteWrite).forEach(writeRequestBuilder::addWrites);
-
-		return writeRequestBuilder.build();
+					return ObservableReactiveUtil
+							.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+							.thenMany(Flux.fromIterable(batch));
+				});
 	}
 
 	private Write createDeleteWrite(String documentId) {
@@ -376,29 +367,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			}
 			holderConsumer.accept(holder);
 		});
-	}
-
-	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
-		WriteRequest openStreamRequest =
-				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
-		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
-		requestStreamObserver.onNext(openStreamRequest);
-		return requestStreamObserver;
-	}
-
-	// Visible for Testing
-	<T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
-		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
-
-		if (isUsingStreamTokens()) {
-			writeRequestBuilder
-					.setStreamId(writeResponse.getStreamId())
-					.setStreamToken(writeResponse.getStreamToken());
-		}
-
-		entityList.stream().map(this::createUpdateWrite).forEach(writeRequestBuilder::addWrites);
-
-		return writeRequestBuilder.build();
 	}
 
 	private <T> Write createUpdateWrite(T entity) {
