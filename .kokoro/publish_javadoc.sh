@@ -12,6 +12,9 @@ pyenv global 3.7.2
 dir=$(dirname "$0")
 pushd $dir/../
 
+# change to release version
+./mvnw versions:set --batch-mode -DremoveSnapshot -DprocessAllModules
+
 # Compute the project version.
 PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
 
@@ -20,7 +23,7 @@ python3 -m pip install --upgrade six
 python3 -m pip install gcp-docuploader
 
 # Build the javadocs
-./mvnw clean javadoc:aggregate --activate-profiles release
+./mvnw clean javadoc:aggregate -Drelease=true
 
 # Move into generated docs directory
 pushd target/site/apidocs/
