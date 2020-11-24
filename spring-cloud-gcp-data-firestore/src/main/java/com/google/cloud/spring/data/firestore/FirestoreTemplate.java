@@ -41,9 +41,6 @@ import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.Write;
 import com.google.firestore.v1.Write.Builder;
-import com.google.firestore.v1.WriteRequest;
-import com.google.firestore.v1.WriteResponse;
-import io.grpc.stub.StreamObserver;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -295,23 +292,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		});
 	}
 
-	// Visible for Testing
-	WriteRequest buildDeleteRequest(
-			List<String> documentIds, WriteResponse writeResponse) {
-
-		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
-
-		if (isUsingStreamTokens()) {
-			writeRequestBuilder
-					.setStreamId(writeResponse.getStreamId())
-					.setStreamToken(writeResponse.getStreamToken());
-		}
-
-		documentIds.stream().map(this::createDeleteWrite).forEach(writeRequestBuilder::addWrites);
-
-		return writeRequestBuilder.build();
-	}
-
 	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
 		return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
 				.flatMap(batch -> {
@@ -387,29 +367,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			}
 			holderConsumer.accept(holder);
 		});
-	}
-
-	private StreamObserver<WriteRequest> openWriteStream(StreamObserver<WriteResponse> obs) {
-		WriteRequest openStreamRequest =
-				WriteRequest.newBuilder().setDatabase(this.databasePath).build();
-		StreamObserver<WriteRequest> requestStreamObserver = this.firestore.write(obs);
-		requestStreamObserver.onNext(openStreamRequest);
-		return requestStreamObserver;
-	}
-
-	// Visible for Testing
-	<T> WriteRequest buildWriteRequest(List<T> entityList, WriteResponse writeResponse) {
-		WriteRequest.Builder writeRequestBuilder = WriteRequest.newBuilder();
-
-		if (isUsingStreamTokens()) {
-			writeRequestBuilder
-					.setStreamId(writeResponse.getStreamId())
-					.setStreamToken(writeResponse.getStreamToken());
-		}
-
-		entityList.stream().map(this::createUpdateWrite).forEach(writeRequestBuilder::addWrites);
-
-		return writeRequestBuilder.build();
 	}
 
 	private <T> Write createUpdateWrite(T entity) {
