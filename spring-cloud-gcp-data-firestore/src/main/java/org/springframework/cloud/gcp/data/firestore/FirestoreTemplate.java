@@ -106,7 +106,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	@Override
 	public <T> FirestoreReactiveOperations withParent(T parent) {
 		FirestoreTemplate firestoreTemplate =
-						new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
+				new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
 		firestoreTemplate.setUsingStreamTokens(this.usingStreamTokens);
 		firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
 		firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
@@ -153,7 +153,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * does not support using resume tokens.
 	 *
 	 * @param usingStreamTokens whether the template should use stream tokens
-   * @since 1.2.3
+	 * @since 1.2.3
 	 */
 	public void setUsingStreamTokens(boolean usingStreamTokens) {
 		this.usingStreamTokens = usingStreamTokens;
@@ -271,7 +271,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	public <T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityType) {
 		return Flux.defer(() ->
 				findAllDocuments(entityType, null, builder)
-				.map(document -> getClassMapper().documentToEntity(document, entityType)));
+						.map(document -> getClassMapper().documentToEntity(document, entityType)));
 	}
 
 	public FirestoreMappingContext getMappingContext() {
@@ -290,20 +290,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			}
 			return commitWrites(documentNames, this::createDeleteWrite);
 		});
-	}
-
-	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
-		return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
-				.flatMap(batch -> {
-					CommitRequest.Builder builder = CommitRequest.newBuilder()
-							.setDatabase(this.databasePath);
-
-					batch.forEach(e -> builder.addWrites(converterToWrite.apply(e)));
-
-					return ObservableReactiveUtil
-							.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
-							.thenMany(Flux.fromIterable(batch));
-				});
 	}
 
 	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
@@ -412,7 +398,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 
 	private Object getIdValue(Object entity) {
 		FirestorePersistentEntity<?> persistentEntity =
-						this.mappingContext.getPersistentEntity(entity.getClass());
+				this.mappingContext.getPersistentEntity(entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 
 		return persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
