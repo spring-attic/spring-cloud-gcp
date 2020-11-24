@@ -16,11 +16,7 @@
 
 package org.springframework.cloud.gcp.data.firestore.util;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import io.grpc.stub.ClientCallStreamObserver;
 import io.grpc.stub.ClientResponseObserver;
@@ -71,39 +67,6 @@ public final class ObservableReactiveUtil {
 			remoteCall.accept(observer);
 			sink.onRequest(demand -> observer.request(demand));
 		});
-	}
-
-	/**
-	 * Opens a bi-directional streaming call.
-	 * @param initialCall opens a bidirectional gRPC connection with the provided {@link StreamObserver}.
-	 * @param inputs stream of objects to send to the server
-	 * @param responseHandler processes responses streamed from the server
-	 * @param <ResponseT> type of objects streamed from the server
-	 * @param <RequestT> type of objects  q  streamed to the server
-	 * @param <T> type of input objects that will be wrapped in {@link RequestT}
-	 * @return A {@link Flux} of server responses
-	 */
-	public static <ResponseT, RequestT, T> Flux<T> streamingBidirectionalCall(
-			Function<StreamObserver<ResponseT>, StreamObserver<RequestT>> initialCall,
-			Flux<List<T>> inputs,
-			BiFunction<List<T>, ResponseT, RequestT> responseHandler) {
-		AtomicReference<StreamObserver<RequestT>> requestStream = new AtomicReference<>();
-
-		Flux<ResponseT> responsesFlux =
-				ObservableReactiveUtil
-						.<ResponseT>streamingCall(obs -> requestStream.set(initialCall.apply(obs)))
-						.cache(1);
-
-		return inputs
-				.switchIfEmpty(responsesFlux.next().thenMany(inputs))
-				.flatMap(input ->
-						responsesFlux.next()
-								.map(mostRecentResponse -> responseHandler.apply(input, mostRecentResponse))
-								.doOnNext(nextRequest -> requestStream.get().onNext(nextRequest))
-								.thenReturn(input))
-				.doOnComplete(() -> requestStream.get().onCompleted())
-				.delayUntil(input -> responsesFlux)
-				.flatMap(entityList -> Flux.fromIterable(entityList));
 	}
 
 	static class StreamingObserver<RequestT, ResponseT>

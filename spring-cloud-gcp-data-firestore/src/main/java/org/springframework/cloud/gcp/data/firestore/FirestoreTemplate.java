@@ -20,7 +20,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import com.google.firestore.v1.CommitRequest;
+import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
@@ -208,10 +211,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(instances).doOnNext(t -> writes.add(createUpdateWrite(t)));
 			}
-
-			Flux<List<T>> inputs = Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout);
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream, inputs, this::buildWriteRequest);
+			return commitWrites(instances, this::createUpdateWrite);
 		});
 	}
 
@@ -291,10 +291,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				//In a transaction, all write operations should be sent in the commit request, so we just collect them
 				return Flux.from(documentNames).doOnNext(t -> writes.add(createDeleteWrite(t)));
 			}
-			return ObservableReactiveUtil.streamingBidirectionalCall(
-					this::openWriteStream,
-					documentNames.bufferTimeout(this.writeBufferSize, this.writeBufferTimeout),
-					this::buildDeleteRequest);
+			return commitWrites(documentNames, this::createDeleteWrite);
 		});
 	}
 
@@ -313,6 +310,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		documentIds.stream().map(this::createDeleteWrite).forEach(writeRequestBuilder::addWrites);
 
 		return writeRequestBuilder.build();
+	}
+
+	private <T> Flux<T> commitWrites(Publisher<T> instances, Function<T, Write> converterToWrite) {
+		return Flux.from(instances).bufferTimeout(this.writeBufferSize, this.writeBufferTimeout)
+				.flatMap(batch -> {
+					CommitRequest.Builder builder = CommitRequest.newBuilder()
+							.setDatabase(this.databasePath);
+
+					batch.forEach(e -> builder.addWrites(converterToWrite.apply(e)));
+
+					return ObservableReactiveUtil
+							.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
+							.thenMany(Flux.fromIterable(batch));
+				});
 	}
 
 	private Write createDeleteWrite(String documentId) {
