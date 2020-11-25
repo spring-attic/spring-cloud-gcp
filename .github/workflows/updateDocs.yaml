@@ -27,7 +27,8 @@ jobs:
 
     - name: Update Docs
       run: |
-        if [[ "${{ github.event.inputs.committish }}" == "master" ]]
+        if [[ "${{ github.event.inputs.committish }}" == "master" ]] ; then
           ./docs/src/main/asciidoc/ghpages.sh
         else
           ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination .
+        fi
