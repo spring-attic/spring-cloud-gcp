@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - master
+    paths:
+    - 'docs/**'
   release:
     types: [published] # includes pre-release and regular releases, but does not include draft releases.
   workflow_dispatch:
@@ -37,7 +39,7 @@ jobs:
       run: |
         if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
           ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.release.tag_name }} --destination . --build
-        elif [[ -n "${{ github.event.inputs.committish }}" ]] && [[ "${{ github.event.inputs.committish }}" != "master" ]]; then
+        elif [[ -n "${{ github.event.inputs.committish }}" ]] && [[ "${{ github.event.inputs.committish }}" != "master" ]] ; then
             ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination . --build
         else
           ./docs/src/main/asciidoc/ghpages.sh --build
