@@ -1,6 +1,11 @@
 name: Update Docs
 
 on:
+  push:
+    branches:
+    - master
+  release:
+    types: [published] # includes pre-release and regular releases, but does not include draft releases.
   workflow_dispatch:
     inputs:
       committish:
@@ -13,6 +18,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+    - run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
 
     - uses: actions/setup-java@v1
       with:
@@ -27,8 +35,10 @@ jobs:
 
     - name: Update Docs
       run: |
-        if [[ "${{ github.event.inputs.committish }}" == "master" ]] ; then
-          ./docs/src/main/asciidoc/ghpages.sh
+        if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
+          ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.release.tag_name }} --destination . --build
+        elif [[ "${{ github.event.inputs.committish }}" == "master" ]] ; then
+          ./docs/src/main/asciidoc/ghpages.sh --build
         else
-          ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination .
+          ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination . --build
         fi

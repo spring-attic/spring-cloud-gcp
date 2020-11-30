@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-set -e
+set -ev
 
 # Set default props like MAVEN_PATH, ROOT_FOLDER etc.
 function set_default_props() {
@@ -54,13 +54,13 @@ function retrieve_current_branch() {
 
 # Switches to the provided value of the release version. We always prefix it with `v`
 function switch_to_tag() {
-    git checkout ${VERSION}
+    git checkout v${VERSION}
 }
 
 # Build the docs if switch is on
 function build_docs_if_applicable() {
     if [[ "${BUILD}" == "yes" ]] ; then
-        ./mvnw clean install -P docs -pl docs -DskipTests
+        ./mvnw clean install -P docs -pl docs -DskipTests -q
     fi
 }
 
@@ -113,11 +113,9 @@ function add_docs_from_target() {
             echo "[${DESTINATION}] is not a git repository"
             exit 1
         fi
-        DESTINATION_REPO_FOLDER=${DESTINATION}/${REPO_NAME}
-        mkdir -p ${DESTINATION_REPO_FOLDER}
+        DESTINATION_REPO_FOLDER=${DESTINATION}
         echo "Destination was provided [${DESTINATION}]"
     fi
-    cd ${DESTINATION_REPO_FOLDER}
     git checkout gh-pages
     git pull origin gh-pages
 
@@ -290,6 +288,7 @@ key="$1"
 case ${key} in
     -v|--version)
     VERSION="$2"
+    VERSION=${VERSION#"v"} # strip leading "v" character, if present.
     shift # past argument
     ;;
     -d|--destination)
