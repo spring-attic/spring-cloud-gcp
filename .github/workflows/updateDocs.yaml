@@ -37,8 +37,8 @@ jobs:
       run: |
         if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
           ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.release.tag_name }} --destination . --build
-        elif [[ "${{ github.event.inputs.committish }}" == "master" ]] ; then
-          ./docs/src/main/asciidoc/ghpages.sh --build
+        elif [[ -n "${{ github.event.inputs.committish }}" ]] && [[ "${{ github.event.inputs.committish }}" != "master" ]]; then
+            ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination . --build
         else
-          ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination . --build
+          ./docs/src/main/asciidoc/ghpages.sh --build
         fi
