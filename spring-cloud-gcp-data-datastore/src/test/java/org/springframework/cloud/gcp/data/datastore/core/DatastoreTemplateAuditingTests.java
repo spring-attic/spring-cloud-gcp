@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import static org.mockito.Mockito.when;
  * Tests the auditing features of the template.
  *
  * @author Chengyuan Zhao
+ * @author Frank Pavageau
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -62,6 +63,8 @@ public class DatastoreTemplateAuditingTests {
 
 	@Autowired
 	DatastoreTemplate datastoreTemplate;
+	@Autowired
+	Datastore datastore;
 
 	@Test
 	public void testModifiedNullProperties() {
@@ -80,6 +83,20 @@ public class DatastoreTemplateAuditingTests {
 		testEntity.lastUser = "person";
 
 		this.datastoreTemplate.saveAll(Collections.singletonList(testEntity));
+	}
+
+	@Test
+	public void testInTransaction() {
+		when(datastore.runInTransaction(any()))
+				.thenAnswer(invocation -> {
+					Datastore.TransactionCallable<?> callable = invocation.getArgument(0);
+					return callable.run(datastore);
+				});
+
+		TestEntity testEntity = new TestEntity();
+		testEntity.id = "a";
+
+		this.datastoreTemplate.performTransaction(operations -> operations.save(testEntity));
 	}
 
 	/**
