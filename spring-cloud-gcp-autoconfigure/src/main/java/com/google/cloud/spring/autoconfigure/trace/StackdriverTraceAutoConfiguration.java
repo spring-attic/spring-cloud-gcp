@@ -59,8 +59,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.brave.instrument.web.BraveHttpConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -78,7 +78,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @EnableConfigurationProperties({ GcpTraceProperties.class })
 @ConditionalOnProperty(value = { "spring.sleuth.enabled", "spring.cloud.gcp.trace.enabled" }, matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
-@AutoConfigureBefore(TraceAutoConfiguration.class)
+@AutoConfigureBefore(BraveAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverTraceAutoConfiguration.class);
@@ -260,7 +260,7 @@ public class StackdriverTraceAutoConfiguration {
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
 			havingValue = "true", matchIfMissing = true)
-	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
+	@AutoConfigureBefore(BraveHttpConfiguration.class)
 	public static class StackdriverTraceHttpAutoconfiguration {
 		@Bean
 		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)

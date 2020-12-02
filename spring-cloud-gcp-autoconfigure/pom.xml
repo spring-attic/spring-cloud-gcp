@@ -159,7 +159,7 @@
         <!-- Trace -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-core</artifactId>
+            <artifactId>spring-cloud-sleuth-autoconfigure</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

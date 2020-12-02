@@ -56,10 +56,8 @@ import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
-import org.springframework.cloud.sleuth.api.Tracer;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.brave.autoconfig.TraceBraveAutoConfiguration;
-import org.springframework.cloud.sleuth.brave.bridge.TraceBraveBridgeAutoConfiguation;
+import org.springframework.cloud.sleuth.Tracer;
+import org.springframework.cloud.sleuth.autoconfig.brave.BraveAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -87,7 +85,7 @@ public class StackdriverTraceAutoConfigurationTests {
 			.withConfiguration(AutoConfigurations.of(
 					StackdriverTraceAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					TraceAutoConfiguration.class,
+					BraveAutoConfiguration.class,
 					RefreshAutoConfiguration.class))
 			.withUserConfiguration(StackdriverTraceAutoConfigurationTests.MockConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.project-id=proj",
@@ -112,11 +110,9 @@ public class StackdriverTraceAutoConfigurationTests {
 	public void supportsMultipleReporters() {
 		this.contextRunner
 				.withConfiguration(AutoConfigurations.of(
-						TraceBraveAutoConfiguration.class,
-						TraceBraveBridgeAutoConfiguation.class,
+						BraveAutoConfiguration.class,
 						StackdriverTraceAutoConfiguration.class,
 						GcpContextAutoConfiguration.class,
-						TraceAutoConfiguration.class,
 						RefreshAutoConfiguration.class))
 				.withUserConfiguration(MultipleSpanHandlersConfig.class)
 				.run((context) -> {
@@ -126,11 +122,10 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
 			assertThat(context.getBeansOfType(Sender.class)).containsKeys("stackdriverSender",
 					"otherSender");
-			assertThat(context.getBeansOfType(SpanHandler.class)).hasSize(3);
 			assertThat(context.getBeansOfType(SpanHandler.class)).containsKeys("stackdriverSpanHandler",
-					"otherSpanHandler", "compositeSpanHandler");
+					"otherSpanHandler");
 
-			org.springframework.cloud.sleuth.api.Span span = context.getBean(Tracer.class).nextSpan().name("foo")
+			org.springframework.cloud.sleuth.Span span = context.getBean(Tracer.class).nextSpan().name("foo")
 					.tag("foo", "bar").start();
 			span.end();
 			String spanId = span.context().spanId();
