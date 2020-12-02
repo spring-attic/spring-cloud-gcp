@@ -11,7 +11,7 @@ Project features include:
 * Spring Data Cloud Datastore
 * Spring Data Reactive Repositories for Cloud Firestore
 * Spring Data Cloud SQL
-* Google Cloud Stackdriver Logging & Tracing
+* Google Cloud Logging & Tracing
 * Google Cloud Storage (Spring Resource and Spring Integration)
 * Google Cloud Vision API Template
 * Spring Security identity extraction from Google Cloud IAP headers.
@@ -68,7 +68,7 @@ A sample of these artifacts are provided below.
 | `com.google.cloud:spring-cloud-gcp-starter-pubsub`
 
 | Logging
-| Enables Stackdriver Logging
+| Enables Cloud Logging
 | `com.google.cloud:spring-cloud-gcp-starter-logging`
 
 | SQL - MySQL
@@ -84,7 +84,7 @@ A sample of these artifacts are provided below.
 | `com.google.cloud:spring-cloud-gcp-starter-storage`
 
 | Trace
-| Enables instrumentation with Google Stackdriver Tracing
+| Enables instrumentation with Google Cloud Trace
 | `com.google.cloud:spring-cloud-gcp-starter-trace`
 
 | Vision
@@ -124,10 +124,10 @@ The table below highlights several samples of the most commonly used integration
 | Cloud Storage
 | https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[spring-cloud-gcp-storage-resource-sample]
 
-| Stackdriver Logging
+| Cloud Logging
 | https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[spring-cloud-gcp-logging-sample]
 
-| Trace
+| Cloud Trace
 | https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[spring-cloud-gcp-trace-sample]
 
 | Cloud Vision

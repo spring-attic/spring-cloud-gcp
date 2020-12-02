@@ -1,8 +1,8 @@
-== Stackdriver Monitoring
+== Cloud Monitoring
 
-Google Cloud Platform provides a service called https://cloud.google.com/monitoring/[Stackdriver Monitoring], and https://micrometer.io/docs/registry/stackdriver[Micrometer] can be used with it to easily instrument Spring Boot applications for observability.
+Google Cloud Platform provides a service called https://cloud.google.com/monitoring/[Cloud Monitoring], and https://micrometer.io/docs/registry/stackdriver[Micrometer] can be used with it to easily instrument Spring Boot applications for observability.
 
-Spring Boot already provides auto-configuration for Stackdriver.
+Spring Boot already provides auto-configuration for Cloud Monitoring.
 This module enables auto-detection of the `project-id` and `credentials`.
 Also, it can be customized.
 
@@ -25,10 +25,10 @@ dependencies {
 }
 ----
 
-You must enable Stackdriver Monitoring API from the Google Cloud Console in order to capture metrics.
-Navigate to the https://console.cloud.google.com/apis/api/monitoring.googleapis.com/overview[Stackdriver Monitoring API] for your project and make sure it’s enabled.
+You must enable Cloud Monitoring API from the Google Cloud Console in order to capture metrics.
+Navigate to the https://console.cloud.google.com/apis/api/monitoring.googleapis.com/overview[Cloud Monitoring API] for your project and make sure it’s enabled.
 
-Spring Boot Starter for Stackdriver Monitoring uses Micrometer.
+Spring Boot Starter for Cloud Monitoring uses Micrometer.
 
 === Configuration
 
@@ -36,7 +36,7 @@ All configurations are optional:
 
 |===
 | Name | Description | Required | Default value
-| `spring.cloud.gcp.metrics.enabled` | Auto-configure Micrometer to send metrics to Stackdriver Monitoring. | No | `true`
+| `spring.cloud.gcp.metrics.enabled` | Auto-configure Micrometer to send metrics to Cloud Monitoring. | No | `true`
 | `spring.cloud.gcp.metrics.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.metrics.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.metrics.credentials.encoded-key` | Overrides the credentials encoded key from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |

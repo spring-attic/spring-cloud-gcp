@@ -71,8 +71,8 @@ A summary of these artifacts are provided below.
 | <<pubsub.adoc#_google_cloud_pubsub, com.google.cloud:spring-cloud-gcp-starter-pubsub>>
 
 | Logging
-| Enables Stackdriver Logging
-| <<logging.adoc#_stackdriver_logging, com.google.cloud:spring-cloud-gcp-starter-logging>>
+| Enables Cloud Logging
+| <<logging.adoc#_cloud_logging, com.google.cloud:spring-cloud-gcp-starter-logging>>
 
 | SQL - MySQL
 | Cloud SQL integrations with MySQL
@@ -91,7 +91,7 @@ A summary of these artifacts are provided below.
 | <<config.adoc#_spring_cloud_config, com.google.cloud:spring-cloud-gcp-starter-config>>
 
 | Trace
-| Enables instrumentation with Google Stackdriver Tracing
+| Enables instrumentation with Google Cloud Trace
 | <<trace.adoc#_spring_cloud_sleuth, com.google.cloud:spring-cloud-gcp-starter-trace>>
 
 | Vision
@@ -144,7 +144,7 @@ The table below highlights several samples of the most commonly used integration
 | Cloud Storage
 | https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[spring-cloud-gcp-storage-resource-sample]
 
-| Stackdriver Logging
+| Cloud Logging
 | https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[spring-cloud-gcp-logging-sample]
 
 | Trace

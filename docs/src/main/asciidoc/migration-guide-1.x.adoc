@@ -72,9 +72,9 @@ Property `spring.cloud.gcp.datastore.emulatorHost` :: Use `spring.cloud.gcp.data
 `SpannerQueryOptions.getQueryOptions()`:: Use `getOptions()`
 `PubSubTemplate.subscribe(String, MessageReceiver)`:: Use `subscribe(String, Consumer<BasicAcknowledgeablePubsubMessage>)`
 `SpannerReadOptions.getReadOptions()`:: Use `getOptions()`
-Stackdriver Logging::
+Cloud Logging::
   `org.springframework.cloud.gcp.autoconfigure.logging` package::: Use `com.google.cloud.spring.logging` from the `spring-cloud-gcp-logging` module.
-  Stackdriver Logback Appenders::: Replace `org/springframework/cloud/gcp/autoconfigure/logging/logback[-json]-appender.xml` with `com/google/cloud/spring/logging/logback[-json]-appender.xml` from the `spring-cloud-gcp-logging` module.
+  Cloud Logging Logback Appenders::: Replace `org/springframework/cloud/gcp/autoconfigure/logging/logback[-json]-appender.xml` with `com/google/cloud/spring/logging/logback[-json]-appender.xml` from the `spring-cloud-gcp-logging` module.
 +
 [source,xml]
 .logback-spring.xml

@@ -1,11 +1,11 @@
-== Stackdriver Trace
+== Cloud Trace
 
-Google Cloud Platform provides a managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace], and https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] can be used with it to easily instrument Spring Boot applications for observability.
+Google Cloud Platform provides a managed distributed tracing service called https://cloud.google.com/trace/[Cloud Trace], and https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] can be used with it to easily instrument Spring Boot applications for observability.
 
 Typically, Spring Cloud Sleuth captures trace information and forwards traces to services like Zipkin for storage and analysis.
-However, on GCP, instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
+However, on GCP, instead of running and maintaining your own Zipkin instance and storage, you can use Cloud Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
 
-This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.
+This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Cloud Trace without an intermediary Zipkin server.
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -26,12 +26,12 @@ dependencies {
 }
 ----
 
-You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
-Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project and make sure it’s enabled.
+You must enable Cloud Trace API from the Google Cloud Console in order to capture traces.
+Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Cloud Trace API] for your project and make sure it’s enabled.
 
 [NOTE]
 ====
-If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you can also use a https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace without modifying existing applications.
+If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you can also use a https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Cloud Trace without modifying existing applications.
 ====
 
 === Tracing
@@ -51,22 +51,22 @@ The value of the `x-cloud-trace-context` key can be formatted in three different
 `TRACE_ID` is a 32-character hexadecimal value that encodes a 128-bit number.
 
 `SPAN_ID` is an unsigned long.
-Since Stackdriver Trace doesn't support span joins, a new span ID is always generated, regardless of the one specified in `x-cloud-trace-context`.
+Since Cloud Trace doesn't support span joins, a new span ID is always generated, regardless of the one specified in `x-cloud-trace-context`.
 
 `TRACE_TRUE` can either be `0` if the entity should be untraced, or `1` if it should be traced.
 This field forces the decision of whether or not to trace the request; if omitted then the decision is deferred to the sampler.
 
 If a `x-cloud-trace-context` key isn't found, `StackdriverTracePropagation` falls back to tracing with the https://github.com/openzipkin/b3-propagation[X-B3 headers].
 
-=== Spring Boot Starter for Stackdriver Trace
+=== Spring Boot Starter for Cloud Trace
 
-Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Stackdriver Trace.
+Spring Boot Starter for Cloud Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Cloud Trace.
 
 All configurations are optional:
 
 |===
 | Name | Description | Required | Default value
-| `spring.cloud.gcp.trace.enabled` | Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | No | `true`
+| `spring.cloud.gcp.trace.enabled` | Auto-configure Spring Cloud Sleuth to send traces to Cloud Trace. | No | `true`
 | `spring.cloud.gcp.trace.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.encoded-key` | Overrides the credentials encoded key from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
@@ -78,7 +78,7 @@ All configurations are optional:
 | `spring.cloud.gcp.trace.max-inbound-size` | Maximum size for inbound messages | No |
 | `spring.cloud.gcp.trace.max-outbound-size` | Maximum size for outbound messages | No |
 | `spring.cloud.gcp.trace.wait-for-ready` | https://github.com/grpc/grpc/blob/master/doc/wait-for-ready.md[Waits for the channel to be ready] in case of a transient failure | No | `false`
-| `spring.cloud.gcp.trace.messageTimeout` | Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace. (previously `spring.zipkin.messageTimeout`) | No | 1
+| `spring.cloud.gcp.trace.messageTimeout` | Timeout in seconds before pending spans will be sent in batches to GCP Cloud Trace. (previously `spring.zipkin.messageTimeout`) | No | 1
 |===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
@@ -88,20 +88,20 @@ For example, when you are testing to see the traces are going through, you can s
 
 [source]
 ----
-spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
+spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Cloud Trace.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 spring.sleuth.scheduled.enabled=false                   # disable executor 'async' traces
 ----
 
-WARNING: By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which may cause recurring traces with the name `async` to appear in Stackdriver Trace if your application or one of its dependencies introduces scheduler beans into Spring application context. To avoid this noise, please disable automatic instrumentation of executors via `spring.sleuth.scheduled.enabled=false` in your application configuration.
+WARNING: By default, Spring Cloud Sleuth auto-configuration instruments executor beans, which may cause recurring traces with the name `async` to appear in Cloud Trace if your application or one of its dependencies introduces scheduler beans into Spring application context. To avoid this noise, please disable automatic instrumentation of executors via `spring.sleuth.scheduled.enabled=false` in your application configuration.
 
 Spring Cloud GCP Trace does override some Sleuth configurations:
 
 - Always uses 128-bit Trace IDs.
-This is required by Stackdriver Trace.
+This is required by Cloud Trace.
 - Does not use Span joins.
 Span joins will share the span ID between the client and server Spans.
-Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+Cloud Trace requires that every Span ID within a Trace to be unique, so Span joins are not supported.
 - Uses `StackdriverHttpRequestParser` by default to populate Stackdriver related fields.
 
 === Overriding the auto-configuration
@@ -144,11 +144,11 @@ public class Application implements WebMvcConfigurer {
 }
 ----
 
-You can then search and filter traces based on these additional tags in the Stackdriver Trace service.
+You can then search and filter traces based on these additional tags in the Cloud Trace service.
 
 === Integration with Logging
 
-Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].
+Integration with Cloud Logging is available through the link:logging.adoc[Cloud Logging Support].
 If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
 The trace logs can be viewed by going to the https://console.cloud.google.com/traces/traces[Google Cloud Console Trace List], selecting a trace and pressing the `Logs -> View` link in the `Details` section.
 

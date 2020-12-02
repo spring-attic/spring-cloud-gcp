@@ -1,4 +1,4 @@
-== Stackdriver Logging
+== Cloud Logging
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -19,7 +19,7 @@ dependencies {
 }
 ----
 
-https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud Platform.
+https://cloud.google.com/logging/[Cloud Logging] is the managed logging service provided by Google Cloud Platform.
 
 This module provides support for associating a web request trace ID with the corresponding log entries.
 It does so by retrieving the `X-B3-TraceId` value from the https://logback.qos.ch/manual/mdc.html[Mapped Diagnostic Context (MDC)], which is set by Spring Cloud Sleuth.
@@ -43,11 +43,11 @@ However, if Sleuth is used the trace ID will be picked up from the MDC.
 
 === Logback Support
 
-Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback: via direct API calls and through JSON-formatted console logs.
+Currently, only Logback is supported and there are 2 possibilities to log to Cloud Logging via this library with Logback: via direct API calls and through JSON-formatted console logs.
 
 ==== Log via API
-A Stackdriver appender is available using `com/google/cloud/spring/logging/logback-appender.xml`.
-This appender builds a Stackdriver Logging log entry from a JUL or Logback log entry, adds a trace ID to it and sends it to Stackdriver Logging.
+A Cloud Logging appender is available using `com/google/cloud/spring/logging/logback-appender.xml`.
+This appender builds a Cloud Logging log entry from a JUL or Logback log entry, adds a trace ID to it and sends it to Cloud Logging.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the `STACKDRIVER` appender.
 
@@ -69,9 +69,9 @@ The following properties are available:
 [options="header",]
 |=======================================================================
 | Property | Default Value | Description
-| `log` | `spring.log` | The Stackdriver Log name.
+| `log` | `spring.log` | The Cloud Logging Log name.
 This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
-| `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Stackdriver Logging.
+| `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Cloud Logging.
 This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
 |=======================================================================
 
@@ -92,7 +92,7 @@ Your configuration may then look something like this:
 </configuration>
 ----
 
-If your application is running on Google Kubernetes Engine, Google Compute Engine or Google App Engine Flexible, your console logging is automatically saved to Google Stackdriver Logging.
+If your application is running on Google Kubernetes Engine, Google Compute Engine or Google App Engine Flexible, your console logging is automatically saved to Google Cloud Logging.
 Therefore, you can just include `com/google/cloud/spring/logging/logback-json-appender.xml` in your logging configuration, which logs JSON entries to the console.
 The trace id will be set correctly.
 
@@ -107,9 +107,9 @@ a| If not set, default value is determined in the following order:
 
 1. `SPRING_CLOUD_GCP_LOGGING_PROJECT_ID` Environmental Variable.
 2. Value of `DefaultGcpProjectIdProvider.getProjectId()`
-a| This is used to generate fully qualified Stackdriver Trace ID format: `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
+a| This is used to generate fully qualified Cloud Trace ID format: `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
 
-This format is required to correlate trace between Stackdriver Trace and Stackdriver Logging.
+This format is required to correlate trace between Cloud Trace and Cloud Logging.
 
 If `projectId` is not set and cannot be determined, then it'll log `traceId` without the fully qualified format.
 | `includeTraceId` | `true` | Should the `traceId` be included

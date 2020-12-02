@@ -1,7 +1,7 @@
 == Cloud Foundry
 
 Spring Cloud GCP provides support for Cloud Foundry's https://docs.pivotal.io/partners/gcp-sb/index.html[GCP Service Broker].
-Our Pub/Sub, Cloud Spanner, Storage, Stackdriver Trace and Cloud SQL MySQL and PostgreSQL starters are Cloud Foundry aware and retrieve properties like project ID, credentials, etc., that are used in auto configuration from the Cloud Foundry environment.
+Our Pub/Sub, Cloud Spanner, Storage, Cloud Trace and Cloud SQL MySQL and PostgreSQL starters are Cloud Foundry aware and retrieve properties like project ID, credentials, etc., that are used in auto configuration from the Cloud Foundry environment.
 
 In order to take advantage of the Cloud Foundry support make sure the following dependency is added:
 
@@ -49,7 +49,7 @@ A mapping of Google service names to Cloud Foundry names are provided below:
 | https://cloud.google.com/datastore[Datastore] | `google-datastore`
 | https://cloud.google.com/firestore[Firestore] | `google-firestore`
 | https://cloud.google.com/bigquery[BigQuery] | `google-bigquery`
-| https://cloud.google.com/products/operations[Stackdriver Trace] | `google-stackdriver-trace`
+| https://cloud.google.com/products/operations[Cloud Trace] | `google-stackdriver-trace`
 | https://cloud.google.com/sql[Cloud Sql (MySQL)] | `google-cloudsql-mysql`
 | https://cloud.google.com/sql[Cloud Sql (PostgreSQL)] | `google-cloudsql-postgres`
 |===
