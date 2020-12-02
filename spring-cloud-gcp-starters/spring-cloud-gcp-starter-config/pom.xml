@@ -35,13 +35,23 @@
 	<profiles>
 		<!-- skip for GA releases to Maven Central -->
 		<profile>
-			<id>central</id>
+			<id>skip-unreleased-modules</id>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-deploy-plugin</artifactId>
 						<configuration>
 							<skip>true</skip>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<extensions>true</extensions>
+						<configuration>
+							<skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 						</configuration>
 					</plugin>
 				</plugins>
