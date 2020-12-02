@@ -72,7 +72,7 @@ This might take a while.
 
 . Publish the Javadocs (see section below).
 
-. Publish the Reference documentation (see section below).
+. Confirm the reference documentation was published: https://googlecloudplatform.github.io/spring-cloud-gcp/$RELEASE_VERSION/reference/html/index.html. See section below for more information.
 
 . Increment the project base _patch_ version. For example, from `2.0.0-SNAPSHOT` to `2.0.1-SNAPSHOT`, do:
 ```
@@ -107,7 +107,10 @@ Example: If you published the javadocs for version `2.0.0-SNAPSHOT`, then the UR
 
 
 == Updating Spring Documentation
-. (TODO): Update GitHub Pages to publish the refdoc for the newly released version.
+
+Our Spring documentation (a.k.a. reference docs, or refdocs) is automatically published to GitHub Pages when a new release is published.
+This process is carried out by link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/.github/workflows/updateDocs.yaml[GitHub Actions] by executing a link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/docs/src/main/asciidoc/ghpages.sh[script] Pivotal wrote.
+This script coordinates checking out the new release (by tag or branch name [called 'commitish']), building the refdocs, and pushing them to the `gh-pages` branch, where  GitHub is configured to automatically publish them to `googlecloudplatform.github.io/spring-cloud-gcp`.
 
 . For GA releases, ask on the https://gitter.im/spring-cloud-gcp/Lobby[Spring Cloud GCP Gitter] for the Spring team to update the https://spring.io/projects/spring-cloud-gcp#learn[API Documentation link] to point to the newly published Ref doc and Javadocs.
 
