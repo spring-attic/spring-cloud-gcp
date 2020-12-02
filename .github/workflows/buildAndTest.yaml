@@ -86,6 +86,7 @@ jobs:
       matrix:
         it:
           - bigquery
+          - cloudsql
           - config
           - datastore
           - firestore
