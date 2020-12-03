@@ -434,10 +434,14 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		return ((Datastore) getDatastoreReadWriter())
 				.runInTransaction(
-				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(() -> readerWriter,
-						DatastoreTemplate.this.datastoreEntityConverter,
-						DatastoreTemplate.this.datastoreMappingContext,
-						DatastoreTemplate.this.objectToKeyFactory)));
+				(DatastoreReaderWriter readerWriter) -> {
+					DatastoreTemplate template = new DatastoreTemplate(() -> readerWriter,
+							DatastoreTemplate.this.datastoreEntityConverter,
+							DatastoreTemplate.this.datastoreMappingContext,
+							DatastoreTemplate.this.objectToKeyFactory);
+					template.setApplicationEventPublisher(DatastoreTemplate.this.eventPublisher);
+					return operations.apply(template);
+				});
 	}
 
 	@Override
