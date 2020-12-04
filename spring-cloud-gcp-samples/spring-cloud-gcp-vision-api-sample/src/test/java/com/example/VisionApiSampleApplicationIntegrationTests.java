@@ -83,7 +83,7 @@ public class VisionApiSampleApplicationIntegrationTests {
 							.map(annotation -> annotation.getDescription().toLowerCase().trim())
 							.collect(Collectors.toList());
 
-					assertThat(annotationNames).contains("boston terrier");
+					assertThat(annotationNames).contains("dog");
 				});
 	}
 }
