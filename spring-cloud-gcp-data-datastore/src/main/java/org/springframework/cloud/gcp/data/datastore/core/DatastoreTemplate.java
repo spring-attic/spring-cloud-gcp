@@ -86,7 +86,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -818,19 +817,30 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		DatastorePersistentEntity<?> persistentEntity =
 				this.datastoreMappingContext.getPersistentEntity(example.getProbeType());
 
-		StructuredQuery.Builder builder = keyQuery ? Query.newKeyQueryBuilder() : Query.newEntityQueryBuilder();
-		builder.setKind(persistentEntity.kindName());
-
-		ExampleMatcherAccessor matcherAccessor = new ExampleMatcherAccessor(example.getMatcher());
-		matcherAccessor.getPropertySpecifiers();
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
+		NullHandler nullHandler = example.getMatcher().getNullHandler();
 		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
 			if (!ignoredProperty(example, persistentProperty)) {
 				Value<?> value = getValue(example, probeEntity, persistentEntity, persistentProperty);
-				NullHandler nullHandler = example.getMatcher().getNullHandler();
 				addFilter(nullHandler, filters, persistentProperty.getFieldName(), value);
 			}
 		});
+		persistentEntity.doWithAssociations((AssociationHandler<DatastorePersistentProperty>) association -> {
+			PersistentPropertyAccessor<?> accessor = persistentEntity.getPropertyAccessor(example.getProbe());
+			DatastorePersistentProperty property = association.getInverse();
+			Object value = accessor.getProperty(property);
+			if (value != null) {
+				Key key = objectToKeyFactory.getKeyFromObject(value,
+						this.datastoreMappingContext.getPersistentEntity(value.getClass()));
+				addFilter(nullHandler, filters, property.getFieldName(), KeyValue.of(key));
+			}
+		});
+
+		StructuredQuery.Builder<?> builder =
+				keyQuery
+						? Query.newKeyQueryBuilder()
+						: Query.newEntityQueryBuilder();
+		builder.setKind(persistentEntity.kindName());
 
 		if (!filters.isEmpty()) {
 			builder.setFilter(
