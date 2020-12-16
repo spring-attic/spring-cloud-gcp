@@ -829,11 +829,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			PersistentPropertyAccessor<?> accessor = persistentEntity.getPropertyAccessor(example.getProbe());
 			DatastorePersistentProperty property = association.getInverse();
 			Object value = accessor.getProperty(property);
-			if (value != null) {
-				Key key = objectToKeyFactory.getKeyFromObject(value,
-						this.datastoreMappingContext.getPersistentEntity(value.getClass()));
-				addFilter(nullHandler, filters, property.getFieldName(), KeyValue.of(key));
-			}
+			Value<?> key = value == null
+					? NullValue.of()
+					: KeyValue.of(objectToKeyFactory.getKeyFromObject(value,
+						this.datastoreMappingContext.getPersistentEntity(value.getClass())));
+			addFilter(nullHandler, filters, property.getFieldName(), key);
 		});
 
 		StructuredQuery.Builder<?> builder =

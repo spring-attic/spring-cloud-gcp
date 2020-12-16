@@ -203,6 +203,20 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		Page<Product> pagedProduct = this.productRepository.findAll(example, pageable);
 
 		assertThat(pagedProduct).containsOnly(product1);
+
+		product = new Product(null);
+		example = Example.of(product);
+		pagedProduct = this.productRepository.findAll(example, pageable);
+
+		assertThat(pagedProduct).containsExactlyInAnyOrder(product1, product2);
+
+		product = new Product(null);
+		example = Example.of(product, ExampleMatcher.matching()
+				.withIgnorePaths("id")
+				.withIncludeNullValues());
+		pagedProduct = this.productRepository.findAll(example, pageable);
+
+		assertThat(pagedProduct).isEmpty();
 	}
 
 	@Test
