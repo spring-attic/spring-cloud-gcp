@@ -142,6 +142,39 @@ public interface GcpEnvironmentProvider {
 }
 ----
 
+=== Customizing bean scope
+Spring Cloud GCP starters autoconfigure all necessary beans in the default singleton scope.
+If you need a particular bean or set of beans to be recreated dynamically (for example, to rotate credentials), there are two options:
+
+. Annotate custom beans of the necessary types with `@RefreshScope`.
+This makes the most sense if your application is already redefining those beans.
+. Override the scope for autoconfigured beans by listing them in the Spring Cloud property `spring.cloud.refresh.extra-refreshable`.
++
+For example, the beans involved in Cloud Pub/Sub subscription could be marked as refreshable as follows:
+[source,properties]
+----
+spring.cloud.refresh.extra-refreshable=org.springframework.cloud.gcp.pubsub.support.SubscriberFactory,\
+  org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate
+----
+
+[NOTE]
+====
+`SmartLifecycle` beans, such as Spring Integration adapters, do not currently support `@RefreshScope`.
+If your application refreshes any beans used by such `SmartLifecycle` objects, it may also have to restart the beans manually when `RefreshScopeRefreshedEvent` is detected, such as in the Cloud Pub/Sub example below:
+
+[source,java]
+----
+@Autowired
+private PubSubInboundChannelAdapter pubSubAdapter;
+
+@EventListener(RefreshScopeRefreshedEvent.class)
+public void onRefreshScope(RefreshScopeRefreshedEvent event) {
+  this.pubSubAdapter.stop();
+  this.pubSubAdapter.start();
+}
+----
+====
+
 === Spring Initializr
 
 This starter is available from https://start.spring.io/[Spring Initializr] through the `GCP Support` entry.
