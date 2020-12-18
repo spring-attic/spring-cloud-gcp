@@ -56,7 +56,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DiscriminatorVa
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 import org.springframework.cloud.gcp.data.datastore.entities.CustomMap;
+import org.springframework.cloud.gcp.data.datastore.entities.Product;
 import org.springframework.cloud.gcp.data.datastore.entities.ServiceConfiguration;
+import org.springframework.cloud.gcp.data.datastore.entities.Store;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
@@ -67,6 +69,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
@@ -96,6 +99,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	// This value is multiplied against recorded actual times needed to wait for eventual
 	// consistency.
 	private static final int WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE = 3;
+
+	@Autowired
+	private ProductRepository productRepository;
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
@@ -162,6 +168,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.datastoreTemplate.deleteAll(PetOwner.class);
 		this.datastoreTemplate.deleteAll(Event.class);
 		this.datastoreTemplate.deleteAll(LazyEntity.class);
+		this.datastoreTemplate.deleteAll(Product.class);
+		this.datastoreTemplate.deleteAll(Store.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -175,6 +183,40 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		this.millisWaited = waitUntilTrue(
 				() -> this.testEntityRepository.countBySize(1L) == 3);
 
+	}
+
+	@Test
+	public void testFindByExampleReference() {
+		Store store1 = new Store("store1");
+		Product product1 = new Product(store1);
+
+		productRepository.save(product1);
+
+		Store store2 = new Store("store2");
+		Product product2 = new Product(store2);
+
+		productRepository.save(product2);
+
+		Pageable pageable = PageRequest.of(0, 3);
+		Product product = new Product(store1);
+		Example<Product> example = Example.of(product);
+		Page<Product> pagedProduct = this.productRepository.findAll(example, pageable);
+
+		assertThat(pagedProduct).containsOnly(product1);
+
+		product = new Product(null);
+		example = Example.of(product);
+		pagedProduct = this.productRepository.findAll(example, pageable);
+
+		assertThat(pagedProduct).containsExactlyInAnyOrder(product1, product2);
+
+		product = new Product(null);
+		example = Example.of(product, ExampleMatcher.matching()
+				.withIgnorePaths("id")
+				.withIncludeNullValues());
+		pagedProduct = this.productRepository.findAll(example, pageable);
+
+		assertThat(pagedProduct).isEmpty();
 	}
 
 	@Test
@@ -216,7 +258,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository
 				.findAll(
 						Example.of(new TestEntity(null, null, null, null, null)),
-						Sort.by(Sort.Direction.ASC, "size")))
+						Sort.by(Sort.Direction.ASC, "id")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository
