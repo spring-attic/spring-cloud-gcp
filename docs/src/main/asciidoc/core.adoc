@@ -20,7 +20,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-gcp-starter")
+    implementation("com.google.cloud:spring-cloud-gcp-starter")
 }
 ----
 
@@ -153,8 +153,8 @@ This makes the most sense if your application is already redefining those beans.
 For example, the beans involved in Cloud Pub/Sub subscription could be marked as refreshable as follows:
 [source,properties]
 ----
-spring.cloud.refresh.extra-refreshable=org.springframework.cloud.gcp.pubsub.support.SubscriberFactory,\
-  org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate
+spring.cloud.refresh.extra-refreshable=com.google.cloud.spring.pubsub.support.SubscriberFactory,\
+  com.google.cloud.spring.pubsub.core.subscriber.PubSubSubscriberTemplate
 ----
 
 [NOTE]

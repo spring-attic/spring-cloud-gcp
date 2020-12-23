@@ -20,7 +20,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-gcp-data-spanner")
+    implementation("com.google.cloud:spring-cloud-gcp-data-spanner")
 }
 ----
 
@@ -43,7 +43,7 @@ Gradle:
 [source,subs="normal"]
 ----
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-gcp-starter-data-spanner")
+    implementation("com.google.cloud:spring-cloud-gcp-starter-data-spanner")
 }
 ----
 

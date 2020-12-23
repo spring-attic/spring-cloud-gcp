@@ -19,7 +19,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-gcp-pubsub-stream-binder")
+    implementation("com.google.cloud:spring-cloud-gcp-pubsub-stream-binder")
 }
 ----
 

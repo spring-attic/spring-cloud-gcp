@@ -24,7 +24,7 @@ Gradle coordinates:
 [source,groovy]
 ----
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-gcp-starter-bus-pubsub")
+    implementation("com.google.cloud:spring-cloud-gcp-starter-bus-pubsub")
 }
 ----
 
