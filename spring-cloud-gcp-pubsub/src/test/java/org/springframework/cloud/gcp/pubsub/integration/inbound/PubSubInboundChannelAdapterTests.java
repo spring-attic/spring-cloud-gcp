@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 import java.util.function.Consumer;
 
 import com.google.pubsub.v1.PubsubMessage;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,10 +33,14 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
+import org.springframework.integration.channel.PublishSubscribeChannel;
+import org.springframework.integration.handler.ServiceActivatingHandler;
 import org.springframework.integration.support.MutableMessageBuilder;
 import org.springframework.integration.support.MutableMessageBuilderFactory;
+import org.springframework.integration.test.util.TestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +64,8 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
+
+	private TestUtils.TestApplicationContext context = TestUtils.createTestApplicationContext();
 
 	PubSubInboundChannelAdapter adapter;
 
@@ -84,6 +91,7 @@ public class PubSubInboundChannelAdapterTests {
 		this.adapter = new PubSubInboundChannelAdapter(
 				this.mockPubSubSubscriberOperations, "testSubscription");
 		this.adapter.setOutputChannel(this.mockMessageChannel);
+		this.adapter.setBeanFactory(this.context);
 
 		when(this.mockMessageChannel.send(any())).thenReturn(true);
 
@@ -97,6 +105,11 @@ public class PubSubInboundChannelAdapterTests {
 					messageConsumer.accept(mockAcknowledgeableMessage);
 				return null;
 		});
+	}
+
+	@After
+	public void tearDown() {
+		this.context.close();
 	}
 
 	@Test
@@ -121,6 +134,41 @@ public class PubSubInboundChannelAdapterTests {
 		verify(mockAcknowledgeableMessage).nack();
 
 		assertThat(output.getOut()).contains("failed; message nacked automatically");
+		assertThat(output.getOut()).contains(EXCEPTION_MESSAGE);
+	}
+
+	@Test
+	public void testAckModeAuto_nacksWhenDownstreamProcessingFailsWhenContextShutdown()  {
+
+		this.adapter.setAckMode(AckMode.AUTO);
+		this.adapter.setOutputChannel(this.mockMessageChannel);
+
+		PublishSubscribeChannel errorChannel = new PublishSubscribeChannel();
+		// Simulating what FinalRethrowingErrorMessageHandler would do.
+		MessageHandler errorHandler = message -> {
+			throw new RuntimeException("error channel fails, too");
+		};
+		errorChannel.subscribe(errorHandler);
+		ServiceActivatingHandler handler = new ServiceActivatingHandler(msg -> {
+					throw new RuntimeException("error handling failed");
+		});
+		handler.setBeanFactory(this.context);
+		handler.afterPropertiesSet();
+		this.adapter.setErrorChannel(errorChannel);
+
+		when(this.mockMessageChannel.send(any())).then(input -> {
+			errorChannel.unsubscribe(errorHandler);
+			this.adapter.stop();
+			throw new RuntimeException(EXCEPTION_MESSAGE);
+		});
+
+		this.adapter.start();
+
+		verify(mockAcknowledgeableMessage).nack();
+		verify(mockAcknowledgeableMessage, times(0)).ack();
+
+		assertThat(output.getOut()).contains("failed; message nacked automatically");
+		// original message handling exception
 		assertThat(output.getOut()).contains(EXCEPTION_MESSAGE);
 	}
 
@@ -190,5 +238,7 @@ public class PubSubInboundChannelAdapterTests {
 		assertThat(headers).containsKey(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 		assertThat(headers.get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(mockAcknowledgeableMessage);
 	}
+
+
 
 }
