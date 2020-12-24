@@ -7,4 +7,5 @@
     <suppress files="package\-info\.java" checks="RegexpHeader" />
     <suppress files=".*" checks="LineLength" />
     <suppress checks="Illegal" files=".*RSAKeyGeneratorUtils.java"/>
+    <suppress checks="IllegalImport" files=".*KmsTemplate.java"/>
 </suppressions>

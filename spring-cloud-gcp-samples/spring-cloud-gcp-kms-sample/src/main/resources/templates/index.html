@@ -1,0 +1,98 @@
+<html xmlns:th="https://www.thymeleaf.org">
+
+<style>
+  html * {
+    font-family: Roboto, Verdana, sans-serif;
+  }
+
+  body {
+    max-width: 50em;
+  }
+
+  li {
+    padding: 0.25em;
+  }
+
+  .panel {
+    margin: 1em;
+    padding: 1em;
+    border: 1px solid black;
+    border-radius: 5px;
+  }
+
+  .highlight {
+    background-color: #d6f5d6;
+  }
+
+  .message-highlight {
+    background-color: #f4d03f;
+  }
+
+</style>
+
+<head>
+  <title>Google Cloud Key Management Service Demo</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <link type="text/css" href="css/style.css" rel="stylesheet"/>
+</head>
+
+<body>
+<h1>KMS Demo with Spring Cloud GCP</h1>
+
+<div class="panel">
+  <h2>Encrypt and Decrypt text</h2>
+
+  <p>
+    Using the form below, you can encrypt/decrypt text using Google Cloud Kms.
+    In the controller code, the <i>KmsTemplate</i> is being used to do these operations.
+  </p>
+
+  <div class="panel highlight">
+    <h3>Encrypt Text</h3>
+    <p>
+      This will encrypt text using an Encryption Key ID. You will receive an error if you
+      try to use an encryption key ID that does not already exist.
+    </p>
+      <form method="POST" action="/encrypt">
+          <ol>
+              <li>Key ID: <input type="text" name="keyId"/></li>
+              <li>Text: <input type="text" name="text"/></li>
+              <li><input type="submit" value="Encrypt Text"/></li>
+          </ol>
+      </form>
+  </div>
+
+  <div class="panel highlight">
+    <h3>Decrypt Text</h3>
+    <p>
+      This will decrypt encrypted text an Encryption Key ID. You will receive an error if you
+      try to use an encryption key ID that does not exist or and different key the encrypted the original text.
+    </p>
+      <form method="POST" action="/decrypt">
+          <ol>
+              <li>Key ID: <input type="text" name="keyId"/></li>
+              <li>Encrypted Text: <input type="text" name="encryptedText"/></li>
+              <li><input type="submit" value="Decrypt Text"/></li>
+          </ol>
+      </form>
+
+  </div>
+
+  <div class="panel message-highlight" th:if="${message}">
+    <h3>
+      Key Management Service Operation: [[${message}]]
+    </h3>
+  </div>
+</div>
+
+<div class="panel">
+  <p>
+    You can also view your cryptographic keys in the
+    <a href="https://console.cloud.google.com/security/kms">
+      Cryptographic keys UI in Google Cloud Console
+    </a>.
+  </p>
+</div>
+
+</body>
+</html>

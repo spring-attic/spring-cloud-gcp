@@ -252,6 +252,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- KMS -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>spring-cloud-gcp-kms</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Config -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

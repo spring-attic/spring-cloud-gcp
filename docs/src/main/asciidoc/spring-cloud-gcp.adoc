@@ -59,6 +59,8 @@ include::vision.adoc[]
 
 include::secretmanager.adoc[]
 
+include::kms.adoc[]
+
 include::config.adoc[]
 
 include::cloudfoundry.adoc[]

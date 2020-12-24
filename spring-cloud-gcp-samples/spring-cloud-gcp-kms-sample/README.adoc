@@ -1,0 +1,41 @@
+= Spring Cloud GCP KMS Sample Application
+
+This code sample demonstrates how to use the Spring Cloud GCP Key Management Service (KMS) integration.
+
+== Running the Sample
+
+1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
+
+2. Enable the Cloud Key Management Service from the "APIs & Services" menu of the Google Cloud Console.
+This can be done using the `gcloud` command line tool:
+
+```
+gcloud services enable cloudkms.googleapis.com
+```
+
+3. Authenticate in one of two ways:
+
+a. Use the Google Cloud SDK to https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[authenticate with application default credentials].
+This method is convenient but should only be used in local development.
+b. https://cloud.google.com/iam/docs/creating-managing-service-accounts[Create a new service account], download its private key and point the `spring.cloud.gcp.kms.credentials.location` property to it.
+Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
+
+4. Using the https://console.cloud.google.com/security/kms[Key Management Service in Cloud Console], create a new `global` key ring named `spring-cloud-gcp`, and create a key named `key-id`.
+Instructions for using the Key Management Service UI can be found in the https://cloud.google.com/kms/docs[Key Management Service documentation].
+
+5. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+6. Go to http://localhost:8080 in your browser.
+
+a. Put `spring-cloud-gcp/key-id` as the `Key Id`, add some text and press to `Encrypt Text`.
+
+b. You should see the text you submitted encrypted with the encryption key used in Base64 format
+
+7. Copy the encrypted text generated previously.
+
+a. Place the encrypted text on the `Encrypted Text` field of the `Decrypt Text` section.
+
+b. Put `spring-cloud-gcp/key-id` as the `Key Id` and press `Decrypt Text`.
+
+c. You should see the original text you submitted.
+

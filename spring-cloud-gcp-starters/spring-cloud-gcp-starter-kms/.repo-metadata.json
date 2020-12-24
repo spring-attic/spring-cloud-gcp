@@ -1,0 +1,11 @@
+{
+  "name": "spring-cloud-gcp-starter-kms",
+  "name_pretty": "Spring Cloud GCP Support for Key Management Service",
+  "client_documentation": "https://spring.io/projects/spring-cloud-gcp",
+  "api_description": "Simplifies encryption and decryption from Spring Boot applications.",
+  "release_level": "ga",
+  "language": "java",
+  "repo": "googlecloudplatform/spring-cloud-gcp",
+  "repo_short": "spring-cloud-gcp",
+  "distribution_name": "com.google.cloud:spring-cloud-gcp-starter-kms"
+}

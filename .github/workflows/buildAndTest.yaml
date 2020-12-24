@@ -90,6 +90,7 @@ jobs:
           - config
           - datastore
           - firestore
+          - kms
           - logging
           - metrics
           - kotlin

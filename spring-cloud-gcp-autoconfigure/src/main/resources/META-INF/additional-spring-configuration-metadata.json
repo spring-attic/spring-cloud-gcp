@@ -31,6 +31,12 @@
       "defaultValue": false
     },
     {
+      "name": "spring.cloud.gcp.kms.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Key Management Service (KMS).",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.logging.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",

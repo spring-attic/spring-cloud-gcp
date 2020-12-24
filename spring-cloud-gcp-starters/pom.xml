@@ -40,5 +40,6 @@
 		<module>spring-cloud-gcp-starter-bigquery</module>
 		<module>spring-cloud-gcp-starter-security-firebase</module>
 		<module>spring-cloud-gcp-starter-secretmanager</module>
+		<module>spring-cloud-gcp-starter-kms</module>
 	</modules>
 </project>

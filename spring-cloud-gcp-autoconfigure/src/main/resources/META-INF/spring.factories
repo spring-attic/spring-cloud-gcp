@@ -23,7 +23,8 @@ com.google.cloud.spring.autoconfigure.bigquery.GcpBigQueryAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.datastore.DatastoreTransactionManagerAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.firestore.FirestoreRepositoriesAutoConfiguration,\
 com.google.cloud.spring.autoconfigure.pubsub.health.PubSubHealthIndicatorAutoConfiguration,\
-com.google.cloud.spring.autoconfigure.metrics.GcpStackdriverMetricsAutoConfiguration
+com.google.cloud.spring.autoconfigure.metrics.GcpStackdriverMetricsAutoConfiguration,\
+com.google.cloud.spring.autoconfigure.kms.GcpKmsAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 com.google.cloud.spring.autoconfigure.config.GcpConfigBootstrapConfiguration,\

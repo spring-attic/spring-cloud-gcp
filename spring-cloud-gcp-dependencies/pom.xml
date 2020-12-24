@@ -122,6 +122,11 @@
 				<artifactId>spring-cloud-gcp-secretmanager</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>spring-cloud-gcp-kms</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!--Starters-->
 			<dependency>
@@ -217,6 +222,11 @@
 			<dependency>
 				<groupId>com.google.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-kms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

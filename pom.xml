@@ -333,6 +333,7 @@
 				<module>spring-cloud-gcp-secretmanager</module>
 				<module>spring-cloud-gcp-security-firebase</module>
 				<module>spring-cloud-gcp-vision</module>
+				<module>spring-cloud-gcp-kms</module>
 
 				<!-- Docs and Samples -->
 				<module>docs</module>
@@ -549,6 +550,7 @@
 				<module>spring-cloud-gcp-secretmanager</module>
 				<module>spring-cloud-gcp-security-firebase</module>
 				<module>spring-cloud-gcp-vision</module>
+				<module>spring-cloud-gcp-kms</module>
 			</modules>
 			<build>
 				<pluginManagement>

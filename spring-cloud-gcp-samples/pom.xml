@@ -65,6 +65,7 @@
 		<module>spring-cloud-gcp-secretmanager-sample</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>
 		<module>spring-cloud-gcp-metrics-sample</module>
+		<module>spring-cloud-gcp-kms-sample</module>
 	</modules>
 
 	<!-- Checkstyle on samples invoked during CI or manually when running locally. -->
