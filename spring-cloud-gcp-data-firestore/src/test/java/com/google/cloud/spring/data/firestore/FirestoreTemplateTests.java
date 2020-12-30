@@ -20,15 +20,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreDefaultClassMapper;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreMappingContext;
+import com.google.cloud.spring.data.firestore.mapping.UpdateTime;
 import com.google.firestore.v1.CommitRequest;
 import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.Document.Builder;
 import com.google.firestore.v1.DocumentMask;
 import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.GetDocumentRequest;
+import com.google.firestore.v1.Precondition;
 import com.google.firestore.v1.RunQueryRequest;
 import com.google.firestore.v1.RunQueryResponse;
 import com.google.firestore.v1.StructuredQuery;
@@ -62,8 +65,9 @@ public class FirestoreTemplateTests {
 
 	@Before
 	public void setup() {
+		FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 		this.firestoreTemplate = new FirestoreTemplate(this.firestoreStub, this.parent,
-				new FirestoreDefaultClassMapper(), new FirestoreMappingContext());
+				new FirestoreDefaultClassMapper(mappingContext), mappingContext);
 	}
 
 	@Test
@@ -99,9 +103,96 @@ public class FirestoreTemplateTests {
 		CommitRequest.Builder builder = CommitRequest.newBuilder()
 				.setDatabase("projects/my-project/databases/(default)");
 
-		builder.addWrites(Write.newBuilder().setUpdate(buildDocument("e1", 100)).build());
-		builder.addWrites(Write.newBuilder().setUpdate(buildDocument("e2", 200)).build());
+		builder.addWrites(Write.newBuilder().setUpdate(buildDocument("e1", 100L)).build());
+		builder.addWrites(Write.newBuilder().setUpdate(buildDocument("e2", 200L)).build());
 
+
+		verify(this.firestoreStub, times(1)).commit(eq(builder.build()), any());
+	}
+
+
+	@Test
+	public void updateTimeVersionSaveTest() {
+		mockCommitMethod();
+
+		Timestamp expectedUpdateTime = Timestamp.ofTimeMicroseconds(123456789);
+		StepVerifier.create(
+				this.firestoreTemplate
+						.saveAll(Flux.just(new TestEntityUpdateTimeVersion("e1"), new TestEntityUpdateTimeVersion("e2"))))
+				.expectNext(
+						new TestEntityUpdateTimeVersion("e1", expectedUpdateTime),
+						new TestEntityUpdateTimeVersion("e2", expectedUpdateTime))
+				.verifyComplete();
+
+		CommitRequest.Builder builder = CommitRequest.newBuilder()
+				.setDatabase("projects/my-project/databases/(default)");
+
+		Precondition doesNotExistPrecondition = Precondition.newBuilder().setExists(false).build();
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e1", null))
+						.setCurrentDocument(doesNotExistPrecondition).build());
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e2", null))
+						.setCurrentDocument(doesNotExistPrecondition).build());
+
+		verify(this.firestoreStub, times(1)).commit(eq(builder.build()), any());
+	}
+
+	@Test
+	public void updateTimeVersionUpdateTest() {
+		mockCommitMethod();
+
+		Timestamp expectedUpdateTime = Timestamp.ofTimeMicroseconds(123456789);
+		Timestamp previousUpdateTimeE1 = Timestamp.ofTimeMicroseconds(987654321);
+		Timestamp previousUpdateTimeE2 = Timestamp.ofTimeMicroseconds(918273645);
+		StepVerifier.create(
+				this.firestoreTemplate
+						.saveAll(Flux.just(
+								new TestEntityUpdateTimeVersion("e1", previousUpdateTimeE1),
+								new TestEntityUpdateTimeVersion("e2", previousUpdateTimeE2))))
+				.expectNext(
+						new TestEntityUpdateTimeVersion("e1", expectedUpdateTime),
+						new TestEntityUpdateTimeVersion("e2", expectedUpdateTime))
+				.verifyComplete();
+
+		CommitRequest.Builder builder = CommitRequest.newBuilder()
+				.setDatabase("projects/my-project/databases/(default)");
+
+		Precondition preconditionE1 =
+				Precondition.newBuilder().setUpdateTime(previousUpdateTimeE1.toProto()).build();
+		Precondition preconditionE2 =
+				Precondition.newBuilder().setUpdateTime(previousUpdateTimeE2.toProto()).build();
+
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e1", null))
+						.setCurrentDocument(preconditionE1).build());
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e2", null))
+						.setCurrentDocument(preconditionE2).build());
+
+		verify(this.firestoreStub, times(1)).commit(eq(builder.build()), any());
+	}
+
+	@Test
+	public void updateTimeSaveTest() {
+		mockCommitMethod();
+
+		Timestamp expectedUpdateTime = Timestamp.ofTimeMicroseconds(123456789);
+		StepVerifier.create(
+				this.firestoreTemplate
+						.saveAll(Flux.just(new TestEntityUpdateTime("e1"), new TestEntityUpdateTime("e2"))))
+				.expectNext(
+						new TestEntityUpdateTime("e1", expectedUpdateTime),
+						new TestEntityUpdateTime("e2", expectedUpdateTime))
+				.verifyComplete();
+
+		CommitRequest.Builder builder = CommitRequest.newBuilder()
+				.setDatabase("projects/my-project/databases/(default)");
+
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e1", null)).build());
+		builder.addWrites(
+				Write.newBuilder().setUpdate(buildDocument("e2", null)).build());
 
 		verify(this.firestoreStub, times(1)).commit(eq(builder.build()), any());
 	}
@@ -128,7 +219,10 @@ public class FirestoreTemplateTests {
 	private void mockCommitMethod() {
 		doAnswer(invocation -> {
 			StreamObserver<CommitResponse> streamObserver = invocation.getArgument(1);
-			streamObserver.onNext(CommitResponse.newBuilder().build());
+			CommitResponse response = CommitResponse.newBuilder()
+					.setCommitTime(Timestamp.ofTimeMicroseconds(123456789).toProto())
+					.build();
+			streamObserver.onNext(response);
 			streamObserver.onCompleted();
 			return null;
 		}).when(this.firestoreStub).commit(any(), any());
@@ -350,19 +444,21 @@ public class FirestoreTemplateTests {
 
 	}
 
-	private static Map<String, Value> createValuesMap(String test_entity_1, long value) {
+	private static Map<String, Value> createValuesMap(long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());
 		return valuesMap;
 	}
 
-	public static com.google.firestore.v1.Document buildDocument(String name, long l) {
+	public static com.google.firestore.v1.Document buildDocument(String name, Long l) {
 		Builder documentBuilder = com.google.firestore.v1.Document.newBuilder();
 		if (name != null) {
 			documentBuilder.setName(parent + "/testEntities/" + name);
 		}
-		return documentBuilder
-				.putAllFields(createValuesMap(name, l)).build();
+		if (l != null) {
+			documentBuilder.putAllFields(createValuesMap(l));
+		}
+		return documentBuilder.build();
 	}
 
 	private void mockRunQueryMethod() {
@@ -385,6 +481,9 @@ public class FirestoreTemplateTests {
 		String idField;
 
 		Long longField;
+
+		@UpdateTime
+		Timestamp updateTimestamp;
 
 		TestEntity() {
 		}
@@ -410,6 +509,14 @@ public class FirestoreTemplateTests {
 			this.longField = longField;
 		}
 
+		public Timestamp getUpdateTimestamp() {
+			return updateTimestamp;
+		}
+
+		public void setUpdateTimestamp(Timestamp updateTimestamp) {
+			this.updateTimestamp = updateTimestamp;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -429,16 +536,95 @@ public class FirestoreTemplateTests {
 		}
 	}
 
-	@Document
-	class TestEntityIntegerId {
+	@Document(collectionName = "testEntities")
+	class TestEntityUpdateTimeVersion {
 		@DocumentId
-		public Integer id;
+		public String id;
 
-		public String value;
+		@UpdateTime(version = true)
+		public Timestamp updateTime;
 
-		TestEntityIntegerId(Integer id, String value) {
+		TestEntityUpdateTimeVersion(String id) {
 			this.id = id;
-			this.value = value;
+		}
+
+		TestEntityUpdateTimeVersion(String id, Timestamp updateTime) {
+			this.id = id;
+			this.updateTime = updateTime;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof TestEntityUpdateTimeVersion)) {
+				return false;
+			}
+
+			TestEntityUpdateTimeVersion that = (TestEntityUpdateTimeVersion) o;
+
+			if (!Objects.equals(id, that.id)) {
+				return false;
+			}
+			return Objects.equals(updateTime, that.updateTime);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = id != null ? id.hashCode() : 0;
+			result = 31 * result + (updateTime != null ? updateTime.hashCode() : 0);
+			return result;
+		}
+	}
+
+	@Document(collectionName = "testEntities")
+	class TestEntityUpdateTime {
+		@DocumentId
+		public String id;
+
+		@UpdateTime
+		public Timestamp updateTime;
+
+		TestEntityUpdateTime(String id) {
+			this.id = id;
+		}
+
+		TestEntityUpdateTime(String id, Timestamp updateTime) {
+			this.id = id;
+			this.updateTime = updateTime;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof TestEntityUpdateTime)) {
+				return false;
+			}
+
+			TestEntityUpdateTime that = (TestEntityUpdateTime) o;
+
+			if (!Objects.equals(id, that.id)) {
+				return false;
+			}
+			return Objects.equals(updateTime, that.updateTime);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = id != null ? id.hashCode() : 0;
+			result = 31 * result + (updateTime != null ? updateTime.hashCode() : 0);
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return "TestEntityUpdateTime{" +
+					"id='" + id + '\'' +
+					", updateTime=" + updateTime +
+					'}';
 		}
 	}
 }

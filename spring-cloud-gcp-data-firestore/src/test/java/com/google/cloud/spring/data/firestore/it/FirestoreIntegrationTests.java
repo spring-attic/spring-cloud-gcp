@@ -20,12 +20,14 @@ import java.util.List;
 import java.util.UUID;
 
 import ch.qos.logback.classic.Level;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spring.data.firestore.FirestoreDataException;
 import com.google.cloud.spring.data.firestore.FirestoreReactiveOperations;
 import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import com.google.cloud.spring.data.firestore.entities.PhoneNumber;
 import com.google.cloud.spring.data.firestore.entities.User;
 import com.google.cloud.spring.data.firestore.transaction.ReactiveFirestoreTransactionManager;
+import io.grpc.StatusRuntimeException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,6 +44,7 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -90,6 +94,84 @@ public class FirestoreIntegrationTests {
 
 		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
 		assertThat(users).containsExactlyInAnyOrder(savedUsers.toArray(new User[0]));
+	}
+
+	@Test
+	public void updateTimeTest() {
+		User bob = new User("Bob", 60, null);
+		this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block();
+
+		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(users).containsExactly(bob);
+		assertThat(bob.getUpdateTime()).isNotNull();
+	}
+
+	@Test
+	public void optimisticLockingTest() {
+		User bob = new User("Bob", 60, null);
+
+		this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block();
+		Timestamp bobUpdateTime = bob.getUpdateTime();
+		assertThat(bobUpdateTime).isNotNull();
+
+		User bob2 = new User("Bob", 60, null);
+
+		assertThatThrownBy(() -> this.firestoreTemplate.saveAll(Flux.just(bob2)).collectList().block())
+				.isInstanceOf(StatusRuntimeException.class)
+				.hasMessageContaining("ALREADY_EXISTS");
+
+		bob.setAge(15);
+		this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block();
+		assertThat(bob.getUpdateTime()).isGreaterThan(bobUpdateTime);
+
+
+		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(users).containsExactly(bob);
+
+		User bob3 = users.get(0);
+		bob3.setAge(20);
+		this.firestoreTemplate.saveAll(Flux.just(bob3)).collectList().block();
+
+		assertThatThrownBy(() -> this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block())
+				.isInstanceOf(StatusRuntimeException.class)
+				.hasMessageContaining("does not match the required base version");
+	}
+
+	@Test
+	public void optimisticLockingTransactionTest() {
+		User bob = new User("Bob", 60, null);
+
+		TransactionalOperator operator = TransactionalOperator.create(txManager);
+
+		this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block();
+		Timestamp bobUpdateTime = bob.getUpdateTime();
+		assertThat(bobUpdateTime).isNotNull();
+
+		User bob2 = new User("Bob", 60, null);
+
+		this.firestoreTemplate.saveAll(Flux.just(bob2)).collectList()
+				.as(operator::transactional)
+				.as(StepVerifier::create)
+				.expectError()
+				.verify();
+
+		bob.setAge(15);
+		this.firestoreTemplate.saveAll(Flux.just(bob)).as(operator::transactional).collectList().block();
+		assertThat(bob.getUpdateTime()).isGreaterThan(bobUpdateTime);
+
+
+		List<User> users = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(users).containsExactly(bob);
+
+		User bob3 = users.get(0);
+		bob3.setAge(20);
+		this.firestoreTemplate.saveAll(Flux.just(bob3)).as(operator::transactional).collectList().block();
+
+		this.firestoreTemplate.saveAll(Flux.just(bob)).as(operator::transactional).collectList()
+				.as(operator::transactional)
+				.as(StepVerifier::create)
+				.expectError()
+				.verify();
 	}
 
 	@Test
@@ -166,6 +248,8 @@ public class FirestoreIntegrationTests {
 				.containsExactlyInAnyOrder(bob, alice);
 
 		List<User> usersBeforeDelete = this.firestoreTemplate.findAll(User.class).collectList().block();
+		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
+
 
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(2);
 		this.firestoreTemplate.delete(Mono.just(bob)).block();
@@ -175,11 +259,12 @@ public class FirestoreIntegrationTests {
 		this.firestoreTemplate.deleteById(Mono.just("Alice"), User.class).block();
 		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
 
+		alice.setUpdateTime(null);
 		this.firestoreTemplate.save(alice).block();
+		bob.setUpdateTime(null);
 		this.firestoreTemplate.save(bob).block();
 
 		assertThat(this.firestoreTemplate.deleteAll(User.class).block()).isEqualTo(2);
-		assertThat(usersBeforeDelete).containsExactlyInAnyOrder(alice, bob);
 		assertThat(this.firestoreTemplate.findAll(User.class).collectList().block()).isEmpty();
 
 		//tag::subcollection[]

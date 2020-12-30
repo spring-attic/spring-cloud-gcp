@@ -19,9 +19,11 @@ package com.google.cloud.spring.data.firestore.entities;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.firestore.annotation.PropertyName;
 import com.google.cloud.spring.data.firestore.Document;
+import com.google.cloud.spring.data.firestore.mapping.UpdateTime;
 
 /**
  * Sample entity for integration tests.
@@ -52,6 +54,9 @@ public class User {
 	private Address homeAddress;
 
 	//end::embedded_class_collections[]
+
+	@UpdateTime(version = true)
+	private Timestamp updateTime;
 
 	public User(String name, Integer age) {
 		this.name = name;
@@ -110,6 +115,14 @@ public class User {
 		this.addresses = addresses;
 	}
 
+	public Timestamp getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Timestamp updateTime) {
+		this.updateTime = updateTime;
+	}
+
 	@PropertyName("address")
 	public Address getHomeAddress() {
 		return this.homeAddress;
@@ -128,6 +141,7 @@ public class User {
 				", pets=" + pets +
 				", addresses=" + addresses +
 				", homeAddress=" + homeAddress +
+				", updateTime=" + updateTime +
 				'}';
 	}
 
@@ -144,7 +158,8 @@ public class User {
 				Objects.equals(getAge(), user.getAge()) &&
 				Objects.equals(getPets(), user.getPets()) &&
 				Objects.equals(getAddresses(), user.getAddresses()) &&
-				Objects.equals(getHomeAddress(), user.getHomeAddress());
+				Objects.equals(getHomeAddress(), user.getHomeAddress()) &&
+				Objects.equals(getUpdateTime(), user.getUpdateTime());
 	}
 
 	@Override

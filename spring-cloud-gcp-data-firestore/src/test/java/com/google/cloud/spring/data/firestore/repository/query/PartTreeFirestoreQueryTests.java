@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PartTreeFirestoreQueryTests {
-	private FirestoreClassMapper classMapper = new FirestoreDefaultClassMapper();
+	private FirestoreClassMapper classMapper = new FirestoreDefaultClassMapper(new FirestoreMappingContext());
 
 	private static final User DUMMY_USER = new User("Hello", 23);
 	private static final Consumer<InvocationOnMock> NOOP = invocation -> { };

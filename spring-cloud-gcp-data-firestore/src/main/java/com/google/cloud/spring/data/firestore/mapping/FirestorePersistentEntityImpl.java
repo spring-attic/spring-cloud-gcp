@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.data.firestore.mapping;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spring.data.firestore.Document;
 import com.google.cloud.spring.data.firestore.FirestoreDataException;
 
@@ -36,6 +37,8 @@ public class FirestorePersistentEntityImpl<T>
 		implements FirestorePersistentEntity<T> {
 
 	private final String collectionName;
+
+	private FirestorePersistentProperty updateTimeProperty;
 
 	public FirestorePersistentEntityImpl(TypeInformation<T> information) {
 		super(information);
@@ -62,6 +65,11 @@ public class FirestorePersistentEntityImpl<T>
 		return idProperty;
 	}
 
+	@Override
+	public FirestorePersistentProperty getUpdateTimeProperty() {
+		return updateTimeProperty;
+	}
+
 	private static <T> String getEntityCollectionName(TypeInformation<T> typeInformation) {
 		Document document = AnnotationUtils.findAnnotation(typeInformation.getType(), Document.class);
 		String collectionName = (String) AnnotationUtils.getValue(document, "collectionName");
@@ -72,6 +80,17 @@ public class FirestorePersistentEntityImpl<T>
 		}
 		else {
 			return collectionName;
+		}
+	}
+
+	@Override
+	public void addPersistentProperty(FirestorePersistentProperty property) {
+		super.addPersistentProperty(property);
+		if (property.findAnnotation(UpdateTime.class) != null) {
+			if (property.getActualType() != Timestamp.class) {
+				throw new FirestoreDataException("@UpdateTime annotated field should be of com.google.cloud.Timestamp type");
+			}
+			updateTimeProperty = property;
 		}
 	}
 }

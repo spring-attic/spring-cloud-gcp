@@ -44,4 +44,6 @@ public interface FirestorePersistentEntity<T> extends
 	 * @return the ID property.
 	 */
 	FirestorePersistentProperty getIdPropertyOrFail();
+
+	FirestorePersistentProperty getUpdateTimeProperty();
 }

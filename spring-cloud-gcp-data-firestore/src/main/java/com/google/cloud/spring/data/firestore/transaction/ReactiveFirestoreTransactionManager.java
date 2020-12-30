@@ -16,6 +16,8 @@
 
 package com.google.cloud.spring.data.firestore.transaction;
 
+import com.google.cloud.Timestamp;
+import com.google.cloud.spring.data.firestore.mapping.FirestoreClassMapper;
 import com.google.cloud.spring.data.firestore.util.ObservableReactiveUtil;
 import com.google.cloud.spring.data.firestore.util.Util;
 import com.google.firestore.v1.BeginTransactionRequest;
@@ -23,6 +25,7 @@ import com.google.firestore.v1.BeginTransactionResponse;
 import com.google.firestore.v1.CommitRequest;
 import com.google.firestore.v1.CommitResponse;
 import com.google.firestore.v1.FirestoreGrpc;
+import com.google.firestore.v1.FirestoreGrpc.FirestoreStub;
 import com.google.firestore.v1.RollbackRequest;
 import com.google.firestore.v1.TransactionOptions;
 import com.google.protobuf.ByteString;
@@ -50,16 +53,19 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 
 	private final String databasePath;
 
+	private FirestoreClassMapper classMapper;
+
 	/**
 	 * Constructor for ReactiveFirestoreTransactionManager.
 	 * @param firestore Firestore gRPC stub
 	 * @param parent the parent resource. For example:
 	 *     projects/{project_id}/databases/{database_id}/documents or
-	 *     projects/{project_id}/databases/{database_id}/documents/chatrooms/{chatroom_id}
+	 * @param classMapper Firestore class mapper
 	 */
-	public ReactiveFirestoreTransactionManager(FirestoreGrpc.FirestoreStub firestore, String parent) {
+	public ReactiveFirestoreTransactionManager(FirestoreStub firestore, String parent, FirestoreClassMapper classMapper) {
 		this.firestore = firestore;
 		this.databasePath = Util.extractDatabasePath(parent);
+		this.classMapper = classMapper;
 	}
 
 	@Override
@@ -101,9 +107,16 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 
 			return ObservableReactiveUtil
 					.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
-					.then();
+					.flatMap((response) -> {
+								for (Object entity : resourceHolder.getEntities()) {
+									this.classMapper.setUpdateTime(entity, Timestamp.fromProto(response.getCommitTime()));
+								}
+								return Mono.empty();
+							}
+					);
 		});
 	}
+
 
 	@Override
 	protected Mono<Void> doRollback(TransactionSynchronizationManager transactionSynchronizationManager,

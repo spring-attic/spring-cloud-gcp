@@ -17,6 +17,7 @@
 package com.google.cloud.spring.data.firestore.mapping;
 
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -43,7 +44,10 @@ public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 
 	private static final String NOT_USED_PATH = "/not/used/path";
 
-	public FirestoreDefaultClassMapper() {
+	private FirestoreMappingContext mappingContext;
+
+	public FirestoreDefaultClassMapper(FirestoreMappingContext mappingContext) {
+		this.mappingContext = mappingContext;
 	}
 
 	public <T> Value toFirestoreValue(T sourceValue) {
@@ -54,14 +58,39 @@ public final class FirestoreDefaultClassMapper implements FirestoreClassMapper {
 
 	public <T> Document entityToDocument(T entity, String documentResourceName) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromObject(NOT_USED_PATH, entity);
-		Map<String, Value> valuesMap = INTERNAL.protoFromSnapshot(documentSnapshot);
 		return Document.newBuilder()
-				.putAllFields(valuesMap)
+				.putAllFields(removeUpdateTimestamp(INTERNAL.protoFromSnapshot(documentSnapshot), entity))
 				.setName(documentResourceName).build();
 	}
 
 	public <T> T documentToEntity(Document document, Class<T> clazz) {
 		DocumentSnapshot documentSnapshot = INTERNAL.snapshotFromProto(Timestamp.now(), document);
-		return documentSnapshot.toObject(clazz);
+		T entity = documentSnapshot.toObject(clazz);
+		return setUpdateTime(entity, documentSnapshot.getUpdateTime());
 	}
+
+	public  <T> T setUpdateTime(T entity, Timestamp updateTime) {
+		FirestorePersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntity(entity.getClass());
+		FirestorePersistentProperty updateTimeProperty =
+				Objects.requireNonNull(persistentEntity).getUpdateTimeProperty();
+
+		if (updateTimeProperty != null) {
+			persistentEntity.getPropertyAccessor(entity).setProperty(updateTimeProperty, updateTime);
+		}
+
+		return entity;
+	}
+
+	private Map<String, Value> removeUpdateTimestamp(Map<String, Value> valuesMap, Object entity) {
+		FirestorePersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntity(entity.getClass());
+		FirestorePersistentProperty updateTimeProperty =
+				Objects.requireNonNull(persistentEntity).getUpdateTimeProperty();
+		if (updateTimeProperty != null) {
+			valuesMap.remove(updateTimeProperty.getFieldName());
+		}
+		return valuesMap;
+	}
+
 }

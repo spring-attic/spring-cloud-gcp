@@ -21,6 +21,7 @@ import java.time.Duration;
 import com.google.cloud.spring.data.firestore.FirestoreDataException;
 import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import com.google.cloud.spring.data.firestore.FirestoreTemplateTests;
+import com.google.cloud.spring.data.firestore.FirestoreTemplateTests.TestEntity;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreDefaultClassMapper;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreMappingContext;
 import com.google.firestore.v1.BeginTransactionResponse;
@@ -32,6 +33,7 @@ import com.google.firestore.v1.GetDocumentRequest;
 import com.google.firestore.v1.RollbackRequest;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
+import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
@@ -53,12 +55,15 @@ public class ReactiveFirestoreTransactionManagerTest {
 
 	private final String parent = "projects/my-project/databases/(default)/documents";
 
+	private FirestoreDefaultClassMapper classMapper = new FirestoreDefaultClassMapper(new FirestoreMappingContext());
+
 	@Test
 	public void triggerCommitCorrectly() {
 
 		FirestoreTemplate template = getFirestoreTemplate();
 
-		ReactiveFirestoreTransactionManager txManager = new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent);
+		ReactiveFirestoreTransactionManager txManager =
+				new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent, this.classMapper);
 		TransactionalOperator operator = TransactionalOperator.create(txManager);
 
 		template.findById(Mono.just("e1"), FirestoreTemplateTests.TestEntity.class)
@@ -92,7 +97,8 @@ public class ReactiveFirestoreTransactionManagerTest {
 
 		FirestoreTemplate template = getFirestoreTemplate();
 
-		ReactiveFirestoreTransactionManager txManager = new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent);
+		ReactiveFirestoreTransactionManager txManager =
+				new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent, this.classMapper);
 		TransactionalOperator operator = TransactionalOperator.create(txManager);
 
 		template.findById(Mono.defer(() -> {
@@ -115,9 +121,11 @@ public class ReactiveFirestoreTransactionManagerTest {
 
 		FirestoreTemplate template = getFirestoreTemplate();
 
-		ReactiveFirestoreTransactionManager txManager = new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent);
+		ReactiveFirestoreTransactionManager txManager =
+				new ReactiveFirestoreTransactionManager(this.firestoreStub, this.parent, this.classMapper);
 		TransactionalOperator operator = TransactionalOperator.create(txManager);
 
+		Timestamp commitTime = Timestamp.newBuilder().setSeconds(3456).build();
 		doAnswer(invocation -> {
 			CommitRequest commitRequest = invocation.getArgument(0);
 			StreamObserver<CommitResponse> streamObserver = invocation.getArgument(1);
@@ -127,21 +135,27 @@ public class ReactiveFirestoreTransactionManagerTest {
 			assertThat(commitRequest.getWritesList().get(1).getUpdate().getName()).isEqualTo(this.parent + "/testEntities/" + "e3");
 			assertThat(commitRequest.getWritesList().get(2).getDelete()).isEqualTo(this.parent + "/testEntities/" + "e3");
 
-			streamObserver.onNext(CommitResponse.newBuilder().build());
+			streamObserver.onNext(CommitResponse.newBuilder()
+					.setCommitTime(commitTime)
+					.build());
 
 			streamObserver.onCompleted();
 			return null;
 		}).when(this.firestoreStub).commit(any(), any());
 
+		TestEntity e2 = new TestEntity("e2", 100L);
+		TestEntity e3 = new TestEntity("e3", 100L);
 		template.findById(Mono.just("e1"), FirestoreTemplateTests.TestEntity.class)
-				.flatMap(testEntity -> template.save(new FirestoreTemplateTests.TestEntity("e2", 100L)))
-				.flatMap(testEntity -> template.save(new FirestoreTemplateTests.TestEntity("e3", 100L)))
+				.flatMap(testEntity -> template.save(e2))
+				.flatMap(testEntity -> template.save(e3))
 				.flatMap(testEntity -> template.delete(Mono.just(testEntity)))
 				.then()
 				.as(operator::transactional)
 				.as(StepVerifier::create)
 				.verifyComplete();
 
+		assertThat(e2.getUpdateTimestamp().toProto()).isEqualTo(commitTime);
+		assertThat(e3.getUpdateTimestamp().toProto()).isEqualTo(commitTime);
 		verify(this.firestoreStub).beginTransaction(any(), any());
 		verify(this.firestoreStub).commit(any(), any());
 
@@ -197,9 +211,9 @@ public class ReactiveFirestoreTransactionManagerTest {
 			return null;
 		}).when(this.firestoreStub).getDocument(any(), any());
 
-
+		FirestoreMappingContext mappingContext = new FirestoreMappingContext();
 		FirestoreTemplate template = new FirestoreTemplate(this.firestoreStub, this.parent,
-				new FirestoreDefaultClassMapper(), new FirestoreMappingContext());
+				new FirestoreDefaultClassMapper(mappingContext), mappingContext);
 
 		StepVerifier.setDefaultTimeout(Duration.ofSeconds(5));
 		return template;

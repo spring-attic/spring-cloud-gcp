@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.data.firestore.mapping;
 
+import com.google.cloud.Timestamp;
 import com.google.firestore.v1.Document;
 import com.google.firestore.v1.Value;
 
@@ -55,4 +56,7 @@ public interface FirestoreClassMapper {
 	 * @return the entity that the Firestore document was converted to
 	 */
 	<T> T documentToEntity(Document document, Class<T> clazz);
+
+	<T> T setUpdateTime(T entity, Timestamp updateTime);
+
 }

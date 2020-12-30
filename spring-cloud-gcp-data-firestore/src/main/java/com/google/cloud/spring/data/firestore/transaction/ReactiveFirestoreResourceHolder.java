@@ -34,6 +34,8 @@ public class ReactiveFirestoreResourceHolder extends ResourceHolderSupport {
 
 	private List<Write> writes = new ArrayList<>();
 
+	private List<Object> entities = new ArrayList<>();
+
 	public ReactiveFirestoreResourceHolder(ByteString transactionId) {
 		this.transactionId = transactionId;
 	}
@@ -44,5 +46,9 @@ public class ReactiveFirestoreResourceHolder extends ResourceHolderSupport {
 
 	public List<Write> getWrites() {
 		return this.writes;
+	}
+
+	public List<Object> getEntities() {
+		return entities;
 	}
 }
