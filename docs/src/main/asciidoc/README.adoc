@@ -1,9 +1,5 @@
 image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Unit%20Tests/badge.svg?branch=master["Master (Unit Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Unit+Tests&quot;"]
 image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=master["Master (Integration Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Integration+Tests&quot;"]
-image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp/master?label=master(deprecated)["master Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp/branches"]
-image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp/1.2.x?label=1.2.x["1.2.x Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp/branches"]
-image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp/1.1.x?label=1.1.x["1.1.x Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp/branches"]
-image:https://img.shields.io/travis/spring-cloud/spring-cloud-gcp/1.0.x?label=1.0.x["1.0.x Build Status", link="https://travis-ci.org/spring-cloud/spring-cloud-gcp/branches"]
 
 = Spring Framework on Google Cloud Platform
 
