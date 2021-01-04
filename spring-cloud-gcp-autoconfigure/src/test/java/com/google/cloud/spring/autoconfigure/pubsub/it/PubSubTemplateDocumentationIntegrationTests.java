@@ -71,7 +71,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+			assumeThat(System.getProperty("it.pubsub-docs")).isEqualTo("true");
 	}
 
 	@Test

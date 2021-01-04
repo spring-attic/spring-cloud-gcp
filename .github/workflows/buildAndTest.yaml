@@ -95,7 +95,10 @@ jobs:
           - metrics
           - kotlin
           - pubsub
+          - pubsub-bus
+          - pubsub-docs
           - pubsub-emulator
+          - pubsub-integration
           - secretmanager
           - spanner
           - storage
