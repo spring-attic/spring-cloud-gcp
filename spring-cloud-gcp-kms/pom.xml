@@ -9,7 +9,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-kms</artifactId>
-	<name>Spring Cloud GCP KMS Module</name>
+	<name>Spring Cloud GCP Module - KMS</name>
 	<description>
 		Provides Spring Framework integrations with Google Cloud Key Management Service
 	</description>
