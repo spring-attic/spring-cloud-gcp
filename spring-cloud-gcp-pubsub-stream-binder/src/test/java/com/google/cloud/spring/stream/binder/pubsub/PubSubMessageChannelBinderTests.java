@@ -16,29 +16,52 @@
 
 package com.google.cloud.spring.stream.binder.pubsub;
 
+import java.util.List;
+import java.util.Map;
+
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
+import com.google.cloud.spring.core.GcpProjectIdProvider;
 import com.google.cloud.spring.pubsub.PubSubAdmin;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubMessageSource;
 import com.google.cloud.spring.pubsub.integration.outbound.PubSubMessageHandler;
 import com.google.cloud.spring.stream.binder.pubsub.config.PubSubBinderConfiguration;
 import com.google.cloud.spring.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import com.google.cloud.spring.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import com.google.cloud.spring.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.cloud.stream.binder.Binding;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
+import org.springframework.cloud.stream.binder.PollableMessageSource;
+import org.springframework.cloud.stream.binding.BindingService;
+import org.springframework.cloud.stream.config.ConsumerEndpointCustomizer;
+import org.springframework.cloud.stream.config.ProducerMessageHandlerCustomizer;
+import org.springframework.cloud.stream.messaging.Processor;
+import org.springframework.cloud.stream.messaging.Sink;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
+import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.MessageChannel;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +75,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubMessageChannelBinderTests {
+	private static final Log LOGGER = LogFactory.getLog(PubSubMessageChannelBinderTests.class);
 
 	PubSubMessageChannelBinder binder;
 
@@ -148,4 +172,67 @@ public class PubSubMessageChannelBinderTests {
 				});
 	}
 
+	@Test
+	public void testProducerAndConsumerCustomizers() {
+		baseContext.withUserConfiguration(PubSubBinderTestConfig.class)
+				.withPropertyValues("spring.cloud.stream.bindings.input.group=testGroup")
+				.run(context -> {
+
+					DirectFieldAccessor channelBindingServiceAccessor = new DirectFieldAccessor(
+							context.getBean(BindingService.class));
+					@SuppressWarnings("unchecked")
+					Map<String, List<Binding<MessageChannel>>> consumerBindings =
+							(Map<String, List<Binding<MessageChannel>>>) channelBindingServiceAccessor
+									.getPropertyValue("consumerBindings");
+					assertThat(new DirectFieldAccessor(
+							consumerBindings.get("input").get(0)).getPropertyValue(
+							"lifecycle.beanName"))
+							.isEqualTo("setByCustomizer:input");
+
+					@SuppressWarnings("unchecked")
+					Map<String, Binding<MessageChannel>> producerBindings =
+							(Map<String, Binding<MessageChannel>>) channelBindingServiceAccessor
+									.getPropertyValue("producerBindings");
+					assertThat(new DirectFieldAccessor(
+							producerBindings.get("output")).getPropertyValue(
+							"val$producerMessageHandler.beanName"))
+							.isEqualTo("setByCustomizer:output");
+				});
+	}
+
+	public interface PMS {
+		@Input
+		PollableMessageSource source();
+	}
+
+	@EnableBinding({ Processor.class, PMS.class })
+	@EnableAutoConfiguration
+	public static class PubSubBinderTestConfig {
+
+		@Bean
+		public ConsumerEndpointCustomizer<PubSubInboundChannelAdapter> consumerCustomizer() {
+			return (p, q, g) -> p.setBeanName("setByCustomizer:" + q);
+		}
+
+		@Bean
+		public ProducerMessageHandlerCustomizer<PubSubMessageHandler> handlerCustomizer() {
+			return (handler, destinationName) -> handler.setBeanName("setByCustomizer:" + destinationName);
+		}
+
+		@StreamListener(Sink.INPUT)
+		public void process(String payload) throws InterruptedException {
+			LOGGER.info("received: " + payload);
+		}
+
+		@Bean
+		public GcpProjectIdProvider projectIdProvider() {
+			return () -> "fake project";
+		}
+
+		@Bean
+		public CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
+
+	}
 }
