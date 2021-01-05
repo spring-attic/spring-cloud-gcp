@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -40,14 +40,14 @@ public class ExampleController {
 		this.workService = workService;
 	}
 
-	@RequestMapping("/")
+	@GetMapping("/")
 	public String work(HttpServletRequest request) {
 		String meetUrl = request.getRequestURL().toString() + "/meet";
 		this.workService.visitMeetEndpoint(meetUrl);
 		return "finished";
 	}
 
-	@RequestMapping("/meet")
+	@GetMapping("/meet")
 	public String meet() throws InterruptedException {
 		long duration = 200L + (long) (Math.random() * 500L);
 

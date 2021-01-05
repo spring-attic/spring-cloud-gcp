@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,12 +45,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ExampleController {
 
-	@RequestMapping("/")
+	@GetMapping("/")
 	public String unsecured() {
 		return "No secrets here!\n";
 	}
 
-	@RequestMapping("/topsecret")
+	@GetMapping("/topsecret")
 	public String secured() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -64,7 +64,7 @@ public class ExampleController {
 
 	}
 
-	@RequestMapping("/headers")
+	@GetMapping("/headers")
 	public Map<String, String> headers(HttpServletRequest req) {
 		return Collections.list(req.getHeaderNames())
 				.stream()
