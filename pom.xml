@@ -42,7 +42,7 @@
 		<java-cfenv.version>2.1.2.RELEASE</java-cfenv.version>
 		<javadoc.failOnError>false</javadoc.failOnError>
 		<javadoc.failOnWarnings>false</javadoc.failOnWarnings>
-		<kotlin.version>1.3.31</kotlin.version>
+		<kotlin.version>1.4.21</kotlin.version>
 		<maven-checkstyle-plugin.failOnViolation>true</maven-checkstyle-plugin.failOnViolation>
 		<maven-checkstyle-plugin.failsOnError>true</maven-checkstyle-plugin.failsOnError>
 		<maven-checkstyle-plugin.skip>false</maven-checkstyle-plugin.skip>
