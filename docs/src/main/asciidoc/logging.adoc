@@ -75,6 +75,25 @@ This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
 This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
 |=======================================================================
 
+==== Asynchronous Logging
+
+If you would like to send logs asynchronously to Cloud Logging, you can use the `AsyncAppender`.
+
+Your configuration may then look like this:
+[source, xml]
+----
+<configuration>
+  <include resource="com/google/cloud/spring/logging/logback-appender.xml" />
+
+  <appender name="ASYNC_STACKDRIVER" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="STACKDRIVER" />
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="ASYNC_STACKDRIVER" />
+  </root>
+</configuration>
+----
 
 ==== Log via Console
 

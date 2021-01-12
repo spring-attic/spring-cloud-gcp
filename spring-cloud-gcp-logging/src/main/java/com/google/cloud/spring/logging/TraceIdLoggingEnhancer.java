@@ -16,8 +16,11 @@
 
 package com.google.cloud.spring.logging;
 
+import ch.qos.logback.classic.AsyncAppender;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.LoggingEnhancer;
+import com.google.cloud.logging.logback.LoggingEventEnhancer;
 import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
 
@@ -29,9 +32,9 @@ import com.google.cloud.spring.core.GcpProjectIdProvider;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class TraceIdLoggingEnhancer implements LoggingEnhancer {
+public class TraceIdLoggingEnhancer implements LoggingEnhancer, LoggingEventEnhancer {
 
-	private static final ThreadLocal<String> traceId = new ThreadLocal<>();
+	private static final ThreadLocal<String> threadLocalTraceId = new ThreadLocal<>();
 
 	private static final String APP_ENGINE_LABEL_NAME = "appengine.googleapis.com/trace_id";
 
@@ -41,10 +44,10 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	public static void setCurrentTraceId(String id) {
 		if (id == null) {
-			traceId.remove();
+			threadLocalTraceId.remove();
 		}
 		else {
-			traceId.set(id);
+			threadLocalTraceId.set(id);
 		}
 	}
 
@@ -53,7 +56,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	 * @return the trace ID stored through {@link #setCurrentTraceId(String)}
 	 */
 	public static String getCurrentTraceId() {
-		return traceId.get();
+		return threadLocalTraceId.get();
 	}
 
 	/**
@@ -71,12 +74,35 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	 */
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
+		enhanceLogEntry(builder, null);
+	}
+
+	/**
+	 * See: {@link TraceIdLoggingEnhancer#enhanceLogEntry(LogEntry.Builder)}
+	 * This method adds support for {@link AsyncAppender} when retrieving MDC properties.
+	 *
+ 	 * @param builder log entry builder
+	 * @param e logging event
+	 */
+	@Override
+	public void enhanceLogEntry(LogEntry.Builder builder, ILoggingEvent e) {
 		// In order not to duplicate the whole google-cloud-logging-logback LoggingAppender to add
 		// the trace ID from the MDC there, we're doing it here.
 		// This requires a call to the org.slf4j package.
-		String traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
-		String spanId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
+		String traceId = null;
+		String spanId = null;
+		if (e != null) {
+			// try the logging event MDC first, so it works with AsyncAppender
+			traceId = e.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+			spanId = e.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
+		}
 		if (traceId == null) {
+			// try thread-local MDC
+			traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+			spanId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
+		}
+		if (traceId == null) {
+			// try our own thread-local
 			traceId = getCurrentTraceId();
 		}
 
@@ -90,5 +116,9 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 		if (spanId != null) {
 			builder.setSpanId(spanId);
 		}
+	}
+
+	void setProjectIdProvider(GcpProjectIdProvider projectIdProvider) {
+		this.projectIdProvider = projectIdProvider;
 	}
 }

@@ -10,7 +10,7 @@ Stackdriver appender logback configuration provided for import.
 
   <appender name="STACKDRIVER" class="com.google.cloud.spring.logging.LoggingAppender">
     <log>${STACKDRIVER_LOG_NAME}</log> <!-- Optional : default spring.log -->
-    <enhancer>com.google.cloud.spring.logging.TraceIdLoggingEnhancer</enhancer>
+    <loggingEventEnhancer>com.google.cloud.spring.logging.TraceIdLoggingEnhancer</loggingEventEnhancer>
     <flushLevel>${STACKDRIVER_LOG_FLUSH_LEVEL}</flushLevel> <!-- Optional : default ERROR -->
   </appender>
 </included>
