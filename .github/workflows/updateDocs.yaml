@@ -36,6 +36,16 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
 
+    - name: Mvn install # Need this when the version/directory/pom structure changes
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --show-version \
+          --threads 1.5C \
+          --define maven.test.skip=true \
+          --define maven.javadoc.skip=true \
+          install
+
     - name: Update Docs
       run: |
         if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
