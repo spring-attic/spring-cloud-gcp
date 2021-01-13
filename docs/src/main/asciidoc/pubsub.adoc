@@ -69,12 +69,12 @@ Maximum number of outstanding bytes to keep in memory before enforcing flow cont
 | `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior`|
 The behavior when the specified limits are exceeded. | No | Block
 | `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|
-The element count threshold to use for batching. | No | unset (threshold does not apply)
+The element count threshold to use for batching. | No | 1 (batching off)
 | `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
-The request byte threshold to use for batching. | No | unset (threshold does not apply)
+The request byte threshold to use for batching. | No | 1 byte (batching off)
 | `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
 The delay threshold to use for batching.
-After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent. | No | unset (threshold does not apply)
+After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent. | No | 1 ms (batching off)
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching. | No | false
 |===
