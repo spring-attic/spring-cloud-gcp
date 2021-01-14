@@ -5,15 +5,57 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
-== 2.0.0
+== 2.0.0 (2021-01-06)
 
+=== General
+
+* Compatible with Spring Cloud `2020.0.0` (Ilford release train)
 * Package renamed from `org.springframework.cloud.gcp` to `com.google.cloud.spring`
 * Maven coordinates now use `com.google.cloud` as the group ID
 * All `deprecated` items removed
 
 For a full list, please see the https://googlecloudplatform.github.io/spring-cloud-gcp/reference/html/index.html#migration-guide-from-spring-cloud-gcp-1-x-to-2-x[2.x migration guide].
 
-== 1.2.7.BUILD-SNAPSHOT
+=== Cloud SQL
+
+* Replaced `CloudSqlAutoConfiguration` with `CloudSqlEnvironmentPostProcessor` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/131[#131])
+
+=== Datastore
+
+* Fixed auditing when running through `DatastoreTemplate.performTransaction()` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/157[#157])
+* Fixed `findAll(example, pageable)` ignores `@Reference` annotated fields (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/177[#177])
+
+=== Firestore
+
+* Resolved 10 simultaneous writes limitation (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/135[#135])
+* Added update time and optimistic locking support (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/171[#171])
+
+=== KMS
+
+* Added Cloud Key Management Service (KMS) support (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/175[#175])
+** Spring Boot starter, sample, and documentation included
+
+=== Logging
+
+* Added support for trace with async logging (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/197[#197])
+
+=== Metrics
+
+* Multiple fixes for the metrics auto-config and sample (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/121[#121])
+
+=== Pub/Sub
+
+* Addded support for binder customizers (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/186[#186])
+
+=== Secret Manager
+
+* Changed secret manager module to use v1 instead of v1beta (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/173[#173])
+
+=== Spanner
+
+* Added support `spring.cloud.gcp.project-id` property for Spanner Emulator config (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/123[#123])
+
+== 1.2.7 (TBD)
 
 === Pub/Sub
 
