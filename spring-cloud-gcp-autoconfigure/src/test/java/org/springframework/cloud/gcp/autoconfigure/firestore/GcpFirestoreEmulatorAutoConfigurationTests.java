@@ -66,6 +66,7 @@ public class GcpFirestoreEmulatorAutoConfigurationTests {
 
 					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
 					assertThat(firestoreTemplate.isUsingStreamTokens()).isFalse();
+					assertThat(firestoreOptions.getProjectId()).isEqualTo("unused");
 				});
 	}
 
@@ -81,6 +82,19 @@ public class GcpFirestoreEmulatorAutoConfigurationTests {
 
 					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
 					assertThat(firestoreTemplate.isUsingStreamTokens()).isTrue();
+				});
+	}
+
+	@Test
+	public void testThatIfProjectIdIsGivenItWillBeUsed() {
+		contextRunner
+				.withPropertyValues(
+						"spring.cloud.gcp.firestore.project-id=demo",
+						"spring.cloud.gcp.firestore.emulator.enabled=true",
+						"spring.cloud.gcp.firestore.host-port=localhost:9000")
+				.run(context -> {
+					FirestoreOptions firestoreOptions = context.getBean(FirestoreOptions.class);
+					assertThat(firestoreOptions.getProjectId()).isEqualTo("demo");
 				});
 	}
 }
