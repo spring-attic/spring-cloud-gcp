@@ -65,7 +65,6 @@ public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 					assertThat(endpoint).isEqualTo("localhost:9000");
 
 					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
-					assertThat(firestoreTemplate.isUsingStreamTokens()).isFalse();
 				});
 	}
 
@@ -80,7 +79,6 @@ public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 					assertThat(endpoint).isEqualTo("firestore.googleapis.com:443");
 
 					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
-					assertThat(firestoreTemplate.isUsingStreamTokens()).isTrue();
 				});
 	}
 }
