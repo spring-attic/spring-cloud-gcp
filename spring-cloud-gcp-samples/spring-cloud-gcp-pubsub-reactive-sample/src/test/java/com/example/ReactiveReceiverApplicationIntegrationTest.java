@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import org.junit.BeforeClass;
@@ -74,7 +75,7 @@ public class ReactiveReceiverApplicationIntegrationTest {
 				.uri(uriBuilder -> uriBuilder
 						.path("/postMessage")
 						.queryParam("message", "reactive test msg")
-						.queryParam("count", "2")
+						.queryParam("count", (ReactiveController.MAX_RESPONSE_ITEMS + 10) + "")
 						.build())
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.exchange();
@@ -85,9 +86,10 @@ public class ReactiveReceiverApplicationIntegrationTest {
 			.exchange()
 			.returnResult(String.class);
 
+		AtomicInteger i = new AtomicInteger(0);
 		StepVerifier.create(result.getResponseBody())
-			.expectNext("reactive test msg 0")
-			.expectNext("reactive test msg 1")
+				.expectNextCount(ReactiveController.MAX_RESPONSE_ITEMS)
+				.thenConsumeWhile(s -> s.startsWith("reactive test msg " + i.getAndIncrement()))
 			.thenCancel()
 			.verify();
 	}

@@ -17,9 +17,11 @@
 package com.example;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.cloud.spring.pubsub.reactive.PubSubReactiveFactory;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 @ResponseBody
+@Slf4j
 public class ReactiveController {
+
+	/**
+	 * Max number of messages returned from one call. Requests above this limit will be truncated to this limit.
+	 */
+	public final static int MAX_RESPONSE_ITEMS = 100;
 
 	@Autowired
 	PubSubReactiveFactory reactiveFactory;
@@ -48,14 +56,17 @@ public class ReactiveController {
 		Flux<AcknowledgeablePubsubMessage> flux
 				= this.reactiveFactory.poll("exampleSubscription", 1000);
 
+		AtomicInteger count = new AtomicInteger(0);
+
 		return flux
-				.doOnNext(message -> {
-					System.out.println("Received a message: " + message.getPubsubMessage().getMessageId());
+				.limitRate(10)
+				.limitRequest(MAX_RESPONSE_ITEMS)
+				.map(message -> {
 					message.ack();
-				})
-				.map(message -> new String(
-						message.getPubsubMessage().getData().toByteArray(),
-						Charset.defaultCharset()));
+					log.info("Received message number: " + count.getAndIncrement());
+					return new String(message.getPubsubMessage().getData().toByteArray(),
+						Charset.defaultCharset());
+					});
 	}
 
 }
