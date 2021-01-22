@@ -444,6 +444,48 @@ public class FirestoreTemplateTests {
 
 	}
 
+	@Test
+	public void withParentTest_entityReference() {
+		doAnswer(invocation -> {
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(any(), any());
+
+		this.firestoreTemplate
+				.withParent(new TestEntity("parent",  0L))
+				.findById(Mono.just("child"), TestEntity.class)
+				.block();
+
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/parent/testEntities/child")
+				.build();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
+	@Test
+	public void withParentTest_idClassReference() {
+		doAnswer(invocation -> {
+			StreamObserver<com.google.firestore.v1.Document> streamObserver = invocation.getArgument(1);
+			streamObserver.onNext(buildDocument("e1", 100L));
+			streamObserver.onCompleted();
+			return null;
+		}).when(this.firestoreStub).getDocument(any(), any());
+
+		this.firestoreTemplate
+				.withParent("parent", TestEntity.class)
+				.findById(Mono.just("child"), TestEntity.class)
+				.block();
+
+		GetDocumentRequest request = GetDocumentRequest.newBuilder()
+				.setName(this.parent + "/testEntities/parent/testEntities/child")
+				.build();
+
+		verify(this.firestoreStub, times(1)).getDocument(eq(request), any());
+	}
+
 	private static Map<String, Value> createValuesMap(long value) {
 		Map<String, Value> valuesMap = new HashMap<>();
 		valuesMap.put("longField", Value.newBuilder().setIntegerValue(value).build());

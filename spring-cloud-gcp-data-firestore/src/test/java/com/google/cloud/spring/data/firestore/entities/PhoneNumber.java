@@ -29,6 +29,7 @@ import com.google.cloud.spring.data.firestore.Document;
 
 @Document(collectionName = "phoneNumbers")
 public class PhoneNumber {
+
 	@DocumentId
 	private String phoneNumber;
 

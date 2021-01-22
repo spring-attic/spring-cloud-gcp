@@ -104,16 +104,6 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		this.mappingContext = mappingContext;
 	}
 
-	@Override
-	public <T> FirestoreReactiveOperations withParent(T parent) {
-		FirestoreTemplate firestoreTemplate =
-						new FirestoreTemplate(this.firestore, buildResourceName(parent), this.classMapper, this.mappingContext);
-		firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
-		firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
-
-		return firestoreTemplate;
-	}
-
 	/**
 	 * Sets the {@link Duration} for how long to wait for the entity buffer to fill before sending
 	 * the buffered entities to Firestore for insert/update/delete operations.
@@ -257,6 +247,25 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 				.map(document -> getClassMapper().documentToEntity(document, entityType)));
 	}
 
+	@Override
+	public FirestoreReactiveOperations withParent(Object id, Class<?> entityClass) {
+		return withParent(buildResourceName(id, entityClass));
+	}
+
+	@Override
+	public <T> FirestoreReactiveOperations withParent(T parent) {
+		return withParent(buildResourceName(parent));
+	}
+
+	private FirestoreReactiveOperations withParent(String resourceName) {
+		FirestoreTemplate firestoreTemplate =
+				new FirestoreTemplate(this.firestore, resourceName, this.classMapper, this.mappingContext);
+		firestoreTemplate.setWriteBufferSize(this.writeBufferSize);
+		firestoreTemplate.setWriteBufferTimeout(this.writeBufferTimeout);
+
+		return firestoreTemplate;
+	}
+
 	public FirestoreMappingContext getMappingContext() {
 		return this.mappingContext;
 	}
@@ -389,9 +398,20 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return builder.setUpdate(document).build();
 	}
 
+	private <T> String buildResourceName(Object entityId, Class<T> entityClass) {
+		FirestorePersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntity(entityClass);
+		return buildResourceName(persistentEntity, entityId.toString());
+	}
+
 	private <T> String buildResourceName(T entity) {
 		FirestorePersistentEntity<?> persistentEntity =
 				this.mappingContext.getPersistentEntity(entity.getClass());
+
+		if (persistentEntity == null) {
+			throw new IllegalArgumentException(entity.getClass().toString() + " is not a valid Firestore entity class.");
+		}
+
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 		if (idVal == null) {

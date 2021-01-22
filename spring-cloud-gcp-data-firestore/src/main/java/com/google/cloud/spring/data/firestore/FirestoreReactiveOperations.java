@@ -140,10 +140,11 @@ public interface FirestoreReactiveOperations {
 	<T> Flux<T> execute(StructuredQuery.Builder builder, Class<T> entityClass);
 
 	/**
-	 * Creates FirestoreReactiveOperations object with a provided parent.
+	 * Creates FirestoreReactiveOperations object with a specified parent document.
 	 * The parent doesn't have to exist in Firestore, but should have a non-empty id field.
 	 * All operations and queries will be scoped to that parent's subcollections.
-	 * By default, FirestoreReactiveOperations uses the root as a "parent".
+	 * By default, FirestoreReactiveOperations uses the root document as the parent.
+	 *
 	 * @param <T> the type param of the parent.
 	 * @param parent the query builder.
 	 * @return template with a given parent.
@@ -151,4 +152,15 @@ public interface FirestoreReactiveOperations {
 	 */
 	<T> FirestoreReactiveOperations withParent(T parent);
 
+	/**
+	 * Creates FirestoreReactiveOperations object with a specified parent document.
+	 * All operations and queries will be scoped to that parent document's subcollections.
+	 * By default, FirestoreReactiveOperations uses the root document as the parent.
+	 *
+	 * @param id the id of the Document entity
+	 * @param entityClass the class of the Document entity
+	 * @return template with a given parent.
+	 * @since 2.0.1
+	 */
+	FirestoreReactiveOperations withParent(Object id, Class<?> entityClass);
 }
