@@ -42,7 +42,7 @@ public class ReactiveController {
 	@Autowired
 	PubSubReactiveFactory reactiveFactory;
 
-	@GetMapping(value = "/getmessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+	@GetMapping(value = "/getMessages", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
 	public Flux<String> getMessages() {
 
 		Flux<AcknowledgeablePubsubMessage> flux
