@@ -8,6 +8,19 @@ Edit the files in the src/main/asciidoc/ directory instead.
 image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Unit%20Tests/badge.svg?branch=master["Master (Unit Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Unit+Tests&quot;"]
 image:https://github.com/spring-cloud/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=master["Master (Integration Tests)", link="https://github.com/spring-cloud/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A&quot;Integration+Tests&quot;"]
 
+= Repo has moved!
+
+This repository contains code for Spring Cloud GCP 1.2.x and below.
+Future work will be in our new repo, https://github.com/GoogleCloudPlatform/spring-cloud-gcp[GoogleCloudPlatform/spring-cloud-gcp].
+We will continue to support 1.2.x (a.k.a. Hoxton) with critical bug fixes until the end of 2021, which is in line with
+the https://github.com/spring-cloud/spring-cloud-release/wiki/Supported-Versions#spring-cloud-support-policy[Spring Cloud Support Policy].
+
+Read more about the Spring Cloud release train updates https://spring.io/blog/2019/07/24/simplifying-the-spring-cloud-release-train[here].
+
+---
+
+---
+
 = Spring Framework on Google Cloud Platform
 
 This project makes it easy for Spring users to run their applications on Google Cloud Platform.
