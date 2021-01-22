@@ -34,6 +34,7 @@ import com.google.firestore.v1.FirestoreGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
+import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Flux;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -55,15 +56,14 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureBefore(GcpFirestoreAutoConfiguration.class)
 @EnableConfigurationProperties(GcpFirestoreProperties.class)
 public class GcpFirestoreEmulatorAutoConfiguration {
-
-	private static final String EMULATOR_PROJECT_ID = "unused";
-
-	private static final String ROOT_PATH = "projects/unused/databases/(default)";
-
 	private final String hostPort;
+	private final String projectId;
+	private final String rootPath;
 
 	GcpFirestoreEmulatorAutoConfiguration(GcpFirestoreProperties properties) {
 		this.hostPort = properties.getHostPort();
+		this.projectId = StringUtils.defaultIfEmpty(properties.getProjectId(), "unused");
+		this.rootPath = String.format("projects/%s/databases/(default)", this.projectId);
 	}
 
 	@Bean
@@ -71,7 +71,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 	public FirestoreOptions firestoreOptions() {
 		return FirestoreOptions.newBuilder()
 				.setCredentials(emulatorCredentials())
-				.setProjectId(EMULATOR_PROJECT_ID)
+				.setProjectId(projectId)
 				.setChannelProvider(
 						InstantiatingGrpcChannelProvider.newBuilder()
 								.setEndpoint(this.hostPort)
@@ -84,7 +84,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 		final Map<String, List<String>> headerMap = new HashMap<>();
 		headerMap.put("Authorization", Collections.singletonList("Bearer owner"));
 		headerMap.put(
-				"google-cloud-resource-prefix", Collections.singletonList(ROOT_PATH));
+				"google-cloud-resource-prefix", Collections.singletonList(rootPath));
 
 		return new Credentials() {
 			@Override
@@ -126,7 +126,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
 			FirestoreTemplate template = new FirestoreTemplate(
 					firestoreStub,
-					ROOT_PATH + "/documents",
+					rootPath + "/documents",
 					classMapper,
 					firestoreMappingContext);
 			return template;
