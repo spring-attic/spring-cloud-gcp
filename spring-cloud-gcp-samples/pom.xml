@@ -32,6 +32,7 @@
 		<maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<maven.sources.skip>true</maven.sources.skip>
+		<sonar.skip>true</sonar.skip>
 	</properties>
 
 	<modules>
