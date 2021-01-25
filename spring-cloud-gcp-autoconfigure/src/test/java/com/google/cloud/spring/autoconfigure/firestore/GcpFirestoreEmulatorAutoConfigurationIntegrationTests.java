@@ -19,7 +19,6 @@ package com.google.cloud.spring.autoconfigure.firestore;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.cloud.spring.autoconfigure.core.GcpContextAutoConfiguration;
-import com.google.cloud.spring.data.firestore.FirestoreTemplate;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,6 +54,7 @@ public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 	public void testAutoConfigurationEnabled() {
 		contextRunner
 				.withPropertyValues(
+						"spring.cloud.gcp.firestore.project-id=",
 						"spring.cloud.gcp.firestore.emulator.enabled=true",
 						"spring.cloud.gcp.firestore.host-port=localhost:9000")
 				.run(context -> {
@@ -64,7 +64,6 @@ public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 									firestoreOptions.getTransportChannelProvider()).getEndpoint();
 					assertThat(endpoint).isEqualTo("localhost:9000");
 
-					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
 					assertThat(firestoreOptions.getProjectId()).isEqualTo("unused");
 				});
 	}
@@ -78,8 +77,6 @@ public class GcpFirestoreEmulatorAutoConfigurationIntegrationTests {
 							((InstantiatingGrpcChannelProvider)
 									firestoreOptions.getTransportChannelProvider()).getEndpoint();
 					assertThat(endpoint).isEqualTo("firestore.googleapis.com:443");
-
-					FirestoreTemplate firestoreTemplate = context.getBean(FirestoreTemplate.class);
 				});
 	}
 
