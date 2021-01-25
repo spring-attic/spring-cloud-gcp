@@ -19,7 +19,7 @@ jobs:
         with:
           java-version: 11
       - name: Cache SonarCloud packages
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -30,8 +30,24 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Mvn install w/ coverage # Need this when the directory/pom structure changes
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --show-version \
+            --threads 1.5C \
+            --activate-profiles codecov \
+            clean \
+            install
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B -P codecov verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=GoogleCloudPlatform_spring-cloud-gcp -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=googlecloudplatform
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles codecov \
+            --define sonar.projectKey=GoogleCloudPlatform_spring-cloud-gcp \
+            --define sonar.host.url=https://sonarcloud.io \
+            --define sonar.organization=googlecloudplatform \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
