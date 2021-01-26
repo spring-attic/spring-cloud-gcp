@@ -401,6 +401,11 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private <T> String buildResourceName(Object entityId, Class<T> entityClass) {
 		FirestorePersistentEntity<?> persistentEntity =
 				this.mappingContext.getPersistentEntity(entityClass);
+
+		if (persistentEntity == null) {
+			throw new IllegalArgumentException(entityClass.toString() + " is not a valid Firestore entity class.");
+		}
+
 		return buildResourceName(persistentEntity, entityId.toString());
 	}
 
