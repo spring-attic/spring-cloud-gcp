@@ -22,6 +22,9 @@
 						"custom-key" : "custom-value"
 					}
 				</customJson>
+				<loggingEventEnhancer>
+					com.google.cloud.spring.logging.StackdriverJsonLayoutLoggerTests$JsonLayoutTestEnhancer
+				</loggingEventEnhancer>
 			</layout>
 		</encoder>
 	</appender>

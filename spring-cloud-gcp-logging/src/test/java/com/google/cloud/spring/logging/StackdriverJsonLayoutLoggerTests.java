@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Map;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
@@ -28,6 +29,8 @@ import org.apache.logging.slf4j.MDCContextMap;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -179,10 +182,41 @@ public class StackdriverJsonLayoutLoggerTests {
 		}
 	}
 
+	@Test
+	public void testJsonLayoutEnhancer() {
+		PrintStream oldOut = System.out;
+
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			System.setOut(new java.io.PrintStream(out));
+
+			Logger logger = LoggerFactory.getLogger("StackdriverJsonLayoutServiceCtxLoggerTests");
+
+			Marker marker = MarkerFactory.getMarker("testMarker");
+			logger.warn(marker, "test");
+
+			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+			checkData("marker", "testMarker", data);
+		}
+		finally {
+			System.setOut(oldOut);
+		}
+	}
 
 	private void checkData(String attribute, Object value, Map data) {
 		Object actual = data.get(attribute);
 		assertThat(actual).isNotNull();
 		assertThat(actual).isEqualTo(value);
+	}
+
+	static class JsonLayoutTestEnhancer implements JsonLoggingEventEnhancer {
+
+		@Override
+		public void enhanceJsonLogEntry(Map<String, Object> jsonMap, ILoggingEvent event) {
+			if (event.getMarker() != null) {
+				String name = event.getMarker().getName();
+				jsonMap.put("marker", name);
+			}
+		}
 	}
 }

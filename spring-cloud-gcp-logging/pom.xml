@@ -8,6 +8,10 @@
 		<version>2.0.1-SNAPSHOT</version>
 	</parent>
 
+	<properties>
+		<logstash.version>6.6</logstash.version>
+	</properties>
+
 	<artifactId>spring-cloud-gcp-logging</artifactId>
 	<name>Spring Cloud GCP Module - Stackdriver Logging</name>
 	<description>Spring Cloud GCP Stackdriver Logging</description>
@@ -34,6 +38,14 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Optional Logging Extensions Libraries -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>${logstash.version}</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
