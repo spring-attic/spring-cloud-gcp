@@ -1,0 +1,112 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 9 * * *' # 09:30 UTC every day
+
+
+jobs:
+  unitTests:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [8, 11, 15]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Mvn install # Need this when the directory/pom structure changes
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --show-version \
+          --threads 1.5C \
+          --define maven.test.skip=true \
+          --define maven.javadoc.skip=true \
+          install
+    - name: Unit Tests
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --fail-at-end \
+          --threads 1.5C \
+          test
+    - name: Aggregate Report
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --define aggregate=true \
+          surefire-report:report-only
+    - name: Archive logs
+      if: always()
+      continue-on-error: true
+      uses: actions/upload-artifact@v2
+      with:
+        name: Unit Test Logs - Java ${{ matrix.java }}
+        path: |
+          **/target/surefire-reports/*
+          **/target/site
+
+
+  releaseCheck:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: releaseCheck
+        run: |
+          ./mvnw \
+            --batch-mode \
+            -Drelease=true \
+            -DskipTests \
+            -Dgpg.skip \
+            -Dcheckstyle.skip \
+            clean \
+            package
+      - name: docsCheck
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles docs,spring \
+            -DskipTests \
+            -Dgpg.skip \
+            -Dcheckstyle.skip \
+            --projects docs \
+            clean \
+            package
+      - name: Archive Artifacts
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: Release Artifacts
+          path: |
+            **/.flattened-pom.xml
+            **/target/**.jar
+            target/site/apidocs
+            **/target/generated-docs
+            !spring-cloud-gcp-samples

@@ -1,0 +1,110 @@
+name: Integration Tests
+
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '35 9 * * *' # 09:35 UTC every day
+
+
+jobs:
+  integrationTests:
+    if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        it:
+          - bigquery
+          - cloudsql
+          - config
+          - datastore
+          - firestore
+          - kms
+          - logging
+          - metrics
+          - kotlin
+          - pubsub
+          - pubsub-bus
+          - pubsub-docs
+          - pubsub-emulator
+          - pubsub-integration
+          - secretmanager
+          - spanner
+          - storage
+          - trace
+          - vision
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: latest
+          project_id: spring-cloud-gcp-ci
+          service_account_key: ${{ secrets.SPRING_CLOUD_GCP_CI_SA_KEY }}
+          export_default_credentials: true
+      - name: Install pubsub-emulator
+        if: ${{ matrix.it == 'pubsub-emulator' }}
+        run: |
+          gcloud components install pubsub-emulator beta && \
+            gcloud components update
+      - name: Mvn install # Need this when the directory/pom structure changes
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+      - name: Wait our turn for running integration tests
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          continue-after-seconds: 1200 # 30 min
+      - name: Integration Tests
+        id: intTest1
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles spring-cloud-gcp-ci-it \
+            --define maven.javadoc.skip=true \
+            --define skip.surefire.tests=true \
+            --define it.${{ matrix.it }}=true \
+            verify
+      - name: Retry on Failure
+        id: intTest2
+        if: steps.intTest1.outcome == 'failure'
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles spring-cloud-gcp-ci-it \
+            --define maven.javadoc.skip=true \
+            --define skip.surefire.tests=true \
+            --define it.${{ matrix.it }}=true \
+            verify
+      - name: Aggregate Report
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --define aggregate=true \
+            surefire-report:failsafe-report-only
+      - name: Archive logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: Integration Test Logs - ${{ matrix.it}}
+          path: |
+            **/target/failsafe-reports/*
+            **/target/site

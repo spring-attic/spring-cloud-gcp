@@ -1,4 +1,4 @@
-name: Sonar
+name: SonarCloud Analysis
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ jobs:
   build:
     if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' # Only run on upstream branch
     name: Build with Sonar
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
