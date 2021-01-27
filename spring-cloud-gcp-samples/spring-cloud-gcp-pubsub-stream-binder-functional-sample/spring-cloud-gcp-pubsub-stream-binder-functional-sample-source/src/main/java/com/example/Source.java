@@ -19,8 +19,8 @@ package com.example;
 import java.util.function.Supplier;
 
 import com.example.model.UserMessage;
-import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
  * <p>What makes this class a valid Spring Cloud Stream source is the presence of a {@link Supplier}
  * bean.
  *
- * The {@link EmitterProcessor} is used only as a local communication mechanism between the
+ * The {@link Sinks.Many} is used only as a local communication mechanism between the
  * {@link FrontendController} and this Spring Cloud Stream source.
  *
  * @author Elena Felder
@@ -43,11 +43,11 @@ import org.springframework.context.annotation.Configuration;
 public class Source {
 
 	@Autowired
-	private EmitterProcessor<UserMessage> postOffice;
+	private Sinks.Many<UserMessage> postOffice;
 
 	@Bean
 	Supplier<Flux<UserMessage>> generateUserMessages() {
-		return () -> postOffice;
+		return () -> postOffice.asFlux();
 	}
 
 }

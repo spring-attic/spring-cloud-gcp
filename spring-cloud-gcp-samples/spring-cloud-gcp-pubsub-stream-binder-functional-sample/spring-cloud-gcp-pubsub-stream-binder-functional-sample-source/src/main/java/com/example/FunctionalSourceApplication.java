@@ -17,7 +17,7 @@
 package com.example;
 
 import com.example.model.UserMessage;
-import reactor.core.publisher.EmitterProcessor;
+import reactor.core.publisher.Sinks;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * Spring Boot application for running the Spring Cloud Stream source.
  *
- * <p>This class bootstraps the Spring Boot application and creates the {@link EmitterProcessor}
+ * <p>This class bootstraps the Spring Boot application and creates the {@link Sinks.Many}
  * bean that is used for communication between {@link FrontendController} and {@link Source}.
  *
  * @author Elena Felder
@@ -38,11 +38,11 @@ public class FunctionalSourceApplication {
 
 	/**
 	 * Allows {@link Source} to subscribe to {@link UserMessage} instances from front-end.
-	 * @return {@link EmitterProcessor} used for passing {@link UserMessage} objects.
+	 * @return {@link Sinks.Many} used for passing {@link UserMessage} objects.
 	 */
 	@Bean
-	public EmitterProcessor<UserMessage> postOffice() {
-		return EmitterProcessor.create();
+	public Sinks.Many<UserMessage> postOffice() {
+		return Sinks.many().unicast().onBackpressureBuffer();
 	}
 
 	public static void main(String[] args) {

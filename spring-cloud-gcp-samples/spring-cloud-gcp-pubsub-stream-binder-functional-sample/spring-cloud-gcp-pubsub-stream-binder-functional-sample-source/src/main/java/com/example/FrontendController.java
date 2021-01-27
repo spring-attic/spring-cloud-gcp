@@ -17,7 +17,7 @@
 package com.example;
 
 import com.example.model.UserMessage;
-import reactor.core.publisher.EmitterProcessor;
+import reactor.core.publisher.Sinks;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +28,7 @@ import org.springframework.web.servlet.view.RedirectView;
 /**
  * Controller for the user message form submission.
  *
- * <p>The {@link EmitterProcessor} is used to locally send messages to {@link Source}.
+ * <p>The {@link Sinks.Many} is used to locally send messages to {@link Source}.
  *
  * @author Elena Felder
  *
@@ -38,14 +38,14 @@ import org.springframework.web.servlet.view.RedirectView;
 public class FrontendController {
 
 	@Autowired
-	private EmitterProcessor<UserMessage> postOffice;
+	private Sinks.Many<UserMessage> postOffice;
 
 	@PostMapping("/postMessage")
 	public RedirectView sendMessage(
 			@RequestParam("messageBody") String messageBody,
 			@RequestParam("username") String username) {
 		UserMessage userMessage = new UserMessage(messageBody, username);
-		postOffice.onNext(userMessage);
+		postOffice.tryEmitNext(userMessage);
 
 		return new RedirectView("index.html");
 	}
