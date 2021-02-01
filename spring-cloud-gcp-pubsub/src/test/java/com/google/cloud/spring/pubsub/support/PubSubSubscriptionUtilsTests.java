@@ -38,8 +38,9 @@ public class PubSubSubscriptionUtilsTests {
 		ProjectSubscriptionName parsedProjectSubscriptionName = PubSubSubscriptionUtils
 				.toProjectSubscriptionName(subscription, project);
 
-		assertThat(parsedProjectSubscriptionName).isEqualTo(ProjectSubscriptionName.of(project, subscription));
-		assertThat(parsedProjectSubscriptionName.toString()).isEqualTo(fqn);
+		assertThat(parsedProjectSubscriptionName)
+				.isEqualTo(ProjectSubscriptionName.of(project, subscription))
+				.hasToString(fqn);
 	}
 
 	@Test
@@ -65,8 +66,9 @@ public class PubSubSubscriptionUtilsTests {
 		ProjectSubscriptionName parsedProjectSubscriptionName = PubSubSubscriptionUtils.toProjectSubscriptionName(fqn,
 				project);
 
-		assertThat(parsedProjectSubscriptionName).isEqualTo(ProjectSubscriptionName.of(project, subscription));
-		assertThat(parsedProjectSubscriptionName.toString()).isEqualTo(fqn);
+		assertThat(parsedProjectSubscriptionName)
+				.isEqualTo(ProjectSubscriptionName.of(project, subscription))
+				.hasToString(fqn);
 	}
 
 	@Test
@@ -78,7 +80,8 @@ public class PubSubSubscriptionUtilsTests {
 		ProjectSubscriptionName parsedProjectSubscriptionName = PubSubSubscriptionUtils.toProjectSubscriptionName(fqn,
 				null);
 
-		assertThat(parsedProjectSubscriptionName).isEqualTo(ProjectSubscriptionName.of(project, subscription));
-		assertThat(parsedProjectSubscriptionName.toString()).isEqualTo(fqn);
+		assertThat(parsedProjectSubscriptionName)
+				.isEqualTo(ProjectSubscriptionName.of(project, subscription))
+				.hasToString(fqn);
 	}
 }
