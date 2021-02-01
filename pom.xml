@@ -461,6 +461,7 @@
 								<dependency>
 									<groupId>com.google.errorprone</groupId>
 									<artifactId>error_prone_core</artifactId>
+									<!-- Overriding version for Java 8 compatibility. See gh/2624 -->
 									<version>2.3.4</version>
 								</dependency>
 							</dependencies>
