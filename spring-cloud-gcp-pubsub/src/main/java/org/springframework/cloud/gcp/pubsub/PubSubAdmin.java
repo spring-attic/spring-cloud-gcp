@@ -48,9 +48,9 @@ import org.springframework.util.Assert;
  */
 public class PubSubAdmin implements AutoCloseable {
 
-	private static final int MIN_ACK_DEADLINE_SECONDS = 10;
+	protected static final int MIN_ACK_DEADLINE_SECONDS = 10;
 
-	private static final int MAX_ACK_DEADLINE_SECONDS = 600;
+	protected static final int MAX_ACK_DEADLINE_SECONDS = 600;
 
 	private final String projectId;
 
@@ -104,7 +104,7 @@ public class PubSubAdmin implements AutoCloseable {
 	public Topic createTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		return this.topicAdminClient.createTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
+		return this.topicAdminClient.createTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class PubSubAdmin implements AutoCloseable {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		try {
-			return this.topicAdminClient.getTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
+			return this.topicAdminClient.getTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -138,7 +138,7 @@ public class PubSubAdmin implements AutoCloseable {
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		this.topicAdminClient.deleteTopic(PubSubTopicUtils.toProjectTopicName(topicName, this.projectId));
+		this.topicAdminClient.deleteTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class PubSubAdmin implements AutoCloseable {
 
 		return this.subscriptionAdminClient.createSubscription(
 				PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId),
-				PubSubTopicUtils.toProjectTopicName(topicName, this.projectId),
+				PubSubTopicUtils.toTopicName(topicName, this.projectId),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
 	}
@@ -324,5 +324,4 @@ public class PubSubAdmin implements AutoCloseable {
 			this.subscriptionAdminClient.close();
 		}
 	}
-
 }

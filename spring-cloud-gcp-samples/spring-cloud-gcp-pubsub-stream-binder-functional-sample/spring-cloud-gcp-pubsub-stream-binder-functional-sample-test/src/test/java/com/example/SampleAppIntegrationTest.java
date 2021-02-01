@@ -81,7 +81,7 @@ public class SampleAppIntegrationTest {
 		RestTemplate restTemplate = new RestTemplate();
 
 		URI redirect = restTemplate.postForLocation("http://localhost:8080/postMessage", map);
-		assertThat(redirect.toString()).isEqualTo("http://localhost:8080/index.html");
+		assertThat(redirect).hasToString("http://localhost:8080/index.html");
 
 		Awaitility.await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> this.output.getOut()

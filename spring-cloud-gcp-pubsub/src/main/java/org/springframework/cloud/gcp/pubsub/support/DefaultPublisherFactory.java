@@ -128,7 +128,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		return this.publishers.computeIfAbsent(topic, (key) -> {
 			try {
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(PubSubTopicUtils.toProjectTopicName(topic, this.projectId));
+						Publisher.newBuilder(PubSubTopicUtils.toTopicName(topic, this.projectId));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
