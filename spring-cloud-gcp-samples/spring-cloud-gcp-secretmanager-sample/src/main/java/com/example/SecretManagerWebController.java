@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.HtmlUtils;
 
 @Controller
 public class SecretManagerWebController {
@@ -78,7 +79,7 @@ public class SecretManagerWebController {
 					"sm://" + projectId + "/" + secretId + "/" + version);
 		}
 
-		return "Secret ID: " + secretId + " | Value: " + secretPayload
+		return "Secret ID: " + HtmlUtils.htmlEscape(secretId) + " | Value: " + secretPayload
 				+ "<br/><br/><a href='/'>Go back</a>";
 	}
 
