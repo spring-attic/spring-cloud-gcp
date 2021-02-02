@@ -71,13 +71,18 @@ public class GcsSession implements Session<BlobInfo> {
 				: this.gcs.delete(tokens[0], tokens[1]);
 	}
 
+	/**
+	 * Only supports listing buckets, not folders.
+	 *
+	 * @param bucket The name of the bucket.
+	 * @return The BlobInfo of all objects in the bucket.
+	 * @throws IOException Thrown if there an issue communicating with GCS.
+	 */
 	@Override
-	public BlobInfo[] list(String path) throws IOException {
-		// TODO(joaomartins): Only supports listing buckets, not folders.
-
+	public BlobInfo[] list(String bucket) throws IOException {
 		Collection<BlobInfo> blobs = new ArrayList<>();
 
-		for (Blob blob : this.gcs.list(path).iterateAll()) {
+		for (Blob blob : this.gcs.list(bucket).iterateAll()) {
 			blobs.add(blob);
 		}
 
@@ -110,8 +115,6 @@ public class GcsSession implements Session<BlobInfo> {
 
 	@Override
 	public void append(InputStream inputStream, String destination) throws IOException {
-		// TODO(joaomartins): We could do compose here, but it assumes that InputStream is first copied to a
-		// GCS object that we can then "compose" to the original object.
 		throw new UnsupportedOperationException("Appending isn't supported by Google Cloud Storage.");
 	}
 

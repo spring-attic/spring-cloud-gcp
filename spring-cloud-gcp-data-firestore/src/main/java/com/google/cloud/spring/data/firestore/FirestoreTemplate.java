@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.firestore.Internal;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreClassMapper;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreMappingContext;
 import com.google.cloud.spring.data.firestore.mapping.FirestorePersistentEntity;
@@ -420,8 +421,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 		Object idVal = persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);
 		if (idVal == null) {
-			//TODO: replace with com.google.cloud.firestore.Internal.autoId() when it is available
-			idVal = AutoId.autoId();
+			idVal = Internal.autoId();
 			persistentEntity.getPropertyAccessor(entity).setProperty(idProperty, idVal);
 		}
 		return buildResourceName(persistentEntity, idVal.toString());
