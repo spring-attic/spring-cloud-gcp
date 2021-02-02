@@ -251,7 +251,8 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		if (tx.getTransactionManager() != null
-				&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+				&& (tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED
+						|| tx.getTransactionManager().getState() == TransactionManager.TransactionState.ABORTED)) {
 			tx.getTransactionManager().rollback();
 		}
 		if (tx.isReadOnly()) {
