@@ -43,6 +43,8 @@ import org.springframework.util.Assert;
  */
 public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> {
 
+	private static final String NON_NULL_ID_REQUIRED = "A non-null ID is required.";
+
 	private final SpannerTemplate spannerTemplate;
 
 	private final Class<T> entityType;
@@ -95,14 +97,14 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	@Override
 	public Optional<T> findById(ID id) {
-		Assert.notNull(id, "A non-null ID is required.");
+		Assert.notNull(id, NON_NULL_ID_REQUIRED);
 		T result = this.spannerTemplate.read(this.entityType, toKey(id));
 		return Optional.<T>ofNullable(result);
 	}
 
 	@Override
 	public boolean existsById(ID id) {
-		Assert.notNull(id, "A non-null ID is required.");
+		Assert.notNull(id, NON_NULL_ID_REQUIRED);
 		return this.spannerTemplate.existsById(this.entityType, toKey(id));
 	}
 
@@ -127,7 +129,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	@Override
 	public void deleteById(Object id) {
-		Assert.notNull(id, "A non-null ID is required.");
+		Assert.notNull(id, NON_NULL_ID_REQUIRED);
 		this.spannerTemplate.delete(this.entityType, toKey(id));
 	}
 

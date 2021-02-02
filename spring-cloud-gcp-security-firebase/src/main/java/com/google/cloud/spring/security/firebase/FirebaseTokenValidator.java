@@ -53,6 +53,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 
 	private Clock clock = Clock.systemUTC();
 
+	private static final String OAUTH2_ERROR_URI = "https://tools.ietf.org/html/rfc6750#section-3.1";
 
 	public FirebaseTokenValidator(String projectId) {
 		this(projectId, DEFAULT_MAX_CLOCK_SKEW);
@@ -81,7 +82,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 			errors.add(new OAuth2Error(
 					OAuth2ErrorCodes.INVALID_REQUEST,
 					String.format("iat claim header must be in the past"),
-					"https://tools.ietf.org/html/rfc6750#section-3.1"));
+					OAUTH2_ERROR_URI));
 		}
 	}
 
@@ -90,7 +91,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 		if (subject == null || subject.length() == 0) {
 			errors.add(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST,
 					"sub claim can not be empty",
-					"https://tools.ietf.org/html/rfc6750#section-3.1"
+					OAUTH2_ERROR_URI
 					));
 		}
 	}
@@ -101,7 +102,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 			errors.add(new OAuth2Error(
 					OAuth2ErrorCodes.INVALID_REQUEST,
 					String.format("auth_time claim header must be in the past"),
-					"https://tools.ietf.org/html/rfc6750#section-3.1"));
+					OAUTH2_ERROR_URI));
 		}
 	}
 
@@ -117,6 +118,6 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 		errors.add(new OAuth2Error(
 				OAuth2ErrorCodes.INVALID_REQUEST,
 				"This aud claim is not equal to the configured audience",
-				"https://tools.ietf.org/html/rfc6750#section-3.1"));
+				OAUTH2_ERROR_URI));
 	}
 }

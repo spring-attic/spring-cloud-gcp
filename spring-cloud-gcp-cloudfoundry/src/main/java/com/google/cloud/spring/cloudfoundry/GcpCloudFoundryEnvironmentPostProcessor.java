@@ -53,14 +53,19 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private static final String SPRING_CLOUD_GCP_PROPERTY_PREFIX = "spring.cloud.gcp.";
 
+	private static final String PROJECT_ID_KEY = "ProjectId";
+	private static final String PROJECT_ID_VALUE = "project-id";
+	private static final String PRIVATE_KEY_DATA_KEY = "PrivateKeyData";
+	private static final String CREDENTIALS_ENCODED_KEY_VALUE = "credentials.encoded-key";
+
 	private int order = ConfigFileApplicationListener.DEFAULT_ORDER - 1;
 
 	private static Map<String, String> sqlPropertyMap;
 
 	static {
 		sqlPropertyMap = new ArrayMap<>();
-		sqlPropertyMap.put("ProjectId", "project-id");
-		sqlPropertyMap.put("PrivateKeyData", "credentials.encoded-key");
+		sqlPropertyMap.put(PROJECT_ID_KEY, PROJECT_ID_VALUE);
+		sqlPropertyMap.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE);
 		sqlPropertyMap.put("database_name", "database-name");
 		sqlPropertyMap.put("region", "region");
 		sqlPropertyMap.put("instance_name", "instance-name");
@@ -162,33 +167,33 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	private enum GcpCfService {
 
 		PUBSUB("google-pubsub", "pubsub", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.build()),
 		STORAGE("google-storage", "storage", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.build()),
 		SPANNER("google-spanner", "spanner", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.put("instance_id", "instance-id")
 				.build()),
 		DATASTORE("google-datastore", "datastore", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.build()),
 		FIRESTORE("google-firestore", "firestore", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.build()),
 		TRACE("google-stackdriver-trace", "trace", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.build()),
 		BIGQUERY("google-bigquery", "bigquery", new MapBuilder<String, String>()
-				.put("ProjectId", "project-id")
-				.put("PrivateKeyData", "credentials.encoded-key")
+				.put(PROJECT_ID_KEY, PROJECT_ID_VALUE)
+				.put(PRIVATE_KEY_DATA_KEY, CREDENTIALS_ENCODED_KEY_VALUE)
 				.put("dataset_id", "dataset-name")
 				.build()),
 		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),

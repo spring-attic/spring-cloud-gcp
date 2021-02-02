@@ -93,6 +93,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			tx.isReadOnly = true;
 			tx.transactionManager = null;
 			tx.transactionContext = new TransactionContext() {
+				private static final String DML_ERROR_MSG =
+						"Spanner transaction cannot execute DML because it is in readonly mode";
+
 				@Override
 				public void buffer(Mutation mutation) {
 					throw new IllegalStateException("Spanner transaction cannot apply" +
@@ -107,26 +110,22 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 				@Override
 				public long executeUpdate(Statement statement) {
-					throw new IllegalStateException("Spanner transaction cannot execute DML " +
-							"because it is in readonly mode");
+					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
 				public ApiFuture<Long> executeUpdateAsync(Statement statement) {
-					throw new IllegalStateException("Spanner transaction cannot execute DML " +
-							"because it is in readonly mode");
+					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
 				public long[] batchUpdate(Iterable<Statement> iterable) {
-					throw new IllegalStateException("Spanner transaction cannot execute DML " +
-							"because it is in readonly mode");
+					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
 				public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> iterable) {
-					throw new IllegalStateException("Spanner transaction cannot execute DML " +
-							"because it is in readonly mode");
+					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
