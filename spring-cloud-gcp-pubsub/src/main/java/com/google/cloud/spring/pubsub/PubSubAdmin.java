@@ -52,6 +52,8 @@ public class PubSubAdmin implements AutoCloseable {
 
 	protected static final int MAX_ACK_DEADLINE_SECONDS = 600;
 
+	private static final String NO_TOPIC_SPECIFIED = "No topic name was specified.";
+
 	private final String projectId;
 
 	private final TopicAdminClient topicAdminClient;
@@ -102,7 +104,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @return the created topic
 	 */
 	public Topic createTopic(String topicName) {
-		Assert.hasText(topicName, "No topic name was specified.");
+		Assert.hasText(topicName, NO_TOPIC_SPECIFIED);
 
 		return this.topicAdminClient.createTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
 	}
@@ -115,7 +117,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @return topic configuration or {@code null} if topic doesn't exist
 	 */
 	public Topic getTopic(String topicName) {
-		Assert.hasText(topicName, "No topic name was specified.");
+		Assert.hasText(topicName, NO_TOPIC_SPECIFIED);
 
 		try {
 			return this.topicAdminClient.getTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
@@ -136,7 +138,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * name in the {@code projects/<project_name>/topics/<topic_name>} format
 	 */
 	public void deleteTopic(String topicName) {
-		Assert.hasText(topicName, "No topic name was specified.");
+		Assert.hasText(topicName, NO_TOPIC_SPECIFIED);
 
 		this.topicAdminClient.deleteTopic(PubSubTopicUtils.toTopicName(topicName, this.projectId));
 	}
@@ -216,7 +218,7 @@ public class PubSubAdmin implements AutoCloseable {
 	public Subscription createSubscription(String subscriptionName, String topicName,
 			Integer ackDeadline, String pushEndpoint) {
 		Assert.hasText(subscriptionName, "No subscription name was specified.");
-		Assert.hasText(topicName, "No topic name was specified.");
+		Assert.hasText(topicName, NO_TOPIC_SPECIFIED);
 
 		int finalAckDeadline = this.defaultAckDeadline;
 		if (ackDeadline != null) {
@@ -317,11 +319,7 @@ public class PubSubAdmin implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		if (this.topicAdminClient != null) {
-			this.topicAdminClient.close();
-		}
-		if (this.subscriptionAdminClient != null) {
-			this.subscriptionAdminClient.close();
-		}
+		this.topicAdminClient.close();
+		this.subscriptionAdminClient.close();
 	}
 }
