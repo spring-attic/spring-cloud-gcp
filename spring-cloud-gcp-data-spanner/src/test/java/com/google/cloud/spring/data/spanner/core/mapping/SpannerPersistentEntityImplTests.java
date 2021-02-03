@@ -134,8 +134,8 @@ public class SpannerPersistentEntityImplTests {
 
 	@Test
 	public void testNoIdEntity() {
-		new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class)
-				.getIdProperty();
+		assertThat(new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class)
+				.getIdProperty()).isNotNull();
 	}
 
 	@Test

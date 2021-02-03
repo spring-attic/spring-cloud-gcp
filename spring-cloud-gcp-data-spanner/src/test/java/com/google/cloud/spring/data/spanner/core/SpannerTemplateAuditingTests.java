@@ -71,6 +71,8 @@ public class SpannerTemplateAuditingTests {
 		// intentionally leaving the other two audit properties untouched.
 
 		this.spannerTemplate.upsert(testEntity);
+		assertThat(testEntity.lastTouched).isNotNull();
+		assertThat(testEntity.lastUser).isNotNull();
 	}
 
 	@Test
@@ -81,6 +83,8 @@ public class SpannerTemplateAuditingTests {
 		testEntity.lastUser = "person";
 
 		this.spannerTemplate.upsert(testEntity);
+		assertThat(testEntity.lastTouched).isNotEqualTo(LONG_AGO);
+		assertThat(testEntity.lastUser).isNotEqualTo("person");
 	}
 
 	/**

@@ -1002,7 +1002,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		childSubEntity.stringProperty = generateString(1600);
 		SubEntity parentSubEntity = new SubEntity();
 		parentSubEntity.embeddedSubEntities = Collections.singletonList(childSubEntity);
-		this.datastoreTemplate.save(parentSubEntity);
+		assertThat(this.datastoreTemplate.save(parentSubEntity)).isNotNull();
 	}
 
 	private String generateString(int length) {

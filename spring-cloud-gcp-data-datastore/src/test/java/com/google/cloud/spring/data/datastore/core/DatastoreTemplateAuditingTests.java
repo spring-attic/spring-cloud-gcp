@@ -72,7 +72,7 @@ public class DatastoreTemplateAuditingTests {
 		testEntity.id = "a";
 		// intentionally leaving the other two audit properties untouched.
 
-		this.datastoreTemplate.save(testEntity);
+		assertThat(this.datastoreTemplate.save(testEntity)).isNotNull();
 	}
 
 	@Test
@@ -82,7 +82,9 @@ public class DatastoreTemplateAuditingTests {
 		testEntity.lastTouched = LONG_AGO;
 		testEntity.lastUser = "person";
 
-		this.datastoreTemplate.saveAll(Collections.singletonList(testEntity));
+		assertThat(this.datastoreTemplate.saveAll(Collections.singletonList(testEntity)))
+				.isNotNull()
+				.hasSize(1);
 	}
 
 	@Test
@@ -96,7 +98,8 @@ public class DatastoreTemplateAuditingTests {
 		TestEntity testEntity = new TestEntity();
 		testEntity.id = "a";
 
-		this.datastoreTemplate.performTransaction(operations -> operations.save(testEntity));
+		assertThat((TestEntity) this.datastoreTemplate.performTransaction(operations -> operations.save(testEntity)))
+				.isNotNull();
 	}
 
 	/**

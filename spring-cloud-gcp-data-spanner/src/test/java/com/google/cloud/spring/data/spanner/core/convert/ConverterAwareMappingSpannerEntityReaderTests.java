@@ -256,12 +256,17 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 
 	@Test
 	public void testPartialConstructor() {
-		Struct struct = Struct.newBuilder().set("id").to(Value.string("key1"))
-				.set("custom_col").to(Value.string("string1")).set("booleanField")
-				.to(Value.bool(true)).set("longField").to(Value.int64(3L))
+		Struct struct = Struct.newBuilder()
+				.set("id").to(Value.string("key1"))
+				.set("custom_col").to(Value.string("string1"))
+				.set("booleanField").to(Value.bool(true))
+				.set("longField").to(Value.int64(3L))
 				.set("doubleField").to(Value.float64(3.14)).build();
 
-		this.spannerEntityReader.read(TestEntities.PartialConstructor.class, struct);
+		TestEntities.PartialConstructor result = this.spannerEntityReader.read(
+				TestEntities.PartialConstructor.class, struct);
+		assertThat(result.longField).isEqualTo(3L);
+		assertThat(result.doubleField).isEqualTo(3.14);
 	}
 
 	@Test
