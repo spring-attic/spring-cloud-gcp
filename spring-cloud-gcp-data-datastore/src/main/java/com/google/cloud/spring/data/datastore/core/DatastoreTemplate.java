@@ -810,7 +810,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		validateExample(example);
 
 		T probe = example.getProbe();
-		FullEntity.Builder<IncompleteKey> probeEntityBuilder = Entity.newBuilder();
+		FullEntity.Builder<IncompleteKey> probeEntityBuilder = FullEntity.newBuilder();
 		this.datastoreEntityConverter.write(probe, probeEntityBuilder);
 
 		FullEntity<IncompleteKey> probeEntity = probeEntityBuilder.build();

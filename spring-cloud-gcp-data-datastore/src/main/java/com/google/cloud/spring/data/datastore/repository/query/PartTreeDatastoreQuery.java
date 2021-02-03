@@ -232,7 +232,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							projectionEntityQueryBuilder.addProjection(mapToFieldName(propertyDescriptor)));
 			return projectionEntityQueryBuilder;
 		}
-		return StructuredQuery.newEntityQueryBuilder();
+		return com.google.cloud.datastore.Query.newEntityQueryBuilder();
 	}
 
 
@@ -436,7 +436,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							|| PartTreeDatastoreQuery.this.tree.isExistsProjection())
 					&& !returnedTypeIsNumber
 					? getEntityOrProjectionQueryBuilder()
-					: StructuredQuery.newKeyQueryBuilder();
+					: com.google.cloud.datastore.Query.newKeyQueryBuilder();
 
 			structuredQueryBuilder.setKind(PartTreeDatastoreQuery.this.datastorePersistentEntity.kindName());
 

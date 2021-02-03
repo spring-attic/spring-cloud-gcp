@@ -293,8 +293,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private void setEvaluatingSpelQueryContext() {
 		Set<String> originalTags = new HashSet<>(GqlDatastoreQuery.this.originalParamTags);
 
-		GqlDatastoreQuery.this.evaluatingSpelQueryContext = SpelQueryContext.EvaluatingSpelQueryContext
-				.of((counter, spelExpression) -> {
+		GqlDatastoreQuery.this.evaluatingSpelQueryContext = SpelQueryContext.of((counter, spelExpression) -> {
 					String newTag;
 					do {
 						counter++;
@@ -390,7 +389,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery() {
-			Builder builder = GqlQuery.newGqlQueryBuilder(this.finalGql);
+			Builder builder = com.google.cloud.datastore.Query.newGqlQueryBuilder(this.finalGql);
 			builder.setAllowLiteral(true);
 			if (this.tagsOrdered.size() != this.params.size()) {
 				throw new DatastoreDataException("Annotated GQL Query Method "

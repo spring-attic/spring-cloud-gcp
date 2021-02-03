@@ -49,7 +49,7 @@ import zipkin2.reporter.AsyncReporter;
 import zipkin2.reporter.Reporter;
 import zipkin2.reporter.ReporterMetrics;
 import zipkin2.reporter.Sender;
-import zipkin2.reporter.brave.AsyncZipkinSpanHandler;
+import zipkin2.reporter.brave.ZipkinSpanHandler;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
 
@@ -137,8 +137,7 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean(SPAN_HANDLER_BEAN_NAME)
 	@ConditionalOnMissingBean(name = SPAN_HANDLER_BEAN_NAME)
 	public SpanHandler stackdriverSpanHandler(@Qualifier(REPORTER_BEAN_NAME) Reporter<Span> stackdriverReporter) {
-		SpanHandler spanHandler = AsyncZipkinSpanHandler.create(stackdriverReporter);
-		return spanHandler;
+		return ZipkinSpanHandler.create(stackdriverReporter);
 	}
 
 	@Bean
