@@ -366,8 +366,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		this.tradeRepository.delete(someTrade);
 
-		assertThat(this.subTradeComponentRepository.count()).isEqualTo(0);
-		assertThat(this.subTradeRepository.count()).isEqualTo(0);
+		assertThat(this.subTradeComponentRepository.count()).isZero();
+		assertThat(this.subTradeRepository.count()).isZero();
 
 		this.tradeRepository.deleteAll();
 		this.tradeRepositoryTransactionalService.testTransactionalAnnotation(3);

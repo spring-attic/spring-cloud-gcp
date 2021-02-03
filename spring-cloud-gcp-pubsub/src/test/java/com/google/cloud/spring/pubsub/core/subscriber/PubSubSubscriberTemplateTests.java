@@ -438,7 +438,7 @@ public class PubSubSubscriberTemplateTests {
 		List<PubsubMessage> result = this.pubSubSubscriberTemplate.pullAndAck(
 				"sub2", 1, true);
 
-		assertThat(result.size()).isEqualTo(0);
+		assertThat(result.size()).isZero();
 
 		verify(this.pubSubSubscriberTemplate, never()).ack(any());
 	}
@@ -469,7 +469,7 @@ public class PubSubSubscriberTemplateTests {
 		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
 		assertThat(asyncResult.isDone()).isTrue();
 
-		assertThat(result.size()).isEqualTo(0);
+		assertThat(result.size()).isZero();
 
 		verify(this.pubSubSubscriberTemplate, never()).ack(any());
 	}

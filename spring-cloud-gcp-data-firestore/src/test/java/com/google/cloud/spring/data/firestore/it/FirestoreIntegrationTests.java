@@ -257,7 +257,7 @@ public class FirestoreIntegrationTests {
 		assertThat(this.firestoreTemplate.existsById(Mono.just("Alice"), User.class).block()).isEqualTo(Boolean.TRUE);
 		assertThat(this.firestoreTemplate.existsById(Mono.just("Bob"), User.class).block()).isEqualTo(Boolean.FALSE);
 		this.firestoreTemplate.deleteById(Mono.just("Alice"), User.class).block();
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isZero();
 
 		alice.setUpdateTime(null);
 		this.firestoreTemplate.save(alice).block();
@@ -281,7 +281,7 @@ public class FirestoreIntegrationTests {
 
 	@Test
 	public void saveTest() {
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isZero();
 
 		User u1 = new User("Cloud", 22);
 		this.firestoreTemplate.save(u1).block();
@@ -296,7 +296,7 @@ public class FirestoreIntegrationTests {
 		User u2 = new User("Squall", 17);
 		Flux<User> users = Flux.fromArray(new User[]{u1, u2});
 
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isZero();
 
 		this.firestoreTemplate.saveAll(users).blockLast();
 
@@ -339,6 +339,6 @@ public class FirestoreIntegrationTests {
 				.containsExactlyInAnyOrder("gamma", "Joe Hogan");
 
 		this.firestoreTemplate.deleteAll(User.class).block();
-		assertThat(this.firestoreTemplate.count(User.class).block()).isEqualTo(0);
+		assertThat(this.firestoreTemplate.count(User.class).block()).isZero();
 	}
 }

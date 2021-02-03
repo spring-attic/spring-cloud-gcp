@@ -104,10 +104,7 @@ public class GcpSpannerAutoConfigurationTests {
 		this.contextRunner
 				.withClassLoader(
 						new FilteredClassLoader("org.springframework.data.rest.webmvc.spi"))
-				.run((context) -> {
-					assertThat(
-							context.getBeansOfType(BackendIdConverter.class).size()).isEqualTo(0);
-					});
+				.run(context -> assertThat(context.getBeansOfType(BackendIdConverter.class)).isEmpty());
 	}
 
 	/**

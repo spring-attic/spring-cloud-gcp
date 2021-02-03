@@ -84,9 +84,9 @@ public class SpannerRepositoryMultiDatabaseIntegrationTests {
 
 	@Test
 	public void testLoadsCorrectData() {
-		assertThat(this.traderRepository.count()).isEqualTo(0);
+		assertThat(this.traderRepository.count()).isZero();
 		Config.flipDatabase();
-		assertThat(this.traderRepository.count()).isEqualTo(0);
+		assertThat(this.traderRepository.count()).isZero();
 
 		this.traderRepository.save(new Trader("1", "a", "al"));
 		Config.flipDatabase();

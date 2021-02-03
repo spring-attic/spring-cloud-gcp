@@ -238,7 +238,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 						Example.of(new TestEntity(null, null, null, null, null)),
 						PageRequest.of(0, 2, Sort.by("size")));
 		assertThat(result1.getTotalElements()).isEqualTo(4);
-		assertThat(result1.getNumber()).isEqualTo(0);
+		assertThat(result1.getNumber()).isZero();
 		assertThat(result1.getNumberOfElements()).isEqualTo(2);
 		assertThat(result1.getTotalPages()).isEqualTo(2);
 		assertThat(result1.hasNext()).isEqualTo(true);
@@ -420,7 +420,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		Slice<TestEntity> red1 = this.testEntityRepository.findByColor("red", PageRequest.of(0, 1));
 		assertThat(red1.hasNext()).isTrue();
-		assertThat(red1.getNumber()).isEqualTo(0);
+		assertThat(red1.getNumber()).isZero();
 		Slice<TestEntity> red2 = this.testEntityRepository.findByColor("red", red1.getPageable().next());
 		assertThat(red2.hasNext()).isTrue();
 		assertThat(red2.getNumber()).isEqualTo(1);
@@ -448,12 +448,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
-		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
+		assertThat(this.testEntityRepository.countBySize(1L)).isZero();
 
 		this.testEntityRepository.saveAll(this.allTestEntities);
 
 		this.testEntityRepository.deleteBySizeEquals(1L);
-		assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(0);
+		assertThat(this.testEntityRepository.countBySize(1L)).isZero();
 
 		//test saveAll for iterable
 		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
@@ -549,7 +549,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		// show up if it is unexpectedly successful and committed.
 		sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
-		assertThat(this.testEntityRepository.count()).isEqualTo(0);
+		assertThat(this.testEntityRepository.count()).isZero();
 
 		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
 	}

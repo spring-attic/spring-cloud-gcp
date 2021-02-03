@@ -136,8 +136,8 @@ public class SpannerRepositoryIntegrationTests {
 
 	@Test
 	public void testLoadsCorrectData() {
-		assertThat(this.traderRepository.count()).isEqualTo(0);
-		assertThat(this.tradeRepository.count()).isEqualTo(0);
+		assertThat(this.traderRepository.count()).isZero();
+		assertThat(this.tradeRepository.count()).isZero();
 
 		this.spannerRepositoryExample.runExample();
 		List<String> traderIds = new ArrayList<>();

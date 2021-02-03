@@ -621,7 +621,7 @@ public class DatastoreTemplateTests {
 			List<Object> key = Arrays.asList(args);
 			expected.put(key, expected.computeIfAbsent(key, k -> 0) - 1);
 		}
-		expected.forEach((key, value) -> assertThat(value).as("Extra calls with argument " + key).isEqualTo(0));
+		expected.forEach((key, value) -> assertThat(value).as("Extra calls with argument " + key).isZero());
 	}
 
 	@Test

@@ -333,7 +333,7 @@ public class SimpleDatastoreRepositoryTests {
 		doAnswer((invocationOnMock) -> new ArrayList<>())
 				.when(this.datastoreTemplate).keyQueryByExample(same(example1), isNull());
 
-		assertThat(this.simpleDatastoreRepository.count(example1)).isEqualTo(0);
+		assertThat(this.simpleDatastoreRepository.count(example1)).isZero();
 
 		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example1), isNull());
 	}
