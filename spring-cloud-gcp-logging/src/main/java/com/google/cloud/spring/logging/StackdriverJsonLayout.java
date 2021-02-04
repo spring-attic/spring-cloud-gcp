@@ -173,7 +173,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 			loggingEventEnhancers.add(clz.getDeclaredConstructor().newInstance());
 		}
 		catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new IllegalArgumentException("Cannot create object of class " + enhancerClassName, ex);
 		}
 	}
 

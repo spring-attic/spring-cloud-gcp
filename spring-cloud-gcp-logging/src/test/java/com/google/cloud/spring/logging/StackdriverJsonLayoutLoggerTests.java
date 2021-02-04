@@ -20,8 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Map;
 
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
+import ch.qos.logback.core.status.Status;
 import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,6 +203,19 @@ public class StackdriverJsonLayoutLoggerTests {
 		finally {
 			System.setOut(oldOut);
 		}
+	}
+
+	@Test
+	public void testJsonLayoutEnhancer_missing() {
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		assertThat(lc.getStatusManager().getCopyOfStatusList()
+				.stream()
+				.filter(s -> s.getLevel() == Status.ERROR)
+				.map(s -> s.getThrowable().getCause())
+				.filter(t -> t instanceof IllegalArgumentException)
+				.findFirst()
+		).isPresent();
+
 	}
 
 	private void checkData(String attribute, Object value, Map data) {

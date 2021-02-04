@@ -29,8 +29,27 @@
 		</encoder>
 	</appender>
 
+	<appender name="CONSOLE_JSON_SERVICE_CTX_MISSING" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+			<layout class="com.google.cloud.spring.logging.StackdriverJsonLayout">
+				<projectId>${projectId}</projectId>
+				<serviceContext>
+					<service>service</service>
+					<version>version</version>
+				</serviceContext>
+				<loggingEventEnhancer>
+					com.google.cloud.spring.logging.StackdriverJsonLayoutLoggerTests$DoesNotExist
+				</loggingEventEnhancer>
+			</layout>
+		</encoder>
+	</appender>
+
 	<logger name="StackdriverJsonLayoutServiceCtxLoggerTests" level="WARN">
 		<appender-ref ref="CONSOLE_JSON_SERVICE_CTX"/>
+	</logger>
+
+	<logger name="StackdriverJsonLayoutServiceCtxLoggerTestsMissingClass" level="WARN">
+		<appender-ref ref="CONSOLE_JSON_SERVICE_CTX_MISSING"/>
 	</logger>
 
 	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
