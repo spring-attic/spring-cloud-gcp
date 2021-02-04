@@ -170,14 +170,6 @@ public class CloudSqlEnvironmentPostProcessor implements EnvironmentPostProcesso
 			// A resource might not be in the filesystem, but the Cloud SQL credential must.
 			File credentialsLocationFile = credentialsLocation.getFile();
 
-			// This should happen if the Spring resource isn't in the filesystem, but a URL,
-			// classpath file, etc.
-			if (credentialsLocationFile == null) {
-				LOGGER.info("The private key of the Google Cloud SQL credential must "
-						+ "be in a file on the filesystem.");
-				return;
-			}
-
 			System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
 					credentialsLocationFile.getAbsolutePath());
 

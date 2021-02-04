@@ -192,8 +192,8 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				new File("src/test/resources/data.csv"),
 				new MessageHeaders(messageHeaders));
 
-		ListenableFuture<Job> jobFuture =
-				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
+		ListenableFuture<?> jobFuture = (ListenableFuture<?>) this.messageHandler.handleRequestMessage(message);
+		assertThat(jobFuture).isNotNull();
 		jobFuture.cancel(true);
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
