@@ -232,6 +232,12 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			}
 		}
 		catch (AbortedException ex) {
+			// The client library will not close transaction resources if state == ABORTED
+			// to allow for retries, but we do not retry aborted transactions.
+			// See: SessionPool.close()
+			if (tx.getTransactionManager() != null) {
+				tx.getTransactionManager().close();
+			}
 			throw new UnexpectedRollbackException("Transaction Got Rolled Back", ex);
 		}
 		catch (SpannerException ex) {
@@ -252,7 +258,8 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			throws TransactionException {
 		Tx tx = (Tx) defaultTransactionStatus.getTransaction();
 		if (tx.getTransactionManager() != null
-				&& tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED) {
+				&& (tx.getTransactionManager().getState() == TransactionManager.TransactionState.STARTED
+						|| tx.getTransactionManager().getState() == TransactionManager.TransactionState.ABORTED)) {
 			tx.getTransactionManager().rollback();
 		}
 		if (tx.isReadOnly()) {
