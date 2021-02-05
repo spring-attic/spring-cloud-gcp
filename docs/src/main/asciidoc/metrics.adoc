@@ -48,4 +48,4 @@ Read https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#produ
 
 === Sample
 
-A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-metrics-sample[sample application] is available.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-metrics-sample[sample application] is available.

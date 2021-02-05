@@ -12,7 +12,7 @@
   <artifactId>spring-cloud-gcp-starter-bus-pubsub</artifactId>
   <name>Spring Cloud GCP Starter - Pub/Sub Bus</name>
   <description>Starter for Spring Cloud Bus using Pub/Sub</description>
-  <url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-bus-pubsub</url>
+  <url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-starters/spring-cloud-gcp-starter-bus-pubsub</url>
 
   <organization>
     <name>Google</name>

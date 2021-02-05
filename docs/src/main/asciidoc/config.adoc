@@ -134,4 +134,4 @@ $ curl -XPOST https://myapp.host.com/actuator/refresh
 
 === Sample
 
-A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-config-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[codelab] are available.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-config-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[codelab] are available.

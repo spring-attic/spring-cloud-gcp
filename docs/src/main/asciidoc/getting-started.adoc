@@ -43,7 +43,7 @@ For simplicity, the Gradle dependency snippets in the remainder of this document
 
 ==== Starter Dependencies
 
-Spring Cloud GCP offers https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters[starter dependencies] through Maven to easily depend on different modules of the library.
+Spring Cloud GCP offers https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-starters[starter dependencies] through Maven to easily depend on different modules of the library.
 Each starter contains all the dependencies and transitive dependencies needed to begin using their corresponding Spring Cloud GCP module.
 
 For example, if you wish to write a Spring application with Cloud Pub/Sub, you would include the `spring-cloud-gcp-starter-pubsub` dependency in your project.
@@ -122,7 +122,7 @@ There are a variety of resources to help you learn how to use Spring Cloud GCP l
 
 ==== Sample Applications
 
-The easiest way to learn how to use Spring Cloud GCP is to consult the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[sample applications on Github].
+The easiest way to learn how to use Spring Cloud GCP is to consult the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples[sample applications on Github].
 Spring Cloud GCP provides sample applications which demonstrate how to use every integration in the library.
 The table below highlights several samples of the most commonly used integrations in Spring Cloud GCP.
 
@@ -130,31 +130,31 @@ The table below highlights several samples of the most commonly used integration
 | GCP Integration | Sample Application
 
 | Cloud Pub/Sub
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[spring-cloud-gcp-pubsub-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[spring-cloud-gcp-pubsub-sample]
 
 | Cloud Spanner
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[spring-cloud-gcp-data-spanner-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[spring-cloud-gcp-data-spanner-sample]
 
 | Datastore
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[spring-cloud-gcp-data-datastore-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[spring-cloud-gcp-data-datastore-sample]
 
 | Cloud SQL (w/ MySQL)
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[spring-cloud-gcp-sql-mysql-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[spring-cloud-gcp-sql-mysql-sample]
 
 | Cloud Storage
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[spring-cloud-gcp-storage-resource-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[spring-cloud-gcp-storage-resource-sample]
 
 | Cloud Logging
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[spring-cloud-gcp-logging-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[spring-cloud-gcp-logging-sample]
 
 | Trace
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[spring-cloud-gcp-trace-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[spring-cloud-gcp-trace-sample]
 
 | Cloud Vision
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[spring-cloud-gcp-vision-api-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[spring-cloud-gcp-vision-api-sample]
 
 | Cloud Security - IAP
-| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[spring-cloud-gcp-security-iap-sample]
+| https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[spring-cloud-gcp-security-iap-sample]
 |===
 
 Each sample application demonstrates how to use Spring Cloud GCP libraries in context and how to setup the dependencies for the project.

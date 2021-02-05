@@ -11,7 +11,7 @@
 
 	<artifactId>spring-cloud-gcp-starter-metrics</artifactId>
 	<name>Spring Cloud GCP Starter - Stackdriver Metrics</name>
-	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-metrics</url>
+	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-starters/spring-cloud-gcp-starter-metrics</url>
 
 	<dependencies>
 		<dependency>

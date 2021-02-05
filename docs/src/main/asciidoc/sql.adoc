@@ -136,7 +136,7 @@ For example, in Maven:
 
 Available sample applications and codelabs:
 
-- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[Spring Cloud GCP MySQL]
-- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-postgres-sample[Spring Cloud GCP PostgreSQL]
-- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample[Spring Cloud GCP MySQL]
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-sql-postgres-sample[Spring Cloud GCP PostgreSQL]
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
 - Codelab: https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL]

@@ -153,5 +153,5 @@ This is needed to indicate that you wish to reply on the built-in async support 
 
 === Sample
 
-A BigQuery https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-bigquery-sample[sample application] is available.
+A BigQuery https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-bigquery-sample[sample application] is available.
 

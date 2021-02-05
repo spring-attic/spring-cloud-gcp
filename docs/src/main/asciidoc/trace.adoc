@@ -37,7 +37,7 @@ If you are already using a Zipkin server capturing trace information from multip
 === Tracing
 
 Spring Cloud Sleuth uses the https://github.com/openzipkin/brave[Brave tracer] to generate traces.
-This integration enables Brave to use the https://github.com/openzipkin/zipkin-gcp/tree/master/propagation-stackdriver[`StackdriverTracePropagation`] propagation.
+This integration enables Brave to use the https://github.com/openzipkin/zipkin-gcp/tree/main/propagation-stackdriver[`StackdriverTracePropagation`] propagation.
 
 A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and injecting trace context into an entity.
 A canonical example of the propagation usage is a web server that receives an HTTP request, which triggers other HTTP requests from the server before returning an HTTP response to the original caller.
@@ -60,7 +60,7 @@ If a `x-cloud-trace-context` key isn't found, `StackdriverTracePropagation` fall
 
 === Spring Boot Starter for Cloud Trace
 
-Spring Boot Starter for Cloud Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Cloud Trace.
+Spring Boot Starter for Cloud Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/main/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Cloud Trace.
 
 All configurations are optional:
 
@@ -77,7 +77,7 @@ All configurations are optional:
 | `spring.cloud.gcp.trace.deadline-ms` | Call deadline in milliseconds | No |
 | `spring.cloud.gcp.trace.max-inbound-size` | Maximum size for inbound messages | No |
 | `spring.cloud.gcp.trace.max-outbound-size` | Maximum size for outbound messages | No |
-| `spring.cloud.gcp.trace.wait-for-ready` | https://github.com/grpc/grpc/blob/master/doc/wait-for-ready.md[Waits for the channel to be ready] in case of a transient failure | No | `false`
+| `spring.cloud.gcp.trace.wait-for-ready` | https://github.com/grpc/grpc/blob/main/doc/wait-for-ready.md[Waits for the channel to be ready] in case of a transient failure | No | `false`
 | `spring.cloud.gcp.trace.messageTimeout` | Timeout in seconds before pending spans will be sent in batches to GCP Cloud Trace. (previously `spring.zipkin.messageTimeout`) | No | 1
 |===
 
@@ -154,5 +154,5 @@ The trace logs can be viewed by going to the https://console.cloud.google.com/tr
 
 === Sample
 
-A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
 

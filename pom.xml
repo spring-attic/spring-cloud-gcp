@@ -231,7 +231,7 @@
 								<headerLocation>checkstyle-header.txt</headerLocation>
 								<propertyExpansion>
 									checkstyle.build.directory=${project.build.directory}
-									checkstyle.suppressions.file=https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/master/spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml
+									checkstyle.suppressions.file=https://raw.githubusercontent.com/spring-cloud/spring-cloud-build/main/spring-cloud-build-tools/src/checkstyle/checkstyle-suppressions.xml
 									checkstyle.additional.suppressions.file=${maven.multiModuleProjectDirectory}/src/checkstyle/checkstyle-suppressions.xml
 								</propertyExpansion>
 								<consoleOutput>true</consoleOutput>

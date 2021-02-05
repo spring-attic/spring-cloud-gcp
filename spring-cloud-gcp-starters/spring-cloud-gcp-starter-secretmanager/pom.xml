@@ -12,7 +12,7 @@
 	<name>Spring Cloud GCP Starter - Secret Manager</name>
 	<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
 	<description>Starter for GCP Secret Manager</description>
-	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-secretmanager</url>
+	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-starters/spring-cloud-gcp-starter-secretmanager</url>
 
 	<dependencies>
 		<dependency>

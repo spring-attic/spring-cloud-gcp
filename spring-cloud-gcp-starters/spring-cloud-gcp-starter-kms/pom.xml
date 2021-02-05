@@ -12,7 +12,7 @@
 	<name>Spring Cloud GCP Starter - KMS</name>
 	<artifactId>spring-cloud-gcp-starter-kms</artifactId>
 	<description>Starter for GCP Key Management Service</description>
-	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-kms</url>
+	<url>https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-starters/spring-cloud-gcp-starter-kms</url>
 
 	<dependencies>
 		<dependency>

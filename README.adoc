@@ -5,10 +5,10 @@ Edit the files in the src/main/asciidoc/ directory instead.
 ////
 
 
-image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Unit%20Tests/badge.svg?branch=master["HEAD Unit Tests", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A%22Unit+Tests%22"]
-image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=master["HEAD Integration Tests", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A%22Integration+Tests%22"]
-image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/SonarCloud%20Analysis/badge.svg?branch=master["HEAD SonarCloud Analysis", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A%22SonarCloud+Analysis%22"]
-image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Linkage%20Check/badge.svg?branch=master["HEAD Linkage Check", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amaster+workflow%3A%22Linkage+Check%22"]
+image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Unit%20Tests/badge.svg?branch=main["HEAD Unit Tests", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22Unit+Tests%22"]
+image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=main["HEAD Integration Tests", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22Integration+Tests%22"]
+image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/SonarCloud%20Analysis/badge.svg?branch=main["HEAD SonarCloud Analysis", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22SonarCloud+Analysis%22"]
+image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Linkage%20Check/badge.svg?branch=main["HEAD Linkage Check", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22Linkage+Check%22"]
 
 == Spring Framework on Google Cloud Platform
 
@@ -21,7 +21,7 @@ For a deep dive into the project, refer to the Spring Cloud GCP Reference docume
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.2.x/reference/html/index.html[Spring Cloud GCP 1.2.x]
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.1.x/single/spring-cloud-gcp.html[Spring Cloud GCP 1.1.x]
 
-If you prefer to learn by doing, try taking a look at the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[Spring Cloud GCP sample applications] or the https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
+If you prefer to learn by doing, try taking a look at the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples[Spring Cloud GCP sample applications] or the https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
 
 Currently, this repository provides support for:
 

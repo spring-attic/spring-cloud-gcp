@@ -84,7 +84,7 @@ You may use the following field types when defining your persistent entities or 
 
 Spring Data Repositories can be configured via the `@EnableReactiveFirestoreRepositories` annotation on your main `@Configuration` class.
 With our Spring Boot Starter for Spring Data Cloud Firestore, `@EnableReactiveFirestoreRepositories` is automatically added.
-It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-firestore/src/main/java/com/google/cloud/spring/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java[`@EnableReactiveFirestoreRepositories`].
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/main/spring-cloud-gcp-data-firestore/src/main/java/com/google/cloud/spring/data/firestore/repository/config/EnableReactiveFirestoreRepositories.java[`@EnableReactiveFirestoreRepositories`].
 
 ==== Autoconfiguration
 
@@ -408,5 +408,5 @@ From this point onward, your application will connect to your locally running em
 
 Spring Cloud GCP provides Firestore sample applications to demonstrate API usage:
 
-- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[Reactive Firestore Repository sample application]:
-- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[Firestore Client Library sample application]
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample[Reactive Firestore Repository sample application]:
+- https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample[Firestore Client Library sample application]

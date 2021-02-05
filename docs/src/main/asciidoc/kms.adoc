@@ -78,4 +78,4 @@ Spring Cloud GCP offers the following key syntax to specify Cloud KMS keys in yo
 
 === Sample
 
-A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-kms-sample[Cloud KMS Sample Application] is provided which demonstrates basic encryption and decryption operations.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-kms-sample[Cloud KMS Sample Application] is provided which demonstrates basic encryption and decryption operations.

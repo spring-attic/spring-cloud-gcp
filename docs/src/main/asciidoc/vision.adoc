@@ -208,7 +208,7 @@ public void parseSingleOutputFile() {
 
 Samples are provided to show example usages of Spring Cloud GCP with Google Cloud Vision.
 
-* The https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Image Labeling Sample] shows you how to use image labelling in your Spring application.
+* The https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Image Labeling Sample] shows you how to use image labelling in your Spring application.
 The application generates labels describing the content inside the images you specify in the application.
 
-* The https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-ocr-demo[Document OCR demo] shows how you can apply OCR processing on your PDF/TIFF documents in order to extract their text contents.
+* The https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-vision-ocr-demo[Document OCR demo] shows how you can apply OCR processing on your PDF/TIFF documents in order to extract their text contents.

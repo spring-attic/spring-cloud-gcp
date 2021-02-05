@@ -3,7 +3,7 @@ name: Update Docs
 on:
   push:
     branches:
-    - master
+    - main
     paths:
     - 'docs/**'
   release:
@@ -11,9 +11,9 @@ on:
   workflow_dispatch:
     inputs:
       committish:
-        description: Tag or branch of the docs to be created or updated. Using `master` will update the landing page. Using anything else will create or update a versioned copy of the docs.
+        description: Tag or branch of the docs to be created or updated. Using `main` will update the landing page. Using anything else will create or update a versioned copy of the docs.
         required: true
-        default: master
+        default: main
 
 jobs:
   updateDocs:
@@ -50,7 +50,7 @@ jobs:
       run: |
         if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
           ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.release.tag_name }} --destination . --build
-        elif [[ -n "${{ github.event.inputs.committish }}" ]] && [[ "${{ github.event.inputs.committish }}" != "master" ]] ; then
+        elif [[ -n "${{ github.event.inputs.committish }}" ]] && [[ "${{ github.event.inputs.committish }}" != "main" ]] ; then
             ./docs/src/main/asciidoc/ghpages.sh --version ${{ github.event.inputs.committish }} --destination . --build
         else
           ./docs/src/main/asciidoc/ghpages.sh --build

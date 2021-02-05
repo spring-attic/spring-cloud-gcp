@@ -149,9 +149,9 @@ This setting is only evaluated if `includeFormattedMessage` is `true`
 | `loggingEventEnhancer` | none
 | Name of a class implementing `JsonLoggingEventEnhancer` which modifies the JSON logging output. This tag is repeatable.
 
-Examples are provided in the link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-logging/src/main/java/com/google/cloud/spring/logging/extensions[extensions package].
+Examples are provided in the link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-logging/src/main/java/com/google/cloud/spring/logging/extensions[extensions package].
 
-- link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-logging/src/main/java/com/google/cloud/spring/logging/extensions/LogstashLoggingEventEnhancer.java[Logstash Enhancer]
+- link:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-logging/src/main/java/com/google/cloud/spring/logging/extensions/LogstashLoggingEventEnhancer.java[Logstash Enhancer]
 
 |=======================================================================
 
@@ -192,4 +192,4 @@ This is an example of such an Logback configuration:
 
 === Sample
 
-A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[Sample Spring Boot Application] is provided to show how to use the Cloud logging starter.
+A https://github.com/GoogleCloudPlatform/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[Sample Spring Boot Application] is provided to show how to use the Cloud logging starter.
