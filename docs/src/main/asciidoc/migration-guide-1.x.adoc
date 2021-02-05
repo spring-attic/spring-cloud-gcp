@@ -35,14 +35,14 @@ To use the newly unbundled libraries, add the `spring-cloud-gcp-dependencies` bi
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-dependencies</artifactId>
-      <version>2020.0.0</version> <!--1-->
+      <version>2020.0.1</version> <!--1-->
       <type>pom</type>
       <scope>import</scope>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId> <!--2-->
       <artifactId>spring-cloud-gcp-dependencies</artifactId>
-      <version>2.0.0</version>
+      <version>2.0.1</version>
       <type>pom</type>
       <scope>import</scope>
     </dependency>

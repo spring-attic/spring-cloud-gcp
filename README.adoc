@@ -17,7 +17,7 @@ You can check our project website https://spring.io/projects/spring-cloud-gcp[he
 
 For a deep dive into the project, refer to the Spring Cloud GCP Reference documentation below or the https://googleapis.dev/java/spring-cloud-gcp/latest/index.html[latest Javadocs].
 
-* link:https://googlecloudplatform.github.io/spring-cloud-gcp/2.0.0-RC2/reference/html/index.html[Spring Cloud GCP 2.0.0-RC2]
+* link:https://googlecloudplatform.github.io/spring-cloud-gcp/2.0.1/reference/html/index.html[Spring Cloud GCP 2.0.1]
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.2.x/reference/html/index.html[Spring Cloud GCP 1.2.x]
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.1.x/single/spring-cloud-gcp.html[Spring Cloud GCP 1.1.x]
 

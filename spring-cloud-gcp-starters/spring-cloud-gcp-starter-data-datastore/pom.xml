@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.google.cloud</groupId>
 		<artifactId>spring-cloud-gcp-starters</artifactId>
-		<version>2.0.1-SNAPSHOT</version>
+		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
 	<name>Spring Cloud GCP Starter - Datastore</name>

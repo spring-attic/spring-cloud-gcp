@@ -13,7 +13,7 @@
 	<name>Spring Cloud GCP Documentation</name>
 	<groupId>com.google.cloud</groupId>
 	<artifactId>spring-cloud-gcp-docs</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.0.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
