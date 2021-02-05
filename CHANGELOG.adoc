@@ -5,6 +5,31 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/commits/master[commit history] on GitHub.
 
+== 2.0.1 (2021-02-04)
+
+=== General
+
+* Upgraded to Spring Cloud 2020.0.1 and Spring Boot 2.4.2 (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/233[#233])
+* Multiple code quality improvements with help from SonarCloud
+
+=== Firestore
+
+* Fixed: Firestore emulator not using configured project id (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/211[#211])
+
+=== Logging
+
+* Fixed: Trace ID not populated when using `AsyncAppender` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/196[#196])
+* Made `StackdriverJsonLayout` more customizable with support for logging event enhancers (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/208[#208])
+** Added an extension for Logstash markers support
+
+=== Pub/Sub
+
+* Fixed: Spring Cloud Stream unable to setup subscription to a topic in a different GCP project (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/232[#232])
+
+=== Spanner
+
+* Fixed session leak with aborted read/write transactions (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/251[#251])
+
 == 2.0.0 (2021-01-06)
 
 === General
