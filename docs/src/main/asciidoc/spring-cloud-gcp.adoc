@@ -4,6 +4,8 @@ João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; And
 
 include::_attributes.adoc[]
 
+*{project-version}*
+
 == Introduction
 
 The Spring Cloud GCP project makes the Spring Framework a first-class citizen of Google Cloud Platform (GCP).

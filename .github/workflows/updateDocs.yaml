@@ -46,6 +46,12 @@ jobs:
           --define maven.javadoc.skip=true \
           install
 
+    - name: Remove SNAPSHOT # Needed for releases
+      run: |
+        if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
+          ./mvnw versions:set --batch-mode -DremoveSnapshot -DprocessAllModules
+        fi
+
     - name: Update Docs
       run: |
         if [[ -n "${{ github.event.release.tag_name }}" ]] ; then
