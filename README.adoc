@@ -54,7 +54,7 @@ Also, please take the https://www.techvalidate.com/registration/google-spring-cl
 We would love to hear from you!
 
 If you want to collaborate in the project, we would also love to get your Pull Requests.
-Before you start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
+Before you start working on one, please take a look at our link:CONTRIBUTING.md[collaboration manual].
 
 == Spring Initializr
 
