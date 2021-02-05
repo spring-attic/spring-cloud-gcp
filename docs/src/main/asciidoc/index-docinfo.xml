@@ -1,8 +1,8 @@
 <productname>Spring Cloud GCP</productname>
 <releaseinfo>{project-version}</releaseinfo>
 <copyright>
-	<year>2017-2019</year>
-	<holder>Pivotal Software, Inc.</holder>
+	<year>2017-2021</year>
+	<holder>Google LLC</holder>
 </copyright>
 <legalnotice>
 	<para>
