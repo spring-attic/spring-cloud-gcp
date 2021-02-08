@@ -223,9 +223,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		ProjectionInformation projectionInformation =
 				this.projectionFactory.getProjectionInformation(this.queryMethod.getReturnedObjectType());
 
-		if (projectionInformation != null &&
-				projectionInformation.getType() != this.entityType
-				&& projectionInformation.isClosed()) {
+		if (projectionInformation.getType() != this.entityType && projectionInformation.isClosed()) {
 			ProjectionEntityQuery.Builder projectionEntityQueryBuilder = Query.newProjectionEntityQueryBuilder();
 			projectionInformation.getInputProperties().forEach(
 					propertyDescriptor ->

@@ -136,13 +136,13 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
 					parameters);
 			Pageable pageable = paramAccessor.getPageable();
-			if (pageable != null && pageable.isPaged()) {
+			if (pageable.isPaged()) {
 				builder.setOffset((int) Math.min(Integer.MAX_VALUE, pageable.getOffset()));
 				builder.setLimit(Int32Value.newBuilder().setValue(pageable.getPageSize()));
 			}
 
 			Sort sort = paramAccessor.getSort();
-			if (sort != null) {
+			if (sort.isSorted()) {
 				builder.addAllOrderBy(createFirestoreSortOrders(sort));
 			}
 		}

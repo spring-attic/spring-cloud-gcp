@@ -315,9 +315,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					writeConverter);
 		}
 		else {
-			if (!valueSet) {
-				valueSet = attemptSetIterableValueOnBinder(value, valueBinder, writeConverter, innerType);
-			}
+			valueSet = attemptSetIterableValueOnBinder(value, valueBinder, writeConverter, innerType);
 		}
 		return valueSet;
 	}
@@ -403,9 +401,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 						this.writeConverter);
 			}
 			else {
-				if (!valueSet) {
-					valueSet = attemptBindSingleValue(propertyValue, propertyType, valueBinder, this.writeConverter);
-				}
+				valueSet = attemptBindSingleValue(propertyValue, propertyType, valueBinder, this.writeConverter);
 			}
 		}
 
