@@ -49,11 +49,18 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 
+		Assert.notNull(context, "Application context cannot be null.");
+		Assert.notNull(metadata, "AnnotationTypeMetadata cannot be null.");
+		Assert.notNull(context.getBeanFactory(), "Bean factory cannot be null.");
+
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName());
+		Assert.notNull(attributes, "@ConditionalOnGcpEnvironment annotation not declared on type.");
+
 		GcpEnvironment[] targetEnvironments = (GcpEnvironment[]) attributes.get("value");
 		Assert.notNull(targetEnvironments, "Value attribute of ConditionalOnGcpEnvironment cannot be null.");
 
 		GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
+		Assert.notNull(environmentProvider, "GcpEnvironmentProvider not found in context.");
 		GcpEnvironment currentEnvironment = environmentProvider.getCurrentEnvironment();
 
 		if (Arrays.stream(targetEnvironments).noneMatch((env) -> env == currentEnvironment)) {

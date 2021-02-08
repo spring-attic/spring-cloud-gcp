@@ -21,9 +21,7 @@ import java.util.Collections;
 import com.google.cloud.spring.core.GcpEnvironment;
 import com.google.cloud.spring.core.GcpEnvironmentProvider;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -35,6 +33,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -47,11 +46,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OnGcpEnvironmentConditionTests {
 
-	/**
-	 * used to check exception messages and types.
-	 */
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
 	@Mock
 	AnnotatedTypeMetadata mockMetadata;
@@ -72,28 +67,80 @@ public class OnGcpEnvironmentConditionTests {
 	}
 
 	@Test
+	public void nullArgumentsTriggerAssertErrors() {
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(null, mockMetadata))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Application context cannot be null.");
+
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(mockContext, null))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("AnnotationTypeMetadata cannot be null.");
+
+	}
+
+	@Test
+	public void nullBeanContextTriggerAssertErrors() {
+		when(mockContext.getBeanFactory()).thenReturn(null);
+
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(mockContext, mockMetadata))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Bean factory cannot be null.");
+
+	}
+
+	@Test
 	public void testNoEnvironmentsMatchWhenMissingEnvironmentProvider() {
-
-		this.expectedException.expect(NoSuchBeanDefinitionException.class);
-		this.expectedException.expectMessage("No bean named 'no environment' available");
-
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.UNKNOWN });
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class))
 				.thenThrow(new NoSuchBeanDefinitionException("no environment"));
-		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
+
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata))
+				.isInstanceOf(NoSuchBeanDefinitionException.class)
+				.hasMessage("No bean named 'no environment' available");
 	}
 
 	@Test
 	public void testExceptionThrownWhenWrongAttributeType() {
 
-		this.expectedException.expect(ClassCastException.class);
-		this.expectedException.expectMessage("java.lang.String cannot be cast");
-
 		setUpAnnotationValue("invalid type");
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
-		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata))
+				.isInstanceOf(ClassCastException.class)
+				.hasMessageContaining("java.lang.String cannot be cast");
+	}
+
+	@Test
+	public void testExceptionThrownWhenMissingAttributeType() {
+
+		// Should never happen in real life, as annotation value is not optional.
+		setUpAnnotationValue(null);
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Value attribute of ConditionalOnGcpEnvironment cannot be null.");
+
+	}
+
+	@Test
+	public void testExceptionThrownWhenAnnotationNotDeclared() {
+
+		when(mockMetadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName()))
+				.thenReturn(null);
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("@ConditionalOnGcpEnvironment annotation not declared on type.");
+
+	}
+
+	@Test
+	public void testExceptionThrownWhenEnvironmentProviderBeanMissing() {
+
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE });
+		when(mockBeanFactory.getBean(GcpEnvironmentProvider.class)).thenReturn(null);
+
+		assertThatThrownBy(() -> onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("GcpEnvironmentProvider not found in context.");
+
 	}
 
 	@Test
@@ -101,7 +148,6 @@ public class OnGcpEnvironmentConditionTests {
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.UNKNOWN);
 
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
 		assertThat(outcome.isMatch()).isFalse();
@@ -113,7 +159,6 @@ public class OnGcpEnvironmentConditionTests {
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.UNKNOWN);
 
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
 		assertThat(outcome.isMatch()).isFalse();
@@ -126,7 +171,6 @@ public class OnGcpEnvironmentConditionTests {
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.KUBERNETES_ENGINE);
 
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
 		assertThat(outcome.isMatch()).isTrue();
@@ -138,7 +182,6 @@ public class OnGcpEnvironmentConditionTests {
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
 
-		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
 		assertThat(outcome.isMatch()).isTrue();
