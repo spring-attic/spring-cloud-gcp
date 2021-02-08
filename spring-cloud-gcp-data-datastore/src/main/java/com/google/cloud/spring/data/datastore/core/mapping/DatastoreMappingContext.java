@@ -54,10 +54,6 @@ public class DatastoreMappingContext extends
 	// Kind and that are subclasses of the given class.
 	private static final Map<Class, Set<Class>> discriminationFamilies = new ConcurrentHashMap<>();
 
-	public DatastoreMappingContext() {
-
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {

@@ -49,8 +49,11 @@ public class GcsSessionFactory implements SessionFactory<BlobInfo>, SharedSessio
 		return true;
 	}
 
+	/**
+	 * Does nothing - this object doesn't need to be reset to be shared.
+	 */
 	@Override
 	public void resetSharedSession() {
-
+		// Storage object doesn't need to be reset to be shared.
 	}
 }

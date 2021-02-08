@@ -47,10 +47,6 @@ public class SpannerMappingContext extends
 
 	private ApplicationContext applicationContext;
 
-	public SpannerMappingContext() {
-
-	}
-
 	/**
 	 * Set the field naming strategy used when creating persistent properties.
 	 * @param fieldNamingStrategy the field naming strategy passed used by created persistent
