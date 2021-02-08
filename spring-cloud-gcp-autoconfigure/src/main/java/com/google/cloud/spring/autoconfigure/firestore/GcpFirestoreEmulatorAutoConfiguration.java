@@ -75,7 +75,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 				.setChannelProvider(
 						InstantiatingGrpcChannelProvider.newBuilder()
 								.setEndpoint(this.hostPort)
-								.setChannelConfigurator(input -> input.usePlaintext())
+								.setChannelConfigurator(ManagedChannelBuilder::usePlaintext)
 								.build())
 				.build();
 	}

@@ -85,9 +85,7 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 			return holder.doOnNext(extractFirestoreTransaction(transactionObject)::setResourceHolder)
 					.onErrorMap(
 							ex -> new TransactionSystemException("Could not start Firestore transaction", ex))
-					.doOnSuccess(resourceHolder -> {
-						synchronizationManager.bindResource(this.firestore, resourceHolder);
-					})
+					.doOnSuccess(resourceHolder -> synchronizationManager.bindResource(this.firestore, resourceHolder))
 					.then();
 		});
 	}

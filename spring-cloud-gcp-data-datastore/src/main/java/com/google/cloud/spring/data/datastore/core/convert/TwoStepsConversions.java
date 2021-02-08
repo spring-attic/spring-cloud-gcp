@@ -47,6 +47,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
@@ -296,7 +297,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			* */
 			Optional idProp = Optional.ofNullable(val)
 					.map(v -> this.datastoreMappingContext.getPersistentEntity(v.getClass()))
-					.map(datastorePersistentEntity -> datastorePersistentEntity.getIdProperty())
+					.map(PersistentEntity::getIdProperty)
 					.map(id -> this.datastoreMappingContext.getPersistentEntity(val.getClass())
 							.getPropertyAccessor(val).getProperty(id));
 

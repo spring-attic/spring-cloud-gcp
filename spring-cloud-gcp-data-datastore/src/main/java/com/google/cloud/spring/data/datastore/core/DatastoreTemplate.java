@@ -339,9 +339,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		QueryResults<A> results = getDatastoreReadWriter().run(query);
 		List resultsList = new ArrayList();
 		//cursor is not populated until we iterate
-		results.forEachRemaining(e -> {
-			resultsList.add(entityFunc.apply(e));
-		});
+		results.forEachRemaining(e -> resultsList.add(entityFunc.apply(e)));
 		DatastoreResultsIterable<T> resultsIterable = new DatastoreResultsIterable<>(resultsList,
 				results.getCursorAfter());
 		maybeEmitEvent(new AfterQueryEvent(resultsIterable, query));
@@ -414,7 +412,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (queryOptions.getSort() != null && persistentEntity != null) {
 			queryOptions.getSort().stream()
 					.map((order) -> createOrderBy(persistentEntity, order))
-					.forEachOrdered((orderBy) -> builder.addOrderBy(orderBy));
+					.forEachOrdered(builder::addOrderBy);
 		}
 	}
 

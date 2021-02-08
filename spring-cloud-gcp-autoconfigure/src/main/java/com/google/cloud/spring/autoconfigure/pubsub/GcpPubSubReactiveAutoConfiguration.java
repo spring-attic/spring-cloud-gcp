@@ -54,7 +54,7 @@ public class GcpPubSubReactiveAutoConfiguration {
 			PubSubSubscriberTemplate subscriberTemplate,
 			@Qualifier("pubSubReactiveScheduler") Optional<Scheduler> userProvidedScheduler) {
 
-		Scheduler scheduler = userProvidedScheduler.orElseGet(() -> Schedulers.parallel());
+		Scheduler scheduler = userProvidedScheduler.orElseGet(Schedulers::parallel);
 		return new PubSubReactiveFactory(subscriberTemplate, scheduler);
 	}
 

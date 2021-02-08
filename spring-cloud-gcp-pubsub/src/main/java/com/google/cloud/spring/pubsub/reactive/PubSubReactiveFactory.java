@@ -104,7 +104,7 @@ public final class PubSubReactiveFactory {
 	 */
 	public Flux<AcknowledgeablePubsubMessage> poll(String subscriptionName, long pollingPeriodMs) {
 
-		return Flux.create(sink -> {
+		return Flux.create(sink ->
 			sink.onRequest((numRequested) -> {
 				if (numRequested == Long.MAX_VALUE) {
 					pollingPull(subscriptionName, pollingPeriodMs, sink);
@@ -112,8 +112,8 @@ public final class PubSubReactiveFactory {
 				else {
 					backpressurePull(subscriptionName, numRequested, sink);
 				}
-			});
-		});
+			})
+		);
 	}
 
 	private void pollingPull(String subscriptionName, long pollingPeriodMs,

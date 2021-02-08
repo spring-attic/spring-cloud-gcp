@@ -79,9 +79,9 @@ public class SpannerQueryMethod extends QueryMethod {
 
 	private Optional<String> findAnnotatedQuery() {
 
-		return Optional.ofNullable(getQueryAnnotation()) //
-				.map(AnnotationUtils::getValue) //
-				.map((it) -> (String) it) //
+		return Optional.ofNullable(getQueryAnnotation())
+				.map(AnnotationUtils::getValue)
+				.map(String.class::cast)
 				.filter(StringUtils::hasText);
 	}
 

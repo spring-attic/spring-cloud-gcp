@@ -71,7 +71,7 @@ public class GcpContextAutoConfiguration {
 	public GcpProjectIdProvider gcpProjectIdProvider() {
 		GcpProjectIdProvider projectIdProvider =
 				(this.gcpProperties.getProjectId() != null)
-						? () -> this.gcpProperties.getProjectId()
+						? this.gcpProperties::getProjectId
 						: new DefaultGcpProjectIdProvider();
 
 		if (LOGGER.isInfoEnabled()) {

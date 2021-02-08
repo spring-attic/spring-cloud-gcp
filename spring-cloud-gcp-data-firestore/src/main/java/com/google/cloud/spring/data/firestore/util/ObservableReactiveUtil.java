@@ -65,7 +65,7 @@ public final class ObservableReactiveUtil {
 		return Flux.create(sink -> {
 			StreamingObserver observer = new StreamingObserver(sink);
 			remoteCall.accept(observer);
-			sink.onRequest(demand -> observer.request(demand));
+			sink.onRequest(observer::request);
 		});
 	}
 
