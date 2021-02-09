@@ -193,7 +193,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	@Override
 	@SuppressWarnings("unchecked")
 	public void write(Object source, BaseEntity.Builder sink) {
-		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
+		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getDatastorePersistentEntity(source.getClass());
 
 		String discriminationFieldName = persistentEntity.getDiscriminationFieldName();
 		List<String> discriminationValues = persistentEntity.getCompatibleDiscriminationValues();

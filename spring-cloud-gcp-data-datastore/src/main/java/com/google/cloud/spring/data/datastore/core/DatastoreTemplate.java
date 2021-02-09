@@ -87,6 +87,7 @@ import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -373,7 +374,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	@Override
 	public <T> DatastoreResultsCollection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
-		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
+		DatastorePersistentEntity<?> persistentEntity = getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
 		applyQueryOptions(builder, queryOptions, persistentEntity);
@@ -387,6 +388,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
 			DatastorePersistentEntity<?> persistentEntity) {
+		Assert.notNull(persistentEntity, "A non-null persistentEntity is required.");
 		if (persistentEntity.getDiscriminationFieldName() != null
 				&& persistentEntity.getDiscriminatorValue() != null) {
 			StructuredQuery.Filter discriminationFilter = PropertyFilter.eq(persistentEntity.getDiscriminationFieldName(),
@@ -471,9 +473,8 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public Key createKey(Class aClass, Object id) {
 		return this.objectToKeyFactory.getKeyFromId(id,
-				this.datastoreMappingContext.getPersistentEntity(aClass).kindName());
+				getPersistentEntity(aClass).kindName());
 	}
-
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
 			Sort.Order order) {
@@ -483,8 +484,9 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (!order.getNullHandling().equals(Sort.NullHandling.NATIVE)) {
 			throw new DatastoreDataException("Datastore supports only NullHandling.NATIVE null handling");
 		}
-		return new StructuredQuery.OrderBy(
-				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
+		DatastorePersistentProperty persistentProperty = persistentEntity.getPersistentProperty(order.getProperty());
+		Assert.notNull(persistentProperty, "Sort property '" + order.getProperty() + "' must exist in entity '" + persistentEntity.getName() + "'.");
+		return new StructuredQuery.OrderBy(persistentProperty.getFieldName(),
 				(order.getDirection() == Sort.Direction.DESC)
 						? StructuredQuery.OrderBy.Direction.DESCENDING
 						: StructuredQuery.OrderBy.Direction.ASCENDING);
@@ -507,8 +509,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private List<Entity> getReferenceEntitiesForSave(Object entity, Builder builder, Set<Key> persistedEntities) {
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithAssociations((AssociationHandler) (association) -> {
 			PersistentProperty persistentProperty = association.getInverse();
@@ -541,8 +542,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private List<Entity> getDescendantEntitiesForSave(Object entity, Key key, Set<Key> persistedEntities) {
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithDescendantProperties(
 				(PersistentProperty persistentProperty) -> {
@@ -567,8 +567,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private void validateKey(Object entity, PathElement ancestorPE) {
-		DatastorePersistentEntity datastorePersistentEntity =
-				this.datastoreMappingContext.getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		DatastorePersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
 
 		if (!TypeUtils.isAssignable(BaseKey.class, idProp.getType())) {
@@ -759,8 +758,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private Key getKeyFromId(Object id, Class entityClass) {
-		return this.objectToKeyFactory.getKeyFromId(id,
-				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
+		return this.objectToKeyFactory.getKeyFromId(id, getPersistentEntity(entityClass).kindName());
 	}
 
 	public Key getKey(Object entity) {
@@ -768,8 +766,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		DatastorePersistentProperty idProp = datastorePersistentEntity
 				.getIdPropertyOrFail();
 		if (datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp) == null && allocateKey) {
@@ -780,9 +777,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private Key[] findAllKeys(Class entityClass) {
 		Iterable<Key> keysFound = queryKeys(Query.newKeyQueryBuilder().setKind(
-				this.datastoreMappingContext
-						.getPersistentEntity(entityClass).kindName())
-				.build());
+				getPersistentEntity(entityClass).kindName()).build());
 		return StreamSupport.stream(keysFound.spliterator(),
 				false).toArray(Key[]::new);
 	}
@@ -812,8 +807,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		this.datastoreEntityConverter.write(probe, probeEntityBuilder);
 
 		FullEntity<IncompleteKey> probeEntity = probeEntityBuilder.build();
-		DatastorePersistentEntity<?> persistentEntity =
-				this.datastoreMappingContext.getPersistentEntity(example.getProbeType());
+		DatastorePersistentEntity<?> persistentEntity = getPersistentEntity(example.getProbeType());
 
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		NullHandler nullHandler = example.getMatcher().getNullHandler();
@@ -829,8 +823,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			Object value = accessor.getProperty(property);
 			Value<?> key = value == null
 					? NullValue.of()
-					: KeyValue.of(objectToKeyFactory.getKeyFromObject(value,
-						this.datastoreMappingContext.getPersistentEntity(value.getClass())));
+					: KeyValue.of(objectToKeyFactory.getKeyFromObject(value, getPersistentEntity(value.getClass())));
 			addFilter(nullHandler, filters, property.getFieldName(), key);
 		});
 
@@ -915,6 +908,11 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		if (this.eventPublisher != null) {
 			this.eventPublisher.publishEvent(event);
 		}
+	}
+
+	@NonNull
+	private <T> DatastorePersistentEntity<?> getPersistentEntity(Class<T> entityClass) {
+		return this.datastoreMappingContext.getDatastorePersistentEntity(entityClass);
 	}
 
 	void setMaxWriteSize(int maxWriteSize) {

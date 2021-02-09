@@ -238,6 +238,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		String name = propertyDescriptor.getName();
 		DatastorePersistentProperty persistentProperty =
 				(DatastorePersistentProperty) this.datastorePersistentEntity.getPersistentProperty(name);
+		Assert.notNull(persistentProperty, "Property '" + name + "' must exist in entity '" + this.datastorePersistentEntity.getName() + "'.");
 		return persistentProperty.getFieldName();
 	}
 

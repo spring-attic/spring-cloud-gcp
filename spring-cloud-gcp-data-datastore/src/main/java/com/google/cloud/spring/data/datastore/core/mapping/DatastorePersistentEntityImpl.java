@@ -113,7 +113,7 @@ public class DatastorePersistentEntityImpl<T>
 		}
 		else if (this.discriminatorValue != null && getType().getSuperclass() != Object.class) {
 			return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
-					.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity()
+					.getDatastorePersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity()
 							.kindName();
 		}
 		return (this.kindNameExpression == null) ? this.classBasedKindName
@@ -142,7 +142,7 @@ public class DatastorePersistentEntityImpl<T>
 		Set<Class> otherMembers = DatastoreMappingContext.getDiscriminationFamily(getType());
 		if (otherMembers != null) {
 			for (Class other : otherMembers) {
-				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getPersistentEntity(other);
+				DatastorePersistentEntity persistentEntity = this.datastoreMappingContext.getDatastorePersistentEntity(other);
 				if (getDiscriminatorValue() != null
 						&& getDiscriminatorValue().equals(persistentEntity.getDiscriminatorValue())) {
 					throw new DatastoreDataException(
@@ -233,7 +233,7 @@ public class DatastorePersistentEntityImpl<T>
 			return this;
 		}
 		return ((DatastorePersistentEntityImpl) (this.datastoreMappingContext
-				.getPersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity();
+				.getDatastorePersistentEntity(getType().getSuperclass()))).getDiscriminationSuperclassPersistentEntity();
 	}
 
 	private void initializeSubclassEntities() {
