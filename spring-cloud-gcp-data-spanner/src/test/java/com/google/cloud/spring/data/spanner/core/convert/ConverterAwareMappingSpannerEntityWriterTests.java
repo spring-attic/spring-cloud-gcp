@@ -401,7 +401,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		assertThat(mutation.asMap().entrySet().stream()
 				.filter(e -> !"id".equals(e.getKey()))
 				.map(Map.Entry::getValue)
-				.collect(Collectors.toList())).allMatch(Value::isCommitTimestamp);
+				.collect(Collectors.toList()))
+			.isNotEmpty()
+			.allMatch(Value::isCommitTimestamp);
 	}
 
 	/**
