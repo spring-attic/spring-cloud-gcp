@@ -52,7 +52,7 @@ public class DefaultPublisherFactoryTests {
 		factory.setCredentialsProvider(this.credentialsProvider);
 		Publisher publisher = factory.createPublisher("testTopic");
 
-		assertThat(factory.getCache().size()).isEqualTo(1);
+		assertThat(factory.getCache()).hasSize(1);
 		assertThat(publisher).isEqualTo(factory.getCache().get("testTopic"));
 		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo("testTopic");
 		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo("projectId");

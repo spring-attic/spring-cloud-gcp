@@ -501,7 +501,7 @@ public class DatastoreTemplateTests {
 					assertThat(readReferenceTestEntity.sibling).isSameAs(readReferenceTestEntity);
 					verify(this.datastore, times(1)).fetch(any());
 
-					assertThat(readReferenceTestEntity.lazyChildren.size()).isEqualTo(1);
+					assertThat(readReferenceTestEntity.lazyChildren).hasSize(1);
 					verify(this.datastore, times(2)).fetch(any());
 					verify(this.datastore, times(1)).fetch(eq(this.key1));
 					verify(this.datastore, times(1)).fetch(eq(this.key2));

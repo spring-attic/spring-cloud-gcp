@@ -500,7 +500,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
 
-		assertThat(foundByCustomQuery.size()).isEqualTo(3);
+		assertThat(foundByCustomQuery).hasSize(3);
 		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(3);
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();

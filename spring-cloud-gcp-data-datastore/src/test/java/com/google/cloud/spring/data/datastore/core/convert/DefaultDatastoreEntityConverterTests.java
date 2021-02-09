@@ -752,11 +752,11 @@ public class DefaultDatastoreEntityConverterTests {
 
 		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityA.get(0).get())
 				.getString("stringField")).isEqualTo("item 0");
-		assertThat(embeddedMapValuesEmbeddedEntityA.size()).isEqualTo(1);
+		assertThat(embeddedMapValuesEmbeddedEntityA).hasSize(1);
 
 		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityB.get(0).get())
 				.getString("stringField")).isEqualTo("item 1");
-		assertThat(embeddedMapValuesEmbeddedEntityB.size()).isEqualTo(1);
+		assertThat(embeddedMapValuesEmbeddedEntityB).hasSize(1);
 
 		TestItemWithEmbeddedEntity read = entityConverter
 				.read(TestItemWithEmbeddedEntity.class, entity);

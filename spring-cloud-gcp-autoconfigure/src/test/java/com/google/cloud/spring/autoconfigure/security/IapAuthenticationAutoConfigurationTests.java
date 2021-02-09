@@ -211,7 +211,7 @@ public class IapAuthenticationAutoConfigurationTests {
 							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
 					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
 					assertThat(result.hasErrors()).isTrue();
-					assertThat(result.getErrors().size()).isEqualTo(2);
+					assertThat(result.getErrors()).hasSize(2);
 					assertThat(result.getErrors().stream().map(error -> error.getDescription()))
 							.containsExactlyInAnyOrder(
 									"The iss claim is not valid", "This aud claim is not equal to the configured audience");

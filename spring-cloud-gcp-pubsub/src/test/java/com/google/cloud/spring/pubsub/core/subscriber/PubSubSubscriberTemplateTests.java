@@ -308,7 +308,7 @@ public class PubSubSubscriberTemplateTests {
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
@@ -335,7 +335,7 @@ public class PubSubSubscriberTemplateTests {
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
@@ -370,7 +370,7 @@ public class PubSubSubscriberTemplateTests {
 		Set<AcknowledgeablePubsubMessage> combinedMessages = new HashSet<>(result1);
 		combinedMessages.addAll(result2);
 
-		assertThat(combinedMessages.size()).isEqualTo(2);
+		assertThat(combinedMessages).hasSize(2);
 
 		TestListenableFutureCallback testListenableFutureCallback = new TestListenableFutureCallback();
 
@@ -396,7 +396,7 @@ public class PubSubSubscriberTemplateTests {
 
 		assertThat(asyncResult.isDone()).isTrue();
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub");
@@ -423,7 +423,7 @@ public class PubSubSubscriberTemplateTests {
 		List<PubsubMessage> result = this.pubSubSubscriberTemplate.pullAndAck(
 				"sub2", 1, true);
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 
 		PubsubMessage pubsubMessage = result.get(0);
 		assertThat(pubsubMessage).isSameAs(this.pubsubMessage);
@@ -451,7 +451,7 @@ public class PubSubSubscriberTemplateTests {
 		List<PubsubMessage> result = asyncResult.get(10L, TimeUnit.SECONDS);
 		assertThat(asyncResult.isDone()).isTrue();
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 
 		PubsubMessage pubsubMessage = result.get(0);
 		assertThat(pubsubMessage).isSameAs(this.pubsubMessage);
@@ -481,7 +481,7 @@ public class PubSubSubscriberTemplateTests {
 
 		verify(this.messageConverter).fromPubSubMessage(this.pubsubMessage, BigInteger.class);
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
@@ -497,7 +497,7 @@ public class PubSubSubscriberTemplateTests {
 
 		verify(this.messageConverter).fromPubSubMessage(this.pubsubMessage, BigInteger.class);
 
-		assertThat(result.size()).isEqualTo(1);
+		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");

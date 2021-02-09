@@ -367,14 +367,14 @@ public class GqlDatastoreQueryTests {
 			Map<String, Value> paramMap = statement.getNamedBindings();
 
 			if (statement.getQueryString().equals(expected)) {
-				assertThat(paramMap.size()).isEqualTo(3);
+				assertThat(paramMap).hasSize(3);
 				assertThat(paramMap.get("price").get()).isEqualTo(1L);
 				assertThat(paramMap.get("limit").get()).isEqualTo(2L);
 				assertThat(paramMap.get("offset").get()).isEqualTo(0L);
 				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
 			}
 			else if (statement.getQueryString().equals(gql)) {
-				assertThat(paramMap.size()).isEqualTo(1);
+				assertThat(paramMap).hasSize(1);
 				assertThat(paramMap.get("price").get()).isEqualTo(1L);
 				return new DatastoreResultsIterable(Arrays.asList(1L, 2L), cursor);
 			}
@@ -425,7 +425,7 @@ public class GqlDatastoreQueryTests {
 			assertThat(statement.getQueryString()).isEqualTo(expected);
 			Map<String, Object> paramMap = statement.getNamedBindings();
 
-				assertThat(paramMap.size()).isEqualTo(3);
+				assertThat(paramMap).hasSize(3);
 				assertThat(((Value) paramMap.get("price")).get()).isEqualTo(1L);
 				assertThat(((Value) paramMap.get("limit")).get()).isEqualTo(2L);
 				assertThat(paramMap.get("offset")).isEqualTo(cursorInPageable);

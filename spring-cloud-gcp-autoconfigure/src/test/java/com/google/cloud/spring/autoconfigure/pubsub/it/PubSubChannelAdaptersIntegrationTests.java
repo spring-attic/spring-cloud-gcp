@@ -149,7 +149,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			String payload = new String((byte[]) message.getPayload());
 			assertThat(payload).isEqualTo("I am a message (sendAndReceiveMessageAsString).");
 
-			assertThat(message.getHeaders().size()).isEqualTo(6);
+			assertThat(message.getHeaders()).hasSize(6);
 			assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 			assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 			assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");

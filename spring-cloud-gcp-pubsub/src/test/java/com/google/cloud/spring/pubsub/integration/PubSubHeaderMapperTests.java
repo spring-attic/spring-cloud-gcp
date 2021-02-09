@@ -55,7 +55,7 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, String> filteredHeaders = new HashMap<>();
 		mapper.fromHeaders(internalHeaders, filteredHeaders);
-		assertThat(filteredHeaders.size()).isEqualTo(1);
+		assertThat(filteredHeaders).hasSize(1);
 		assertThat(filteredHeaders.get("my header")).isEqualTo("pantagruel's nativity");
 	}
 
@@ -69,7 +69,7 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, String> filteredHeaders = new HashMap<>();
 		mapper.fromHeaders(internalHeaders, filteredHeaders);
-		assertThat(filteredHeaders.size()).isEqualTo(3);
+		assertThat(filteredHeaders).hasSize(3);
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class PubSubHeaderMapperTests {
 		originalHeaders.put("my header", "don't touch it");
 
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
-		assertThat(internalHeaders.size()).isEqualTo(3);
+		assertThat(internalHeaders).hasSize(3);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
 
-		assertThat(internalHeaders.size()).isEqualTo(1);
+		assertThat(internalHeaders).hasSize(1);
 		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP)).isEqualTo(headerValue);
 		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
 	}
