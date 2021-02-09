@@ -334,8 +334,9 @@ public class DefaultDatastoreEntityConverterTests {
 
 		Entity entity = builder.build();
 
-		assertThat(entity.getValue("stringField").equals(new NullValue()))
-				.as("validate null field").isTrue();
+		// You get an "ambiguous method" error if put right into the assert.
+		Value<String> baseEntity = entity.getValue("stringField");
+		assertThat(baseEntity).as("validate null field").isEqualTo(new NullValue());
 	}
 
 	@Test
@@ -378,7 +379,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestItemUnsupportedFields readItem =
 				entityConverter.read(TestItemUnsupportedFields.class, entity);
 
-		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+		assertThat(item).as("read object should be equal to original").isEqualTo(readItem);
 	}
 
 	@Test
@@ -477,7 +478,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestDatastoreItemCollections readItem =
 				entityConverter.read(TestDatastoreItemCollections.class, entity);
 
-		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+		assertThat(item).as("read object should be equal to original").isEqualTo(readItem);
 	}
 
 	@Test
@@ -506,7 +507,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.isNull();
 
 		TestDatastoreItemCollections readItem = ENTITY_CONVERTER.read(TestDatastoreItemCollections.class, entity);
-		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+		assertThat(item).as("read object should be equal to original").isEqualTo(readItem);
 
 	}
 
@@ -592,8 +593,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestItemUnsupportedFields.CollectionOfUnsupportedTypes read =
 				entityConverter.read(TestItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
 
-		assertThat(read.equals(item)).as("read object should be equal to original").isTrue();
-
+		assertThat(read).as("read object should be equal to original").isEqualTo(item);
 	}
 
 	private TestItemUnsupportedFields.CollectionOfUnsupportedTypes getCollectionOfUnsupportedTypesItem() {
