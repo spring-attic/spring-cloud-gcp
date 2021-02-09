@@ -183,7 +183,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
 					assertThat(resolver).isNotNull();
-					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(null);
+					assertThat(resolver.resolve(this.mockIapRequest)).isNull();
 					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo("other header jwt");
 				});
 	}

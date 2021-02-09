@@ -105,7 +105,7 @@ public class SecretManagerBootstrapConfigurationTests {
 
 		try (ConfigurableApplicationContext c = disabledConfigurationApp.run()) {
 			String secret = c.getEnvironment().getProperty("sm://my-secret");
-			assertThat(secret).isEqualTo(null);
+			assertThat(secret).isNull();
 		}
 	}
 
