@@ -44,7 +44,6 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -115,10 +114,13 @@ public class FirestoreIntegrationTests {
 		assertThat(bobUpdateTime).isNotNull();
 
 		User bob2 = new User("Bob", 60, null);
-
-		assertThatThrownBy(() -> this.firestoreTemplate.saveAll(Flux.just(bob2)).collectList().block())
-				.isInstanceOf(StatusRuntimeException.class)
-				.hasMessageContaining("ALREADY_EXISTS");
+		Flux<User> justBob2 = Flux.just(bob2);
+		StepVerifier.create(this.firestoreTemplate.saveAll(justBob2))
+				.expectErrorSatisfies(t -> {
+					assertThat(t).isInstanceOf(StatusRuntimeException.class);
+					assertThat(t).hasMessageContaining("ALREADY_EXISTS");
+				})
+				.verify();
 
 		bob.setAge(15);
 		this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block();
@@ -132,9 +134,13 @@ public class FirestoreIntegrationTests {
 		bob3.setAge(20);
 		this.firestoreTemplate.saveAll(Flux.just(bob3)).collectList().block();
 
-		assertThatThrownBy(() -> this.firestoreTemplate.saveAll(Flux.just(bob)).collectList().block())
-				.isInstanceOf(StatusRuntimeException.class)
-				.hasMessageContaining("does not match the required base version");
+		Flux<User> justBob = Flux.just(bob);
+		StepVerifier.create(this.firestoreTemplate.saveAll(justBob))
+				.expectErrorSatisfies(t -> {
+					assertThat(t).isInstanceOf(StatusRuntimeException.class);
+					assertThat(t).hasMessageContaining("does not match the required base version");
+				})
+				.verify();
 	}
 
 	@Test

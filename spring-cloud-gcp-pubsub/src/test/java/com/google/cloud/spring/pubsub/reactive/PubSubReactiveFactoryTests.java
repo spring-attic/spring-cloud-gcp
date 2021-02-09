@@ -72,7 +72,8 @@ public class PubSubReactiveFactoryTests {
 
 	@Test
 	public void testIllegalArgumentExceptionWithMaxMessagesLessThanOne() {
-		assertThatThrownBy(() -> new PubSubReactiveFactory(subscriberOperations, VirtualTimeScheduler.getOrSet(), 0))
+		VirtualTimeScheduler vts = VirtualTimeScheduler.getOrSet();
+		assertThatThrownBy(() -> new PubSubReactiveFactory(subscriberOperations, vts, 0))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("maxMessages cannot be less than 1.");
 	}

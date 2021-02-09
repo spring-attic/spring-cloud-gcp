@@ -18,6 +18,7 @@ package com.google.cloud.spring.vision;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import com.google.cloud.storage.Blob;
 import org.junit.Test;
@@ -34,7 +35,8 @@ public class DocumentOcrResultSetTests {
 		Blob blob = Mockito.mock(Blob.class);
 		when(blob.getName()).thenReturn("output.json");
 
-		assertThatThrownBy(() -> new DocumentOcrResultSet(Collections.singletonList(blob)))
+		List<Blob> blobList = Collections.singletonList(blob);
+		assertThatThrownBy(() -> new DocumentOcrResultSet(blobList))
 				.hasMessageContaining("Cannot create a DocumentOcrResultSet with blob: ")
 				.isInstanceOf(IllegalArgumentException.class);
 	}

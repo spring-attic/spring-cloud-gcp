@@ -51,21 +51,25 @@ public class MapBuilderTests {
 
 	@Test
 	public void mapWithNullKeyThrowsException() {
-		assertThatThrownBy(() -> new MapBuilder<String, String>().put(null, "nope"))
+		MapBuilder<String, String> mb = new MapBuilder<>();
+		assertThatThrownBy(() -> mb.put(null, "nope"))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("Map key cannot be null.");
 	}
 
 	@Test
 	public void mapWithNullValueThrowsException() {
-		assertThatThrownBy(() -> new MapBuilder<String, String>().put("nope", null))
+		MapBuilder<String, String> mb = new MapBuilder<>();
+		assertThatThrownBy(() -> mb.put("nope", null))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("Map value cannot be null.");
 	}
 
 	@Test
 	public void mapWithDuplicateKeysThrowsException() {
-		assertThatThrownBy(() -> new MapBuilder<String, String>().put("b", "beta").put("b", "vita"))
+		MapBuilder<String, String> mb = new MapBuilder<>();
+		mb.put("b", "beta");
+		assertThatThrownBy(() -> mb.put("b", "vita"))
 				.isInstanceOf(IllegalArgumentException.class)
 				.hasMessage("Duplicate keys not allowed.");
 	}
