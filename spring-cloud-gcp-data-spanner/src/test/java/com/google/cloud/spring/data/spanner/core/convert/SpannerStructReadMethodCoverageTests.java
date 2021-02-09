@@ -56,10 +56,10 @@ public class SpannerStructReadMethodCoverageTests {
 			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
 				Class innerReturnType = (Class) ((ParameterizedType) method
 						.getGenericReturnType()).getActualTypeArguments()[0];
-				assertThat(StructAccessor.readIterableMapping.keySet()).contains(innerReturnType);
+				assertThat(StructAccessor.readIterableMapping).containsKey(innerReturnType);
 			}
 			else {
-				assertThat(StructAccessor.singleItemReadMethodMapping.keySet()).contains(returnType);
+				assertThat(StructAccessor.singleItemReadMethodMapping).containsKey(returnType);
 			}
 		}
 	}

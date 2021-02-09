@@ -62,14 +62,12 @@ public class SpannerWriteMethodCoverageTests {
 			else if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap.keySet())
-								.contains(innerParamType);
+				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyTypeToMethodMap)
+						.containsKey(innerParamType);
 			}
 			else {
-				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet())
-								.contains(paramType);
+				assertThat(ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap)
+						.containsKey(paramType);
 			}
 		}
 	}

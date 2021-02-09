@@ -18,6 +18,7 @@ package com.google.cloud.spring.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -25,6 +26,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
 import ch.qos.logback.core.status.Status;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.slf4j.MDCContextMap;
@@ -71,12 +73,12 @@ public class StackdriverJsonLayoutLoggerTests {
 					"projects/test-project/traces/12345678901234561234567890123456", data);
 			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)).isFalse();
-			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT);
+			assertThat(data).doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
+			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE);
+			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE);
 		}
 		finally {
 			System.setOut(oldOut);
@@ -101,7 +103,8 @@ public class StackdriverJsonLayoutLoggerTests {
 			Logger logger = LoggerFactory.getLogger("StackdriverJsonLayoutServiceCtxLoggerTests");
 			logger.warn("test");
 
-			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+			Type stringObjType = new TypeToken<Map<String, Object>>() { }.getType();
+			Map<String, Object> data = new Gson().fromJson(new String(out.toByteArray()), stringObjType);
 
 			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
 			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
@@ -110,14 +113,14 @@ public class StackdriverJsonLayoutLoggerTests {
 					"projects/test-project/traces/12345678901234561234567890123456", data);
 			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)).isFalse();
-			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
-			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
+			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT);
+			assertThat(data).doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
+			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE);
+			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE);
 
-			assertThat(data.containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE)).isTrue();
+			assertThat(data).containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
 
 			// test service context
 			Object serviceCtxObject = data.get(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
@@ -128,7 +131,7 @@ public class StackdriverJsonLayoutLoggerTests {
 			assertThat(serviceContextMap.containsKey("version")).isTrue();
 			assertThat(serviceContextMap.get("version")).isEqualTo("version");
 
-			assertThat(data.containsKey("custom-key")).isTrue();
+			assertThat(data).containsKey("custom-key");
 			assertThat(data.get("custom-key")).isEqualTo("custom-value");
 		}
 		finally {
