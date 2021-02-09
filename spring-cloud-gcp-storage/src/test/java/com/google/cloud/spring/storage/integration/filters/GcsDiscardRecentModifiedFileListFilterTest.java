@@ -41,7 +41,7 @@ public class GcsDiscardRecentModifiedFileListFilterTest {
 		when(blobInfo.getUpdateTime())
 				.thenReturn(ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli());
 
-		assertThat(filter.filterFiles(new BlobInfo[] { blobInfo })).hasSize(0);
+		assertThat(filter.filterFiles(new BlobInfo[] { blobInfo })).isEmpty();
 		assertThat(filter.accept(blobInfo)).isFalse();
 		assertThat(callbackTriggered).isTrue();
 		assertThat(filter.supportsSingleFileFiltering()).isTrue();

@@ -126,7 +126,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 		assertThat(result.getSchema()).isEqualTo(schema);
 
 		// This asserts that the BigQuery job polling task is no longer in the scheduler.
-		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
+		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).isEmpty();
 	}
 
 	@Test
@@ -158,7 +158,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				result.getValues().iterator().next().get("State").getStringValue()).isEqualTo("Alabama");
 
 		// This asserts that the BigQuery job polling task is no longer in the scheduler.
-		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
+		assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).isEmpty();
 	}
 
 	@Test
@@ -198,7 +198,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 
 		await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 			// This asserts that the BigQuery job polling task is no longer in the scheduler after cancel.
-			assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(0);
+			assertThat(this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).isEmpty();
 		});
 	}
 }

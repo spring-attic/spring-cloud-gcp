@@ -305,7 +305,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(someTrade.getSymbol()).isNull();
 
 		// testing parent-child relationships
-		assertThat(someTrade.getSubTrades()).hasSize(0);
+		assertThat(someTrade.getSubTrades()).isEmpty();
 		SubTrade subTrade1 = new SubTrade(someTrade.getTradeDetail().getId(),
 				someTrade.getTraderId(), "subTrade1");
 		SubTrade subTrade2 = new SubTrade(someTrade.getTradeDetail().getId(),
