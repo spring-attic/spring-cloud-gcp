@@ -21,7 +21,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,25 +67,20 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 	private final OAuth2TokenValidator<Jwt> tokenValidator;
 	private final Logger logger = LoggerFactory.getLogger(FirebaseJwtTokenDecoder.class);
 	private Pattern maxAgePattern = Pattern.compile("max-age=(\\d*)");
-	private ReentrantLock keysLock = new ReentrantLock();
 	private volatile Long expires = 0L;
 	private Map<String, JwtDecoder> delegates = new ConcurrentHashMap<>();
+
 	public FirebaseJwtTokenDecoder(RestOperations restClient, String googlePublicKeysEndpoint, OAuth2TokenValidator<Jwt> tokenValidator) {
 		this.restClient = restClient;
 		this.googlePublicKeysEndpoint = googlePublicKeysEndpoint;
 		this.tokenValidator = tokenValidator;
 	}
+
 	@Override
 	public Jwt decode(String token) throws JwtException {
 		SignedJWT jwt = parse(token);
 		if (isExpired()) {
-			try {
-				keysLock.tryLock();
-				refresh();
-			}
-			finally {
-				keysLock.unlock();
-			}
+			refresh();
 		}
 		JwtDecoder decoder = delegates.get(jwt.getHeader().getKeyID());
 		if (decoder == null) {
@@ -95,7 +89,7 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 		return decoder.decode(token);
 	}
 
-	private void refresh() {
+	private synchronized void refresh() {
 		if (!isExpired()) {
 			return;
 		}
