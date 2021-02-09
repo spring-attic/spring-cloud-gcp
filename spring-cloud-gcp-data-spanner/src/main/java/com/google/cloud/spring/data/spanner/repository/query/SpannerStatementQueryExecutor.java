@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,14 @@ import org.springframework.data.repository.query.parser.PartTree;
  * @since 1.1
  */
 public final class SpannerStatementQueryExecutor {
+
+	private static final String LIMIT = " LIMIT ";
+
+	private static final String WHERE = " WHERE ";
+
+	private static final String AND = " AND ";
+
+	private static final String LOWER_LHS = "LOWER(";
 
 	private SpannerStatementQueryExecutor() {
 	}
@@ -170,7 +178,7 @@ public final class SpannerStatementQueryExecutor {
 						.append(" FROM (").append(sql).append(")").append(alias)
 						.append(buildWhere(persistentEntity)), persistentEntity);
 		if (options.getLimit() != null) {
-			sb.append(" LIMIT ").append(options.getLimit());
+			sb.append(LIMIT).append(options.getLimit());
 		}
 		if (options.getOffset() != null) {
 			sb.append(" OFFSET ").append(options.getOffset());
@@ -186,7 +194,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @see SpannerPersistentEntity#getWhere()
 	 */
 	public static String buildWhere(SpannerPersistentEntity<?> entity) {
-		return entity.hasWhere() ? " WHERE " + entity.getWhere() : "";
+		return entity.hasWhere() ? WHERE + entity.getWhere() : "";
 	}
 
 	/**
@@ -268,7 +276,7 @@ public final class SpannerStatementQueryExecutor {
 		List<SpannerPersistentProperty> keyProperties = persistentEntity.getFlattenedPrimaryKeyProperties();
 
 		for (Key key : keySet.getKeys()) {
-			StringJoiner andJoiner = new StringJoiner(" AND ");
+			StringJoiner andJoiner = new StringJoiner(AND);
 			Iterator parentKeyParts = key.getParts().iterator();
 			while (parentKeyParts.hasNext()) {
 				SpannerPersistentProperty keyProp = keyProperties.get(tagNum % keyProperties.size());
@@ -284,7 +292,7 @@ public final class SpannerStatementQueryExecutor {
 		String condition = combineWithAnd(keyClause, whereClause);
 		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext, true) + " FROM "
 				+ (StringUtils.isEmpty(index) ? persistentEntity.tableName() : String.format("%s@{FORCE_INDEX=%s}", persistentEntity.tableName(), index))
-				+ (condition.isEmpty() ? "" : " WHERE " + condition);
+				+ (condition.isEmpty() ? "" : WHERE + condition);
 		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
 	}
@@ -300,10 +308,10 @@ public final class SpannerStatementQueryExecutor {
 				.map(keyProp -> tableName + "." + keyProp.getColumnName()
 						+ " = "
 						+ parentPersistentEntity.tableName() + "." + keyProp.getColumnName())
-				.collect(Collectors.joining(" AND "));
+				.collect(Collectors.joining(AND));
 		String condition = combineWithAnd(keylCause, whereClause);
 		return "ARRAY (SELECT AS STRUCT " + getColumnsStringForSelect(childPersistentEntity, mappingContext, true) + " FROM "
-				+ tableName + " WHERE " + condition + ") AS " + columnName;
+				+ tableName + WHERE + condition + ") AS " + columnName;
 	}
 
 	/**
@@ -475,7 +483,7 @@ public final class SpannerStatementQueryExecutor {
 		sort.iterator().forEachRemaining((o) -> {
 			SpannerPersistentProperty property = persistentEntity.getPersistentProperty(o.getProperty());
 			String sortedPropertyName = (property != null) ? property.getColumnName() : o.getProperty();
-			String sortedProperty = o.isIgnoreCase() ? "LOWER(" + sortedPropertyName + ")"
+			String sortedProperty = o.isIgnoreCase() ? LOWER_LHS + sortedPropertyName + ")"
 					: sortedPropertyName;
 			sj.add(sortedProperty + (o.isAscending() ? " ASC" : " DESC"));
 		});
@@ -493,7 +501,7 @@ public final class SpannerStatementQueryExecutor {
 			tree.iterator().forEachRemaining((orPart) -> {
 				String orString = "( ";
 
-				StringJoiner andStrings = new StringJoiner(" AND ");
+				StringJoiner andStrings = new StringJoiner(AND);
 
 				orPart.forEach((part) -> {
 					String segment = part.getProperty().getSegment();
@@ -512,8 +520,8 @@ public final class SpannerStatementQueryExecutor {
 					String andString = spannerPersistentProperty.getColumnName();
 					String insertedTag = "@" + tag;
 					if (part.shouldIgnoreCase() == IgnoreCaseType.ALWAYS) {
-						andString = "LOWER(" + andString + ")";
-						insertedTag = "LOWER(" + insertedTag + ")";
+						andString = LOWER_LHS + andString + ")";
+						insertedTag = LOWER_LHS + insertedTag + ")";
 					}
 					else if (part.shouldIgnoreCase() != IgnoreCaseType.NEVER) {
 						throw new SpannerDataException(
@@ -593,11 +601,11 @@ public final class SpannerStatementQueryExecutor {
 			stringBuilder.append(" LIMIT 1");
 		}
 		else if (pageable.isPaged()) {
-			stringBuilder.append(" LIMIT ").append(pageable.getPageSize())
+			stringBuilder.append(LIMIT).append(pageable.getPageSize())
 					.append(" OFFSET ").append(pageable.getOffset());
 		}
 		else if (tree.isLimiting()) {
-			stringBuilder.append(" LIMIT ").append(tree.getMaxResults());
+			stringBuilder.append(LIMIT).append(tree.getMaxResults());
 		}
 	}
 }
