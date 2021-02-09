@@ -134,7 +134,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param tableSchemaExpression the SpEL expression used to evaluate the {@link Schema}.
 	 */
 	public void setTableSchemaExpression(Expression tableSchemaExpression) {
-		Assert.notNull(formatOptionsExpression, "The table schema expression cannot be null.");
+		Assert.notNull(tableSchemaExpression, "The table schema expression cannot be null.");
 		this.tableSchemaExpression = tableSchemaExpression;
 	}
 
@@ -143,7 +143,7 @@ public class BigQueryFileMessageHandler extends AbstractReplyProducingMessageHan
 	 * @param schema the schema of the table to load.
 	 */
 	public void setTableSchema(Schema schema) {
-		this.formatOptionsExpression = new ValueExpression<>(schema);
+		this.tableSchemaExpression = new ValueExpression<>(schema);
 	}
 
 	/**
