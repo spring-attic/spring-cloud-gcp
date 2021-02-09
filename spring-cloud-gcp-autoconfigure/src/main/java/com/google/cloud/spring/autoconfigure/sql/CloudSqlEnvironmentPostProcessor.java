@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -53,6 +54,12 @@ public class CloudSqlEnvironmentPostProcessor implements EnvironmentPostProcesso
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+
+		if (environment.getPropertySources().contains("bootstrap")) {
+			// Do not run in the bootstrap phase as the user configuration is not available yet
+			return;
+		}
+
 		DatabaseType databaseType = getEnabledDatabaseType(environment);
 
 		if (databaseType != null) {
@@ -60,10 +67,10 @@ public class CloudSqlEnvironmentPostProcessor implements EnvironmentPostProcesso
 				LOGGER.info("post-processing Cloud SQL properties for + " + databaseType.name());
 			}
 
-			// Bind properties
-			Binder binder = Binder.get(environment);
+			// Bind properties without resolving placeholders
+			Binder binder = new Binder(ConfigurationPropertySources.get(environment), null, null, null, null);
+
 			String cloudSqlPropertiesPrefix = GcpCloudSqlProperties.class.getAnnotation(ConfigurationProperties.class).value();
-			String gcpPropertiesPrefix = GcpProperties.class.getAnnotation(ConfigurationProperties.class).value();
 			GcpCloudSqlProperties sqlProperties = binder
 					.bind(cloudSqlPropertiesPrefix, GcpCloudSqlProperties.class)
 					.orElse(new GcpCloudSqlProperties());

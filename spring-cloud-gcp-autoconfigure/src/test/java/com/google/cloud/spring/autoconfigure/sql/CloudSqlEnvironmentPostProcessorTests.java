@@ -29,6 +29,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.PropertySource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -244,6 +247,43 @@ public class CloudSqlEnvironmentPostProcessorTests {
 							context.getBean(DataSourceProperties.class);
 					assertThat(dataSourceProperties.getUrl()).contains(
 							"&ipTypes=PRIVATE");
+				});
+	}
+
+	@Test
+	public void testPlaceholdersNotResolved() {
+		this.contextRunner.withPropertyValues(
+				"spring.cloud.gcp.sql.instance-connection-name=world:asia:japan",
+				"spring.cloud.gcp.sql.database-name=${sm://my-db}")
+				.run((context) -> {
+					assertThat(context.getEnvironment().getPropertySources()
+							.get("CLOUD_SQL_DATA_SOURCE_URL")
+							.getProperty("spring.datasource.url"))
+							.isEqualTo("jdbc:mysql://google/${sm://my-db}?"
+									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
+									+ "&cloudSqlInstance=world:asia:japan");
+				});
+	}
+
+	@Test
+	public void testSkipOnBootstrap() {
+		new ApplicationContextRunner()
+				.withPropertyValues("spring.cloud.gcp.sql.databaseName=test-database")
+				.withInitializer(new ApplicationContextInitializer<ConfigurableApplicationContext>() {
+					@Override
+					public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+						// add a property source called "bootstrap" to mark it as the bootstrap phase
+						configurableApplicationContext.getEnvironment().getPropertySources().addFirst(new PropertySource<Object>("bootstrap") {
+							@Override
+							public Object getProperty(String name) {
+								return null;
+							}
+						});
+					}
+				})
+				.withInitializer(configurableApplicationContext -> initializer.postProcessEnvironment(configurableApplicationContext.getEnvironment(), new SpringApplication()))
+				.run((context) -> {
+					assertThat(getSpringDatasourceUrl(context)).isNull();
 				});
 	}
 
