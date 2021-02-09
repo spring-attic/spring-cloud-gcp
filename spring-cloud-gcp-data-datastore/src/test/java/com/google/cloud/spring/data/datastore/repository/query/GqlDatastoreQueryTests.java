@@ -363,7 +363,7 @@ public class GqlDatastoreQueryTests {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString().equals(gql) || statement.getQueryString().equals(expected))
-					.isEqualTo(true);
+					.isTrue();
 			Map<String, Value> paramMap = statement.getNamedBindings();
 
 			if (statement.getQueryString().equals(expected)) {

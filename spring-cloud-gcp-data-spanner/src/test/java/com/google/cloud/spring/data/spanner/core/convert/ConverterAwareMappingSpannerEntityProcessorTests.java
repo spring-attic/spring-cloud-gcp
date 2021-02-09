@@ -276,7 +276,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t1.testEmbeddedColumns.id3).isEqualTo("key3");
 		assertThat(t1.id4).isEqualTo("key4");
 		assertThat(t1.enumField).isEqualTo(TestEntity.Color.WHITE);
-		assertThat(t1.booleanField).isEqualTo(true);
+		assertThat(t1.booleanField).isTrue();
 		assertThat(t1.intField).isEqualTo(123);
 		assertThat(t1.testEmbeddedColumns.intField2).isEqualTo(333);
 		assertThat(t1.longField).isEqualTo(3L);
@@ -294,7 +294,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.testEmbeddedColumns.id3).isEqualTo("key32");
 		assertThat(t2.id4).isEqualTo("key42");
 		assertThat(t2.enumField).isEqualTo(TestEntity.Color.BLACK);
-		assertThat(t2.booleanField).isEqualTo(true);
+		assertThat(t2.booleanField).isTrue();
 		assertThat(t2.intField).isEqualTo(222);
 		assertThat(t2.testEmbeddedColumns.intField2).isEqualTo(555);
 		assertThat(t2.longField).isEqualTo(5L);

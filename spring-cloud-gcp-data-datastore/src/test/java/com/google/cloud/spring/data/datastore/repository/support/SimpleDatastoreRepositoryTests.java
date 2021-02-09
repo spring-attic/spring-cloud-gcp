@@ -294,7 +294,7 @@ public class SimpleDatastoreRepositoryTests {
 				.when(this.datastoreTemplate).keyQueryByExample(same(example2),
 						eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));
 
-		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
+		assertThat(this.simpleDatastoreRepository.exists(example2)).isTrue();
 
 		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));

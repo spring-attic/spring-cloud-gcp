@@ -241,7 +241,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(result1.getNumber()).isZero();
 		assertThat(result1.getNumberOfElements()).isEqualTo(2);
 		assertThat(result1.getTotalPages()).isEqualTo(2);
-		assertThat(result1.hasNext()).isEqualTo(true);
+		assertThat(result1.hasNext()).isTrue();
 		assertThat(result1).containsExactly(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result2 = this.testEntityRepository
@@ -269,7 +269,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
 						ExampleMatcher.matching().withIgnorePaths("size", "blobField"))))
-				.isEqualTo(true);
+				.isTrue();
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null),
@@ -278,7 +278,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
-				.isEqualTo(true);
+				.isTrue();
 	}
 
 	@Test
