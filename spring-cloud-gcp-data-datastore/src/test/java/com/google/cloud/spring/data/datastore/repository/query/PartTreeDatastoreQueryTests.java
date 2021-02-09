@@ -531,7 +531,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertThat(result.hasNext()).isEqualTo(false);
+		assertThat(result.hasNext()).isFalse();
 
 
 		verify(this.datastoreTemplate, times(1))
@@ -554,7 +554,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertThat(result.hasNext()).isEqualTo(false);
+		assertThat(result.hasNext()).isFalse();
 
 		verify(this.datastoreTemplate, times(1))
 				.queryEntitiesSlice(isA(EntityQuery.class), any(), any());

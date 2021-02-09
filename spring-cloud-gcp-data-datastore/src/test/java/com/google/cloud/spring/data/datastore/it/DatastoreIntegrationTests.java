@@ -252,7 +252,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(result2.getNumber()).isEqualTo(1);
 		assertThat(result2.getNumberOfElements()).isEqualTo(2);
 		assertThat(result2.getTotalPages()).isEqualTo(2);
-		assertThat(result2.hasNext()).isEqualTo(false);
+		assertThat(result2.hasNext()).isFalse();
 		assertThat(result2).containsExactly(this.testEntityD, this.testEntityB);
 
 		assertThat(this.testEntityRepository
@@ -274,7 +274,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null),
 						ExampleMatcher.matching().withIgnorePaths("id").withIncludeNullValues())))
-				.isEqualTo(false);
+				.isFalse();
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, null, null))))

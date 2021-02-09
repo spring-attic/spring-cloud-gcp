@@ -99,7 +99,7 @@ public class PubSubHeaderMapperTests {
 
 		assertThat(internalHeaders).hasSize(1);
 		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP)).isEqualTo(headerValue);
-		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
+		assertThat(internalHeaders.containsKey("my header")).isFalse();
 	}
 
 	@Test
