@@ -334,7 +334,7 @@ public class GqlDatastoreQueryTests {
 
 		assertThat(((Value) params.get(1).get("price")).get()).isEqualTo(1L);
 		assertThat(((Value) params.get(1).get("limit")).get()).isEqualTo(1L);
-		assertThat(params.get(1).get("offset")).isEqualTo(cursor);
+		assertThat(params.get(1)).containsEntry("offset", cursor);
 
 	}
 
@@ -428,7 +428,7 @@ public class GqlDatastoreQueryTests {
 				assertThat(paramMap).hasSize(3);
 				assertThat(((Value) paramMap.get("price")).get()).isEqualTo(1L);
 				assertThat(((Value) paramMap.get("limit")).get()).isEqualTo(2L);
-				assertThat(paramMap.get("offset")).isEqualTo(cursorInPageable);
+				assertThat(paramMap).containsEntry("offset", cursorInPageable);
 				return new DatastoreResultsIterable(Collections.emptyList(), cursor);
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 

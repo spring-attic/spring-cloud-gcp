@@ -761,8 +761,8 @@ public class DefaultDatastoreEntityConverterTests {
 		TestItemWithEmbeddedEntity read = entityConverter
 				.read(TestItemWithEmbeddedEntity.class, entity);
 
-		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a")).isEqualTo("valueA");
-		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b")).isEqualTo("valueB");
+		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L)).containsEntry("a", "valueA");
+		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L)).containsEntry("b", "valueB");
 
 		assertThat(entity.getEntity("customMap").getString("key1"))
 				.isEqualTo("val1");

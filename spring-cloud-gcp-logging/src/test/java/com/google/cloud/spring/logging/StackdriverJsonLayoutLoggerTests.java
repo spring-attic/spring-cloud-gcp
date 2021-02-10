@@ -119,20 +119,15 @@ public class StackdriverJsonLayoutLoggerTests {
 			assertThat(data).doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
 			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE);
 			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE);
-
-			assertThat(data).containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
+			assertThat(data).containsEntry("custom-key", "custom-value");
 
 			// test service context
+			assertThat(data).containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
 			Object serviceCtxObject = data.get(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
 			assertThat(serviceCtxObject).isInstanceOf(Map.class);
-			Map serviceContextMap = (Map) serviceCtxObject;
-			assertThat(serviceContextMap.containsKey("service")).isTrue();
-			assertThat(serviceContextMap.get("service")).isEqualTo("service");
-			assertThat(serviceContextMap.containsKey("version")).isTrue();
-			assertThat(serviceContextMap.get("version")).isEqualTo("version");
-
-			assertThat(data).containsKey("custom-key");
-			assertThat(data.get("custom-key")).isEqualTo("custom-value");
+			Map<String, String> serviceContextMap = (Map) serviceCtxObject;
+			assertThat(serviceContextMap).containsEntry("service", "service");
+			assertThat(serviceContextMap).containsEntry("version", "version");
 		}
 		finally {
 			System.setOut(oldOut);
