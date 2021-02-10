@@ -172,7 +172,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(deletedBySymbol).hasSize(5);
 
-		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		assertThat(this.tradeRepository.count()).isZero();
 
 		this.tradeRepository.saveAll(deletedBySymbol);
 
@@ -180,7 +180,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		this.tradeRepository.deleteBySymbolAndAction("ABCD", "SELL");
 
-		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		assertThat(this.tradeRepository.count()).isZero();
 
 		this.tradeRepository.saveAll(allTrades);
 
@@ -410,14 +410,14 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void testTransactionRolledBack() {
-		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		assertThat(this.tradeRepository.count()).isZero();
 		try {
 			this.tradeRepositoryTransactionalService.testTransactionRolledBack();
 		}
 		catch (RuntimeException re) {
 			// expected exception that causes roll-back;
 		}
-		assertThat(this.tradeRepository.count()).isEqualTo(0L);
+		assertThat(this.tradeRepository.count()).isZero();
 	}
 
 	private void arrayParameterBindTest() {
@@ -458,7 +458,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			this.tradeRepository.save(trade);
 			// because the insert happens within the same transaction, this count is still
 			// 1
-			assertThat(this.tradeRepository.count()).isEqualTo(0L);
+			assertThat(this.tradeRepository.count()).isZero();
 		}
 
 		@Transactional
