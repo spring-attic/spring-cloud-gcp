@@ -177,7 +177,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	private WriteBuilder writeBuilder(Op op, String tableName) {
-		Mutation.WriteBuilder builder = null;
+		Mutation.WriteBuilder builder;
 		switch (op) {
 		case INSERT:
 			builder = Mutation.newInsertBuilder(tableName);
@@ -188,10 +188,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		case UPDATE:
 			builder = Mutation.newUpdateBuilder(tableName);
 			break;
-		}
-		if (builder == null) {
-			throw new IllegalArgumentException(
-					"Unsupported save-mutation operation: " + op);
+		default:
+			throw new IllegalArgumentException("Unsupported save-mutation operation: " + op);
 		}
 		return builder;
 	}

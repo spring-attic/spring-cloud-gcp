@@ -24,6 +24,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.spanner.AbortedException;
 import com.google.cloud.spanner.AsyncResultSet;
 import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.ErrorCode;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -245,8 +246,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	private RuntimeException makeDataIntegrityViolationException(SpannerException e) {
-		switch (e.getErrorCode()) {
-		case ALREADY_EXISTS:
+		if (e.getErrorCode() == ErrorCode.ALREADY_EXISTS) {
 			return new DuplicateKeyException(e.getErrorCode().toString(), e);
 		}
 		return e;
