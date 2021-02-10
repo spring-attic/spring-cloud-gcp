@@ -41,8 +41,8 @@ public class BeforeExecuteDmlEventTest {
 		assertThat(beforeExecuteDmlEvent).isNotEqualTo(null);
 		assertThat(beforeExecuteDmlEvent).isNotEqualTo(new Object());
 
-		assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent.hashCode());
-		assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent1.hashCode());
+		assertThat(beforeExecuteDmlEvent).hasSameHashCodeAs(beforeExecuteDmlEvent);
+		assertThat(beforeExecuteDmlEvent).hasSameHashCodeAs(beforeExecuteDmlEvent1);
 		assertThat(beforeExecuteDmlEvent2.hashCode()).isNotEqualTo(beforeExecuteDmlEvent.hashCode());
 	}
 }

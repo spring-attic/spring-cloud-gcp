@@ -46,8 +46,8 @@ public class AfterExecuteDmlEventTest {
 		assertThat(afterExecuteDmlEventa1).isNotEqualTo(null);
 		assertThat(afterExecuteDmlEventa1).isNotEqualTo(new Object());
 
-		assertThat(afterExecuteDmlEventa1.hashCode()).isEqualTo(afterExecuteDmlEventa1.hashCode());
-		assertThat(afterExecuteDmlEventa1.hashCode()).isEqualTo(afterExecuteDmlEventa1x.hashCode());
+		assertThat(afterExecuteDmlEventa1).hasSameHashCodeAs(afterExecuteDmlEventa1);
+		assertThat(afterExecuteDmlEventa1).hasSameHashCodeAs(afterExecuteDmlEventa1x);
 		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventa2.hashCode());
 		assertThat(afterExecuteDmlEventb1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
 		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
