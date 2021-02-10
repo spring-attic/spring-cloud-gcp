@@ -509,7 +509,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private List<Entity> getReferenceEntitiesForSave(Object entity, Builder builder, Set<Key> persistedEntities) {
-		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity<?> datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithAssociations((AssociationHandler) (association) -> {
 			PersistentProperty persistentProperty = association.getInverse();
@@ -542,10 +542,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private List<Entity> getDescendantEntitiesForSave(Object entity, Key key, Set<Key> persistedEntities) {
-		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity<?> datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
 		datastorePersistentEntity.doWithDescendantProperties(
-				(PersistentProperty persistentProperty) -> {
+				(DatastorePersistentProperty persistentProperty) -> {
 					//Convert and write descendants, applying ancestor from parent entry
 					PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
 					Object val = accessor.getProperty(persistentProperty);
@@ -766,7 +766,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	}
 
 	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
-		DatastorePersistentEntity datastorePersistentEntity = getPersistentEntity(entity.getClass());
+		DatastorePersistentEntity<?> datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		DatastorePersistentProperty idProp = datastorePersistentEntity
 				.getIdPropertyOrFail();
 		if (datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp) == null && allocateKey) {
