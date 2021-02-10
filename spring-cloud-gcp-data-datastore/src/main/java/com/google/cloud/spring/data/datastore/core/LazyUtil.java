@@ -150,11 +150,11 @@ final class LazyUtil {
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			if (!this.isEvaluated) {
-				T value = this.supplierFunc.get();
-				if (value == null) {
+				T newValue = this.supplierFunc.get();
+				if (newValue == null) {
 					throw new DatastoreDataException("Can't load referenced entity");
 				}
-				this.value = value;
+				this.value = newValue;
 
 				this.isEvaluated = true;
 			}
