@@ -280,7 +280,7 @@ public class SimpleDatastoreRepositoryTests {
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));
 
 
-		assertThat(this.simpleDatastoreRepository.findOne(example).get()).isEqualTo(1);
+		assertThat(this.simpleDatastoreRepository.findOne(example)).contains(1);
 
 		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));

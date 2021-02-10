@@ -168,8 +168,7 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findById(A_KEY).get())
-				.isEqualTo(ret);
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findById(A_KEY)).contains(ret);
 		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
 	}
 
