@@ -81,7 +81,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 		if (issuedAt == null || Instant.now(this.clock).plus(clockSkew).isBefore(issuedAt)) {
 			errors.add(new OAuth2Error(
 					OAuth2ErrorCodes.INVALID_REQUEST,
-					String.format("iat claim header must be in the past"),
+					"iat claim header must be in the past",
 					OAUTH2_ERROR_URI));
 		}
 	}
@@ -101,7 +101,7 @@ public class FirebaseTokenValidator implements OAuth2TokenValidator<Jwt> {
 		if (authTime == null || Instant.now(this.clock).plus(clockSkew).isBefore(authTime)) {
 			errors.add(new OAuth2Error(
 					OAuth2ErrorCodes.INVALID_REQUEST,
-					String.format("auth_time claim header must be in the past"),
+					"auth_time claim header must be in the past",
 					OAUTH2_ERROR_URI));
 		}
 	}
