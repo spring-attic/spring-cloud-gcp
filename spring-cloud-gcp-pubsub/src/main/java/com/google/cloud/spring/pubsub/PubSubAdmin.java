@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.google.cloud.spring.pubsub;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +28,7 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
+import com.google.cloud.spring.pubsub.core.PubSubException;
 import com.google.cloud.spring.pubsub.support.PubSubSubscriptionUtils;
 import com.google.cloud.spring.pubsub.support.PubSubTopicUtils;
 import com.google.pubsub.v1.ProjectName;
@@ -68,19 +68,34 @@ public class PubSubAdmin implements AutoCloseable {
 	 * defaults and the provided credentials provider.
 	 * @param projectIdProvider the project id provider to use
 	 * @param credentialsProvider the credentials provider to use
-	 * @throws IOException thrown when there are errors in contacting Google Cloud Pub/Sub
+	 * @throws PubSubException thrown when there are errors in contacting Google Cloud Pub/Sub
 	 */
 	public PubSubAdmin(GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider) throws IOException {
-		this(projectIdProvider,
-				TopicAdminClient.create(
-						TopicAdminSettings.newBuilder()
-								.setCredentialsProvider(credentialsProvider)
-								.build()),
-				SubscriptionAdminClient.create(
-						SubscriptionAdminSettings.newBuilder()
-						.setCredentialsProvider(credentialsProvider)
-						.build()));
+			CredentialsProvider credentialsProvider) throws PubSubException {
+		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
+		this.projectId = projectIdProvider.getProjectId();
+		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
+
+		try {
+			this.topicAdminClient  = TopicAdminClient.create(
+					TopicAdminSettings.newBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
+		}
+		catch (Exception ex) {
+			throw new PubSubException("Failed to create TopicAdminClient", ex);
+		}
+
+		try {
+			this.subscriptionAdminClient = SubscriptionAdminClient.create(
+					SubscriptionAdminSettings.newBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
+		}
+		catch (Exception ex) {
+			this.topicAdminClient.close();
+			throw new PubSubException("Failed to create SubscriptionAdminClient", ex);
+		}
 	}
 
 	public PubSubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
