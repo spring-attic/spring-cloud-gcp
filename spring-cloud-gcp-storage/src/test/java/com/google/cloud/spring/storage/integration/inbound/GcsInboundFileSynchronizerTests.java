@@ -104,11 +104,11 @@ public class GcsInboundFileSynchronizerTests {
 		adapter.afterPropertiesSet();
 
 		Message<File> message = adapter.receive();
-		assertThat(message.getPayload().getName()).isEqualTo("legend of heroes");
+		assertThat(message.getPayload()).hasName("legend of heroes");
 		assertThat(Files.readAllBytes(message.getPayload().toPath())).isEqualTo("estelle".getBytes());
 
 		message = adapter.receive();
-		assertThat(message.getPayload().getName()).isEqualTo("trails in the sky");
+		assertThat(message.getPayload()).hasName("trails in the sky");
 		assertThat(Files.readAllBytes(message.getPayload().toPath())).isEqualTo("joshua".getBytes());
 
 		message = adapter.receive();
