@@ -525,7 +525,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		this.testEntityRepository.delete(this.testEntityA);
 
-		assertThat(this.testEntityRepository.findById(1L).isPresent()).isFalse();
+		assertThat(this.testEntityRepository.findById(1L)).isNotPresent();
 
 		this.testEntityRepository.deleteAll();
 
