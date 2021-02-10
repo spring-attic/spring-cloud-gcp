@@ -124,7 +124,7 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			// test service context
 			Object serviceCtxObject = data.get(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
-			assertThat(serviceCtxObject instanceof Map).isTrue();
+			assertThat(serviceCtxObject).isInstanceOf(Map.class);
 			Map serviceContextMap = (Map) serviceCtxObject;
 			assertThat(serviceContextMap.containsKey("service")).isTrue();
 			assertThat(serviceContextMap.get("service")).isEqualTo("service");
