@@ -37,10 +37,10 @@ public class MapBuilderTests {
 				.put("b", "beta")
 				.put("g", "gamma")
 				.build();
-		assertThat(result).containsOnlyKeys("a", "b", "g");
-		assertThat(result).containsEntry("a", "alpha");
-		assertThat(result).containsEntry("b", "beta");
-		assertThat(result).containsEntry("g", "gamma");
+		assertThat(result).containsOnlyKeys("a", "b", "g")
+				.containsEntry("a", "alpha")
+				.containsEntry("b", "beta")
+				.containsEntry("g", "gamma");
 	}
 
 	@Test

@@ -110,8 +110,8 @@ public class PubSubMessageSourceTests {
 		MessageBuilder<String> message3 = (MessageBuilder<String>) pubSubMessageSource.doReceive(3);
 
 		assertThat(message1).isNotNull();
-		assertThat(message1).isNotNull();
-		assertThat(message1).isNotNull();
+		assertThat(message2).isNotNull();
+		assertThat(message3).isNotNull();
 
 		assertThat(message1.getPayload()).isEqualTo("msg1");
 		assertThat(message2.getPayload()).isEqualTo("msg2");

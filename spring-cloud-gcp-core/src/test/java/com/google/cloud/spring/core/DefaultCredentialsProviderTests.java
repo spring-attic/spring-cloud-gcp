@@ -16,8 +16,8 @@
 
 package com.google.cloud.spring.core;
 
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -34,25 +34,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DefaultCredentialsProviderTests {
 
 	@Test
-	public void testResolveScopesDefaultScopes() throws IOException {
+	public void testResolveScopesDefaultScopes() {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(null);
 		assertThat(scopes.size()).isGreaterThan(1);
 		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
 	}
 
 	@Test
-	public void testResolveScopesOverrideScopes() throws IOException {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("myscope"));
-		assertThat(scopes).hasSize(1);
-		assertThat(scopes).contains("myscope");
+	public void testResolveScopesOverrideScopes() {
+		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Collections.singletonList("myscope"));
+		assertThat(scopes)
+				.hasSize(1)
+				.contains("myscope");
 	}
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("DEFAULT_SCOPES", "myscope"));
-		assertThat(scopes).hasSize(GcpScope.values().length + 1);
-		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
-		assertThat(scopes).contains("myscope");
+		assertThat(scopes)
+				.hasSize(GcpScope.values().length + 1)
+				.contains(GcpScope.PUBSUB.getUrl())
+				.contains("myscope");
 	}
 
 }

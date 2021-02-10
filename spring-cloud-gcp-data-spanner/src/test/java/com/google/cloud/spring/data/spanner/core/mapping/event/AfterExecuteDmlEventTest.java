@@ -38,19 +38,22 @@ public class AfterExecuteDmlEventTest {
 		AfterExecuteDmlEvent afterExecuteDmlEventb1 = new AfterExecuteDmlEvent(Statement.of("b"), 1L);
 		AfterExecuteDmlEvent afterExecuteDmlEventb2 = new AfterExecuteDmlEvent(Statement.of("b"), 2L);
 
-		assertThat(afterExecuteDmlEventa1).isEqualTo(afterExecuteDmlEventa1);
-		assertThat(afterExecuteDmlEventa1).isEqualTo(afterExecuteDmlEventa1x);
-		assertThat(afterExecuteDmlEventa1).isNotEqualTo(afterExecuteDmlEventa2);
-		assertThat(afterExecuteDmlEventb1).isNotEqualTo(afterExecuteDmlEventb2);
-		assertThat(afterExecuteDmlEventa1).isNotEqualTo(afterExecuteDmlEventb2);
-		assertThat(afterExecuteDmlEventa1).isNotEqualTo(null);
-		assertThat(afterExecuteDmlEventa1).isNotEqualTo(new Object());
+		assertThat(afterExecuteDmlEventa1)
+				.isNotNull()
+				.isEqualTo(afterExecuteDmlEventa1)
+				.isEqualTo(afterExecuteDmlEventa1x)
+				.isNotEqualTo(afterExecuteDmlEventa2)
+				.isNotEqualTo(afterExecuteDmlEventb2)
+				.isNotEqualTo(new Object())
+				.hasSameHashCodeAs(afterExecuteDmlEventa1)
+				.hasSameHashCodeAs(afterExecuteDmlEventa1x);
 
-		assertThat(afterExecuteDmlEventa1).hasSameHashCodeAs(afterExecuteDmlEventa1);
-		assertThat(afterExecuteDmlEventa1).hasSameHashCodeAs(afterExecuteDmlEventa1x);
-		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventa2.hashCode());
+		assertThat(afterExecuteDmlEventa1.hashCode())
+				.isNotEqualTo(afterExecuteDmlEventa2.hashCode())
+				.isNotEqualTo(afterExecuteDmlEventb2.hashCode());
+
+		assertThat(afterExecuteDmlEventb1).isNotEqualTo(afterExecuteDmlEventb2);
 		assertThat(afterExecuteDmlEventb1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
-		assertThat(afterExecuteDmlEventa1.hashCode()).isNotEqualTo(afterExecuteDmlEventb2.hashCode());
 	}
 
 }

@@ -61,16 +61,18 @@ public class TwoStepsConversionsTests {
 		okayList.add("256");
 
 		Set<Integer> result = this.twoStepsConversions.<Set<Integer>>convertOnRead(okayList, Set.class, Integer.class);
-		assertThat(result).isNotNull();
-		assertThat(result).containsExactlyInAnyOrder(128, 256);
+		assertThat(result)
+				.isNotNull()
+				.containsExactlyInAnyOrder(128, 256);
 	}
 
 	@Test
 	public void convertOnReadConvertsSimpleElementTypesCorrectly() {
 
 		Integer result = this.twoStepsConversions.<Integer>convertOnRead("512", null, Integer.class);
-		assertThat(result).isNotNull();
-		assertThat(result).isEqualTo(512);
+		assertThat(result)
+				.isNotNull()
+				.isEqualTo(512);
 	}
 
 	@Test

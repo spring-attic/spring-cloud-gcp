@@ -35,14 +35,15 @@ public class BeforeExecuteDmlEventTest {
 
 		BeforeExecuteDmlEvent beforeExecuteDmlEvent2 = new BeforeExecuteDmlEvent(Statement.of("b"));
 
-		assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent);
-		assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent1);
-		assertThat(beforeExecuteDmlEvent2).isNotEqualTo(beforeExecuteDmlEvent);
-		assertThat(beforeExecuteDmlEvent).isNotEqualTo(null);
-		assertThat(beforeExecuteDmlEvent).isNotEqualTo(new Object());
+		assertThat(beforeExecuteDmlEvent)
+				.isNotNull()
+				.isEqualTo(beforeExecuteDmlEvent)
+				.isEqualTo(beforeExecuteDmlEvent1)
+				.isNotEqualTo(new Object())
+				.hasSameHashCodeAs(beforeExecuteDmlEvent)
+				.hasSameHashCodeAs(beforeExecuteDmlEvent1);
 
-		assertThat(beforeExecuteDmlEvent).hasSameHashCodeAs(beforeExecuteDmlEvent);
-		assertThat(beforeExecuteDmlEvent).hasSameHashCodeAs(beforeExecuteDmlEvent1);
+		assertThat(beforeExecuteDmlEvent2).isNotEqualTo(beforeExecuteDmlEvent);
 		assertThat(beforeExecuteDmlEvent2.hashCode()).isNotEqualTo(beforeExecuteDmlEvent.hashCode());
 	}
 }
