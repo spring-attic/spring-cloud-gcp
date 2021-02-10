@@ -103,8 +103,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		this.spannerOperations.insert(trade);
 
 		Optional<String> nonEmpty = tradeRepository.fetchSymbolById(trade.getId());
-		assertThat(nonEmpty).isPresent();
-		assertThat(nonEmpty).contains("ABCD");
+		assertThat(nonEmpty).isPresent().contains("ABCD");
 
 		Optional<String> empty = tradeRepository.fetchSymbolById(trade.getId() + "doesNotExist");
 		assertThat(empty).isNotPresent();
@@ -241,30 +240,23 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
 				.getContent();
 		assertThat(tradesReceivedPage0).hasSize(3);
-		assertThat(tradesReceivedPage0.get(0).getId()
-				.compareTo(tradesReceivedPage0.get(1).getId())).isNegative();
-		assertThat(tradesReceivedPage0.get(1).getId()
-				.compareTo(tradesReceivedPage0.get(2).getId())).isNegative();
+		assertThat(tradesReceivedPage0.get(0).getId()).isLessThan(tradesReceivedPage0.get(1).getId());
+		assertThat(tradesReceivedPage0.get(1).getId()).isLessThan(tradesReceivedPage0.get(2).getId());
 
 		List<Trade> tradesReceivedPage1 = this.tradeRepository
 				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
 				.getContent();
 		assertThat(tradesReceivedPage1).hasSize(3);
-		assertThat(tradesReceivedPage0.get(2).getId()
-				.compareTo(tradesReceivedPage1.get(0).getId())).isNegative();
-		assertThat(tradesReceivedPage1.get(0).getId()
-				.compareTo(tradesReceivedPage1.get(1).getId())).isNegative();
-		assertThat(tradesReceivedPage1.get(1).getId()
-				.compareTo(tradesReceivedPage1.get(2).getId())).isNegative();
+		assertThat(tradesReceivedPage0.get(2).getId()).isLessThan(tradesReceivedPage1.get(0).getId());
+		assertThat(tradesReceivedPage1.get(0).getId()).isLessThan(tradesReceivedPage1.get(1).getId());
+		assertThat(tradesReceivedPage1.get(1).getId()).isLessThan(tradesReceivedPage1.get(2).getId());
 
 		List<Trade> tradesReceivedPage2 = this.tradeRepository
 				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
 				.getContent();
 		assertThat(tradesReceivedPage2).hasSize(2);
-		assertThat(tradesReceivedPage1.get(2).getId()
-				.compareTo(tradesReceivedPage2.get(0).getId())).isNegative();
-		assertThat(tradesReceivedPage2.get(0).getId()
-				.compareTo(tradesReceivedPage2.get(1).getId())).isNegative();
+		assertThat(tradesReceivedPage1.get(2).getId()).isLessThan(tradesReceivedPage2.get(0).getId());
+		assertThat(tradesReceivedPage2.get(0).getId()).isLessThan(tradesReceivedPage2.get(1).getId());
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY", PageRequest.of(0, 100, Sort.by(Order.desc("id"))));
@@ -276,8 +268,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
 
 		assertThat(customSortedTrades).hasSize(2);
-		assertThat(customSortedTrades.get(0).getId()
-				.compareTo(customSortedTrades.get(1).getId())).isNegative();
+		assertThat(customSortedTrades.get(0).getId()).isLessThan(customSortedTrades.get(1).getId());
 
 		this.tradeRepository.findBySymbolLike("%BCD")
 				.forEach((x) -> assertThat(x.getSymbol()).isEqualTo("ABCD"));
