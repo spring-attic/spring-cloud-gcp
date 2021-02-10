@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.secretmanager;
 
-import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
+import com.google.cloud.secretmanager.v1.SecretVersionName;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;

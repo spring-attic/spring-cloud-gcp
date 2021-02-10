@@ -18,10 +18,10 @@ package org.springframework.cloud.gcp.autoconfigure.secretmanager;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.secretmanager.v1beta1.AccessSecretVersionResponse;
-import com.google.cloud.secretmanager.v1beta1.SecretManagerServiceClient;
-import com.google.cloud.secretmanager.v1beta1.SecretPayload;
-import com.google.cloud.secretmanager.v1beta1.SecretVersionName;
+import com.google.cloud.secretmanager.v1.AccessSecretVersionResponse;
+import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+import com.google.cloud.secretmanager.v1.SecretPayload;
+import com.google.cloud.secretmanager.v1.SecretVersionName;
 import com.google.protobuf.ByteString;
 import org.junit.Test;
 
