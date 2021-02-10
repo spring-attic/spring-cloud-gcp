@@ -55,8 +55,9 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, String> filteredHeaders = new HashMap<>();
 		mapper.fromHeaders(internalHeaders, filteredHeaders);
-		assertThat(filteredHeaders).hasSize(1);
-		assertThat(filteredHeaders).containsEntry("my header", "pantagruel's nativity");
+		assertThat(filteredHeaders)
+				.hasSize(1)
+				.containsEntry("my header", "pantagruel's nativity");
 	}
 
 	@Test
@@ -97,9 +98,10 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
 
-		assertThat(internalHeaders).hasSize(1);
-		assertThat(internalHeaders).containsEntry("x-" + MessageHeaders.TIMESTAMP, headerValue);
-		assertThat(internalHeaders.containsKey("my header")).isFalse();
+		assertThat(internalHeaders)
+				.hasSize(1)
+				.containsEntry("x-" + MessageHeaders.TIMESTAMP, headerValue)
+				.doesNotContainKey("my header");
 	}
 
 	@Test
