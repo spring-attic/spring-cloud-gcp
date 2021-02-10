@@ -249,12 +249,23 @@ public class SpannerSchemaUtils {
 
 	private void getCreateTableDdlStringsForInterleavedHierarchy(String parentTable,
 			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
-		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
+		getDdlStringForInterleavedHierarchy(parentTable,
+				entityClass,
+				ddlStrings,
 				seenClasses,
-				(type, parent) -> getCreateTableDdlString(type) + (
-						(parent != null) ? ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-						+ ((this.createInterleavedTableDdlOnDeleteCascade) ? "CASCADE" : "NO ACTION") : ""),
+				this::generateSingleStringDdl,
 				false);
+	}
+
+	private String generateSingleStringDdl(Class<?> type, String parent) {
+		StringBuilder ddlStr = new StringBuilder(getCreateTableDdlString(type));
+		if (parent != null) {
+			ddlStr.append(", INTERLEAVE IN PARENT ")
+					.append(parent)
+					.append(" ON DELETE ")
+					.append(this.createInterleavedTableDdlOnDeleteCascade ? "CASCADE" : "NO ACTION");
+		}
+		return ddlStr.toString();
 	}
 
 	private void getDropTableDdlStringsForInterleavedHierarchy(Class entityClass,
@@ -285,10 +296,21 @@ public class SpannerSchemaUtils {
 
 	private String getTypeDdlString(Type.Code type, boolean isArray,
 			OptionalLong dataLength, boolean isNotNull, boolean isCommitTimestamp) {
-		return (isCommitTimestamp ? Type.Code.TIMESTAMP.toString()
-				: getTypeDdlStringWithLength(type, isArray, dataLength))
-				+ (isNotNull ? " NOT NULL" : "")
-				+ (isCommitTimestamp ? " OPTIONS (allow_commit_timestamp=true)" : "");
+
+		StringBuilder ddlStr = new StringBuilder();
+		if (isCommitTimestamp) {
+			ddlStr.append(Type.Code.TIMESTAMP.toString());
+		}
+		else {
+			ddlStr.append(getTypeDdlStringWithLength(type, isArray, dataLength));
+		}
+		if (isNotNull) {
+			ddlStr.append(" NOT NULL");
+		}
+		if (isCommitTimestamp) {
+			ddlStr.append(" OPTIONS (allow_commit_timestamp=true)");
+		}
+		return ddlStr.toString();
 	}
 
 	private String getTypeDdlStringWithLength(Type.Code type, boolean isArray,

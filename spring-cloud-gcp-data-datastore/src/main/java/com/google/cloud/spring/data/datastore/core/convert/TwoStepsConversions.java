@@ -17,7 +17,7 @@
 package com.google.cloud.spring.data.datastore.core.convert;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -156,14 +156,20 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (ValueUtil.isCollectionLike(val.getClass())
 				&& targetCollectionType != null && targetComponentType != null) {
 			try {
-				List elements = val.getClass().isArray() ? (Arrays.asList(val))
-						: StreamSupport.stream(((Iterable<?>) val).spliterator(), false)
-								.map((v) -> readConverter.apply(
-										(v instanceof Value) ? ((Value) v).get() : v,
-										targetComponentType))
-								.collect(Collectors.toList());
+				List elements;
+				if (val.getClass().isArray()) {
+					elements = Collections.singletonList(val);
+				}
+				else {
+					elements = StreamSupport
+							.stream(((Iterable<?>) val).spliterator(), false)
+							.map(v -> {
+								Object o = (v instanceof Value) ? ((Value) v).get() : v;
+								return readConverter.apply(o, targetComponentType);
+							})
+							.collect(Collectors.toList());
+				}
 				return (T) convertCollection(elements, targetCollectionType);
-
 			}
 			catch (ConversionException | DatastoreDataException ex) {
 				throw new DatastoreDataException("Unable process elements of a collection", ex);

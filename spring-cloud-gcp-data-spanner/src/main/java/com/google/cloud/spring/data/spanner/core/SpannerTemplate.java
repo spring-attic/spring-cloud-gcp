@@ -501,9 +501,16 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				? getReadContext(options.getTimestampBound())
 				: getReadContext();
 
-		final ResultSet resultSet = options != null && options.getIndex() != null
-				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
-				: readContext.read(tableName, keys, columns, options == null ? ArrayUtils.toArray() : options.getOptions());
+		ResultSet resultSet;
+		if (options == null) {
+			resultSet = readContext.read(tableName, keys, columns, ArrayUtils.toArray());
+		}
+		else if (options.getIndex() == null) {
+			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
+		}
+		else {
+			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions());
+		}
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
