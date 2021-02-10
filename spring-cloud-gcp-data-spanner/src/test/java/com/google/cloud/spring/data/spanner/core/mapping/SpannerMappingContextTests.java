@@ -27,6 +27,7 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -80,6 +81,14 @@ public class SpannerMappingContextTests {
 		verifyZeroInteractions(mockEntity);
 	}
 
+	@Test
+	public void testGetInvalidSpannerEntity() {
+		SpannerPersistentEntityImpl mockEntity = mock(SpannerPersistentEntityImpl.class);
+		SpannerMappingContext context = createSpannerMappingContextWith(mockEntity);
+
+		assertThatThrownBy(() -> context.getPersistentEntityOrFail(Integer.class))
+				.isInstanceOf(SpannerDataException.class);
+	}
 
 	private SpannerMappingContext createSpannerMappingContextWith(
 			SpannerPersistentEntityImpl mockEntity) {

@@ -83,7 +83,7 @@ public class SpannerSchemaUtils {
 	 */
 	public String getDropTableDdlString(Class entityClass) {
 		return "DROP TABLE "
-				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
+				+ this.mappingContext.getPersistentEntityOrFail(entityClass).tableName();
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class SpannerSchemaUtils {
 	 */
 	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
-				.getPersistentEntity(object.getClass());
+				.getPersistentEntityOrFail(object.getClass());
 		return (Key) persistentEntity.getPropertyAccessor(object)
 				.getProperty(persistentEntity.getIdProperty());
 	}
@@ -110,9 +110,8 @@ public class SpannerSchemaUtils {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> String getCreateTableDdlString(Class<T> entityClass) {
-		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>)
-				this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<T> spannerPersistentEntity =
+				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntityOrFail(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder()
 				.append("CREATE TABLE ").append(spannerPersistentEntity.tableName()).append(" ( ");
@@ -220,7 +219,7 @@ public class SpannerSchemaUtils {
 				.getPrimaryKeyProperties()) {
 			if (keyProp.isEmbedded()) {
 				addPrimaryKeyColumnNames(
-						this.mappingContext.getPersistentEntity(keyProp.getType()),
+						this.mappingContext.getPersistentEntityOrFail(keyProp.getType()),
 						keyStrings);
 			}
 			else {
@@ -236,8 +235,7 @@ public class SpannerSchemaUtils {
 				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
-								this.mappingContext.getPersistentEntity(
-										spannerPersistentProperty.getType()),
+								this.mappingContext.getPersistentEntityOrFail(spannerPersistentProperty.getType()),
 								stringJoiner);
 					}
 					else {
@@ -284,8 +282,8 @@ public class SpannerSchemaUtils {
 		seenClasses.add(entityClass);
 		ddlStrings.add(prependDdlString ? 0 : ddlStrings.size(),
 				generateSingleDdlStringFunc.apply(entityClass, parentTable));
-		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity spannerPersistentEntity =
+				this.mappingContext.getPersistentEntityOrFail(entityClass);
 		spannerPersistentEntity.doWithInterleavedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) ->
 						getDdlStringForInterleavedHierarchy(

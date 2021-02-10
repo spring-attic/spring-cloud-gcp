@@ -212,7 +212,7 @@ public final class SpannerStatementQueryExecutor {
 			SpannerPersistentProperty spannerPersistentProperty, SpannerCustomConverter writeConverter,
 			SpannerMappingContext mappingContext) {
 		Class<?> childType = spannerPersistentProperty.getColumnInnerType();
-		SpannerPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(childType);
+		SpannerPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntityOrFail(childType);
 		String whereClause = getWhere(spannerPersistentProperty, persistentEntity);
 		return buildQuery(KeySet.singleKey(parentKey), persistentEntity, writeConverter, mappingContext, whereClause);
 	}
@@ -423,7 +423,7 @@ public final class SpannerStatementQueryExecutor {
 		spannerPersistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
 			if (spannerPersistentProperty.isEagerInterleaved()) {
 				Class<?> childType = spannerPersistentProperty.getColumnInnerType();
-				SpannerPersistentEntity<?> childPersistentEntity = mappingContext.getPersistentEntity(childType);
+				SpannerPersistentEntity<?> childPersistentEntity = mappingContext.getPersistentEntityOrFail(childType);
 				joiner.add(getChildrenStructsQuery(
 						childPersistentEntity, spannerPersistentEntity, mappingContext, spannerPersistentProperty.getColumnName(),
 						getWhere(spannerPersistentProperty, childPersistentEntity))
@@ -437,7 +437,7 @@ public final class SpannerStatementQueryExecutor {
 			SpannerMappingContext spannerMappingContext, Class type, ParameterAccessor params) {
 
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
-				.getPersistentEntity(type);
+				.getPersistentEntityOrFail(type);
 		List<String> tags = new ArrayList<>();
 		StringBuilder stringBuilder = new StringBuilder();
 

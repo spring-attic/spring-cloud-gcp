@@ -159,7 +159,7 @@ public class SpannerPersistentEntityImpl<T>
 
 		if (property.isEmbedded()) {
 			this.columnNames.addAll(this.spannerMappingContext
-					.getPersistentEntity(property.getType()).columns());
+					.getPersistentEntityOrFail(property.getType()).columns());
 		}
 		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
@@ -233,7 +233,7 @@ public class SpannerPersistentEntityImpl<T>
 			// collection.
 			Class childType = spannerPersistentProperty.getColumnInnerType();
 			SpannerPersistentEntityImpl<?> childEntity = (SpannerPersistentEntityImpl<?>)
-					this.spannerMappingContext.getPersistentEntity(childType);
+					this.spannerMappingContext.getPersistentEntityOrFail(childType);
 			List<SpannerPersistentProperty> primaryKeyProperties = getFlattenedPrimaryKeyProperties();
 			List<SpannerPersistentProperty> childKeyProperties = childEntity
 					.getFlattenedPrimaryKeyProperties();
@@ -274,7 +274,7 @@ public class SpannerPersistentEntityImpl<T>
 											+ spannerPersistentProperty);
 						}
 						verifyEmbeddedColumnNameOverlap(seen,
-								this.spannerMappingContext.getPersistentEntity(
+								this.spannerMappingContext.getPersistentEntityOrFail(
 										spannerPersistentProperty.getType()));
 					}
 					else {

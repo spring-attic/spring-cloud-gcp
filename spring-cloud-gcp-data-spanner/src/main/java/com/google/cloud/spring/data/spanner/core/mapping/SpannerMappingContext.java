@@ -90,4 +90,13 @@ public class SpannerMappingContext extends
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
+
+	public SpannerPersistentEntity<?> getPersistentEntityOrFail(Class<?> entityClass) {
+		SpannerPersistentEntity<?> entity = super.getPersistentEntity(entityClass);
+		if (entity == null) {
+			throw new SpannerDataException(
+					"The provided entity class cannot be converted to a Spanner Entity: " + entityClass);
+		}
+		return entity;
+	}
 }

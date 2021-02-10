@@ -171,7 +171,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public <T> boolean existsById(Class<T> entityClass, Key key) {
 		Assert.notNull(key, "A non-null key is required.");
 
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntityOrFail(entityClass);
+
 		KeySet keys = KeySet.singleKey(key);
 
 		try (ResultSet resultSet = executeRead(persistentEntity.tableName(), keys,
@@ -195,7 +197,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options) {
 		SpannerPersistentEntity<T> persistentEntity =
-				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntity(entityClass);
+				(SpannerPersistentEntity<T>) this.mappingContext.getPersistentEntityOrFail(entityClass);
+
 		List<T> entities;
 		if (persistentEntity.hasEagerlyLoadedProperties() || persistentEntity.hasWhere()) {
 			entities = executeReadQueryAndResolveChildren(keys, persistentEntity,
@@ -263,7 +266,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
 			SpannerPageableQueryOptions options) {
-		SpannerPersistentEntity<?> entity = this.mappingContext.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> entity = this.mappingContext.getPersistentEntityOrFail(entityClass);
+
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
 				entity, this.mappingContext, true)
 				+ " FROM " + entity.tableName() + SpannerStatementQueryExecutor.buildWhere(entity);
@@ -381,8 +385,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public <T> long count(Class<T> entityClass) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
+		SpannerPersistentEntity<?> persistentEntity =
+				this.mappingContext.getPersistentEntityOrFail(entityClass);
+
 		Statement statement = Statement.of(
 				String.format("SELECT COUNT(*) FROM %s", persistentEntity.tableName()));
 		try (ResultSet resultSet = executeQuery(statement, null)) {
@@ -582,8 +587,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	private void resolveChildEntity(Object entity, Set<String> includeProperties) {
-		SpannerPersistentEntity<?> spannerPersistentEntity = this.mappingContext
-				.getPersistentEntity(entity.getClass());
+		SpannerPersistentEntity<?> spannerPersistentEntity =
+				this.mappingContext.getPersistentEntityOrFail(entity.getClass());
+
 		PersistentPropertyAccessor<?> accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(

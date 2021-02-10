@@ -72,7 +72,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 			boolean allowMissingColumns) {
 		boolean readAllColumns = includeColumns == null;
 		SpannerPersistentEntity<R> persistentEntity =
-				(SpannerPersistentEntity<R>) this.spannerMappingContext.getPersistentEntity(type);
+				(SpannerPersistentEntity<R>) this.spannerMappingContext.getPersistentEntityOrFail(type);
 
 		StructAccessor structAccessor = new StructAccessor(source);
 
@@ -81,8 +81,8 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 				this.converter,
 				this, allowMissingColumns);
 
-		PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor = persistentEntity
-				.getPersistenceConstructor();
+		PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor =
+				persistentEntity.getPersistenceConstructor();
 
 		// @formatter:off
 		ParameterValueProvider<SpannerPersistentProperty> parameterValueProvider =

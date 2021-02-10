@@ -70,7 +70,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 			if (spannerPersistentProperty.isEmbedded()) {
 				Key embeddedKeyParts = this.spannerPersistentEntity
 						.getSpannerMappingContext()
-						.getPersistentEntity(spannerPersistentProperty.getType())
+						.getPersistentEntityOrFail(spannerPersistentProperty.getType())
 						.getIdProperty()
 						.getId(value);
 				for (Object keyPart : embeddedKeyParts.getParts()) {

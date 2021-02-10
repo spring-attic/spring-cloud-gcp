@@ -143,7 +143,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			Set<String> includeColumns) {
 		boolean writeAllColumns = includeColumns == null;
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(source.getClass());
+				.getPersistentEntityOrFail(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
