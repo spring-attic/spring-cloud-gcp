@@ -124,8 +124,8 @@ public class SpannerQueryLookupStrategyTests {
 			return param;
 		});
 
-		when(namedQueries.hasQuery(eq(queryName))).thenReturn(true);
-		when(namedQueries.getQuery(eq(queryName))).thenReturn(query);
+		when(namedQueries.hasQuery(queryName)).thenReturn(true);
+		when(namedQueries.getQuery(queryName)).thenReturn(query);
 
 		this.spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 

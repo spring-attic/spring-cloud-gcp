@@ -23,7 +23,6 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,7 +44,7 @@ public class DatastoreMappingContextTests {
 
 		context.createPersistentEntity(ClassTypeInformation.from(Object.class));
 
-		verify(mockEntity, times(1)).setApplicationContext(eq(applicationContext));
+		verify(mockEntity, times(1)).setApplicationContext(applicationContext);
 	}
 
 	@Test

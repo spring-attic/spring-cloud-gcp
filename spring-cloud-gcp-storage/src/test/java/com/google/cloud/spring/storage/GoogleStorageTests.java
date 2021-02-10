@@ -103,7 +103,7 @@ public class GoogleStorageTests {
 		BlobId validBlobId = BlobId.of("test-spring", "images/spring.png");
 		Blob mockedBlob = mock(Blob.class);
 		when(mockedBlob.getSize()).thenReturn(4096L);
-		when(this.mockStorage.get(eq(validBlobId))).thenReturn(mockedBlob);
+		when(this.mockStorage.get(validBlobId)).thenReturn(mockedBlob);
 
 		Assert.assertTrue(this.remoteResource.exists());
 		Assert.assertEquals(4096L, this.remoteResource.contentLength());
@@ -113,7 +113,7 @@ public class GoogleStorageTests {
 	public void testValidObjectWithUnderscore() throws Exception {
 		BlobId validBlobWithUnderscore = BlobId.of("test_spring", "images/spring.png");
 		Blob mockedBlob = mock(Blob.class);
-		when(mockStorage.get(eq(validBlobWithUnderscore))).thenReturn(mockedBlob);
+		when(mockStorage.get(validBlobWithUnderscore)).thenReturn(mockedBlob);
 
 		Assert.assertTrue(this.remoteResourceWithUnderscore.exists());
 	}
@@ -162,7 +162,7 @@ public class GoogleStorageTests {
 	public void testSpecifyPathCorrect() {
 		BlobId validBlobId = BlobId.of("test-spring", "images/spring.png");
 		Blob mockedBlob = mock(Blob.class);
-		when(this.mockStorage.get(eq(validBlobId))).thenReturn(mockedBlob);
+		when(this.mockStorage.get(validBlobId)).thenReturn(mockedBlob);
 
 		GoogleStorageResource googleStorageResource = new GoogleStorageResource(
 				this.mockStorage, "gs://test-spring/images/spring.png", false);

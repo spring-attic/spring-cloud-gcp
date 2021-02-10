@@ -88,8 +88,8 @@ public class DatastoreQueryLookupStrategyTests {
 			return param;
 		});
 
-		when(namedQueries.hasQuery(eq(queryName))).thenReturn(true);
-		when(namedQueries.getQuery(eq(queryName))).thenReturn(query);
+		when(namedQueries.hasQuery(queryName)).thenReturn(true);
+		when(namedQueries.getQuery(queryName)).thenReturn(query);
 
 		this.datastoreQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 

@@ -149,7 +149,7 @@ public class SpannerRepositoryImplTests {
 	public void saveTest() {
 		Object ob = new Object();
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).save(ob)).isEqualTo(ob);
-		verify(this.template, times(1)).upsert(eq(ob));
+		verify(this.template, times(1)).upsert(ob);
 	}
 
 	@Test
@@ -160,16 +160,16 @@ public class SpannerRepositoryImplTests {
 				Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
 		assertThat(ret).containsExactlyInAnyOrder(ob, ob2);
-		verify(this.template, times(1)).upsertAll(eq(Arrays.asList(ob, ob2)));
+		verify(this.template, times(1)).upsertAll(Arrays.asList(ob, ob2));
 	}
 
 	@Test
 	public void findByIdTest() {
 		Object ret = new Object();
-		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
-		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
+		when(this.entityProcessor.convertToKey(A_KEY)).thenReturn(A_KEY);
+		when(this.template.read(Object.class, A_KEY)).thenReturn(ret);
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findById(A_KEY)).contains(ret);
-		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
+		verify(this.template, times(1)).read(Object.class, A_KEY);
 	}
 
 	@Test
@@ -182,23 +182,23 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void existsByIdTestFound() {
-		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
-		when(this.template.existsById(eq(Object.class), eq(A_KEY))).thenReturn(true);
+		when(this.entityProcessor.convertToKey(A_KEY)).thenReturn(A_KEY);
+		when(this.template.existsById(Object.class, A_KEY)).thenReturn(true);
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.existsById(A_KEY)).isTrue();
 	}
 
 	@Test
 	public void existsByIdTestNotFound() {
-		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
-		when(this.template.existsById(eq(Object.class), eq(A_KEY))).thenReturn(false);
+		when(this.entityProcessor.convertToKey(A_KEY)).thenReturn(A_KEY);
+		when(this.template.existsById(Object.class, A_KEY)).thenReturn(false);
 		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).existsById(A_KEY)).isFalse();
 	}
 
 	@Test
 	public void findAllTest() {
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findAll();
-		verify(this.template, times(1)).readAll(eq(Object.class));
+		verify(this.template, times(1)).readAll(Object.class);
 	}
 
 	@Test
@@ -237,8 +237,8 @@ public class SpannerRepositoryImplTests {
 	public void findAllByIdTest() {
 		List<Key> unconvertedKey = Arrays.asList(Key.of("key1"), Key.of("key2"));
 
-		when(this.entityProcessor.convertToKey(eq(Key.of("key1")))).thenReturn(Key.of("key1"));
-		when(this.entityProcessor.convertToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
+		when(this.entityProcessor.convertToKey(Key.of("key1"))).thenReturn(Key.of("key1"));
+		when(this.entityProcessor.convertToKey(Key.of("key2"))).thenReturn(Key.of("key2"));
 		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer((invocation) -> {
 			KeySet keys = invocation.getArgument(1);
 			assertThat(keys.getKeys()).containsExactlyInAnyOrder(Key.of("key2"), Key.of("key1"));
@@ -252,29 +252,29 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void countTest() {
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).count();
-		verify(this.template, times(1)).count(eq(Object.class));
+		verify(this.template, times(1)).count(Object.class);
 	}
 
 	@Test
 	public void deleteByIdTest() {
-		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
+		when(this.entityProcessor.convertToKey(A_KEY)).thenReturn(A_KEY);
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteById(A_KEY);
-		verify(this.template, times(1)).delete(eq(Object.class), eq(A_KEY));
-		verify(this.template, times(1)).delete(eq(Object.class), eq(A_KEY));
+		verify(this.template, times(1)).delete(Object.class, A_KEY);
+		verify(this.template, times(1)).delete(Object.class, A_KEY);
 	}
 
 	@Test
 	public void deleteTest() {
 		Object ob = new Object();
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).delete(ob);
-		verify(this.template, times(1)).delete(eq(ob));
+		verify(this.template, times(1)).delete(ob);
 	}
 
 	@Test
 	public void deleteAllTest() {
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).deleteAll();
-		verify(this.template, times(1)).delete(eq(Object.class), eq(KeySet.all()));
+		verify(this.template, times(1)).delete(Object.class, KeySet.all());
 	}
 
 	@Test

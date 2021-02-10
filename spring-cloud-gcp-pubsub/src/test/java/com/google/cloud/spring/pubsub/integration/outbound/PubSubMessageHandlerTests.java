@@ -125,8 +125,7 @@ public class PubSubMessageHandlerTests {
 		this.adapter.setPublishTimeoutExpression(timeout);
 
 		this.adapter.handleMessage(this.message);
-		verify(timeout, times(1)).getValue(
-				isNull(), eq(this.message), eq(Long.class));
+		verify(timeout, times(1)).getValue(isNull(), eq(this.message), eq(Long.class));
 	}
 
 	@Test
@@ -149,7 +148,7 @@ public class PubSubMessageHandlerTests {
 
 		assertThat(this.adapter.getPublishCallback()).isSameAs(callbackSpy);
 
-		verify(callbackSpy, times(1)).onSuccess(eq("benfica"));
+		verify(callbackSpy, times(1)).onSuccess("benfica");
 	}
 
 	@Test

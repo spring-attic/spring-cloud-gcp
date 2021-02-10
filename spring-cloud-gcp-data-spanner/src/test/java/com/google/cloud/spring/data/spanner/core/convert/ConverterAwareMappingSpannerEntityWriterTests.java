@@ -56,7 +56,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -157,136 +156,136 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
 		when(idBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
+		when(writeBuilder.set("id")).thenReturn(idBinder);
 
 		ValueBinder<WriteBuilder> id2Binder = mock(ValueBinder.class);
 		when(id2Binder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("id2"))).thenReturn(id2Binder);
+		when(writeBuilder.set("id2")).thenReturn(id2Binder);
 
 		ValueBinder<WriteBuilder> id3Binder = mock(ValueBinder.class);
 		when(id3Binder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("id3"))).thenReturn(id3Binder);
+		when(writeBuilder.set("id3")).thenReturn(id3Binder);
 
 		ValueBinder<WriteBuilder> id4Binder = mock(ValueBinder.class);
 		when(id4Binder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("id4"))).thenReturn(id4Binder);
+		when(writeBuilder.set("id4")).thenReturn(id4Binder);
 
 		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
 		when(stringFieldBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringFieldBinder);
+		when(writeBuilder.set("custom_col")).thenReturn(stringFieldBinder);
 
 		ValueBinder<WriteBuilder> booleanFieldBinder = mock(ValueBinder.class);
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
-		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
+		when(writeBuilder.set("booleanField")).thenReturn(booleanFieldBinder);
 
 		ValueBinder<WriteBuilder> intFieldBinder = mock(ValueBinder.class);
 		when(intFieldBinder.to(anyLong())).thenReturn(null);
-		when(writeBuilder.set(eq("intField"))).thenReturn(intFieldBinder);
+		when(writeBuilder.set("intField")).thenReturn(intFieldBinder);
 
 		ValueBinder<WriteBuilder> intField2Binder = mock(ValueBinder.class);
 		when(intField2Binder.to(anyLong())).thenReturn(null);
-		when(writeBuilder.set(eq("intField2"))).thenReturn(intField2Binder);
+		when(writeBuilder.set("intField2")).thenReturn(intField2Binder);
 
 		ValueBinder<WriteBuilder> longFieldBinder = mock(ValueBinder.class);
 		when(longFieldBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("longField"))).thenReturn(longFieldBinder);
+		when(writeBuilder.set("longField")).thenReturn(longFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleFieldBinder = mock(ValueBinder.class);
 		when(doubleFieldBinder.to(anyDouble())).thenReturn(null);
-		when(writeBuilder.set(eq("doubleField"))).thenReturn(doubleFieldBinder);
+		when(writeBuilder.set("doubleField")).thenReturn(doubleFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleArrayFieldBinder = mock(ValueBinder.class);
 		when(doubleArrayFieldBinder.toStringArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("doubleArray"))).thenReturn(doubleArrayFieldBinder);
+		when(writeBuilder.set("doubleArray")).thenReturn(doubleArrayFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleListFieldBinder = mock(ValueBinder.class);
 		when(doubleListFieldBinder.toFloat64Array((Iterable<Double>) any()))
 				.thenReturn(null);
-		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
+		when(writeBuilder.set("doubleList")).thenReturn(doubleListFieldBinder);
 
 		ValueBinder<WriteBuilder> stringListFieldBinder = mock(ValueBinder.class);
 		when(stringListFieldBinder.toStringArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("stringList"))).thenReturn(stringListFieldBinder);
+		when(writeBuilder.set("stringList")).thenReturn(stringListFieldBinder);
 
 		ValueBinder<WriteBuilder> booleanListFieldBinder = mock(ValueBinder.class);
 		when(booleanListFieldBinder.toBoolArray((Iterable<Boolean>) any()))
 				.thenReturn(null);
-		when(writeBuilder.set(eq("booleanList"))).thenReturn(booleanListFieldBinder);
+		when(writeBuilder.set("booleanList")).thenReturn(booleanListFieldBinder);
 
 		ValueBinder<WriteBuilder> longListFieldBinder = mock(ValueBinder.class);
 		when(longListFieldBinder.toStringArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("longList"))).thenReturn(longListFieldBinder);
+		when(writeBuilder.set("longList")).thenReturn(longListFieldBinder);
 
 		ValueBinder<WriteBuilder> timestampListFieldBinder = mock(ValueBinder.class);
 		when(timestampListFieldBinder.toTimestampArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("timestampList"))).thenReturn(timestampListFieldBinder);
+		when(writeBuilder.set("timestampList")).thenReturn(timestampListFieldBinder);
 
 		ValueBinder<WriteBuilder> dateListFieldBinder = mock(ValueBinder.class);
 		when(dateListFieldBinder.toDateArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("dateList"))).thenReturn(dateListFieldBinder);
+		when(writeBuilder.set("dateList")).thenReturn(dateListFieldBinder);
 
 		ValueBinder<WriteBuilder> instantListFieldBinder = mock(ValueBinder.class);
 		when(instantListFieldBinder.toTimestampArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("momentsInTime"))).thenReturn(instantListFieldBinder);
+		when(writeBuilder.set("momentsInTime")).thenReturn(instantListFieldBinder);
 
 		ValueBinder<WriteBuilder> bytesListFieldBinder = mock(ValueBinder.class);
 		when(bytesListFieldBinder.toDateArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("bytesList"))).thenReturn(bytesListFieldBinder);
+		when(writeBuilder.set("bytesList")).thenReturn(bytesListFieldBinder);
 
 		ValueBinder<WriteBuilder> dateFieldBinder = mock(ValueBinder.class);
 		when(dateFieldBinder.to((Date) any())).thenReturn(null);
-		when(writeBuilder.set(eq("dateField"))).thenReturn(dateFieldBinder);
+		when(writeBuilder.set("dateField")).thenReturn(dateFieldBinder);
 
 		ValueBinder<WriteBuilder> timestampFieldBinder = mock(ValueBinder.class);
 		when(timestampFieldBinder.to((Timestamp) any())).thenReturn(null);
-		when(writeBuilder.set(eq("timestampField"))).thenReturn(timestampFieldBinder);
+		when(writeBuilder.set("timestampField")).thenReturn(timestampFieldBinder);
 
 		ValueBinder<WriteBuilder> bytesFieldBinder = mock(ValueBinder.class);
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
-		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
+		when(writeBuilder.set("bytes")).thenReturn(bytesFieldBinder);
 
 		ValueBinder<WriteBuilder> commitTimestampBinder = mock(ValueBinder.class);
 		when(commitTimestampBinder.to((Timestamp) any())).thenReturn(null);
-		when(writeBuilder.set(eq("commitTimestamp"))).thenReturn(commitTimestampBinder);
+		when(writeBuilder.set("commitTimestamp")).thenReturn(commitTimestampBinder);
 
 		ValueBinder<WriteBuilder> bigDecimalFieldBinder = mock(ValueBinder.class);
 		when(bigDecimalFieldBinder.to((BigDecimal) any())).thenReturn(null);
-		when(writeBuilder.set(eq("bigDecimalField"))).thenReturn(bigDecimalFieldBinder);
+		when(writeBuilder.set("bigDecimalField")).thenReturn(bigDecimalFieldBinder);
 
 		ValueBinder<WriteBuilder> bigDecimalsBinder = mock(ValueBinder.class);
 		when(bigDecimalsBinder.toNumericArray(any())).thenReturn(null);
-		when(writeBuilder.set(eq("bigDecimals"))).thenReturn(bigDecimalsBinder);
+		when(writeBuilder.set("bigDecimals")).thenReturn(bigDecimalsBinder);
 
 		this.spannerEntityWriter.write(t, writeBuilder::set);
 
-		verify(idBinder, times(1)).to(eq(t.id));
-		verify(id2Binder, times(1)).to(eq(t.testEmbeddedColumns.id2));
-		verify(id3Binder, times(1)).to(eq(t.testEmbeddedColumns.id3));
-		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
-		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
-		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
-		verify(intField2Binder, times(1)).to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
-		verify(longFieldBinder, times(1)).to(eq(String.valueOf(t.longField)));
-		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
+		verify(idBinder, times(1)).to(t.id);
+		verify(id2Binder, times(1)).to(t.testEmbeddedColumns.id2);
+		verify(id3Binder, times(1)).to(t.testEmbeddedColumns.id3);
+		verify(stringFieldBinder, times(1)).to(t.enumField.toString());
+		verify(booleanFieldBinder, times(1)).to(Boolean.valueOf(t.booleanField));
+		verify(intFieldBinder, times(1)).to(Long.valueOf(t.intField));
+		verify(intField2Binder, times(1)).to(Long.valueOf(t.testEmbeddedColumns.intField2));
+		verify(longFieldBinder, times(1)).to(String.valueOf(t.longField));
+		verify(doubleFieldBinder, times(1)).to(Double.valueOf(t.doubleField));
 		verify(doubleArrayFieldBinder, times(1)).to("3.33,3.33,3.33");
-		verify(doubleListFieldBinder, times(1)).toFloat64Array(eq(t.doubleList));
-		verify(stringListFieldBinder, times(1)).toStringArray(eq(t.stringList));
-		verify(booleanListFieldBinder, times(1)).toBoolArray(eq(t.booleanList));
+		verify(doubleListFieldBinder, times(1)).toFloat64Array(t.doubleList);
+		verify(stringListFieldBinder, times(1)).toStringArray(t.stringList);
+		verify(booleanListFieldBinder, times(1)).toBoolArray(t.booleanList);
 		verify(longListFieldBinder, times(1)).toStringArray(any());
-		verify(timestampListFieldBinder, times(1)).toTimestampArray(eq(t.timestampList));
-		verify(dateListFieldBinder, times(1)).toDateArray(eq(t.dateList));
-		verify(bytesListFieldBinder, times(1)).toBytesArray(eq(t.bytesList));
-		verify(dateFieldBinder, times(1)).to(eq(t.dateField));
-		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
-		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
-		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
+		verify(timestampListFieldBinder, times(1)).toTimestampArray(t.timestampList);
+		verify(dateListFieldBinder, times(1)).toDateArray(t.dateList);
+		verify(bytesListFieldBinder, times(1)).toBytesArray(t.bytesList);
+		verify(dateFieldBinder, times(1)).to(t.dateField);
+		verify(timestampFieldBinder, times(1)).to(t.timestampField);
+		verify(bytesFieldBinder, times(1)).to(t.bytes);
+		verify(instantListFieldBinder, times(1)).toTimestampArray(timestamps);
 
 		// the positive value set earlier must not be passed to Spanner. it must be replaced by
 		// the dummy value.
-		verify(commitTimestampBinder, times(1)).to(eq(Value.COMMIT_TIMESTAMP));
+		verify(commitTimestampBinder, times(1)).to(Value.COMMIT_TIMESTAMP);
 
-		verify(bigDecimalFieldBinder, times(1)).to(eq(t.bigDecimalField));
-		verify(bigDecimalsBinder, times(1)).toNumericArray(eq(t.bigDecimals));
+		verify(bigDecimalFieldBinder, times(1)).to(t.bigDecimalField);
+		verify(bigDecimalsBinder, times(1)).toNumericArray(t.bigDecimals);
 
 	}
 
@@ -301,12 +300,12 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		ValueBinder<WriteBuilder> dateFieldBinder = mock(ValueBinder.class);
 		when(dateFieldBinder.to((Date) any())).thenReturn(null);
-		when(writeBuilder.set(eq("dateField"))).thenReturn(dateFieldBinder);
+		when(writeBuilder.set("dateField")).thenReturn(dateFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleListFieldBinder = mock(ValueBinder.class);
 		when(doubleListFieldBinder.toFloat64Array((Iterable<Double>) any()))
 				.thenReturn(null);
-		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
+		when(writeBuilder.set("doubleList")).thenReturn(doubleListFieldBinder);
 
 		this.spannerEntityWriter.write(t, writeBuilder::set,
 				Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("dateField", "doubleList"))));
@@ -326,21 +325,21 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
 		when(idBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
+		when(writeBuilder.set("id")).thenReturn(idBinder);
 
 		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
 		when(stringFieldBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringFieldBinder);
+		when(writeBuilder.set("custom_col")).thenReturn(stringFieldBinder);
 
 		ValueBinder<WriteBuilder> booleanFieldBinder = mock(ValueBinder.class);
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
-		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
+		when(writeBuilder.set("booleanField")).thenReturn(booleanFieldBinder);
 
 		this.spannerEntityWriter.write(t, writeBuilder::set,
 				new HashSet<>(Arrays.asList("id", "custom_col")));
 
-		verify(idBinder, times(1)).to(eq(t.id));
-		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
+		verify(idBinder, times(1)).to(t.id);
+		verify(stringFieldBinder, times(1)).to(t.enumField.toString());
 		verifyNoInteractions(booleanFieldBinder);
 	}
 

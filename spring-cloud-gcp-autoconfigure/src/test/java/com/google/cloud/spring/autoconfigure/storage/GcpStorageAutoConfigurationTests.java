@@ -35,7 +35,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,7 +100,7 @@ public class GcpStorageAutoConfigurationTests {
 			Blob mockedBlob = mock(Blob.class);
 			when(mockedBlob.exists()).thenReturn(true);
 			when(mockedBlob.getSize()).thenReturn(4096L);
-			when(storage.get(eq(validBlob))).thenReturn(mockedBlob);
+			when(storage.get(validBlob)).thenReturn(mockedBlob);
 			return storage;
 		}
 

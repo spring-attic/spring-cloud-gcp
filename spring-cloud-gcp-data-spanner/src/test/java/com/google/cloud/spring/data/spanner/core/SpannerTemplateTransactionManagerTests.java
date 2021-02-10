@@ -173,7 +173,7 @@ public class SpannerTemplateTransactionManagerTests {
 						Mockito.any());
 		verify(this.transactionContext, times(1)).buffer(Arrays.asList(DELETE_MUTATION));
 		verify(this.transactionContext, times(1)).buffer(UPSERT_MUTATION);
-		verify(this.transactionContext, times(1)).executeUpdate(eq(DML_STATEMENT));
+		verify(this.transactionContext, times(1)).executeUpdate(DML_STATEMENT);
 	}
 
 	@Test

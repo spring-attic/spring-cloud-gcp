@@ -84,40 +84,40 @@ public class SimpleDatastoreRepositoryTests {
 	public void findByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.findById(id);
-		verify(this.datastoreTemplate, times(1)).findById(eq(id), eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).findById(id, Object.class);
 	}
 
 	@Test
 	public void existsByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.existsById(id);
-		verify(this.datastoreTemplate, times(1)).existsById(eq(id), eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).existsById(id, Object.class);
 	}
 
 	@Test
 	public void findAllTest() {
 		this.simpleDatastoreRepository.findAll();
-		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).findAll(Object.class);
 	}
 
 	@Test
 	public void findAllByIdTest() {
 		List<String> keys = Arrays.asList("1", "2");
 		this.simpleDatastoreRepository.findAllById(keys);
-		verify(this.datastoreTemplate, times(1)).findAllById(eq(keys), eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).findAllById(keys, Object.class);
 	}
 
 	@Test
 	public void countTest() {
 		this.simpleDatastoreRepository.count();
-		verify(this.datastoreTemplate, times(1)).count(eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).count(Object.class);
 	}
 
 	@Test
 	public void deleteByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.deleteById(id);
-		verify(this.datastoreTemplate, times(1)).deleteById(eq(id), eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).deleteById(id, Object.class);
 	}
 
 	@Test
@@ -137,7 +137,7 @@ public class SimpleDatastoreRepositoryTests {
 	@Test
 	public void deleteAllClassTest() {
 		this.simpleDatastoreRepository.deleteAll();
-		verify(this.datastoreTemplate, times(1)).deleteAll(eq(Object.class));
+		verify(this.datastoreTemplate, times(1)).deleteAll(Object.class);
 	}
 
 	@Test
@@ -156,19 +156,19 @@ public class SimpleDatastoreRepositoryTests {
 	public void findAllPageableAsc() {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
 
-		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(0)
-						.setSort(Sort.by("property1")).build()));
+		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(0)
+						.setSort(Sort.by("property1")).build());
 		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
 	@Test
 	public void findAllPageableDesc() {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
-		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
+		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
 						new Sort.Order(Sort.Direction.DESC, "property1"),
-						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(null).build()));
+						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(null).build());
 		verify(this.datastoreTemplate, times(1)).count(any());
 	}
 
@@ -178,10 +178,10 @@ public class SimpleDatastoreRepositoryTests {
 		Pageable pageable = DatastorePageable.from(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"),
 				cursor, 10L);
 		this.simpleDatastoreRepository.findAll(pageable);
-		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
+		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
 						new Sort.Order(Sort.Direction.DESC, "property1"),
-						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(cursor).build()));
+						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(cursor).build());
 		verify(this.datastoreTemplate, times(0)).count(any());
 	}
 

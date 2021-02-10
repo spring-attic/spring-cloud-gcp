@@ -655,7 +655,7 @@ public class PartTreeDatastoreQueryTests {
 				.queryKeysOrEntities(any(), any());
 
 		verify(this.datastoreTemplate, times(1))
-				.deleteAll(eq(Arrays.asList(3, 4, 5)));
+				.deleteAll(Arrays.asList(3, 4, 5));
 	}
 	private void prepareDeleteResults(boolean isCollection) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
@@ -803,7 +803,7 @@ public class PartTreeDatastoreQueryTests {
 				getClass().getMethod("findByActionAndId", String.class, String.class), true, null);
 
 		Object[] params = new Object[] { "BUY", "id1"};
-		when(this.datastoreTemplate.createKey(eq("trades"), eq("id1")))
+		when(this.datastoreTemplate.createKey("trades", "id1"))
 				.thenAnswer((invocation) ->
 						Key.newBuilder("project", invocation.getArgument(0), invocation.getArgument(1)).build());
 

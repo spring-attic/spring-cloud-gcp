@@ -47,7 +47,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.mock;
@@ -84,7 +83,7 @@ public class GcsMessageHandlerTests {
 				BlobInfo.newBuilder(BlobId.of("testGcsBucket", "benfica.writing")).build();
 		WriteChannel writeChannel = mock(WriteChannel.class);
 		willAnswer((invocationOnMock) -> writeChannel).given(GCS)
-				.writer(eq(expectedCreateBlobInfo));
+				.writer(expectedCreateBlobInfo);
 		willAnswer((invocationOnMock) -> 10).given(writeChannel).write(isA(ByteBuffer.class));
 
 		CopyWriter copyWriter = mock(CopyWriter.class);
@@ -92,13 +91,13 @@ public class GcsMessageHandlerTests {
 		willAnswer((invocationOnMock) -> copyWriter).given(GCS).copy(isA(Storage.CopyRequest.class));
 
 		willAnswer((invocationOnMock) -> true).given(GCS)
-				.delete(eq(BlobId.of("testGcsBucket", "benfica.writing")));
+				.delete(BlobId.of("testGcsBucket", "benfica.writing"));
 
 		this.channel.send(new GenericMessage<Object>(testFile));
 
-		verify(GCS, times(1)).writer(eq(expectedCreateBlobInfo));
+		verify(GCS, times(1)).writer(expectedCreateBlobInfo);
 		verify(GCS, times(1)).copy(copyRequestCaptor.capture());
-		verify(GCS, times(1)).delete(eq(BlobId.of("testGcsBucket", "benfica.writing")));
+		verify(GCS, times(1)).delete(BlobId.of("testGcsBucket", "benfica.writing"));
 
 		Storage.CopyRequest expectedCopyRequest = copyRequestCaptor.getValue();
 		assertThat(expectedCopyRequest.getSource()).isEqualTo(BlobId.of("testGcsBucket", "benfica.writing"));

@@ -178,21 +178,21 @@ public class SpannerTemplateTests {
 			return transactionCallable.run(context);
 		});
 
-		when(context.executeUpdate(eq(DML))).thenReturn(333L);
+		when(context.executeUpdate(DML)).thenReturn(333L);
 
 		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
 				() -> this.spannerTemplate.executeDmlStatement(DML),
 				x -> {
 				});
-		verify(context, times(1)).executeUpdate(eq(DML));
+		verify(context, times(1)).executeUpdate(DML);
 	}
 
 	@Test
 	public void executePartitionedDmlTest() {
-		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+		when(this.databaseClient.executePartitionedUpdate(DML)).thenReturn(333L);
 		verifyBeforeAndAfterEvents(new BeforeExecuteDmlEvent(DML), new AfterExecuteDmlEvent(DML, 333L),
 				() -> this.spannerTemplate.executePartitionedDmlStatement(DML),
-				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML)));
+				x -> x.verify(this.databaseClient, times(1)).executePartitionedUpdate(DML));
 	}
 
 	@Test
@@ -221,7 +221,7 @@ public class SpannerTemplateTests {
 		assertThat(finalResult).isEqualTo("all done");
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
-		verify(transactionContext, times(1)).executeUpdate(eq(DML));
+		verify(transactionContext, times(1)).executeUpdate(DML);
 	}
 
 	@Test
@@ -238,7 +238,7 @@ public class SpannerTemplateTests {
 
 		verify(this.databaseClient, times(1)).singleUse();
 		verify(this.readContext, times(1))
-				.read(eq("custom_test_table"), eq(keySet), eq(Collections.singleton("id")));
+				.read("custom_test_table", keySet, Collections.singleton("id"));
 	}
 
 	@Test
@@ -255,7 +255,7 @@ public class SpannerTemplateTests {
 
 		verify(this.databaseClient, times(1)).singleUse();
 		verify(this.readContext, times(1))
-				.read(eq("test_table_embedded_pk"), eq(keySet), eq(Collections.singleton("stringId")));
+				.read("test_table_embedded_pk", keySet, Collections.singleton("stringId"));
 	}
 
 	@Test
@@ -263,7 +263,7 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
-				eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+				TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333))))
 						.thenReturn(readOnlyTransaction);
 
 		String finalResult = this.spannerTemplate
@@ -287,7 +287,7 @@ public class SpannerTemplateTests {
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
 				// exact staleness is expected.
-				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+				TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333))))
 						.thenReturn(readOnlyTransaction);
 
 		this.spannerTemplate
@@ -306,7 +306,7 @@ public class SpannerTemplateTests {
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(
-				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+				TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333))))
 						.thenReturn(readOnlyTransaction);
 
 		this.spannerTemplate
@@ -411,7 +411,7 @@ public class SpannerTemplateTests {
 		ResultSet resultSet = mock(ResultSet.class);
 		when(resultSet.next()).thenReturn(false);
 		Statement query = Statement.of("test");
-		when(this.readContext.executeQuery(eq(query))).thenReturn(resultSet);
+		when(this.readContext.executeQuery(query)).thenReturn(resultSet);
 		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
 				() -> assertThat(this.spannerTemplate.query(x -> null, query, null)).isEmpty(), x -> {
 				});
@@ -421,8 +421,7 @@ public class SpannerTemplateTests {
 	public void findSingleKeyTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		spyTemplate.read(TestEntity.class, Key.of("key"));
-		verify(spyTemplate, times(1)).read(eq(TestEntity.class), eq(Key.of("key")),
-				eq(null));
+		verify(spyTemplate, times(1)).read(TestEntity.class, Key.of("key"), null);
 		verify(this.databaseClient, times(1)).singleUse();
 	}
 
@@ -485,7 +484,7 @@ public class SpannerTemplateTests {
 				.setTimestampBound(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)));
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
-		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+		when(this.databaseClient.singleUse(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L))))
 				.thenReturn(this.readContext);
 
 		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keySet, options),
@@ -537,7 +536,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.insert(entity), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -553,7 +552,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.insertAll(entities), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -567,7 +566,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.update(entity), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -583,7 +582,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.updateAll(entities), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -600,7 +599,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -616,7 +615,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.update(entity, cols), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -631,7 +630,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), null),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), null),
 				() -> this.spannerTemplate.upsert(entity), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -647,7 +646,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(entities, null),
 				new AfterSaveEvent(mutations, entities, null),
 				() -> this.spannerTemplate.upsertAll(entities), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -664,7 +663,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, "a", "b"), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -680,7 +679,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeSaveEvent(Collections.singletonList(entity), cols),
 				new AfterSaveEvent(mutations, Collections.singletonList(entity), cols),
 				() -> this.spannerTemplate.upsert(entity, cols), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -695,7 +694,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
 				new AfterDeleteEvent(mutations, null, keys, TestEntity.class),
 				() -> this.spannerTemplate.delete(TestEntity.class, key), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(Collections.singletonList(mutation))));
+						.write(Collections.singletonList(mutation)));
 	}
 
 	@Test
@@ -708,7 +707,7 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, Collections.singletonList(entity), null, null),
 				new AfterDeleteEvent(mutations, Collections.singletonList(entity), null, null),
 				() -> this.spannerTemplate.delete(entity), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(Collections.singletonList(mutation))));
+						.write(Collections.singletonList(mutation)));
 	}
 
 	@Test
@@ -723,7 +722,7 @@ public class SpannerTemplateTests {
 				new AfterDeleteEvent(mutations, entities, null, null),
 				() -> this.spannerTemplate.deleteAll(Arrays.asList(entity, entity, entity)),
 				x -> x.verify(this.databaseClient, times(1))
-						.write(eq(mutations)));
+						.write(mutations));
 	}
 
 	@Test
@@ -738,18 +737,17 @@ public class SpannerTemplateTests {
 		verifyBeforeAndAfterEvents(new BeforeDeleteEvent(mutations, null, keys, TestEntity.class),
 				new AfterDeleteEvent(mutations, null, keys, TestEntity.class),
 				() -> this.spannerTemplate.delete(TestEntity.class, keys), x -> x.verify(this.databaseClient, times(1))
-						.write(eq(Collections.singletonList(mutation))));
+						.write(Collections.singletonList(mutation)));
 	}
 
 	@Test
 	public void countTest() {
 		ResultSet results = mock(ResultSet.class);
-		when(this.readContext
-				.executeQuery(eq(Statement.of("SELECT COUNT(*) FROM custom_test_table"))))
-						.thenReturn(results);
+		when(this.readContext.executeQuery(Statement.of("SELECT COUNT(*) FROM custom_test_table")))
+				.thenReturn(results);
 		this.spannerTemplate.count(TestEntity.class);
 		verify(results, times(1)).next();
-		verify(results, times(1)).getLong(eq(0));
+		verify(results, times(1)).getLong(0);
 		verify(results, times(1)).close();
 	}
 
@@ -759,7 +757,7 @@ public class SpannerTemplateTests {
 		Sort sort = mock(Sort.class);
 		Pageable pageable = mock(Pageable.class);
 
-		when(this.databaseClient.singleUse(eq(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L)))))
+		when(this.databaseClient.singleUse(TimestampBound.ofMinReadTimestamp(Timestamp.ofTimeMicroseconds(333L))))
 				.thenReturn(this.readContext);
 
 		long offset = 5L;
@@ -785,8 +783,7 @@ public class SpannerTemplateTests {
 		items.add(t2);
 		items.add(t3);
 
-		doReturn(items).when(spyTemplate).queryAll(eq(TestEntity.class),
-				same(queryOption));
+		doReturn(items).when(spyTemplate).queryAll(eq(TestEntity.class), same(queryOption));
 
 		List results = spyTemplate.queryAll(TestEntity.class,
 				queryOption.setSort(pageable.getSort()));
@@ -888,11 +885,11 @@ public class SpannerTemplateTests {
 
 		operation.run();
 		if (expectedBefore != null) {
-			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(expectedBefore));
+			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(expectedBefore);
 		}
 		verifyOperation.accept(inOrder);
 		if (expectedAfter != null) {
-			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
+			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(expectedAfter);
 		}
 	}
 

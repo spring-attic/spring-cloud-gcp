@@ -237,9 +237,9 @@ public class DatastoreTemplateTests {
 			QueryResults childTestEntityQueryResults, QueryResults testEntityQueryResults) {
 		// mocking the converter to return the final objects corresponding to their
 		// specific entities.
-		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e1)))
+		when(this.datastoreEntityConverter.read(TestEntity.class, this.e1))
 				.thenReturn(this.ob1);
-		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e2)))
+		when(this.datastoreEntityConverter.read(TestEntity.class, this.e2))
 				.thenReturn(this.ob2);
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
 				.thenAnswer(invocationOnMock -> createChildEntity());
@@ -258,11 +258,11 @@ public class DatastoreTemplateTests {
 			return null;
 		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntityNullVallues), any());
 
-		when(this.datastore.run(eq(this.testEntityQuery)))
+		when(this.datastore.run(this.testEntityQuery))
 				.thenReturn(testEntityQueryResults);
-		when(this.datastore.run(eq(this.findAllTestEntityQuery)))
+		when(this.datastore.run(this.findAllTestEntityQuery))
 				.thenReturn(testEntityQueryResults);
-		when(this.datastore.run(eq(childTestEntityQuery)))
+		when(this.datastore.run(childTestEntityQuery))
 				.thenReturn(childTestEntityQueryResults);
 
 		// Because get() takes varags, there is difficulty in matching the single param
@@ -421,7 +421,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findAllByIdTest() {
-		when(this.datastore.fetch(eq(this.key2), eq(this.key1)))
+		when(this.datastore.fetch(this.key2, this.key1))
 				.thenReturn(Arrays.asList(this.e1, this.e2));
 		List<Key> keys = Arrays.asList(this.key1, this.key2);
 
@@ -437,7 +437,7 @@ public class DatastoreTemplateTests {
 	public void findAllByIdReferenceConsistencyTest() {
 		when(this.objectToKeyFactory.getKeyFromObject(eq(this.childEntity1), any())).thenReturn(this.childEntity1.id);
 
-		when(this.datastore.fetch(eq(this.key1)))
+		when(this.datastore.fetch(this.key1))
 				.thenReturn(Collections.singletonList(this.e1));
 
 		verifyBeforeAndAfterEvents(null,
@@ -472,11 +472,11 @@ public class DatastoreTemplateTests {
 		Entity child = Entity.newBuilder(this.key1).build();
 		Entity child2 = Entity.newBuilder(this.childKey2).build();
 
-		when(this.datastore.fetch(eq(this.key1)))
+		when(this.datastore.fetch(this.key1))
 				.thenReturn(Collections.singletonList(referenceTestDatastoreEntity));
-		when(this.datastore.fetch(eq(this.key2)))
+		when(this.datastore.fetch(this.key2))
 				.thenReturn(Collections.singletonList(child));
-		when(this.datastore.fetch(eq(this.childKey2)))
+		when(this.datastore.fetch(this.childKey2))
 				.thenReturn(Collections.singletonList(child2));
 
 		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
@@ -503,12 +503,12 @@ public class DatastoreTemplateTests {
 
 					assertThat(readReferenceTestEntity.lazyChildren).hasSize(1);
 					verify(this.datastore, times(2)).fetch(any());
-					verify(this.datastore, times(1)).fetch(eq(this.key1));
-					verify(this.datastore, times(1)).fetch(eq(this.key2));
+					verify(this.datastore, times(1)).fetch(this.key1);
+					verify(this.datastore, times(1)).fetch(this.key2);
 
 					assertThat(readReferenceTestEntity.lazyChild.toString()).isNotNull();
 					verify(this.datastore, times(3)).fetch(any());
-					verify(this.datastore, times(1)).fetch(eq(this.childKey2));
+					verify(this.datastore, times(1)).fetch(this.childKey2);
 				}, x -> {
 				});
 	}
@@ -849,7 +849,7 @@ public class DatastoreTemplateTests {
 
 		KeyQuery query = Query.newKeyQueryBuilder().setKind("custom_test_kind").setLimit(1).build();
 		when(this.datastore
-				.run(eq(query)))
+				.run(query))
 				.thenReturn(queryResults);
 
 		QueryResults<Key> nextPageQueryResults = mock(QueryResults.class);
@@ -859,7 +859,7 @@ public class DatastoreTemplateTests {
 				query.toBuilder().setStartCursor(cursor).setOffset(0).setLimit(1).build();
 
 		when(this.datastore
-				.run(eq(nextPageQuery)))
+				.run(nextPageQuery))
 				.thenReturn(nextPageQueryResults);
 
 		Slice<Key> resultsSlice =
@@ -877,7 +877,7 @@ public class DatastoreTemplateTests {
 			return null;
 		}).when(queryResults).forEachRemaining(any());
 		when(this.datastore
-				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
+				.run(Query.newKeyQueryBuilder().setKind("custom_test_kind").build()))
 						.thenReturn(queryResults);
 		assertThat(this.datastoreTemplate.count(TestEntity.class)).isEqualTo(2);
 	}
@@ -937,7 +937,7 @@ public class DatastoreTemplateTests {
 						Arrays.asList(this.ob1, this.ob2)),
 				new AfterDeleteEvent(new Key[] { this.key1, this.key2 }, null, null, Arrays.asList(this.ob1, this.ob2)),
 				() -> this.datastoreTemplate.deleteAll(Arrays.asList(this.ob1, this.ob2)),
-				x -> x.verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2)));
+				x -> x.verify(this.datastore, times(1)).delete(this.key1, this.key2));
 	}
 
 	@Test
@@ -950,7 +950,7 @@ public class DatastoreTemplateTests {
 			return null;
 		}).when(queryResults).forEachRemaining(any());
 		when(this.datastore
-				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
+				.run(Query.newKeyQueryBuilder().setKind("custom_test_kind").build()))
 						.thenReturn(queryResults);
 
 		verifyBeforeAndAfterEvents(
@@ -983,11 +983,11 @@ public class DatastoreTemplateTests {
 
 		operation.run();
 		if (expectedBefore != null) {
-			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(expectedBefore));
+			inOrder.verify(mockBeforePublisher, times(1)).publishEvent(expectedBefore);
 		}
 		verifyOperation.accept(inOrder);
 		if (expectedAfter != null) {
-			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(expectedAfter));
+			inOrder.verify(mockAfterPublisher, times(1)).publishEvent(expectedAfter);
 		}
 	}
 
@@ -1197,12 +1197,12 @@ public class DatastoreTemplateTests {
 		map.put("field1", 1L);
 		Key keyForMap = createFakeKey("map1");
 
-		when(this.readWriteConversions.convertOnWriteSingle(eq(1L))).thenReturn(LongValue.of(1L));
+		when(this.readWriteConversions.convertOnWriteSingle(1L)).thenReturn(LongValue.of(1L));
 
 		this.datastoreTemplate.writeMap(keyForMap, map);
 
 		Entity datastoreEntity = Entity.newBuilder(keyForMap).set("field1", 1L).build();
-		verify(this.datastore, times(1)).put(eq(datastoreEntity));
+		verify(this.datastore, times(1)).put(datastoreEntity);
 	}
 
 	@Test
@@ -1210,17 +1210,17 @@ public class DatastoreTemplateTests {
 		Key keyForMap = createFakeKey("map1");
 
 		Entity datastoreEntity = Entity.newBuilder(keyForMap).set("field1", 1L).build();
-		when(this.datastore.get(eq(keyForMap))).thenReturn(datastoreEntity);
+		when(this.datastore.get(keyForMap)).thenReturn(datastoreEntity);
 
 		this.datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
 		verify(this.datastoreEntityConverter, times(1))
-				.readAsMap(eq(String.class), eq(ClassTypeInformation.from(Long.class)), eq(datastoreEntity));
+				.readAsMap(String.class, ClassTypeInformation.from(Long.class), datastoreEntity);
 	}
 
 	@Test
 	public void createKeyTest() {
 		this.datastoreTemplate.createKey("kind1", 1L);
-		verify(this.objectToKeyFactory, times(1)).getKeyFromId(eq(1L), eq("kind1"));
+		verify(this.objectToKeyFactory, times(1)).getKeyFromId(1L, "kind1");
 	}
 
 	@com.google.cloud.spring.data.datastore.core.mapping.Entity(name = "custom_test_kind")
