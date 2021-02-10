@@ -281,7 +281,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t1.testEmbeddedColumns.intField2).isEqualTo(333);
 		assertThat(t1.longField).isEqualTo(3L);
 		assertThat(t1.doubleField).isEqualTo(3.33, DELTA);
-		assertThat(t1.doubleArray.length).isEqualTo(3);
+		assertThat(t1.doubleArray).hasSize(3);
 		assertThat(t1.dateField.getYear()).isEqualTo(2018);
 		assertThat(t1.momentsInTime).isEqualTo(instants);
 		assertThat(t1.bytes).isEqualTo(ByteArray.copyFrom("string1"));
@@ -299,7 +299,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.testEmbeddedColumns.intField2).isEqualTo(555);
 		assertThat(t2.longField).isEqualTo(5L);
 		assertThat(t2.doubleField).isEqualTo(5.55, DELTA);
-		assertThat(t2.doubleArray.length).isEqualTo(2);
+		assertThat(t2.doubleArray).hasSize(2);
 		assertThat(t2.dateField.getYear()).isEqualTo(2019);
 		assertThat(t2.doubleList).hasSize(1);
 		assertThat(t2.doubleList.get(0)).isEqualTo(3.33, DELTA);

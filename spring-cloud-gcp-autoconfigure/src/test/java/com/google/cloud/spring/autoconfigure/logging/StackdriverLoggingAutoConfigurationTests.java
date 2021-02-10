@@ -78,9 +78,8 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 	@Test
 	public void testRegularConfiguration() {
-		this.contextRunner.run((context) -> assertThat(
-				context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-						.isEqualTo(1));
+		this.contextRunner.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class))
+				.hasSize(1));
 	}
 
 	@Test

@@ -427,8 +427,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.countWithInQuery(Arrays.asList("BUY", "SELL"))).isEqualTo(8L);
 		assertThat(this.tradeRepository.countWithInQuery(Collections.singletonList("BUY"))).isEqualTo(3L);
 		assertThat(this.tradeRepository.countWithInQuery(Collections.singletonList("SELL"))).isEqualTo(5L);
-		assertThat(this.tradeRepository.findByActionIn(Sets.newHashSet(Arrays.asList("BUY", "SELL"))).size())
-				.isEqualTo(8L);
+		assertThat(this.tradeRepository.findByActionIn(Sets.newHashSet(Arrays.asList("BUY", "SELL")))).hasSize(8);
 		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("BUY"))).hasSize(3);
 		assertThat(this.tradeRepository.findByActionIn(Collections.singleton("SELL"))).hasSize(5);
 	}

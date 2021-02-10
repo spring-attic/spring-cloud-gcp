@@ -506,14 +506,14 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
 		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
-		assertThat(foundByCustomProjectionQuery.length).isEqualTo(3);
+		assertThat(foundByCustomProjectionQuery).hasSize(3);
 		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
 		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
 
 		this.testEntityA.setBlobField(null);
 
 		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
-		assertThat(this.testEntityRepository.getSizes(1L).length).isEqualTo(3);
+		assertThat(this.testEntityRepository.getSizes(1L)).hasSize(3);
 		assertThat(this.testEntityRepository.getOneSize(2L)).isEqualTo(2);
 		assertThat(this.testEntityRepository.getOneTestEntity(2L)).isNotNull();
 

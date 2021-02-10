@@ -120,11 +120,11 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(pubSubAdmin.getTopic(topicName)).isNotNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull();
 			assertThat(pubSubAdmin.listTopics().stream()
-					.filter((topic) -> topic.getName().endsWith(topicName)).toArray().length)
-							.isEqualTo(1);
-			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
-					(subscription) -> subscription.getName().endsWith(subscriptionName))
-					.toArray().length).isEqualTo(1);
+					.filter((topic) -> topic.getName().endsWith(topicName)).toArray())
+					.hasSize(1);
+			assertThat(pubSubAdmin.listSubscriptions().stream()
+					.filter((subscription) -> subscription.getName().endsWith(subscriptionName)).toArray())
+					.hasSize(1);
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();

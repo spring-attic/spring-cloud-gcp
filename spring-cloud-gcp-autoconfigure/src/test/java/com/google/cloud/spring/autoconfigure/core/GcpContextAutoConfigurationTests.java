@@ -93,9 +93,8 @@ public class GcpContextAutoConfigurationTests {
 	}
 
 	private ContextConsumer<AssertableApplicationContext> checkNumberOfBeansOfTypeGcpProjectIdProvider(int count) {
-		return context -> assertThat(context
-				.getBeansOfType(GcpProjectIdProvider.class).size())
-						.isEqualTo(count);
+		return context -> assertThat(context.getBeansOfType(GcpProjectIdProvider.class))
+				.hasSize(count);
 	}
 
 	private static class TestConfiguration {
