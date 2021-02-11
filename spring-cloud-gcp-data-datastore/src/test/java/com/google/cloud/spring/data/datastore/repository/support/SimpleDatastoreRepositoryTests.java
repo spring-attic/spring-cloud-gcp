@@ -343,10 +343,11 @@ public class SimpleDatastoreRepositoryTests {
 		this.simpleDatastoreRepository.findAll(Sort.by(
 				new Sort.Order(Sort.Direction.DESC, "property1"),
 				new Sort.Order(Sort.Direction.ASC, "property2")));
-		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
-				eq(new DatastoreQueryOptions.Builder().setSort(Sort.by(
+		DatastoreQueryOptions opts = new DatastoreQueryOptions.Builder()
+				.setSort(Sort.by(
 						new Sort.Order(Sort.Direction.DESC, "property1"),
-						new Sort.Order(Sort.Direction.ASC, "property2"))).build()));
-
+						new Sort.Order(Sort.Direction.ASC, "property2")
+				)).build();
+		verify(this.datastoreTemplate, times(1)).findAll(Object.class, opts);
 	}
 }
