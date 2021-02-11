@@ -317,12 +317,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	private EntityValue convertOnWriteSingleEmbeddedMap(Object val, String kindName,
 			TypeInformation valueTypeInformation) {
 		return applyEntityValueBuilder(null, kindName, builder -> {
-			Map map = (Map) val;
-			for (Object key : map.keySet()) {
-				String field = convertOnReadSingle(convertOnWriteSingle(key).get(),
+			for (Map.Entry<?, ?> e : ((Map<?, ?>) val).entrySet()) {
+				String field = convertOnReadSingle(convertOnWriteSingle(e.getKey()).get(),
 						ClassTypeInformation.from(String.class));
 				builder.set(field,
-						convertOnWrite(map.get(key),
+						convertOnWrite(e.getValue(),
 								EmbeddedType.of(valueTypeInformation),
 								field, valueTypeInformation));
 			}

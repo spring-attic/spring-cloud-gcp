@@ -191,18 +191,13 @@ public class SpannerDatabaseAdminTemplate {
 	 */
 	public Map<String, Set<String>> getParentChildTablesMap() {
 		Map<String, Set<String>> relationships = new HashMap<>();
-		Map<String, String> childToParent = getChildParentTablesMap();
-		for (String child : childToParent.keySet()) {
-			if (childToParent.get(child) == null) {
+		for (Map.Entry<String, String> e : getChildParentTablesMap().entrySet()) {
+			if (e.getValue() == null) {
 				continue;
 			}
-			String parent = childToParent.get(child);
-			Set<String> children = relationships.get(parent);
-			if (children == null) {
-				children = new HashSet<>();
-				relationships.put(parent, children);
-			}
-			children.add(child);
+			String parent = e.getValue();
+			Set<String> children = relationships.computeIfAbsent(parent, k -> new HashSet<>());
+			children.add(e.getKey());
 		}
 		return relationships;
 	}
