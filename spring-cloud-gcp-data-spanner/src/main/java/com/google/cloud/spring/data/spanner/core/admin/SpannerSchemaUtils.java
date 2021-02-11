@@ -317,9 +317,13 @@ public class SpannerSchemaUtils {
 		if (isArray) {
 			return "ARRAY<" + getTypeDdlStringWithLength(type, false, dataLength) + ">";
 		}
-		return type.toString() + ((type == Type.Code.STRING || type == Type.Code.BYTES)
-				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
-				: "");
+		StringBuilder result = new StringBuilder(type.toString());
+		if (type == Type.Code.STRING || type == Type.Code.BYTES) {
+			result.append("(")
+					.append(dataLength.isPresent() ? dataLength.getAsLong() : "MAX")
+					.append(")");
+		}
+		return result.toString();
 	}
 
 }
