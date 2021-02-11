@@ -133,7 +133,7 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 		}
 	}
 
-	private Boolean isExpired() {
+	private boolean isExpired() {
 		return System.currentTimeMillis() >= this.expires;
 	}
 

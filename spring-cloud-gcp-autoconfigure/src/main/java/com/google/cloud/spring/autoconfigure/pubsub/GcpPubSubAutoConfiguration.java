@@ -19,7 +19,6 @@ package com.google.cloud.spring.autoconfigure.pubsub;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.BatchingSettings;
@@ -202,12 +201,11 @@ public class GcpPubSubAutoConfiguration {
 			GcpPubSubProperties.FlowControl flowControl) {
 		FlowControlSettings.Builder builder = FlowControlSettings.newBuilder();
 
-		return ifNotNull(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior)
-				.apply(ifNotNull(flowControl.getMaxOutstandingElementCount(),
-						builder::setMaxOutstandingElementCount)
-				.apply(ifNotNull(flowControl.getMaxOutstandingRequestBytes(),
-						builder::setMaxOutstandingRequestBytes)
-				.apply(false))) ? builder.build() : null;
+		boolean shouldBuild = ifSet(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior);
+		shouldBuild |= ifSet(flowControl.getMaxOutstandingElementCount(), builder::setMaxOutstandingElementCount);
+		shouldBuild |= ifSet(flowControl.getMaxOutstandingRequestBytes(), builder::setMaxOutstandingRequestBytes);
+
+		return shouldBuild ? builder.build() : null;
 	}
 
 	@Bean
@@ -259,12 +257,12 @@ public class GcpPubSubAutoConfiguration {
 			builder.setFlowControlSettings(flowControlSettings);
 		}
 
-		return ifNotNull(batching.getDelayThresholdSeconds(),
-					x -> builder.setDelayThreshold(Duration.ofSeconds(x)))
-				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
-				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
-				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
-				.apply(false)))) ? builder.build() : null;
+		boolean shouldBuild = ifSet(batching.getDelayThresholdSeconds(), x -> builder.setDelayThreshold(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(batching.getElementCountThreshold(), builder::setElementCountThreshold);
+		shouldBuild |= ifSet(batching.getEnabled(), builder::setIsEnabled);
+		shouldBuild |= ifSet(batching.getRequestByteThreshold(), builder::setRequestByteThreshold);
+
+		return shouldBuild ? builder.build() : null;
 	}
 
 	@Bean
@@ -276,41 +274,25 @@ public class GcpPubSubAutoConfiguration {
 	private RetrySettings buildRetrySettings(GcpPubSubProperties.Retry retryProperties) {
 		Builder builder = RetrySettings.newBuilder();
 
-		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
-				x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
-						x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
-				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
-				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
-						x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
-						x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
-				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
-						x -> builder.setTotalTimeout(Duration.ofSeconds(x)))
-				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
-				.apply(false))))))))) ? builder.build() : null;
+		boolean shouldBuild = ifSet(retryProperties.getInitialRetryDelaySeconds(), x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(retryProperties.getInitialRpcTimeoutSeconds(), x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(retryProperties.getJittered(), builder::setJittered);
+		shouldBuild |= ifSet(retryProperties.getMaxAttempts(), builder::setMaxAttempts);
+		shouldBuild |= ifSet(retryProperties.getMaxRetryDelaySeconds(), x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(retryProperties.getMaxRpcTimeoutSeconds(), x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier);
+		shouldBuild |= ifSet(retryProperties.getTotalTimeoutSeconds(), x -> builder.setTotalTimeout(Duration.ofSeconds(x)));
+		shouldBuild |= ifSet(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier);
+
+		return shouldBuild ? builder.build() : null;
 	}
 
-	/**
-	 * A helper method for applying properties to settings builders for purpose of seeing if at least
-	 * one setting was set.
-	 * @param prop the property on which to operate
-	 * @param consumer the function to give the property
-	 * @param <T> the type of the property
-	 * @return a function that accepts a boolean of if there is a next property and returns a boolean indicating if the
-	 * propety was set
-	 */
-	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
-		return next -> {
-			boolean wasSet = next;
-			if (prop != null) {
-				consumer.accept(prop);
-				wasSet = true;
-			}
-			return wasSet;
-		};
+	private <T> boolean ifSet(T property, Consumer<T> consumer) {
+		if (property != null) {
+			consumer.accept(property);
+			return true;
+		}
+		return false;
 	}
 
 	@Bean
