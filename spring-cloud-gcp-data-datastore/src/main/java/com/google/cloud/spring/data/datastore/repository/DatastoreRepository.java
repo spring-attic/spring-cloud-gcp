@@ -25,13 +25,13 @@ import org.springframework.data.repository.query.QueryByExampleExecutor;
  * A {@link PagingAndSortingRepository} that provides Datastore-specific functionality.
  *
  * @param <T> the type of the domain object
- * @param <ID> the type of the ID property in the domain object
+ * @param <I> the type of the ID property in the domain object
  *
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public interface DatastoreRepository<T, ID> extends PagingAndSortingRepository<T, ID>, QueryByExampleExecutor<T> {
+public interface DatastoreRepository<T, I> extends PagingAndSortingRepository<T, I>, QueryByExampleExecutor<T> {
 
 	/**
 	 * Performs multiple read and write operations in a single transaction.
@@ -40,5 +40,5 @@ public interface DatastoreRepository<T, ID> extends PagingAndSortingRepository<T
 	 * @param <A> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
-	<A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations);
+	<A> A performTransaction(Function<DatastoreRepository<T, I>, A> operations);
 }

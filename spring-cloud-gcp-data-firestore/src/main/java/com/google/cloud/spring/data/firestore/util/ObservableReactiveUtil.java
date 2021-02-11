@@ -43,11 +43,11 @@ public final class ObservableReactiveUtil {
 	 * {@link Mono} stream.
 	 * @param remoteCall lambda capable of invoking the correct remote call, making use of the
 	 *     {@link Mono}-converting {@link StreamObserver} implementation.
-	 * @param <ResponseT> type of remote call response
+	 * @param <R> type of remote call response
 	 * @return {@link Mono} containing the response of the unary call.
 	 */
-	public static <ResponseT> Mono<ResponseT> unaryCall(
-			Consumer<StreamObserver<ResponseT>> remoteCall) {
+	public static <R> Mono<R> unaryCall(
+			Consumer<StreamObserver<R>> remoteCall) {
 		return Mono.create(sink -> remoteCall.accept(new UnaryStreamObserver(sink)));
 	}
 
@@ -56,11 +56,11 @@ public final class ObservableReactiveUtil {
 	 * {@link Flux} stream.
 	 *
 	 * @param remoteCall call to make
-	 * @param <ResponseT> response type
+	 * @param <R> response type
 	 * @return {@link Flux} of response objects resulting from the streaming call.
 	 */
-	public static <ResponseT> Flux<ResponseT> streamingCall(
-			Consumer<StreamObserver<ResponseT>> remoteCall) {
+	public static <R> Flux<R> streamingCall(
+			Consumer<StreamObserver<R>> remoteCall) {
 
 		return Flux.create(sink -> {
 			StreamingObserver observer = new StreamingObserver(sink);
@@ -69,18 +69,22 @@ public final class ObservableReactiveUtil {
 		});
 	}
 
-	static class StreamingObserver<RequestT, ResponseT>
-			implements ClientResponseObserver<RequestT, ResponseT> {
-		ClientCallStreamObserver<RequestT> rsObserver;
+	/**
+	 * @param <Q> Request type
+	 * @param <R> Response type
+	 */
+	static class StreamingObserver<Q, R>
+			implements ClientResponseObserver<Q, R> {
+		ClientCallStreamObserver<Q> rsObserver;
 
-		FluxSink<ResponseT> sink;
+		FluxSink<R> sink;
 
-		StreamingObserver(FluxSink<ResponseT> sink) {
+		StreamingObserver(FluxSink<R> sink) {
 			this.sink = sink;
 		}
 
 		@Override
-		public void onNext(ResponseT value) {
+		public void onNext(R value) {
 			this.sink.next(value);
 		}
 
@@ -95,7 +99,7 @@ public final class ObservableReactiveUtil {
 		}
 
 		@Override
-		public void beforeStart(ClientCallStreamObserver<RequestT> requestStream) {
+		public void beforeStart(ClientCallStreamObserver<Q> requestStream) {
 			this.rsObserver = requestStream;
 			requestStream.disableAutoInboundFlowControl();
 			this.sink.onCancel(() -> requestStream.cancel("Flux requested cancel.", null));
@@ -113,9 +117,9 @@ public final class ObservableReactiveUtil {
 	 * Unary gRPC calls expect a single response or an error, so completion of the call
 	 * without an emitted value is an error condition.
 	 *
-	 * @param <ResponseT> type of expected gRPC call response value.
+	 * @param <R> type of expected gRPC call response value.
 	 */
-	private static class UnaryStreamObserver<ResponseT> implements StreamObserver<ResponseT> {
+	private static class UnaryStreamObserver<R> implements StreamObserver<R> {
 
 		private boolean terminalEventReceived;
 
@@ -126,7 +130,7 @@ public final class ObservableReactiveUtil {
 		}
 
 		@Override
-		public void onNext(ResponseT response) {
+		public void onNext(R response) {
 			this.terminalEventReceived = true;
 			this.sink.success(response);
 		}

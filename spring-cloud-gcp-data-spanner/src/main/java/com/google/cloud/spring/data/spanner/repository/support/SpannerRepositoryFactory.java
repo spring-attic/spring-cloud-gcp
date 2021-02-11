@@ -81,7 +81,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, I> EntityInformation<T, I> getEntityInformation(Class<T> domainClass) {
 		SpannerPersistentEntity<T> entity = (SpannerPersistentEntity<T>) this.spannerMappingContext
 				.getPersistentEntity(domainClass);
 
@@ -91,7 +91,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 					domainClass.getName()));
 		}
 
-		return (EntityInformation<T, ID>) new SpannerPersistentEntityInformation<>(
+		return (EntityInformation<T, I>) new SpannerPersistentEntityInformation<>(
 				entity);
 	}
 

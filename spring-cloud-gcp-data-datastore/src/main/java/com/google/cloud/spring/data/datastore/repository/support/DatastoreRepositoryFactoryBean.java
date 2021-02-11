@@ -29,13 +29,13 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 /**
  * Factory bean for creating factories that create Datastore repositories.
  * @param <S> the type of the entities
- * @param <ID> the id type of the entities
+ * @param <I> the id type of the entities
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public class DatastoreRepositoryFactoryBean<S, ID>
-		extends RepositoryFactoryBeanSupport<DatastoreRepository<S, ID>, S, ID>
+public class DatastoreRepositoryFactoryBean<S, I>
+		extends RepositoryFactoryBeanSupport<DatastoreRepository<S, I>, S, I>
 		implements ApplicationContextAware {
 
 	private DatastoreMappingContext datastoreMappingContext;
@@ -51,7 +51,7 @@ public class DatastoreRepositoryFactoryBean<S, ID>
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
 	DatastoreRepositoryFactoryBean(
-			Class<DatastoreRepository<S, ID>> repositoryInterface) {
+			Class<DatastoreRepository<S, I>> repositoryInterface) {
 		super(repositoryInterface);
 	}
 

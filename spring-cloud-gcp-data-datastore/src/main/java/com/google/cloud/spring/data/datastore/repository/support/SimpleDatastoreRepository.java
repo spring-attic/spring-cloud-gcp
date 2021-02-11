@@ -46,12 +46,12 @@ import org.springframework.util.Assert;
 /**
  * Implementation of {@link DatastoreRepository}.
  * @param <T> the type of the entities
- * @param <ID> the id type of the entities
+ * @param <I> the id type of the entities
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, ID> {
+public class SimpleDatastoreRepository<T, I> implements DatastoreRepository<T, I> {
 
 	private final DatastoreOperations datastoreTemplate;
 
@@ -66,7 +66,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	}
 
 	@Override
-	public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
+	public <A> A performTransaction(Function<DatastoreRepository<T, I>, A> operations) {
 		return this.datastoreTemplate.performTransaction(template -> operations
 				.apply(new SimpleDatastoreRepository<>(template, this.entityType)));
 	}
@@ -108,12 +108,12 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	}
 
 	@Override
-	public Optional<T> findById(ID id) {
+	public Optional<T> findById(I id) {
 		return Optional.ofNullable(this.datastoreTemplate.findById(id, this.entityType));
 	}
 
 	@Override
-	public boolean existsById(ID id) {
+	public boolean existsById(I id) {
 		return this.datastoreTemplate.existsById(id, this.entityType);
 	}
 
@@ -123,7 +123,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	}
 
 	@Override
-	public Iterable<T> findAllById(Iterable<ID> ids) {
+	public Iterable<T> findAllById(Iterable<I> ids) {
 		return this.datastoreTemplate.findAllById(ids, this.entityType);
 	}
 
@@ -133,7 +133,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	}
 
 	@Override
-	public void deleteById(ID id) {
+	public void deleteById(I id) {
 		this.datastoreTemplate.deleteById(id, this.entityType);
 	}
 

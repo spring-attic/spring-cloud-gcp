@@ -79,7 +79,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
+	public <T, I> EntityInformation<T, I> getEntityInformation(Class<T> domainClass) {
 		DatastorePersistentEntity entity = this.datastoreMappingContext
 				.getPersistentEntity(domainClass);
 

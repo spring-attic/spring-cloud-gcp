@@ -22,12 +22,12 @@ import org.springframework.data.repository.core.support.AbstractEntityInformatio
  * Holds ID type information about a Datastore persistent entity.
  *
  * @param <T> the type of the persistent entity
- * @param <ID> the ID type of the persistent entity
+ * @param <I> the ID type of the persistent entity
  * @author Chengyuan Zhao
  * @since 1.1
  */
-public class DatastorePersistentEntityInformation<T, ID>
-		extends AbstractEntityInformation<T, ID> {
+public class DatastorePersistentEntityInformation<T, I>
+		extends AbstractEntityInformation<T, I> {
 
 	private final DatastorePersistentEntity<T> persistentEntity;
 
@@ -43,13 +43,13 @@ public class DatastorePersistentEntityInformation<T, ID>
 	}
 
 	@Override
-	public ID getId(T entity) {
-		return (ID) this.persistentEntity.getPropertyAccessor(entity)
+	public I getId(T entity) {
+		return (I) this.persistentEntity.getPropertyAccessor(entity)
 				.getProperty(this.persistentEntity.getIdProperty());
 	}
 
 	@Override
-	public Class<ID> getIdType() {
-		return (Class<ID>) this.persistentEntity.getIdPropertyOrFail().getType();
+	public Class<I> getIdType() {
+		return (Class<I>) this.persistentEntity.getIdPropertyOrFail().getType();
 	}
 }
