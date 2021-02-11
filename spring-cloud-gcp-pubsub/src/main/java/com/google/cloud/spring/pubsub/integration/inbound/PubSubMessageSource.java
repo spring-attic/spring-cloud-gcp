@@ -56,7 +56,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	private boolean blockOnPull;
 
-	private ArrayDeque<ConvertedAcknowledgeablePubsubMessage> cachedMessages = new ArrayDeque<>();
+	private final ArrayDeque<ConvertedAcknowledgeablePubsubMessage<?>> cachedMessages = new ArrayDeque<>();
 
 	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
 			String subscriptionName) {

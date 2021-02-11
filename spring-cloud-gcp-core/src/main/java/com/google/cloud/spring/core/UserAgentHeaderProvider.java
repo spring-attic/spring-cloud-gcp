@@ -35,7 +35,7 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 
 	private final Map<String, String> headers;
 
-	public UserAgentHeaderProvider(Class clazz) {
+	public UserAgentHeaderProvider(Class<?> clazz) {
 		this.userAgent = computeUserAgent(clazz);
 		this.headers = Collections.singletonMap("User-Agent", this.userAgent);
 	}
@@ -59,7 +59,7 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 		return this.userAgent;
 	}
 
-	private String computeUserAgent(Class clazz) {
+	private String computeUserAgent(Class<?> clazz) {
 		String[] packageTokens = clazz.getPackage().getName().split("\\.");
 		String springLibrary = "spring-cloud-gcp-" + packageTokens[packageTokens.length - 1];
 		String version = this.getClass().getPackage().getImplementationVersion();
