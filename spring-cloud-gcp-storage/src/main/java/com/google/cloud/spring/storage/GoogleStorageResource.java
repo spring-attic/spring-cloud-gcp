@@ -170,10 +170,8 @@ public class GoogleStorageResource implements WritableResource {
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
 			Storage.SignUrlOption... options) throws IOException {
-		if (LOGGER.isWarnEnabled()) {
-			if (!exists()) {
-				LOGGER.warn("Creating signed URL for non-existing GCS object " + getURI());
-			}
+		if (LOGGER.isWarnEnabled() && !exists()) {
+			LOGGER.warn("Creating signed URL for non-existing GCS object " + getURI());
 		}
 
 		return this.storage.signUrl(

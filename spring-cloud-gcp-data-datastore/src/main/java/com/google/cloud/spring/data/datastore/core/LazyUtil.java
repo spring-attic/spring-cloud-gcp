@@ -96,10 +96,8 @@ final class LazyUtil {
 	 */
 	public static Value getKeys(Object object) {
 		SimpleLazyDynamicInvocationHandler handler = getProxy(object);
-		if (handler != null) {
-			if (!handler.isEvaluated()) {
-				return handler.getKeys();
-			}
+		if (handler != null && !handler.isEvaluated()) {
+			return handler.getKeys();
 		}
 		return null;
 	}
