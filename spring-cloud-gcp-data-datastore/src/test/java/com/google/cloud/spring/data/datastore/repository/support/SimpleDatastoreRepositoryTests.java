@@ -70,74 +70,74 @@ public class SimpleDatastoreRepositoryTests {
 	public void saveTest() {
 		Object object = new Object();
 		this.simpleDatastoreRepository.save(object);
-		verify(this.datastoreTemplate, times(1)).save(same(object));
+		verify(this.datastoreTemplate).save(same(object));
 	}
 
 	@Test
 	public void saveAllTest() {
 		Iterable entities = Arrays.asList();
 		this.simpleDatastoreRepository.saveAll(entities);
-		verify(this.datastoreTemplate, times(1)).saveAll(same(entities));
+		verify(this.datastoreTemplate).saveAll(same(entities));
 	}
 
 	@Test
 	public void findByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.findById(id);
-		verify(this.datastoreTemplate, times(1)).findById(id, Object.class);
+		verify(this.datastoreTemplate).findById(id, Object.class);
 	}
 
 	@Test
 	public void existsByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.existsById(id);
-		verify(this.datastoreTemplate, times(1)).existsById(id, Object.class);
+		verify(this.datastoreTemplate).existsById(id, Object.class);
 	}
 
 	@Test
 	public void findAllTest() {
 		this.simpleDatastoreRepository.findAll();
-		verify(this.datastoreTemplate, times(1)).findAll(Object.class);
+		verify(this.datastoreTemplate).findAll(Object.class);
 	}
 
 	@Test
 	public void findAllByIdTest() {
 		List<String> keys = Arrays.asList("1", "2");
 		this.simpleDatastoreRepository.findAllById(keys);
-		verify(this.datastoreTemplate, times(1)).findAllById(keys, Object.class);
+		verify(this.datastoreTemplate).findAllById(keys, Object.class);
 	}
 
 	@Test
 	public void countTest() {
 		this.simpleDatastoreRepository.count();
-		verify(this.datastoreTemplate, times(1)).count(Object.class);
+		verify(this.datastoreTemplate).count(Object.class);
 	}
 
 	@Test
 	public void deleteByIdTest() {
 		String id = "key";
 		this.simpleDatastoreRepository.deleteById(id);
-		verify(this.datastoreTemplate, times(1)).deleteById(id, Object.class);
+		verify(this.datastoreTemplate).deleteById(id, Object.class);
 	}
 
 	@Test
 	public void deleteTest() {
 		Object object = new Object();
 		this.simpleDatastoreRepository.delete(object);
-		verify(this.datastoreTemplate, times(1)).delete(same(object));
+		verify(this.datastoreTemplate).delete(same(object));
 	}
 
 	@Test
 	public void deleteAllTest() {
 		Iterable entities = Arrays.asList();
 		this.simpleDatastoreRepository.deleteAll(entities);
-		verify(this.datastoreTemplate, times(1)).deleteAll(same(entities));
+		verify(this.datastoreTemplate).deleteAll(same(entities));
 	}
 
 	@Test
 	public void deleteAllClassTest() {
 		this.simpleDatastoreRepository.deleteAll();
-		verify(this.datastoreTemplate, times(1)).deleteAll(Object.class);
+		verify(this.datastoreTemplate).deleteAll(Object.class);
 	}
 
 	@Test
@@ -156,20 +156,20 @@ public class SimpleDatastoreRepositoryTests {
 	public void findAllPageableAsc() {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
 
-		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+		verify(this.datastoreTemplate).findAll(Object.class,
 				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(0)
 						.setSort(Sort.by("property1")).build());
-		verify(this.datastoreTemplate, times(1)).count(any());
+		verify(this.datastoreTemplate).count(any());
 	}
 
 	@Test
 	public void findAllPageableDesc() {
 		this.simpleDatastoreRepository.findAll(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
-		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+		verify(this.datastoreTemplate).findAll(Object.class,
 				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
 						new Sort.Order(Sort.Direction.DESC, "property1"),
 						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(null).build());
-		verify(this.datastoreTemplate, times(1)).count(any());
+		verify(this.datastoreTemplate).count(any());
 	}
 
 	@Test
@@ -178,7 +178,7 @@ public class SimpleDatastoreRepositoryTests {
 		Pageable pageable = DatastorePageable.from(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"),
 				cursor, 10L);
 		this.simpleDatastoreRepository.findAll(pageable);
-		verify(this.datastoreTemplate, times(1)).findAll(Object.class,
+		verify(this.datastoreTemplate).findAll(Object.class,
 				new DatastoreQueryOptions.Builder().setLimit(5).setOffset(5).setSort(Sort.by(
 						new Sort.Order(Sort.Direction.DESC, "property1"),
 						new Sort.Order(Sort.Direction.DESC, "property2"))).setCursor(cursor).build());
@@ -189,7 +189,7 @@ public class SimpleDatastoreRepositoryTests {
 	public void findAllByExample() {
 		Example<Object> example = Example.of(new Object());
 		this.simpleDatastoreRepository.findAll(example);
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example), isNull());
+		verify(this.datastoreTemplate).queryByExample(same(example), isNull());
 	}
 
 	@Test
@@ -197,7 +197,7 @@ public class SimpleDatastoreRepositoryTests {
 		Example<Object> example = Example.of(new Object());
 		Sort sort = Sort.by("id");
 		this.simpleDatastoreRepository.findAll(example, sort);
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+		verify(this.datastoreTemplate).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setSort(sort).build()));
 	}
 
@@ -218,10 +218,10 @@ public class SimpleDatastoreRepositoryTests {
 		Page<Object> result = this.simpleDatastoreRepository.findAll(example, PageRequest.of(1, 2, sort));
 		assertThat(result).containsExactly(1, 2);
 		assertThat(result.getTotalElements()).isEqualTo(5);
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+		verify(this.datastoreTemplate).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort)
 						.build()));
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
+		verify(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
 	}
 
 
@@ -254,13 +254,13 @@ public class SimpleDatastoreRepositoryTests {
 		assertThat(resultNext).containsExactly(3, 4);
 		assertThat(resultNext.getTotalElements()).isEqualTo(5);
 
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+		verify(this.datastoreTemplate).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(0).setSort(sort)
 						.build()));
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+		verify(this.datastoreTemplate).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setLimit(2).setOffset(2).setSort(sort).setCursor(cursor)
 						.build()));
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
+		verify(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
 	}
 
 	@Test
@@ -282,7 +282,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.findOne(example)).contains(1);
 
-		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+		verify(this.datastoreTemplate).queryByExample(same(example),
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));
 	}
 
@@ -296,7 +296,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isTrue();
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+		verify(this.datastoreTemplate).keyQueryByExample(same(example2),
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));
 	}
 
@@ -310,7 +310,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isFalse();
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2),
+		verify(this.datastoreTemplate).keyQueryByExample(same(example2),
 				eq(new DatastoreQueryOptions.Builder().setLimit(1).build()));
 	}
 
@@ -323,7 +323,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.count(example2)).isEqualTo(3);
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), isNull());
+		verify(this.datastoreTemplate).keyQueryByExample(same(example2), isNull());
 	}
 
 	@Test
@@ -335,7 +335,7 @@ public class SimpleDatastoreRepositoryTests {
 
 		assertThat(this.simpleDatastoreRepository.count(example1)).isZero();
 
-		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example1), isNull());
+		verify(this.datastoreTemplate).keyQueryByExample(same(example1), isNull());
 	}
 
 	@Test
@@ -348,6 +348,6 @@ public class SimpleDatastoreRepositoryTests {
 						new Sort.Order(Sort.Direction.DESC, "property1"),
 						new Sort.Order(Sort.Direction.ASC, "property2")
 				)).build();
-		verify(this.datastoreTemplate, times(1)).findAll(Object.class, opts);
+		verify(this.datastoreTemplate).findAll(Object.class, opts);
 	}
 }
