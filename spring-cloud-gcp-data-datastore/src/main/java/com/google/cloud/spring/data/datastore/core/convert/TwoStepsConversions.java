@@ -263,8 +263,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (proppertyVal != null) {
 			switch (embeddedType) {
 			case EMBEDDED_MAP:
-				writeConverter = x -> convertOnWriteSingleEmbeddedMap(x, fieldName,
-						(TypeInformation) typeInformation.getMapValueType());
+				writeConverter = x -> convertOnWriteSingleEmbeddedMap(x, fieldName, typeInformation.getMapValueType());
 				break;
 			case EMBEDDED_ENTITY:
 				writeConverter = x -> convertOnWriteSingleEmbedded(x, fieldName);
