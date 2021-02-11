@@ -71,8 +71,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 	SpannerQueryMethod createQueryMethod(Method method,
 			RepositoryMetadata metadata, ProjectionFactory factory) {
-		return new SpannerQueryMethod(method, metadata, factory,
-				this.spannerMappingContext);
+		return new SpannerQueryMethod(method, metadata, factory);
 	}
 
 	@Override

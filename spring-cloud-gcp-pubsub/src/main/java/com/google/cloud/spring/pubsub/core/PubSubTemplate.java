@@ -32,8 +32,6 @@ import com.google.cloud.spring.pubsub.support.converter.ConvertedAcknowledgeable
 import com.google.cloud.spring.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.PubSubMessageConverter;
 import com.google.pubsub.v1.PubsubMessage;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -52,8 +50,6 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Maurice Zeijen
  */
 public class PubSubTemplate implements PubSubOperations {
-
-	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
 	private final PubSubPublisherTemplate pubSubPublisherTemplate;
 
