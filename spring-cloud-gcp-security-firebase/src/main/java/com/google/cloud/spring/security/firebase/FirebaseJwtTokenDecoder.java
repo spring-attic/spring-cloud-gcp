@@ -94,7 +94,11 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 			return;
 		}
 		try {
-			ResponseEntity<Map<String, String>> response = restClient.exchange(googlePublicKeysEndpoint, HttpMethod.GET, null, new ParameterizedTypeReference<Map<String, String>>() {
+			ResponseEntity<Map<String, String>> response = restClient.exchange(
+					googlePublicKeysEndpoint,
+					HttpMethod.GET,
+					null /* requestEntity */,
+					new ParameterizedTypeReference<Map<String, String>>() {
 			});
 			Long expiresAt = parseCacheControlHeaders(response.getHeaders());
 			this.expires = expiresAt > -1L ? (System.currentTimeMillis() + expiresAt * 1000) : 0L;
@@ -102,16 +106,24 @@ public class FirebaseJwtTokenDecoder implements JwtDecoder {
 				throw new JwtException("Error retrieving public certificates from remote endpoint");
 			}
 			delegates.clear();
-			for (String key : response.getBody().keySet()) {
+			Map<String, String> body = response.getBody();
+			if (body == null) {
+				throw new JwtException("Invalid response body (null) received from remote endpoint.");
+			}
+			if (body.isEmpty()) {
+				throw new JwtException("Invalid response body (empty) received from remote endpoint.");
+			}
+			for (Map.Entry<String, String> e : body.entrySet()) {
 				try {
-					NimbusJwtDecoder nimbusJwtDecoder = NimbusJwtDecoder.withPublicKey((RSAPublicKey) convertToX509Cert(response.getBody().get(key)).getPublicKey())
+					NimbusJwtDecoder nimbusJwtDecoder = NimbusJwtDecoder.withPublicKey(
+							(RSAPublicKey) convertToX509Cert(e.getValue()).getPublicKey())
 							.signatureAlgorithm(SignatureAlgorithm.from("RS256"))
 							.build();
 					nimbusJwtDecoder.setJwtValidator(tokenValidator);
-					delegates.put(key, nimbusJwtDecoder);
+					delegates.put(e.getKey(), nimbusJwtDecoder);
 				}
 				catch (Exception ce) {
-					logger.error("Could not read certificate for key {}", key);
+					logger.error("Could not read certificate for key {}", e.getKey());
 				}
 			}
 		}

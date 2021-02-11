@@ -434,6 +434,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	private Object getIdValue(Object entity) {
 		FirestorePersistentEntity<?> persistentEntity =
 						this.mappingContext.getPersistentEntity(entity.getClass());
+		Assert.notNull(persistentEntity, "Persistent entity cannot be null: " + entity.getClass());
 		FirestorePersistentProperty idProperty = persistentEntity.getIdPropertyOrFail();
 
 		return persistentEntity.getPropertyAccessor(entity).getProperty(idProperty);

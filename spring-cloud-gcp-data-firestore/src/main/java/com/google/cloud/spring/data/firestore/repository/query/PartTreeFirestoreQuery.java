@@ -30,6 +30,7 @@ import com.google.cloud.spring.data.firestore.FirestoreReactiveOperations;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreClassMapper;
 import com.google.cloud.spring.data.firestore.mapping.FirestoreMappingContext;
 import com.google.cloud.spring.data.firestore.mapping.FirestorePersistentEntity;
+import com.google.cloud.spring.data.firestore.mapping.FirestorePersistentProperty;
 import com.google.firestore.v1.StructuredQuery;
 import com.google.firestore.v1.StructuredQuery.FieldReference;
 import com.google.protobuf.Int32Value;
@@ -168,8 +169,12 @@ public class PartTreeFirestoreQuery implements RepositoryQuery {
 			}
 
 			// Get the name of the field to sort on
-			String fieldName =
-					this.persistentEntity.getPersistentProperty(order.getProperty()).getFieldName();
+			FirestorePersistentProperty persistentProperty = this.persistentEntity.getPersistentProperty(
+					order.getProperty());
+			if (persistentProperty == null) {
+				throw new IllegalArgumentException("Persistent property does not exist: " + order.getProperty());
+			}
+			String fieldName = persistentProperty.getFieldName();
 
 			StructuredQuery.Direction dir =
 					order.getDirection() == Direction.DESC

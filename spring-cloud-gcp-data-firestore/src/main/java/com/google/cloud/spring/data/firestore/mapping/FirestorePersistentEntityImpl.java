@@ -52,12 +52,12 @@ public class FirestorePersistentEntityImpl<T>
 
 	@Override
 	public FirestorePersistentProperty getIdPropertyOrFail() {
-		if (!hasIdProperty()) {
+		FirestorePersistentProperty idProperty = getIdProperty();
+		if (idProperty == null) {
 			throw new FirestoreDataException(
 					"An ID property was required but does not exist for the type: "
 							+ getType());
 		}
-		FirestorePersistentProperty idProperty = getIdProperty();
 		if (idProperty.getType() != String.class) {
 			throw new FirestoreDataException(
 							"An ID property is expected to be of String type; was " + idProperty.getType());

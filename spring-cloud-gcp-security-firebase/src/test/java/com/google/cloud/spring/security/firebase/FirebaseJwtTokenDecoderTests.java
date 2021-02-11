@@ -92,12 +92,7 @@ public class FirebaseJwtTokenDecoderTests {
 
 	@Test
 	public void signedTokenTests() throws Exception {
-		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
-		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-				.subject("test-subject")
-				.expirationTime(Date.from(Instant.now().plusSeconds(60)))
-				.build();
-		String signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
+		String signedJWT = signedJwt();
 		OAuth2TokenValidator validator = mock(OAuth2TokenValidator.class);
 		when(validator.validate(any())).thenReturn(OAuth2TokenValidatorResult.success());
 		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(mockRestOperations(), "https://spring.local", validator);
@@ -106,12 +101,7 @@ public class FirebaseJwtTokenDecoderTests {
 
 	@Test
 	public void refreshFlowTests()  throws Exception {
-		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
-		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-				.subject("test-subject")
-				.expirationTime(Date.from(Instant.now().plusSeconds(60)))
-				.build();
-		String signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
+		String signedJWT = signedJwt();
 		OAuth2TokenValidator validator = mock(OAuth2TokenValidator.class);
 		when(validator.validate(any())).thenReturn(OAuth2TokenValidatorResult.success());
 		RestOperations operations = mockRestOperations();
@@ -143,12 +133,7 @@ public class FirebaseJwtTokenDecoderTests {
 
 	@Test
 	public void connectionErrorTests() throws Exception {
-		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
-		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-				.subject("test-subject")
-				.expirationTime(Date.from(Instant.now().plusSeconds(60)))
-				.build();
-		String signedJWT = signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
+		String signedJWT = signedJwt();
 		OAuth2TokenValidator validator = mock(OAuth2TokenValidator.class);
 		when(validator.validate(any())).thenReturn(OAuth2TokenValidatorResult.success());
 		RestOperations operations = mock(RestOperations.class);
@@ -160,6 +145,36 @@ public class FirebaseJwtTokenDecoderTests {
 		assertThatExceptionOfType(JwtException.class)
 				.isThrownBy(() -> decoder.decode(signedJWT))
 				.withMessageStartingWith("Error fetching public keys");
+	}
+
+	@Test
+	public void invalidResponses_nullBody() throws Exception {
+		String signedJWT = signedJwt();
+
+		Map<String, String> payload = null;
+		RestOperations operations = mockRestOperations(payload);
+		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", mock(OAuth2TokenValidator.class));
+		assertThatExceptionOfType(JwtException.class)
+				.isThrownBy(() -> decoder.decode(signedJWT))
+				.withMessageStartingWith("Error fetching public keys")
+				.havingRootCause()
+				.isInstanceOf(JwtException.class)
+				.withMessageContaining("Invalid response body (null) received from remote endpoint.");
+	}
+
+	@Test
+	public void invalidResponses_emptyBody() throws Exception {
+		String signedJWT = signedJwt();
+
+		Map<String, String> payload = new HashMap<>();
+		RestOperations operations = mockRestOperations(payload);
+		FirebaseJwtTokenDecoder decoder = new FirebaseJwtTokenDecoder(operations, "https://spring.local", mock(OAuth2TokenValidator.class));
+		assertThatExceptionOfType(JwtException.class)
+				.isThrownBy(() -> decoder.decode(signedJWT))
+				.withMessageStartingWith("Error fetching public keys")
+				.havingRootCause()
+				.isInstanceOf(JwtException.class)
+				.withMessageContaining("Invalid response body (empty) received from remote endpoint.");
 	}
 
 	@Test
@@ -300,6 +315,10 @@ public class FirebaseJwtTokenDecoderTests {
 	private RestOperations mockRestOperations() throws Exception {
 		Map<String, String> payload = new HashMap<>();
 		payload.put("one", keyGeneratorUtils.getPublicKeyCertificate());
+		return mockRestOperations(payload);
+	}
+
+	private RestOperations mockRestOperations(Map<String, String> payload) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CACHE_CONTROL, CacheControl.maxAge(3600L, TimeUnit.SECONDS).getHeaderValue());
 		ResponseEntity<Map<String, String>> response = new ResponseEntity<>(payload, headers, HttpStatus.OK);
@@ -314,6 +333,15 @@ public class FirebaseJwtTokenDecoderTests {
 				eq(new ParameterizedTypeReference<Map<String, String>>() { })))
 				.thenReturn(response);
 		return mock;
+	}
+
+	private String signedJwt() throws Exception {
+		JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256).keyID("one").build();
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.subject("test-subject")
+				.expirationTime(Date.from(Instant.now().plusSeconds(60)))
+				.build();
+		return signedJwt(keyGeneratorUtils.getPrivateKey(), header, claimsSet);
 	}
 
 	private String signedJwt(PrivateKey privateKey, JWSHeader header, JWTClaimsSet claimsSet) throws Exception {
