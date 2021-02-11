@@ -106,12 +106,12 @@ public class LoggingSampleApplicationIntegrationTests {
 					Page<LogEntry> logEntryPage = this.logClient.listLogEntries(
 							Logging.EntryListOption.filter(logFilter));
 					List<LogEntry> logEntries = new ArrayList<>();
-					logEntryPage.iterateAll().forEach((le) -> {
+					logEntryPage.iterateAll().forEach(le -> {
 						logEntries.add(le);
 					});
 
 					List<String> logContents = logEntries.stream()
-							.map((logEntry) -> (String) ((JsonPayload) logEntry.getPayload())
+							.map(logEntry -> (String) ((JsonPayload) logEntry.getPayload())
 									.getDataAsMap().get("message"))
 							.collect(Collectors.toList());
 

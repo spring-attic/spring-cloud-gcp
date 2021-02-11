@@ -442,7 +442,7 @@ public class DefaultDatastoreEntityConverterTests {
 											@Override
 											public List<String> convert(ComparableBeanContextSupport bcs) {
 												List<String> list = new ArrayList<>();
-												bcs.iterator().forEachRemaining((s) -> list.add((String) s));
+												bcs.iterator().forEachRemaining(s -> list.add((String) s));
 												return list;
 											}
 										})),
@@ -716,7 +716,7 @@ public class DefaultDatastoreEntityConverterTests {
 		Entity entity = builder.build();
 
 		assertThat(entity.getList("listOfEmbeddedEntities").stream()
-				.map((val) -> ((BaseEntity<?>) val.get()).getString("stringField")).collect(Collectors.toList()))
+				.map(val -> ((BaseEntity<?>) val.get()).getString("stringField")).collect(Collectors.toList()))
 						.as("validate embedded entity").isEqualTo(Arrays.asList("item 0", "item 1"));
 
 		assertThat(entity.getEntity("embeddedEntityField").getString("stringField"))

@@ -239,7 +239,7 @@ public class PubSubSubscriberTemplate
 	private List<AcknowledgeablePubsubMessage> toAcknowledgeablePubsubMessageList(List<ReceivedMessage> messages,
 			String subscriptionId) {
 		return messages.stream()
-				.map((message) -> new PulledAcknowledgeablePubsubMessage(
+				.map(message -> new PulledAcknowledgeablePubsubMessage(
 						PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionId,
 								this.subscriberFactory.getProjectId()),
 						message.getMessage(),
@@ -282,7 +282,7 @@ public class PubSubSubscriberTemplate
 
 	private <T> List<ConvertedAcknowledgeablePubsubMessage<T>> toConvertedAcknowledgeablePubsubMessages(Class<T> payloadType, List<AcknowledgeablePubsubMessage> ackableMessages) {
 		return ackableMessages.stream().map(
-				(m) -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
+				m -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
 						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
 		).collect(Collectors.toList());
 	}

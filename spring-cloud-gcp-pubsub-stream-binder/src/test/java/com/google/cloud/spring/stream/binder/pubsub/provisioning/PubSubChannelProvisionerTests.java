@@ -73,7 +73,7 @@ public class PubSubChannelProvisionerTests {
 	@Before
 	public void setup() {
 		when(this.pubSubAdminMock.getSubscription(any())).thenReturn(null);
-		doAnswer((invocation) ->
+		doAnswer(invocation ->
 			Subscription.newBuilder()
 					.setName("projects/test-project/subscriptions/" + invocation.getArgument(0))
 					.setTopic(invocation.getArgument(1, String.class).startsWith("projects/") ?
@@ -81,7 +81,7 @@ public class PubSubChannelProvisionerTests {
 							"projects/test-project/topics/" + invocation.getArgument(1))
 					.build()
 		).when(this.pubSubAdminMock).createSubscription(any(), any());
-		doAnswer((invocation) ->
+		doAnswer(invocation ->
 				Topic.newBuilder().setName("projects/test-project/topics/" + invocation.getArgument(0)).build()
 		).when(this.pubSubAdminMock).getTopic(any());
 		when(this.properties.getExtension()).thenReturn(this.pubSubConsumerProperties);

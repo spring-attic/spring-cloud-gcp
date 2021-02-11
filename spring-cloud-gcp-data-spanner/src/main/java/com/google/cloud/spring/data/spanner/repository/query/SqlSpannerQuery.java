@@ -77,7 +77,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final boolean isDml;
 
-	private final Function<Object, Struct> paramStructConvertFunc = (param) -> {
+	private final Function<Object, Struct> paramStructConvertFunc = param -> {
 		Builder builder = Struct.newBuilder();
 		this.spannerTemplate.getSpannerEntityProcessor().write(param, builder::set);
 		return builder.build();
@@ -234,7 +234,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		return (getReturnedSimpleConvertableItemType() != null)
 				? this.spannerTemplate.query(
-						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
+						struct -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)
 				: this.spannerTemplate.query(this.entityType,
 						statement,

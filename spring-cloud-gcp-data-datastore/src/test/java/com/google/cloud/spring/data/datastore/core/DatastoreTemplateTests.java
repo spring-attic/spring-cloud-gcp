@@ -173,7 +173,7 @@ public class DatastoreTemplateTests {
 		// The readWriteConversions are only mocked for purposes of collection-conversion
 		// for
 		// descendants. no other conversions take place in the template.
-		doAnswer((invocation) -> new LinkedList<>(invocation.getArgument(0)))
+		doAnswer(invocation -> new LinkedList<>(invocation.getArgument(0)))
 				.when(this.readWriteConversions).convertOnRead(any(), any(), (Class) any());
 
 		this.ob1 = new TestEntity();
@@ -213,13 +213,13 @@ public class DatastoreTemplateTests {
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Arrays.asList(ce1).iterator().forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(childTestEntityQueryResults).forEachRemaining(any());
 
 		QueryResults testEntityQueryResults = mock(QueryResults.class);
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Arrays.asList(this.e1, this.e2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -244,14 +244,14 @@ public class DatastoreTemplateTests {
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
 				.thenAnswer(invocationOnMock -> createChildEntity());
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
 			builder.set("color", "simple_test_color");
 			builder.set("int_field", 1);
 			return null;
 		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntity), any());
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
 			builder.set("color", NullValue.of());
 			builder.set("int_field", NullValue.of());
@@ -267,7 +267,7 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Object key = invocation.getArgument(0);
 			List<Entity> result = new ArrayList<>();
 			if (key instanceof Key) {
@@ -369,7 +369,7 @@ public class DatastoreTemplateTests {
 
 		DatastoreReaderWriter transactionContext = mock(DatastoreReaderWriter.class);
 
-		when(this.datastore.runInTransaction(any())).thenAnswer((invocation) -> {
+		when(this.datastore.runInTransaction(any())).thenAnswer(invocation -> {
 			TransactionCallable<String> callable = invocation.getArgument(0);
 			return callable.run(transactionContext);
 		});
@@ -379,7 +379,7 @@ public class DatastoreTemplateTests {
 		when(transactionContext.fetch(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
-				.performTransaction((datastoreOperations) -> {
+				.performTransaction(datastoreOperations -> {
 					datastoreOperations.save(this.ob2);
 					datastoreOperations.findById("ignored", TestEntity.class);
 					return "all done";
@@ -839,7 +839,7 @@ public class DatastoreTemplateTests {
 	private boolean nextPageTest(boolean hasNextPage) {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Arrays.asList(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -871,7 +871,7 @@ public class DatastoreTemplateTests {
 	public void countTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Arrays.asList(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -944,7 +944,7 @@ public class DatastoreTemplateTests {
 	public void deleteAllTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Arrays.asList(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -968,7 +968,7 @@ public class DatastoreTemplateTests {
 
 		InOrder inOrder = Mockito.inOrder(mockBeforePublisher, this.datastore, mockAfterPublisher);
 
-		doAnswer((invocationOnMock) -> {
+		doAnswer(invocationOnMock -> {
 			ApplicationEvent event = invocationOnMock.getArgument(0);
 			if (expectedBefore != null && event.getClass().equals(expectedBefore.getClass())) {
 				mockBeforePublisher.publishEvent(event);

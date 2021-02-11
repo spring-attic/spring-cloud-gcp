@@ -480,7 +480,7 @@ public final class SpannerStatementQueryExecutor {
 		}
 		sql.append(" ORDER BY ");
 		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining((o) -> {
+		sort.iterator().forEachRemaining(o -> {
 			SpannerPersistentProperty property = persistentEntity.getPersistentProperty(o.getProperty());
 			String sortedPropertyName = (property != null) ? property.getColumnName() : o.getProperty();
 			String sortedProperty = o.isIgnoreCase() ? LOWER_LHS + sortedPropertyName + ")"
@@ -498,12 +498,12 @@ public final class SpannerStatementQueryExecutor {
 
 			StringJoiner orStrings = new StringJoiner(" OR ");
 
-			tree.iterator().forEachRemaining((orPart) -> {
+			tree.iterator().forEachRemaining(orPart -> {
 				String orString = "( ";
 
 				StringJoiner andStrings = new StringJoiner(AND);
 
-				orPart.forEach((part) -> {
+				orPart.forEach(part -> {
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);

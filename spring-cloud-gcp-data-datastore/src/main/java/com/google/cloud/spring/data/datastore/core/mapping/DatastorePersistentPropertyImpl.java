@@ -137,7 +137,7 @@ public class DatastorePersistentPropertyImpl
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 		return StreamUtils
 				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
-				.filter((typeInfo) -> typeInfo.getType().isAnnotationPresent(Entity.class))
+				.filter(typeInfo -> typeInfo.getType().isAnnotationPresent(Entity.class))
 				.collect(Collectors.toList());
 	}
 

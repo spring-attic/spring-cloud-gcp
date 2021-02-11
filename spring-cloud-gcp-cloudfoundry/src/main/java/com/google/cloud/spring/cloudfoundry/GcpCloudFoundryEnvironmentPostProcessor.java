@@ -91,7 +91,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 			}
 
 			servicesToMap.forEach(
-					(service) -> gcpCfServiceProperties.putAll(
+					service -> gcpCfServiceProperties.putAll(
 							retrieveCfProperties(
 									cfEnv,
 									service.getGcpServiceName(),

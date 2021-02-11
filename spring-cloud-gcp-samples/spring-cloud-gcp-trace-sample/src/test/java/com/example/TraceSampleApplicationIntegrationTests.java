@@ -159,7 +159,7 @@ public class TraceSampleApplicationIntegrationTests {
 			List<LogEntry> logEntries = new ArrayList<>();
 			log.debug("Finding logs with filter: " + logFilter);
 			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()
-					.forEach((le) -> {
+					.forEach(le -> {
 						logEntries.add(le);
 						log.debug("Found log entry: " + le.toString());
 
@@ -176,7 +176,7 @@ public class TraceSampleApplicationIntegrationTests {
 
 
 			List<String> logContents = logEntries.stream()
-					.map((logEntry) -> (String) ((JsonPayload) logEntry.getPayload())
+					.map(logEntry -> (String) ((JsonPayload) logEntry.getPayload())
 							.getDataAsMap().get("message"))
 					.collect(Collectors.toList());
 

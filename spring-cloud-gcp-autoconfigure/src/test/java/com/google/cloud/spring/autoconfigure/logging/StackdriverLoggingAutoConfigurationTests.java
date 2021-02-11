@@ -53,7 +53,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testDisabledConfiguration() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.logging.enabled=false")
-				.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
+				.run(context -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
 				.withUserConfiguration(TestConfiguration.class)
-				.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
+				.run(context -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
 	}
 
 	@Test
@@ -73,12 +73,12 @@ public class StackdriverLoggingAutoConfigurationTests {
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
 				.withUserConfiguration(TestConfiguration.class)
-				.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
+				.run(context -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
 	}
 
 	@Test
 	public void testRegularConfiguration() {
-		this.contextRunner.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class))
+		this.contextRunner.run(context -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class))
 				.hasSize(1));
 	}
 
@@ -88,7 +88,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 				.withConfiguration(AutoConfigurations.of(StackdriverTraceAutoConfiguration.class,
 						BraveAutoConfiguration.class))
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
-				.run((context) -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
+				.run(context -> assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class)).isEmpty());
 	}
 
 	private static class TestConfiguration {

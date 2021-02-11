@@ -90,7 +90,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testEmulatorConfig() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
 			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
 
@@ -105,7 +105,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testSubscriberPullConfig() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			GcpPubSubProperties gcpPubSubProperties = context
 					.getBean(GcpPubSubProperties.class);
 			assertThat(gcpPubSubProperties.getSubscriber().getPullEndpoint()).isEqualTo("fake-endpoint");
@@ -118,7 +118,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testSubscriberRetrySettings() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			RetrySettings settings = context.getBean("subscriberRetrySettings",
 					RetrySettings.class);
 			assertThat(settings.getTotalTimeout()).isEqualTo(Duration.ofSeconds(1));
@@ -135,7 +135,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testPublisherRetrySettings() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			RetrySettings settings = context.getBean("publisherRetrySettings",
 					RetrySettings.class);
 			assertThat(settings.getTotalTimeout()).isEqualTo(Duration.ofSeconds(9));
@@ -152,7 +152,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testSubscriberFlowControlSettings() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			FlowControlSettings settings = context
 					.getBean("subscriberFlowControlSettings", FlowControlSettings.class);
 			assertThat(settings.getMaxOutstandingElementCount()).isEqualTo(17);
@@ -163,7 +163,7 @@ public class GcpPubSubEmulatorAutoConfigurationTests {
 
 	@Test
 	public void testPublisherBatchingSettings() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			BatchingSettings settings = context.getBean("publisherBatchSettings",
 					BatchingSettings.class);
 			assertThat(settings.getFlowControlSettings().getMaxOutstandingElementCount()).isEqualTo(19);

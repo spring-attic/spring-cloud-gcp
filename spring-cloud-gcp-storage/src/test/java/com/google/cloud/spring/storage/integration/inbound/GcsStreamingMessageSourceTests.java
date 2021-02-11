@@ -108,8 +108,8 @@ public class GcsStreamingMessageSourceTests {
 
 	private static Blob createBlob(String bucket, String name) {
 		Blob blob = mock(Blob.class);
-		willAnswer((invocationOnMock) -> bucket).given(blob).getBucket();
-		willAnswer((invocationOnMock) -> name).given(blob).getName();
+		willAnswer(invocationOnMock -> bucket).given(blob).getBucket();
+		willAnswer(invocationOnMock -> name).given(blob).getName();
 		return blob;
 	}
 
@@ -124,7 +124,7 @@ public class GcsStreamingMessageSourceTests {
 		public Storage gcsClient() {
 			Storage gcs = mock(Storage.class);
 
-			willAnswer((invocationOnMock) ->
+			willAnswer(invocationOnMock ->
 				new PageImpl<>(null, null,
 						Stream.of(
 								createBlob("gcsbucket", "gamma"),
@@ -133,11 +133,11 @@ public class GcsStreamingMessageSourceTests {
 								.collect(Collectors.toList())))
 					.given(gcs).list(eq("gcsbucket"));
 
-			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+			willAnswer(invocationOnMock -> mock(ReadChannel.class))
 					.given(gcs).reader(eq("gcsbucket"), eq("alpha/alpha"));
-			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+			willAnswer(invocationOnMock -> mock(ReadChannel.class))
 					.given(gcs).reader(eq("gcsbucket"), eq("beta"));
-			willAnswer((invocationOnMock) -> mock(ReadChannel.class))
+			willAnswer(invocationOnMock -> mock(ReadChannel.class))
 					.given(gcs).reader(eq("gcsbucket"), eq("gamma"));
 
 			return gcs;

@@ -141,13 +141,13 @@ public class SpannerRepositoryIntegrationTests {
 
 		this.spannerRepositoryExample.runExample();
 		List<String> traderIds = new ArrayList<>();
-		this.traderRepository.findAll().forEach((t) -> traderIds.add(t.getTraderId()));
+		this.traderRepository.findAll().forEach(t -> traderIds.add(t.getTraderId()));
 		assertThat(traderIds).containsExactlyInAnyOrder("demo_trader1", "demo_trader2", "demo_trader3");
 
 		assertThat(this.tradeRepository.findAll()).hasSize(8);
 
 		Set<String> tradeSpannerKeys = new HashSet<>();
-		this.tradeRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
+		this.tradeRepository.findAll().forEach(t -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
 
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",

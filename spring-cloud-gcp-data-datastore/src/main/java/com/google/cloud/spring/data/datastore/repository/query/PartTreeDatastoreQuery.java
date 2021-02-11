@@ -337,7 +337,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
-		Filter[] filters = this.filterParts.stream().map((part) -> {
+		Filter[] filters = this.filterParts.stream().map(part -> {
 			//build properties chain for nested properties
 			//if the property is not nested, the list would contain only one property
 			List<DatastorePersistentProperty> propertiesChain = getPropertiesChain(part);
@@ -470,7 +470,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				collector = Collectors.counting();
 			}
 			else if (PartTreeDatastoreQuery.this.tree.isExistsProjection()) {
-				collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
+				collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
 			}
 			return collector;
 		}

@@ -109,12 +109,12 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreSimpleClient() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(Datastore.class)).isNotNull());
+		this.contextRunner.run(context -> assertThat(context.getBean(Datastore.class)).isNotNull());
 	}
 
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			DatastoreOptions datastoreOptions = getDatastoreBean(context).getOptions();
 			assertThat(datastoreOptions.getProjectId()).isEqualTo("test-project");
 			assertThat(datastoreOptions.getNamespace()).isEqualTo("testNamespace");
@@ -124,7 +124,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreEmulatorCredentialsConfig() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
 			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
 
@@ -135,17 +135,17 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreOperationsCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
+		this.contextRunner.run(context -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+		this.contextRunner.run(context -> assertThat(context.getBean(TestRepository.class)).isNotNull());
 	}
 
 	@Test
 	public void testIdConverterCreated() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
 			assertThat(idConverter).isNotNull();
 			assertThat(idConverter).isInstanceOf(DatastoreKeyIdConverter.class);
@@ -154,7 +154,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void datastoreTransactionManagerCreated() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			DatastoreTransactionManager transactionManager = context
 					.getBean(DatastoreTransactionManager.class);
 			assertThat(transactionManager).isNotNull();
@@ -165,7 +165,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreHealthIndicatorNotCreated() {
-		this.contextRunner.run((context) -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+		this.contextRunner.run(context -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
 				.isThrownBy(() -> context.getBean(DatastoreHealthIndicator.class)));
 	}
 

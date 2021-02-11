@@ -232,7 +232,7 @@ public class SpannerSchemaUtils {
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				(spannerPersistentProperty) -> {
+				spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
 								this.mappingContext.getPersistentEntityOrFail(spannerPersistentProperty.getType()),
@@ -285,7 +285,7 @@ public class SpannerSchemaUtils {
 		SpannerPersistentEntity spannerPersistentEntity =
 				this.mappingContext.getPersistentEntityOrFail(entityClass);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) ->
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
 						getDdlStringForInterleavedHierarchy(
 						spannerPersistentEntity.tableName(),
 						spannerPersistentProperty.getColumnInnerType(), ddlStrings,

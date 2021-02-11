@@ -187,7 +187,7 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
-		poller.poll((message) -> {
+		poller.poll(message -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
@@ -206,7 +206,7 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
-		poller.poll((message) -> {
+		poller.poll(message -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
@@ -224,7 +224,7 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setPayloadType(String.class);
 
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
-		poller.poll((message) -> {
+		poller.poll(message -> {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
@@ -244,7 +244,7 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
 		assertThatThrownBy(() -> {
-			poller.poll((message) -> {
+			poller.poll(message -> {
 				throw new RuntimeException("Nope.");
 			});
 		}).isInstanceOf(MessageHandlingException.class).hasMessageContaining("Nope.");
@@ -262,7 +262,7 @@ public class PubSubMessageSourceTests {
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
 		assertThatThrownBy(() -> {
-			poller.poll((message) -> {
+			poller.poll(message -> {
 				throw new RuntimeException("Nope.");
 			});
 		}).isInstanceOf(MessageHandlingException.class).hasMessageContaining("Nope.");

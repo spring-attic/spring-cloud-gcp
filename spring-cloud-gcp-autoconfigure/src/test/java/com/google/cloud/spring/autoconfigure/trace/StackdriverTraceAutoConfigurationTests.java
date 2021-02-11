@@ -98,7 +98,7 @@ public class StackdriverTraceAutoConfigurationTests {
 						StackdriverTraceAutoConfiguration.SPAN_HANDLER_BEAN_NAME,
 						SpanHandler.class,
 						() ->  SpanHandler.NOOP)
-				.run((context) -> {
+				.run(context -> {
 			assertThat(context.getBean(HttpRequestParser.class)).isNotNull();
 			assertThat(context.getBean(HttpTracingCustomizer.class)).isNotNull();
 			assertThat(context.getBean(StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME, Sender.class)).isNotNull();
@@ -115,7 +115,7 @@ public class StackdriverTraceAutoConfigurationTests {
 						GcpContextAutoConfiguration.class,
 						RefreshAutoConfiguration.class))
 				.withUserConfiguration(MultipleSpanHandlersConfig.class)
-				.run((context) -> {
+				.run(context -> {
 			assertThat(context.getBean(HttpRequestParser.class)).isNotNull();
 			assertThat(context.getBean(HttpTracingCustomizer.class)).isNotNull();
 			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
@@ -211,7 +211,7 @@ public class StackdriverTraceAutoConfigurationTests {
 			return () -> {
 				Credentials creds = mock(Credentials.class);
 				doAnswer((Answer<Void>)
-					(invocationOnMock) -> {
+					invocationOnMock -> {
 						RequestMetadataCallback callback =
 								(RequestMetadataCallback) invocationOnMock.getArguments()[2];
 						callback.onSuccess(Collections.emptyMap());
@@ -318,7 +318,7 @@ public class StackdriverTraceAutoConfigurationTests {
 			@Override
 			public void batchWriteSpans(BatchWriteSpansRequest request,
 					StreamObserver<Empty> responseObserver) {
-				request.getSpansList().forEach((span) -> this.traces.put(span.getSpanId(), span));
+				request.getSpansList().forEach(span -> this.traces.put(span.getSpanId(), span));
 				responseObserver.onNext(Empty.getDefaultInstance());
 				responseObserver.onCompleted();
 			}

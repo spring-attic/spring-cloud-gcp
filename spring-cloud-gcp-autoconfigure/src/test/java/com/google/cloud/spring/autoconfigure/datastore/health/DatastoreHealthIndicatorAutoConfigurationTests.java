@@ -53,7 +53,7 @@ public class DatastoreHealthIndicatorAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreHealthIndicatorCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreHealthIndicator.class)).isNotNull());
+		this.contextRunner.run(context -> assertThat(context.getBean(DatastoreHealthIndicator.class)).isNotNull());
 	}
 
 	/**

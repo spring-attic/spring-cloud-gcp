@@ -236,7 +236,7 @@ public class DatastoreSampleApplicationIntegrationTests {
 		List<Map<String, Object>> singerMaps = (List<Map<String, Object>>) ((Map<String, Object>) parsedResponse
 				.get("_embedded")).get("singers");
 
-		return singerMaps.stream().map((som) -> new Singer(null,
+		return singerMaps.stream().map(som -> new Singer(null,
 				(String) som.get("firstName"), (String) som.get("lastName"), null))
 				.collect(Collectors.toList());
 	}

@@ -146,7 +146,7 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void insertTest() {
-		executeWriteTest((t) -> this.spannerMutationFactory.insert(t), Op.INSERT);
+		executeWriteTest(t -> this.spannerMutationFactory.insert(t), Op.INSERT);
 	}
 
 	@Test
@@ -172,12 +172,12 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void updateTest() {
-		executeWriteTest((t) -> this.spannerMutationFactory.update(t, null), Op.UPDATE);
+		executeWriteTest(t -> this.spannerMutationFactory.update(t, null), Op.UPDATE);
 	}
 
 	@Test
 	public void upsertTest() {
-		executeWriteTest((t) -> this.spannerMutationFactory.upsert(t, null),
+		executeWriteTest(t -> this.spannerMutationFactory.upsert(t, null),
 				Op.INSERT_OR_UPDATE);
 	}
 
@@ -193,7 +193,7 @@ public class SpannerMutationFactoryImplTests {
 		assertThat(mutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(mutation.getOperation()).isEqualTo(Op.DELETE);
 		List<String> keys = new ArrayList<>();
-		mutation.getKeySet().getKeys().forEach((key) -> {
+		mutation.getKeySet().getKeys().forEach(key -> {
 			keys.add((String) (key.getParts().iterator().next()));
 		});
 		assertThat(keys).containsExactlyInAnyOrder(t1.id, t2.id);
@@ -208,7 +208,7 @@ public class SpannerMutationFactoryImplTests {
 		assertThat(mutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(mutation.getOperation()).isEqualTo(Op.DELETE);
 		List<String> keys = new ArrayList<>();
-		mutation.getKeySet().getKeys().forEach((key) -> {
+		mutation.getKeySet().getKeys().forEach(key -> {
 			keys.add((String) (key.getParts().iterator().next()));
 		});
 		assertThat(keys).containsExactlyInAnyOrder(t1.id);
@@ -222,7 +222,7 @@ public class SpannerMutationFactoryImplTests {
 		assertThat(mutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(mutation.getOperation()).isEqualTo(Op.DELETE);
 		List<String> keys = new ArrayList<>();
-		mutation.getKeySet().getKeys().forEach((key) -> {
+		mutation.getKeySet().getKeys().forEach(key -> {
 			keys.add((String) (key.getParts().iterator().next()));
 		});
 		assertThat(keys).containsExactlyInAnyOrder("key1", "key2");
@@ -235,7 +235,7 @@ public class SpannerMutationFactoryImplTests {
 		assertThat(mutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(mutation.getOperation()).isEqualTo(Op.DELETE);
 		List<String> keys = new ArrayList<>();
-		mutation.getKeySet().getKeys().forEach((k) -> {
+		mutation.getKeySet().getKeys().forEach(k -> {
 			keys.add((String) (k.getParts().iterator().next()));
 		});
 		assertThat(keys).containsExactlyInAnyOrder("key1");

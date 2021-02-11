@@ -65,7 +65,7 @@ public class VisionApiSampleApplicationIntegrationTests {
 	@Test
 	public void testExtractTextFromImage() throws Exception {
 		this.mockMvc.perform(get(TEXT_IMAGE_URL))
-				.andDo((response) -> {
+				.andDo(response -> {
 					ModelAndView result = response.getModelAndView();
 					String textFromImage = ((String) result.getModelMap().get("text")).trim();
 					assertThat(textFromImage).isEqualTo("STOP");
@@ -75,7 +75,7 @@ public class VisionApiSampleApplicationIntegrationTests {
 	@Test
 	public void testClassifyImageLabels() throws Exception {
 		this.mockMvc.perform(get(LABEL_IMAGE_URL))
-				.andDo((response) -> {
+				.andDo(response -> {
 					ModelAndView result = response.getModelAndView();
 					List<EntityAnnotation> annotations = (List<EntityAnnotation>) result.getModelMap().get("annotations");
 

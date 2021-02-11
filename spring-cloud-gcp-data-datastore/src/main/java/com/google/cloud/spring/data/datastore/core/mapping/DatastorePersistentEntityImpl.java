@@ -201,7 +201,7 @@ public class DatastorePersistentEntityImpl<T>
 	public void doWithColumnBackedProperties(
 			PropertyHandler<DatastorePersistentProperty> handler) {
 		doWithProperties(
-				(PropertyHandler<DatastorePersistentProperty>) (datastorePersistentProperty) -> {
+				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
 					if (datastorePersistentProperty.isColumnBacked()) {
 						handler.doWithPersistentProperty(datastorePersistentProperty);
 					}
@@ -212,7 +212,7 @@ public class DatastorePersistentEntityImpl<T>
 	public void doWithDescendantProperties(
 			PropertyHandler<DatastorePersistentProperty> handler) {
 		doWithProperties(
-				(PropertyHandler<DatastorePersistentProperty>) (datastorePersistentProperty) -> {
+				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
 					if (datastorePersistentProperty.isDescendants()) {
 						handler.doWithPersistentProperty(datastorePersistentProperty);
 					}

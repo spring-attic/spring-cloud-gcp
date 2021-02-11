@@ -74,7 +74,7 @@ public final class SpannerTypeMapper {
 		SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.forEach(
-						(type) -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						type -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		builderMap.put(double.class, Code.FLOAT64);
 		builderMap.put(long.class, Code.INT64);
 		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
@@ -85,7 +85,7 @@ public final class SpannerTypeMapper {
 		SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.forEach(
-						(type) -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						type -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
 	}
 

@@ -97,7 +97,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 	private void pubSubTest(PubSubTest pubSubTest, Class... configClass) {
 		ApplicationContextRunner contextRunner = configClass.length == 0 ? this.contextRunner
 				: this.contextRunner.withUserConfiguration(configClass[0]);
-		contextRunner.run((context) -> {
+		contextRunner.run(context -> {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
@@ -163,7 +163,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 			Logger logger = new Logger();
 			//tag::subscribe[]
-			Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName, (message) -> {
+			Subscriber subscriber = pubSubTemplate.subscribe(subscriptionName, message -> {
 				logger.info("Message received from " + subscriptionName + " subscription: "
 						+ message.getPubsubMessage().getData().toStringUtf8());
 				message.ack();

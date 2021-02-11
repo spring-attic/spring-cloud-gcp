@@ -97,13 +97,13 @@ public class DatastoreTransactionTemplateTests {
 		when(this.objectToKeyFactory.allocateKeyForObject(any(), any()))
 				.thenReturn(this.key);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			List result = new ArrayList<>();
 			result.add(null);
 			return result;
 		}).when(this.transaction).fetch((Key[]) any());
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			List result = new ArrayList<>();
 			result.add(null);
 			return result;

@@ -63,7 +63,7 @@ public class AudienceValidatorTests {
 		Jwt mockJwt = Mockito.mock(Jwt.class);
 		when(mockJwt.getAudience()).thenReturn(Arrays.asList("cats"));
 
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			AudienceValidator validator = context.getBean(AudienceValidator.class);
 			assertThat(validator.validate(mockJwt).hasErrors()).isFalse();
 		});
@@ -74,7 +74,7 @@ public class AudienceValidatorTests {
 		Jwt mockJwt = Mockito.mock(Jwt.class);
 		when(mockJwt.getAudience()).thenReturn(Arrays.asList("dogs"));
 
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			AudienceValidator validator = context.getBean(AudienceValidator.class);
 			assertThat(validator.validate(mockJwt).hasErrors()).isTrue();
 		});

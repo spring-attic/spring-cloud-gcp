@@ -77,7 +77,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	Object convertToSimpleReturnType(List<?> results, Class<?> simpleConvertedType) {
 		return this.queryMethod.isCollectionQuery()
 				? results.stream()
-						.map((x) -> this.spannerTemplate.getSpannerEntityProcessor()
+						.map(x -> this.spannerTemplate.getSpannerEntityProcessor()
 								.getReadConverter().convert(x, simpleConvertedType))
 						.collect(Collectors.toList())
 				: this.spannerTemplate.getSpannerEntityProcessor().getReadConverter()

@@ -45,7 +45,7 @@ public class GcpBigQueryAutoConfigurationTests {
 
 	@Test
 	public void testSettingBigQueryOptions() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			BigQueryOptions bigQueryOptions = context.getBean(BigQuery.class).getOptions();
 			assertThat(bigQueryOptions.getProjectId()).isEqualTo("test-project");
 			assertThat(bigQueryOptions.getCredentials()).isEqualTo(MOCK_CREDENTIALS);

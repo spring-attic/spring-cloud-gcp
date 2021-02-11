@@ -113,7 +113,7 @@ public class SpannerStatementQueryTests {
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, Arrays.asList(1, 2), BigDecimal.ONE };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
-				.thenAnswer((invocation) -> {
+				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedQuery =
@@ -188,7 +188,7 @@ public class SpannerStatementQueryTests {
 		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
-				.thenAnswer((invocation) -> {
+				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
 					String expectedSql = "SELECT EXISTS"
@@ -264,7 +264,7 @@ public class SpannerStatementQueryTests {
 		doReturn(new DefaultParameters(method)).when(this.queryMethod).getParameters();
 
 		when(this.spannerTemplate.query((Class) any(), any(), any()))
-				.thenAnswer((invocation) -> {
+				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
 					assertThat(statement.getSql()).isEqualTo(expectedSql);

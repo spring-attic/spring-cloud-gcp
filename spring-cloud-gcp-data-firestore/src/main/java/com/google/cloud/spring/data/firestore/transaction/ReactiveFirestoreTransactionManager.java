@@ -105,7 +105,7 @@ public class ReactiveFirestoreTransactionManager extends AbstractReactiveTransac
 
 			return ObservableReactiveUtil
 					.<CommitResponse>unaryCall(obs -> this.firestore.commit(builder.build(), obs))
-					.flatMap((response) -> {
+					.flatMap(response -> {
 								for (Object entity : resourceHolder.getEntities()) {
 									this.classMapper.setUpdateTime(entity, Timestamp.fromProto(response.getCommitTime()));
 								}

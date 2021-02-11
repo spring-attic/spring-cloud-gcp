@@ -66,7 +66,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 			Function<SpannerRepository<T, ID>, A> operations) {
 		return this.spannerTemplate
 				.performReadOnlyTransaction(
-						(transactionSpannerOperations) -> operations
+						transactionSpannerOperations -> operations
 								.apply(new SimpleSpannerRepository<>(
 										transactionSpannerOperations, this.entityType)),
 						null);
@@ -76,7 +76,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	public <A> A performReadWriteTransaction(
 			Function<SpannerRepository<T, ID>, A> operations) {
 		return this.spannerTemplate
-				.performReadWriteTransaction((transactionSpannerOperations) -> operations
+				.performReadWriteTransaction(transactionSpannerOperations -> operations
 						.apply(new SimpleSpannerRepository<>(transactionSpannerOperations,
 								this.entityType)));
 	}

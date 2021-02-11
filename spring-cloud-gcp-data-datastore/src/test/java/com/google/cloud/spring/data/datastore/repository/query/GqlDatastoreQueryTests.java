@@ -163,7 +163,7 @@ public class GqlDatastoreQueryTests {
 
 		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString()).isEqualTo(entityResolvedGql);
@@ -225,7 +225,7 @@ public class GqlDatastoreQueryTests {
 
 		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM trades WHERE price=@price LIMIT @limit OFFSET @offset");
@@ -263,7 +263,7 @@ public class GqlDatastoreQueryTests {
 
 		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql, false, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString())
@@ -304,7 +304,7 @@ public class GqlDatastoreQueryTests {
 
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Map> params = new ArrayList<>();
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString()).isEqualTo("SELECT * FROM trades WHERE price=@price LIMIT @limit OFFSET @offset");
@@ -318,7 +318,7 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
-		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+		doAnswer(invocation -> invocation.getArgument(0)).when(gqlDatastoreQuery)
 				.processRawObjectForProjection(any());
 
 		Slice result = (Slice) gqlDatastoreQuery.execute(paramVals);
@@ -359,7 +359,7 @@ public class GqlDatastoreQueryTests {
 
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString().equals(gql) || statement.getQueryString().equals(expected))
@@ -382,7 +382,7 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
-		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+		doAnswer(invocation -> invocation.getArgument(0)).when(gqlDatastoreQuery)
 				.processRawObjectForProjection(any());
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
@@ -419,7 +419,7 @@ public class GqlDatastoreQueryTests {
 
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString()).isEqualTo(expected);
@@ -433,7 +433,7 @@ public class GqlDatastoreQueryTests {
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
-		doAnswer((invocation) -> invocation.getArgument(0)).when(gqlDatastoreQuery)
+		doAnswer(invocation -> invocation.getArgument(0)).when(gqlDatastoreQuery)
 				.processRawObjectForProjection(any());
 
 		Slice result = (Page) gqlDatastoreQuery.execute(paramVals);
@@ -454,7 +454,7 @@ public class GqlDatastoreQueryTests {
 				.thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
+		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
 			int index = invocation.getArgument(0);
 			Parameter param = mock(Parameter.class);
 			when(param.getName())

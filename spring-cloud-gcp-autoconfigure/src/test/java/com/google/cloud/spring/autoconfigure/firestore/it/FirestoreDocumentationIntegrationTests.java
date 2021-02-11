@@ -53,7 +53,7 @@ public class FirestoreDocumentationIntegrationTests {
 
 	@Test
 	public void writeDocumentFromObject() throws ExecutionException, InterruptedException {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			Firestore firestore = context.getBean(Firestore.class);
 			FirestoreExample firestoreExample = new FirestoreExample(firestore);
 

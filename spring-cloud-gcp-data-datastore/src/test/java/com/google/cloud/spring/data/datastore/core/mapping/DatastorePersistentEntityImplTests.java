@@ -125,7 +125,7 @@ public class DatastorePersistentEntityImplTests {
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
 
 		p.doWithProperties(
-				(SimplePropertyHandler) (property) -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
+				(SimplePropertyHandler) property -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
 	}
 
 	@Test

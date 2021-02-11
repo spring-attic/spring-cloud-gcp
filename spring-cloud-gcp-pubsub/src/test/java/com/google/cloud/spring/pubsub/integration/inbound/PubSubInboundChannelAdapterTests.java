@@ -99,7 +99,7 @@ public class PubSubInboundChannelAdapterTests {
 		when(mockAcknowledgeableMessage.getPayload()).thenReturn("Test message payload.");
 
 		when(this.mockPubSubSubscriberOperations.subscribeAndConvert(
-				anyString(), any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
+				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
 					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
 					messageConsumer.accept(mockAcknowledgeableMessage);

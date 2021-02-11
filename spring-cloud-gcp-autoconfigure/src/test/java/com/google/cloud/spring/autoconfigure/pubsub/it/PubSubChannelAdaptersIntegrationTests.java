@@ -131,7 +131,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessageAsString() {
 		this.contextRunner
 				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
-				.run((context) -> {
+				.run(context -> {
 			Map<String, Object> headers = new HashMap<>();
 			// Only String values for now..
 			headers.put("storm", "lift your skinny fists");
@@ -161,7 +161,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessage() {
 		this.contextRunner
 				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
-				.run((context) -> {
+				.run(context -> {
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message (sendAndReceiveMessage).".getBytes()).build());
 
@@ -178,7 +178,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessageManualAck() {
 		this.contextRunner
 				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
-				.run((context) -> {
+				.run(context -> {
 
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
@@ -217,7 +217,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.contextRunner
 				.withUserConfiguration(SubscribableConfiguration.class, CommonConfiguration.class)
 				.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
-				.run((context) -> {
+				.run(context -> {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.AUTO_ACK);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("This message is in trouble.".getBytes()).build());
@@ -253,7 +253,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
 		this.contextRunner
 				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
-				.run((context) -> {
+				.run(context -> {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message (sendAndReceiveMessageManualAckThroughAcknowledgementHeader).".getBytes()).build());
@@ -276,7 +276,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void sendAndReceiveMessagePublishCallback() {
 		this.contextRunner
 				.withUserConfiguration(PollableConfiguration.class, CommonConfiguration.class)
-				.run((context) -> {
+				.run(context -> {
 					ListenableFutureCallback<String> callbackSpy = Mockito.spy(
 						new ListenableFutureCallback<String>() {
 							@Override

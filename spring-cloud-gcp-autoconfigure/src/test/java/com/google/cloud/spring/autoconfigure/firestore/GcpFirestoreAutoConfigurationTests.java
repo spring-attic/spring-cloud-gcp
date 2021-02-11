@@ -51,7 +51,7 @@ public class GcpFirestoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreOptionsCorrectlySet() {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			FirestoreOptions datastoreOptions = context.getBean(Firestore.class).getOptions();
 			assertThat(datastoreOptions.getProjectId()).isEqualTo("test-project");
 		});
@@ -59,7 +59,7 @@ public class GcpFirestoreAutoConfigurationTests {
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run((context) -> assertThat(context.getBean(FirestoreTestRepository.class)).isNotNull());
+		this.contextRunner.run(context -> assertThat(context.getBean(FirestoreTestRepository.class)).isNotNull());
 	}
 
 	@Test

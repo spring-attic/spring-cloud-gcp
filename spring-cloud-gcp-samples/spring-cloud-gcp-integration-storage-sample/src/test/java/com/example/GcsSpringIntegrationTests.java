@@ -112,7 +112,7 @@ public class GcsSpringIntegrationTests {
 
 					List<String> blobNamesInOutputBucket = new ArrayList<>();
 					this.storage.list(this.cloudOutputBucket).iterateAll()
-							.forEach((b) -> blobNamesInOutputBucket.add(b.getName()));
+							.forEach(b -> blobNamesInOutputBucket.add(b.getName()));
 
 					assertThat(blobNamesInOutputBucket).contains(TEST_FILE_NAME);
 				});

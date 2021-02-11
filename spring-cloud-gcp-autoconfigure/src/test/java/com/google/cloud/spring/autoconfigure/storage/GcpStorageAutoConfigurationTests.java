@@ -55,7 +55,7 @@ public class GcpStorageAutoConfigurationTests {
 
 	@Test
 	public void testValidObject() throws Exception {
-		this.contextRunner.run((context) -> {
+		this.contextRunner.run(context -> {
 			Resource resource = context.getBean("mockResource", Resource.class);
 			assertThat(resource.contentLength()).isEqualTo(4096);
 		});
@@ -64,7 +64,7 @@ public class GcpStorageAutoConfigurationTests {
 	@Test
 	public void testAutoCreateFilesTrueByDefault() throws IOException {
 		this.contextRunner
-			.run((context) -> {
+			.run(context -> {
 				Resource resource = context.getBean("mockResource", Resource.class);
 				assertThat(((GoogleStorageResource) resource).isAutoCreateFiles()).isTrue();
 			});
@@ -75,7 +75,7 @@ public class GcpStorageAutoConfigurationTests {
 
 		this.contextRunner
 			.withPropertyValues("spring.cloud.gcp.storage.auto-create-files=false")
-			.run((context) -> {
+			.run(context -> {
 				Resource resource = context.getBean("mockResource", Resource.class);
 				assertThat(((GoogleStorageResource) resource).isAutoCreateFiles()).isFalse();
 			});

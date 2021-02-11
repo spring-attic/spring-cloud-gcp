@@ -209,7 +209,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	@Override
 	public <T> void deleteAll(Iterable<T> entities) {
 		performDelete(StreamSupport.stream(entities.spliterator(), false)
-				.map((x) -> getKey(x, false)).toArray(Key[]::new), null, entities, null);
+				.map(x -> getKey(x, false)).toArray(Key[]::new), null, entities, null);
 	}
 
 	@Override
@@ -413,7 +413,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 		if (queryOptions.getSort() != null) {
 			queryOptions.getSort().stream()
-					.map((order) -> createOrderBy(persistentEntity, order))
+					.map(order -> createOrderBy(persistentEntity, order))
 					.forEachOrdered(builder::addOrderBy);
 		}
 	}
@@ -511,7 +511,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private List<Entity> getReferenceEntitiesForSave(Object entity, Builder builder, Set<Key> persistedEntities) {
 		DatastorePersistentEntity<?> datastorePersistentEntity = getPersistentEntity(entity.getClass());
 		List<Entity> entitiesToSave = new ArrayList<>();
-		datastorePersistentEntity.doWithAssociations((AssociationHandler) (association) -> {
+		datastorePersistentEntity.doWithAssociations((AssociationHandler) association -> {
 			PersistentProperty persistentProperty = association.getInverse();
 			PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
 			Object val = accessor.getProperty(persistentProperty);
@@ -526,7 +526,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
 				entitiesToSave.addAll(getEntitiesForSave(iterableVal, persistedEntities));
 				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
-						.map((o) -> KeyValue.of(this.getKey(o, false)))
+						.map(o -> KeyValue.of(this.getKey(o, false)))
 						.collect(Collectors.toList());
 				value = ListValue.of(keyValues);
 
@@ -575,7 +575,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 
 		Key key = getKey(entity, false);
-		if (key == null || key.getAncestors().stream().anyMatch((pe) -> pe.equals(ancestorPE))) {
+		if (key == null || key.getAncestors().stream().anyMatch(pe -> pe.equals(ancestorPE))) {
 			return;
 		}
 		throw new DatastoreDataException("Descendant object has a key without current ancestor");
@@ -615,7 +615,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 				.getPersistentEntity(entityClass);
 
 		return keys.stream()
-				.map((key) -> convertEntityResolveDescendantsAndReferences(entityClass,
+				.map(key -> convertEntityResolveDescendantsAndReferences(entityClass,
 				datastorePersistentEntity,
 				key,
 				context)).filter(Objects::nonNull)
@@ -651,7 +651,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private <T> void resolveReferenceProperties(DatastorePersistentEntity datastorePersistentEntity,
 			BaseEntity entity, T convertedObject, ReadContext context) {
 		datastorePersistentEntity.doWithAssociations(
-				(AssociationHandler) (association) -> {
+				(AssociationHandler) association -> {
 					DatastorePersistentProperty referenceProperty = (DatastorePersistentProperty) association
 							.getInverse();
 					String fieldName = referenceProperty.getFieldName();
@@ -729,7 +729,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,
 			BaseEntity entity, T convertedObject, ReadContext context) {
 		datastorePersistentEntity
-				.doWithDescendantProperties((descendantPersistentProperty) -> {
+				.doWithDescendantProperties(descendantPersistentProperty -> {
 
 					Class descendantType = descendantPersistentProperty
 							.getComponentType();
@@ -784,7 +784,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 	private <T> Set<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
 		Set<Key> keys = new HashSet<>();
-		ids.forEach((x) -> keys.add(getKeyFromId(x, entityClass)));
+		ids.forEach(x -> keys.add(getKeyFromId(x, entityClass)));
 		return keys;
 	}
 
@@ -811,7 +811,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		NullHandler nullHandler = example.getMatcher().getNullHandler();
-		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
+		persistentEntity.doWithColumnBackedProperties(persistentProperty -> {
 			if (!ignoredProperty(example, persistentProperty)) {
 				Value<?> value = getValue(example, probeEntity, persistentEntity, persistentProperty);
 				addFilter(nullHandler, filters, persistentProperty.getFieldName(), value);
@@ -895,7 +895,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		}
 
 		Optional<String> path =
-				example.getMatcher().getIgnoredPaths().stream().filter((s) -> s.contains(".")).findFirst();
+				example.getMatcher().getIgnoredPaths().stream().filter(s -> s.contains(".")).findFirst();
 		if (path.isPresent()) {
 			throw new DatastoreDataException("Ignored paths deeper than 1 are not supported");
 		}

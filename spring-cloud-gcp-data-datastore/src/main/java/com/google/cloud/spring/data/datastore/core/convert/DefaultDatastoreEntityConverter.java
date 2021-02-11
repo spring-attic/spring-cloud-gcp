@@ -151,7 +151,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 
-			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
+			persistentEntity.doWithColumnBackedProperties(datastorePersistentProperty -> {
 				// if a property is a constructor argument, it was already computed on instantiation
 				if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 					Object value = propertyValueProvider

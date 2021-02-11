@@ -149,7 +149,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, toReturn, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();
@@ -199,7 +199,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Child.class, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();
@@ -255,7 +255,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Child.class, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();
@@ -312,7 +312,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Child.class, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();
@@ -391,7 +391,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, Trade.class, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();
@@ -439,7 +439,7 @@ public class SqlSpannerQueryTests {
 		TransactionRunner transactionRunner = mock(TransactionRunner.class);
 		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
 
-		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
+		when(transactionRunner.run(any())).thenAnswer(invocation -> {
 			TransactionRunner.TransactionCallable transactionCallable = invocation.getArgument(0);
 			return transactionCallable.run(context);
 		});
@@ -484,7 +484,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, long.class, false);
 
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertThat(queryOptions.isAllowPartialRead()).isTrue();

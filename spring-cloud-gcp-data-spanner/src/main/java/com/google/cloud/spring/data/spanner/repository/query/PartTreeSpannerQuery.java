@@ -59,7 +59,7 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 				parameters);
 		if (isCountOrExistsQuery()) {
 			return SpannerStatementQueryExecutor.executeQuery(
-					(struct) -> isCountQuery() ? struct.getLong(0) : struct.getBoolean(0),
+					struct -> isCountQuery() ? struct.getLong(0) : struct.getBoolean(0),
 					this.entityType, this.tree, paramAccessor, getQueryMethod().getMethod().getParameters(),
 					this.spannerTemplate,
 					this.spannerMappingContext);
@@ -74,7 +74,7 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	}
 
 	private Function<SpannerTemplate, List> getDeleteFunction(Object[] parameters) {
-		return (transactionTemplate) -> {
+		return transactionTemplate -> {
 			ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(),
 					parameters);
 			List<T> entitiesToDelete = SpannerStatementQueryExecutor

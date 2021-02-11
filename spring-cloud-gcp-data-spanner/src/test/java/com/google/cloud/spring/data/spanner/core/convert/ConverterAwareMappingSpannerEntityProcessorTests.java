@@ -257,9 +257,9 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		mockResults.structs = Arrays.asList(struct1, struct2);
 
 		ResultSet results = mock(ResultSet.class);
-		when(results.next()).thenAnswer((invocation) -> mockResults.next());
+		when(results.next()).thenAnswer(invocation -> mockResults.next());
 		when(results.getCurrentRowAsStruct())
-				.thenAnswer((invocation) -> mockResults.getCurrent());
+				.thenAnswer(invocation -> mockResults.getCurrent());
 
 		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results,
 				TestEntity.class);
@@ -332,9 +332,9 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		mockResults.structs = Arrays.asList(struct1, struct2);
 
 		ResultSet results = mock(ResultSet.class);
-		when(results.next()).thenAnswer((invocation) -> mockResults.next());
+		when(results.next()).thenAnswer(invocation -> mockResults.next());
 		when(results.getCurrentRowAsStruct())
-				.thenAnswer((invocation) -> mockResults.getCurrent());
+				.thenAnswer(invocation -> mockResults.getCurrent());
 
 		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results,
 				TestEntity.class, "id", "custom_col");

@@ -143,8 +143,8 @@ public class PartTreeDatastoreQueryTests {
 		PartTreeDatastoreQuery<Trade> spy = spy(tradePartTreeDatastoreQuery);
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
-		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
-		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), isNotNull());
+		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
+		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), isNotNull());
 
 		return spy;
 	}
@@ -167,7 +167,7 @@ public class PartTreeDatastoreQueryTests {
 				// this int param requires custom conversion
 				8, 3.33, "abc" };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -214,7 +214,7 @@ public class PartTreeDatastoreQueryTests {
 				// this int param requires custom conversion
 				8, 3.33, "abc" };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			StructuredQuery statement = invocation.getArgument(0);
 
 			StructuredQuery expected = StructuredQuery.newProjectionEntityQueryBuilder()
@@ -249,7 +249,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -280,7 +280,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null};
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -310,7 +310,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, Sort.by(Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -339,7 +339,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -394,7 +394,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.DESC, "id") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -562,7 +562,7 @@ public class PartTreeDatastoreQueryTests {
 
 	private void preparePageResults(int offset, Integer limit, Cursor cursor,
 			List<Integer> pageResults, List<Integer> fullResults) {
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -575,7 +575,7 @@ public class PartTreeDatastoreQueryTests {
 			return new DatastoreResultsIterable(pageResults.iterator(), Cursor.copyFrom("abc".getBytes()));
 		});
 
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer(invocation -> {
 			KeyQuery statement = invocation.getArgument(0);
 			KeyQuery expected = StructuredQuery.newKeyQueryBuilder()
 					.setFilter(FILTER)
@@ -590,7 +590,7 @@ public class PartTreeDatastoreQueryTests {
 	private void prepareSliceResults(int offset, Integer queryLimit, Boolean hasNext) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.queryEntitiesSlice(isA(EntityQuery.class), any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryEntitiesSlice(isA(EntityQuery.class), any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(FILTER)
@@ -660,7 +660,7 @@ public class PartTreeDatastoreQueryTests {
 	private void prepareDeleteResults(boolean isCollection) {
 		Cursor cursor = Cursor.copyFrom("abc".getBytes());
 		List<Integer> datastoreMatchingRecords = Arrays.asList(3, 4, 5);
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			StructuredQuery<?> statement = invocation.getArgument(0);
 			StructuredQuery.Builder builder = isCollection ? StructuredQuery.newEntityQueryBuilder()
 					: StructuredQuery.newKeyQueryBuilder();
@@ -750,7 +750,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };
@@ -764,7 +764,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };
@@ -779,7 +779,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -804,10 +804,10 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "id1"};
 		when(this.datastoreTemplate.createKey("trades", "id1"))
-				.thenAnswer((invocation) ->
+				.thenAnswer(invocation ->
 						Key.newBuilder("project", invocation.getArgument(0), invocation.getArgument(1)).build());
 
-			when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
+			when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()

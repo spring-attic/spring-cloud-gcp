@@ -44,7 +44,7 @@ public class MultipleDataModuleExample {
 
 	@Bean
 	ApplicationRunner applicationRunner() {
-		return (args) -> {
+		return args -> {
 
 			System.out.println("Deleting all entities.");
 

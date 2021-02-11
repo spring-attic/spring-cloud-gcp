@@ -44,7 +44,7 @@ public class GcpDatastoreEmulatorAutoConfigurationTests {
 						"spring.cloud.gcp.datastore.emulator.port=8182",
 						"spring.cloud.gcp.datastore.emulator.enabled=true",
 						"spring.cloud.gcp.datastore.emulator.consistency=0.8")
-				.run((context) -> {
+				.run(context -> {
 					LocalDatastoreHelper helper = context.getBean(LocalDatastoreHelper.class);
 					DatastoreOptions datastoreOptions = helper.getOptions();
 					assertThat(datastoreOptions.getHost()).isEqualTo("localhost:8182");
@@ -57,7 +57,7 @@ public class GcpDatastoreEmulatorAutoConfigurationTests {
 		new ApplicationContextRunner()
 				.withConfiguration(AutoConfigurations.of(
 						GcpDatastoreEmulatorAutoConfiguration.class))
-				.run((context) -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.run(context -> assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
 						.isThrownBy(() -> context.getBean(LocalDatastoreHelper.class)));
 	}
 }

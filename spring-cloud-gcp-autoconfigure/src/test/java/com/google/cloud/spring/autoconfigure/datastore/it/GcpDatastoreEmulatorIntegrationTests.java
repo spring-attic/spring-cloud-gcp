@@ -84,7 +84,7 @@ public class GcpDatastoreEmulatorIntegrationTests {
 						"spring.cloud.gcp.datastore.emulator.port=8181",
 						"spring.cloud.gcp.datastore.emulator.enabled=true",
 						"spring.cloud.gcp.datastore.emulator.consistency=0.9")
-				.run((context) -> {
+				.run(context -> {
 					DatastoreTemplate datastore = context.getBean(DatastoreTemplate.class);
 					Datastore datastoreClient = (Datastore) ((Supplier) context.getBean(context.getBeanNamesForType(
 							ResolvableType.forClassWithGenerics(Supplier.class, Datastore.class))[0])).get();

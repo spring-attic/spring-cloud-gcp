@@ -59,7 +59,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instance-connection-name=tubular-bells:singapore:test-instance",
 				"spring.datasource.password=")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(dataSource.getDriverClassName()).matches("com.mysql.cj.jdbc.Driver");
@@ -78,7 +78,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.cloud.gcp.sql.instance-connection-name=tubular-bells:singapore:test-instance",
 				"spring.datasource.password=",
 				"spring.datasource.url=jdbc:h2:mem:none;MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(dataSource.getDriverClassName()).matches("com.mysql.cj.jdbc.Driver");
@@ -102,7 +102,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.cloud.gcp.sql.instance-connection-name=tubular-bells:singapore:test-instance",
 				"spring.datasource.password=",
 				"spring.datasource.url=test-url")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(dataSource.getDriverClassName()).matches("com.mysql.cj.jdbc.Driver");
@@ -124,7 +124,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.datasource.password=")
 				.withSystemProperties(
 						"com.google.appengine.runtime.version=Google App Engine/Some Server")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(getSpringDatasourceDriverClassName(context))
@@ -145,7 +145,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 		this.contextRunner.withPropertyValues("spring.datasource.username=watchmaker",
 				"spring.datasource.password=pass",
 				"spring.cloud.gcp.sql.instance-connection-name=proj:reg:test-instance")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(getSpringDatasourceUrl(context)).isEqualTo(
@@ -163,7 +163,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instance-connection-name=proj:reg:test-instance",
 				"spring.datasource.driver-class-name=org.postgresql.Driver")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(getSpringDatasourceUrl(context)).isEqualTo(
@@ -180,7 +180,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.cloud.gcp.sql.instance-connection-name=proj:reg:test-instance",
 				"spring.datasource.hikari.connectionTestQuery=select 1",
 				"spring.datasource.hikari.maximum-pool-size=19")
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(getSpringDatasourceUrl(context)).isEqualTo(
@@ -197,7 +197,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 	public void testInstanceConnectionName() {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instance-connection-name=world:asia:japan")
-				.run((context) -> {
+				.run(context -> {
 					assertThat(getSpringDatasourceUrl(context)).isEqualTo(
 							"jdbc:mysql://google/test-database?"
 									+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"
@@ -212,7 +212,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.cloud.gcp.sql.instance-connection-name=tubular-bells:singapore:test-instance")
 				.withClassLoader(
 						new FilteredClassLoader("com.google.cloud.sql.mysql"))
-				.run((context) -> {
+				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					assertThat(getSpringDatasourceUrl(context)).isEqualTo(
@@ -230,7 +230,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 				"spring.cloud.gcp.sql.instance-connection-name=tubular-bells:singapore:test-instance")
 				.withClassLoader(
 						new FilteredClassLoader(EmbeddedDatabaseType.class, DataSource.class))
-				.run((context) -> {
+				.run(context -> {
 					assertThat(context.getBeanNamesForType(DataSource.class)).isEmpty();
 					assertThat(context.getBeanNamesForType(DataSourceProperties.class)).isEmpty();
 					assertThat(context.getBeanNamesForType(CloudSqlJdbcInfoProvider.class)).isEmpty();
@@ -242,7 +242,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instance-connection-name=world:asia:japan",
 				"spring.cloud.gcp.sql.ip-types=PRIVATE")
-				.run((context) -> {
+				.run(context -> {
 					DataSourceProperties dataSourceProperties =
 							context.getBean(DataSourceProperties.class);
 					assertThat(dataSourceProperties.getUrl()).contains(
@@ -255,7 +255,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instance-connection-name=world:asia:japan",
 				"spring.cloud.gcp.sql.database-name=${sm://my-db}")
-				.run((context) -> {
+				.run(context -> {
 					assertThat(context.getEnvironment().getPropertySources()
 							.get("CLOUD_SQL_DATA_SOURCE_URL")
 							.getProperty("spring.datasource.url"))
@@ -282,7 +282,7 @@ public class CloudSqlEnvironmentPostProcessorTests {
 					}
 				})
 				.withInitializer(configurableApplicationContext -> initializer.postProcessEnvironment(configurableApplicationContext.getEnvironment(), new SpringApplication()))
-				.run((context) -> {
+				.run(context -> {
 					assertThat(getSpringDatasourceUrl(context)).isNull();
 				});
 	}
