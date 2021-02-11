@@ -36,12 +36,12 @@ import org.springframework.util.Assert;
  * The default implementation of a SpannerRepository.
  *
  * @param <T> the entity type of the repository
- * @param <ID> the id type of the entity
+ * @param <I> the id type of the entity
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> {
+public class SimpleSpannerRepository<T, I> implements SpannerRepository<T, I> {
 
 	private static final String NON_NULL_ID_REQUIRED = "A non-null ID is required.";
 
@@ -63,7 +63,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	@Override
 	public <A> A performReadOnlyTransaction(
-			Function<SpannerRepository<T, ID>, A> operations) {
+			Function<SpannerRepository<T, I>, A> operations) {
 		return this.spannerTemplate
 				.performReadOnlyTransaction(
 						transactionSpannerOperations -> operations
@@ -74,7 +74,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	@Override
 	public <A> A performReadWriteTransaction(
-			Function<SpannerRepository<T, ID>, A> operations) {
+			Function<SpannerRepository<T, I>, A> operations) {
 		return this.spannerTemplate
 				.performReadWriteTransaction(transactionSpannerOperations -> operations
 						.apply(new SimpleSpannerRepository<>(transactionSpannerOperations,
@@ -96,14 +96,14 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Optional<T> findById(ID id) {
+	public Optional<T> findById(I id) {
 		Assert.notNull(id, NON_NULL_ID_REQUIRED);
 		T result = this.spannerTemplate.read(this.entityType, toKey(id));
 		return Optional.<T>ofNullable(result);
 	}
 
 	@Override
-	public boolean existsById(ID id) {
+	public boolean existsById(I id) {
 		Assert.notNull(id, NON_NULL_ID_REQUIRED);
 		return this.spannerTemplate.existsById(this.entityType, toKey(id));
 	}
@@ -114,7 +114,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Iterable<T> findAllById(Iterable<ID> ids) {
+	public Iterable<T> findAllById(Iterable<I> ids) {
 		KeySet.Builder builder = KeySet.newBuilder();
 		for (Object id : ids) {
 			builder.addKey(toKey(id));
