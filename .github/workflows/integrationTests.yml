@@ -46,6 +46,18 @@ jobs:
             gcloud components update
 
       - name: Mvn install # Need this when the directory/pom structure changes
+        id: install1
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+      - name: Retry Mvn install
+        id: install2
+        if: steps.install1.outcome == 'failure'
         run: |
           ./mvnw \
             --batch-mode \
@@ -62,6 +74,41 @@ jobs:
           continue-after-seconds: 1200 # 30 min
 
       - name: Integration Tests
+        id: intTests1
+        continue-on-error: true
+        env:
+          GOOGLE_CLOUD_PROJECT: spring-cloud-gcp-ci
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --define maven.javadoc.skip=true \
+              -Dit.pubsub-emulator=true  \
+              -Dit.spanner=true  \
+              -Dit.storage=true  \
+              -Dit.config=true  \
+              -Dit.pubsub=true  \
+              -Dit.logging=true \
+              -Dit.cloudsql=true  \
+              -Dit.datastore=true  \
+              -Dit.trace=true  \
+              -Dit.kotlin=true  \
+              -Dit.vision=true  \
+              -Dit.firestore=true  \
+              -Dit.bigquery=true  \
+              -Dit.secretmanager=true  \
+              -Dit.metrics=true \
+              -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql \
+              -Dspring.cloud.gcp.sql.database-name=code_samples_test_db \
+              -Dspring.datasource.password=test \
+              -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample \
+              -Dgcs-read-bucket=gcp-storage-bucket-sample-input \
+              -Dgcs-write-bucket=gcp-storage-bucket-sample-output \
+              -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample \
+            verify
+
+      - name: Retry Integration Tests on Failure
+        id: intTests2
+        if: steps.intTests1.outcome == 'failure'
         env:
           GOOGLE_CLOUD_PROJECT: spring-cloud-gcp-ci
         run: |
