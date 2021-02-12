@@ -870,7 +870,7 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 		return value;
 	}
 
-	private <T> void addFilter(NullHandler nullHandler, LinkedList<Filter> filters, String fieldName, Value<?> value) {
+	private void addFilter(NullHandler nullHandler, LinkedList<Filter> filters, String fieldName, Value<?> value) {
 		if (value instanceof NullValue
 				&& nullHandler != ExampleMatcher.NullHandler.INCLUDE) {
 			//skip null value

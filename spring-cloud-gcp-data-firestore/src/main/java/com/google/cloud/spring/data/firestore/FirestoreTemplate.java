@@ -232,7 +232,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	 * {@link #setWriteBufferSize} and {@link #setWriteBufferTimeout}.
 	 */
 	@Override
-	public <T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass) {
+	public Mono<Void> deleteById(Publisher<String> idPublisher, Class<?> entityClass) {
 		return Mono.defer(() -> {
 			FirestorePersistentEntity<?> persistentEntity =
 					this.mappingContext.getPersistentEntity(entityClass);

@@ -122,12 +122,11 @@ public interface FirestoreReactiveOperations {
 
 	/**
 	 * Delete entities of a given domain type using ids published by producer.
-	 * @param <T> the type param of the domain type.
 	 * @param idPublisher publisher that provides ids of entities to be removed.
 	 * @param entityClass the domain type of entities.
 	 * @return {@link Mono} signaling when operation has completed.
 	 */
-	<T> Mono<Void> deleteById(Publisher<String> idPublisher, Class entityClass);
+	Mono<Void> deleteById(Publisher<String> idPublisher, Class<?> entityClass);
 
 	/**
 	 * Executes a query represented as query builder and returns results of the given domain type.
