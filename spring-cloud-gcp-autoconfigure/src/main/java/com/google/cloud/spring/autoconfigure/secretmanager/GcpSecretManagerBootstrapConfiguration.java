@@ -56,7 +56,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	public GcpSecretManagerBootstrapConfiguration(
 			GcpSecretManagerProperties properties,
-			ConfigurableEnvironment configurableEnvironment) throws IOException {
+			ConfigurableEnvironment configurableEnvironment) {
 
 		this.gcpProjectIdProvider = properties.getProjectId() != null
 				? properties::getProjectId

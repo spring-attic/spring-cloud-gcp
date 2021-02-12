@@ -16,7 +16,6 @@
 
 package com.google.cloud.spring.autoconfigure.firestore;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -134,7 +133,7 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public FirestoreGrpc.FirestoreStub firestoreGrpcStub() throws IOException {
+		public FirestoreGrpc.FirestoreStub firestoreGrpcStub() {
 			ManagedChannel channel = ManagedChannelBuilder
 					.forTarget(GcpFirestoreEmulatorAutoConfiguration.this.hostPort)
 					.usePlaintext()

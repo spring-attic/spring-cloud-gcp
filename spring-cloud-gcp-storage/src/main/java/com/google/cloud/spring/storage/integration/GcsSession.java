@@ -200,7 +200,7 @@ public class GcsSession implements Session<BlobInfo> {
 		return "storage.googleapis.com:443";
 	}
 
-	private String[] getBucketAndObjectFromPath(String path) throws IOException {
+	private String[] getBucketAndObjectFromPath(String path) {
 		// Assumes paths of the form bucket/folder/blob
 		Assert.hasText(path, "Path can't be empty.");
 
