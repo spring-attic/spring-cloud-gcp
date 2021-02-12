@@ -32,6 +32,7 @@ import com.google.cloud.spanner.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 import static com.google.cloud.spring.data.spanner.core.convert.CommitTimestamp.CommitTimestampDecorator;
 
@@ -132,7 +133,9 @@ public final class SpannerConverters {
 				@Nullable
 				@Override
 				public LocalDateTime convert(Timestamp timestamp) {
-					return SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp).toLocalDateTime();
+					java.sql.Timestamp result = SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp);
+					Assert.notNull(result, "Failed to convert to a non-null timestamp: " + timestamp);
+					return result.toLocalDateTime();
 				}
 			};
 

@@ -346,7 +346,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Test
 	public void writeUnsupportedTypeIterableTest() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
+		this.expectedEx.expectMessage("Unsupported mapping for type: interface java.util.List");
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
@@ -380,7 +380,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Test
 	public void testUserSetUnconvertableColumnType() {
 		this.expectedEx.expect(SpannerDataException.class);
-		this.expectedEx.expectMessage("Unsupported mapping for type: class java.lang.Boolean");
+		this.expectedEx.expectMessage("Unsupported mapping for type: boolean");
 		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);

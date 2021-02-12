@@ -161,9 +161,6 @@ public final class SpannerStatementQueryExecutor {
 	public static <T> String applySortingPagingQueryOptions(Class<T> entityClass,
 			SpannerPageableQueryOptions options, String sql,
 			SpannerMappingContext mappingContext, boolean fetchInterleaved) {
-		SpannerPersistentEntity<?> persistentEntity = mappingContext
-				.getPersistentEntity(entityClass);
-
 		// Cloud Spanner does not preserve the order of derived tables so we must not wrap the
 		// derived table
 		// in SELECT * FROM () if there is no overriding pageable param.
@@ -171,6 +168,10 @@ public final class SpannerStatementQueryExecutor {
 				&& options.getOffset() == null && !fetchInterleaved) {
 			return sql;
 		}
+
+		SpannerPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntityOrFail(entityClass);
+
 		final String subquery = fetchInterleaved ? getChildrenSubquery(persistentEntity, mappingContext) : "";
 		final String alias = subquery.isEmpty() ? "" : " " + persistentEntity.tableName();
 		StringBuilder sb = applySort(options.getSort(),

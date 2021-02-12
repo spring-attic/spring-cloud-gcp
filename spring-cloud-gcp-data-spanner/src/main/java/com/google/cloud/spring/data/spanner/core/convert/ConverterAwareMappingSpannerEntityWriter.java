@@ -407,7 +407,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 		if (!valueSet) {
 			throw new SpannerDataException(String.format(
-					"Unsupported mapping for type: %s", propertyValue.getClass()));
+					"Unsupported mapping for type: %s", propertyType));
 		}
 	}
 }

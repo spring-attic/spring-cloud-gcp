@@ -318,8 +318,8 @@ public class SpannerPersistentEntityImpl<T>
 		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
 			if (property.isEmbedded()) {
 				primaryKeyColumns
-						.addAll((this.spannerMappingContext
-								.getPersistentEntity(property.getType()))
+						.addAll(this.spannerMappingContext
+								.getPersistentEntityOrFail(property.getType())
 										.getFlattenedPrimaryKeyProperties());
 			}
 			else {
@@ -470,7 +470,7 @@ public class SpannerPersistentEntityImpl<T>
 	public String getPrimaryKeyColumnName() {
 		SpannerPersistentProperty primaryKeyProperty = getPrimaryKeyProperties()[0];
 		return primaryKeyProperty.isEmbedded()
-				? this.spannerMappingContext.getPersistentEntity(primaryKeyProperty.getType()).getPrimaryKeyColumnName()
+				? this.spannerMappingContext.getPersistentEntityOrFail(primaryKeyProperty.getType()).getPrimaryKeyColumnName()
 				: primaryKeyProperty.getColumnName();
 	}
 }
