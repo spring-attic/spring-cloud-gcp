@@ -55,7 +55,7 @@ public class GcpKmsAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public CredentialsProvider googleCredentials(GcpKmsProperties kmsProperties) throws Exception {
+	public CredentialsProvider googleCredentials(GcpKmsProperties kmsProperties) throws IOException {
 		return new DefaultCredentialsProvider(kmsProperties);
 	}
 

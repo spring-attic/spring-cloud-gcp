@@ -74,7 +74,7 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		this.audience = this.audienceProvider.getAudience();
 		Assert.notNull(this.audience, "Audience cannot be null.");
 		this.audiences = StringUtils.trimArrayElements(StringUtils.commaDelimitedListToStringArray(this.audience));

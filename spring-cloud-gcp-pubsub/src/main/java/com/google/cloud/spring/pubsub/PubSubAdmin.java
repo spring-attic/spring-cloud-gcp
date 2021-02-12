@@ -333,7 +333,7 @@ public class PubSubAdmin implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		this.topicAdminClient.close();
 		this.subscriptionAdminClient.close();
 	}

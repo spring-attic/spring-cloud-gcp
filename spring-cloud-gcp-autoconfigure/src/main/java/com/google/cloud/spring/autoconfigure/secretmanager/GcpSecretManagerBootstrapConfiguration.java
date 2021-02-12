@@ -82,7 +82,7 @@ public class GcpSecretManagerBootstrapConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public CredentialsProvider googleCredentials(GcpSecretManagerProperties secretManagerProperties) throws Exception {
+	public CredentialsProvider googleCredentials(GcpSecretManagerProperties secretManagerProperties) throws IOException {
 		return new DefaultCredentialsProvider(secretManagerProperties);
 	}
 

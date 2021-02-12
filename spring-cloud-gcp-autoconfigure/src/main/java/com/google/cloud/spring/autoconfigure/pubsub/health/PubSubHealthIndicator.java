@@ -49,7 +49,7 @@ public class PubSubHealthIndicator extends AbstractHealthIndicator {
 	}
 
 	@Override
-	protected void doHealthCheck(Health.Builder builder) throws Exception {
+	protected void doHealthCheck(Health.Builder builder) {
 		try {
 			this.pubSubTemplate.pull("subscription-" + UUID.randomUUID().toString(), 1, true);
 		}

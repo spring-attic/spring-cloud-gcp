@@ -16,6 +16,8 @@
 
 package com.google.cloud.spring.autoconfigure.core;
 
+import java.io.IOException;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import com.google.cloud.spring.core.DefaultGcpEnvironmentProvider;
@@ -57,7 +59,7 @@ public class GcpContextAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public CredentialsProvider googleCredentials() throws Exception {
+	public CredentialsProvider googleCredentials() throws IOException {
 		return new DefaultCredentialsProvider(this.gcpProperties);
 	}
 
