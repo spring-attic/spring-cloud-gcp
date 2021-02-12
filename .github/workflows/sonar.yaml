@@ -36,6 +36,7 @@ jobs:
             ${{ runner.os }}-maven-
       - name: Mvn install w/ coverage # Need this when the directory/pom structure changes
         id: install1
+        continue-on-error: true
         run: |
           ./mvnw \
             --batch-mode \
@@ -57,6 +58,7 @@ jobs:
             install
       - name: Build and analyze
         id: sonar1
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         run: |
