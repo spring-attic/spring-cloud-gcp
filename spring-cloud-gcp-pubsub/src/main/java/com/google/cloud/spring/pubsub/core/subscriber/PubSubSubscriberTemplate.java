@@ -570,8 +570,8 @@ public class PubSubSubscriberTemplate
 				this.ackReplyConsumer.ack();
 				settableListenableFuture.set(null);
 			}
-			catch (Throwable throwable) {
-				settableListenableFuture.setException(throwable);
+			catch (Exception e) {
+				settableListenableFuture.setException(e);
 			}
 
 			return settableListenableFuture;
@@ -585,8 +585,8 @@ public class PubSubSubscriberTemplate
 				this.ackReplyConsumer.nack();
 				settableListenableFuture.set(null);
 			}
-			catch (Throwable throwable) {
-				settableListenableFuture.setException(throwable);
+			catch (Exception e) {
+				settableListenableFuture.setException(e);
 			}
 
 			return settableListenableFuture;

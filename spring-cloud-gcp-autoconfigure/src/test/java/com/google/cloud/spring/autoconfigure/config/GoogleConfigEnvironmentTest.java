@@ -19,7 +19,6 @@ package com.google.cloud.spring.autoconfigure.config;
 import java.util.Base64;
 
 import com.google.cloud.spring.autoconfigure.config.GoogleConfigEnvironment.Variable;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +44,6 @@ public class GoogleConfigEnvironmentTest {
 	public void testSetNullValue() {
 		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
 		googleConfigEnvironment.setVariables(null);
-		Assert.assertEquals(googleConfigEnvironment.getVariables().isEmpty(), true);
+		assertThat(googleConfigEnvironment.getVariables()).isEmpty();
 	}
 }

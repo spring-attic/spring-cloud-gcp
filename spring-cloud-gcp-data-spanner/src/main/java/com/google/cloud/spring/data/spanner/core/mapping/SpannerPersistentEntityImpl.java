@@ -172,14 +172,13 @@ public class SpannerPersistentEntityImpl<T>
 		if (property.getPrimaryKeyOrder() != null
 				&& property.getPrimaryKeyOrder().isPresent()) {
 			int order = property.getPrimaryKeyOrder().getAsInt();
-			if (this.primaryKeyParts.containsKey(order)) {
-				throw new SpannerDataException(
-						"Two properties were annotated with the same primary key order: "
-								+ property.getColumnName() + " and "
-								+ this.primaryKeyParts.get(order).getColumnName()
-								+ " in " + getType().getSimpleName() + ".");
-			}
-			this.primaryKeyParts.put(order, property);
+			this.primaryKeyParts.merge(order, property, (oldVal, newVal) -> {
+						throw new SpannerDataException(
+								"Two properties were annotated with the same primary key order: "
+										+ property.getColumnName() + " and "
+										+ this.primaryKeyParts.get(order).getColumnName()
+										+ " in " + getType().getSimpleName() + ".");
+					});
 		}
 	}
 
