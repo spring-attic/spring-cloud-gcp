@@ -20,11 +20,14 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 import com.google.cloud.datastore.Key;
 import com.google.cloud.spring.data.datastore.core.mapping.DatastoreDataException;
 import com.google.cloud.spring.data.datastore.core.mapping.DatastoreMappingContext;
 
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
@@ -66,11 +69,10 @@ public class DatastoreKeyIdConverter implements BackendIdConverter {
 	public boolean supports(Class<?> entityType) {
 		// This ID converter only covers the Datastore key type. Returning false here causes the
 		// default converter from Spring Data to be used.
-		try {
-			return this.datastoreMappingContext.getPersistentEntity(entityType).getIdProperty().getType().equals(Key.class);
-		}
-		catch (NullPointerException ex) {
-			return false;
-		}
+		return Optional.ofNullable(this.datastoreMappingContext.getPersistentEntity(entityType))
+				.map(PersistentEntity::getIdProperty)
+				.map(PersistentProperty::getType)
+				.map(clz -> clz.equals(Key.class))
+				.orElse(false);
 	}
 }
