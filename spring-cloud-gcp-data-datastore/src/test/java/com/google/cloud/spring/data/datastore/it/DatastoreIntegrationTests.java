@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -52,6 +53,7 @@ import com.google.cloud.spring.data.datastore.entities.Store;
 import com.google.cloud.spring.data.datastore.it.TestEntity.Shape;
 import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
 import com.google.cloud.spring.data.datastore.repository.query.Query;
+import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,9 +78,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionSystemException;
 
-import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -398,7 +400,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void testSaveAndDeleteRepository() throws InterruptedException {
+	public void testSaveAndDeleteRepository() {
 		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("c")).containsExactly(this.testEntityC);
 		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("d")).containsExactly(this.testEntityD);
 
@@ -547,11 +549,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
-
-		assertThat(this.testEntityRepository.count()).isZero();
-
-		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
+		await().pollDelay(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE, TimeUnit.MILLISECONDS)
+				.timeout(Duration.ONE_MINUTE)
+				.untilAsserted(() -> {
+					assertThat(this.testEntityRepository.count()).isZero();
+					assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
+				});
 	}
 
 	@Test

@@ -17,6 +17,7 @@
 package com.google.cloud.spring.data.datastore.it;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.spring.data.datastore.core.DatastoreTemplate;
 
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * A transactional service used for integration tests.
@@ -36,8 +38,7 @@ public class TransactionalTemplateService {
 
 	@Transactional
 	public void testSaveAndStateConstantInTransaction(List<TestEntity> testEntities,
-			long waitMillisecondsForConfirmation)
-			throws InterruptedException {
+			long waitMillisecondsForConfirmation) {
 
 		for (TestEntity testEntity : testEntities) {
 			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
@@ -47,13 +48,14 @@ public class TransactionalTemplateService {
 
 		// Because these saved entities should NOT appear when we subsequently check, we
 		// must wait a period of time that would see a non-transactional save go through.
-		Thread.sleep(waitMillisecondsForConfirmation);
-
-		// Datastore transactions always see the state at the start of the transaction. Even
-		// after waiting these entities should not be found.
-		for (TestEntity testEntity : testEntities) {
-			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
-		}
+		await().pollDelay(waitMillisecondsForConfirmation, TimeUnit.MILLISECONDS)
+				.untilAsserted(() -> {
+					// Datastore transactions always see the state at the start of the transaction. Even
+					// after waiting these entities should not be found.
+					for (TestEntity testEntity : testEntities) {
+						assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
+					}
+				});
 	}
 
 	@Transactional

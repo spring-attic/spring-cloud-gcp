@@ -33,8 +33,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.awaitility.Duration;
 import org.junit.rules.ExternalResource;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -213,15 +216,12 @@ public class PubSubEmulator extends ExternalResource {
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private void createConfig() throws InterruptedException {
-		int attempts = 10;
-		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
-			Thread.sleep(1000);
-		}
-		if (attempts < 0) {
-			fail(
-					"Emulator could not be configured due to missing env.yaml. Are PubSub and beta tools installed?");
-		}
+	private void createConfig() {
+		await().pollInterval(Duration.ONE_SECOND)
+				.atMost(Duration.FIVE_SECONDS)
+				.untilAsserted(() ->
+					assertThat(EMULATOR_CONFIG_PATH.toFile()).exists()
+				);
 	}
 
 	/**

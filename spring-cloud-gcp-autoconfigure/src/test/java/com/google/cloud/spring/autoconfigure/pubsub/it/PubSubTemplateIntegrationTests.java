@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ import com.google.cloud.spring.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import com.google.cloud.spring.pubsub.PubSubAdmin;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.JacksonPubSubMessageConverter;
 import com.google.cloud.spring.pubsub.support.converter.PubSubMessageConverter;
@@ -191,18 +193,17 @@ public class PubSubTemplateIntegrationTests {
 				}
 			});
 
-			Thread.sleep(11_000);
-			// pull the 2 nacked messages with retries for up to 10s
-			int messagesCount = 0;
-			int tries = 100;
-			while (messagesCount < 2 && tries > 0) {
-				Thread.sleep(100);
-				ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
-				ackableMessages.forEach(m -> m.ack());
-				messagesCount += ackableMessages.size();
-				tries--;
-			}
-			assertThat(messagesCount).as("check that we get both nacked messages back").isEqualTo(2);
+			AtomicInteger messagesCount = new AtomicInteger(0);
+			await().pollDelay(Duration.FIVE_SECONDS)
+					.pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
+					.timeout(Duration.ONE_MINUTE)
+					.untilAsserted(() -> {
+						List<AcknowledgeablePubsubMessage> newAckableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+						newAckableMessages.forEach(BasicAcknowledgeablePubsubMessage::ack);
+						int finalCount = messagesCount.addAndGet(newAckableMessages.size());
+
+					assertThat(finalCount).as("check that we get both nacked messages back").isEqualTo(2);
+			});
 
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
