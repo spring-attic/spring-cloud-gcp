@@ -38,6 +38,16 @@ jobs:
           --define maven.javadoc.skip=true \
           install
     - name: Unit Tests
+      id: unitTest1
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --fail-at-end \
+          --threads 1.5C \
+          test
+    - name: Retry on Failure
+      id: unitTest2
+      if: steps.unitTest1.outcome == 'failure'
       run: |
         ./mvnw \
           --batch-mode \

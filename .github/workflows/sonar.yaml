@@ -35,6 +35,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Mvn install w/ coverage # Need this when the directory/pom structure changes
+        id: install1
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --show-version \
+            --threads 1.5C \
+            --activate-profiles codecov \
+            clean \
+            install
+      - name: Retry Install on Failure
+        id: install2
+        if: steps.install1.outcome == 'failure'
         run: |
           ./mvnw \
             --batch-mode \
@@ -44,9 +56,22 @@ jobs:
             clean \
             install
       - name: Build and analyze
+        id: sonar1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --activate-profiles codecov \
+            --define sonar.projectKey=GoogleCloudPlatform_spring-cloud-gcp \
+            --define sonar.host.url=https://sonarcloud.io \
+            --define sonar.organization=googlecloudplatform \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      - name: Retry Sonar on Failure
+        id: sonar2
+        if: steps.sonar1.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         run: |
           ./mvnw \
             --batch-mode \
