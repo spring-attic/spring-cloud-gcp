@@ -64,21 +64,23 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			LOGGER.warn("test");
 
-			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+			Type stringStringType = new TypeToken<Map<String, String>>() { }.getType();
+			Map<String, String> data = new Gson().fromJson(new String(out.toByteArray()), stringStringType);
 
-			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
-			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
-			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests", data);
-			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/12345678901234561234567890123456", data);
-			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
-			checkData("foo", "bar", data);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT);
-			assertThat(data).doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
-			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE);
-			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE);
+			assertThat(data)
+					.isNotNull()
+					.containsEntry("foo", "bar")
+					.containsEntry(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test")
+					.containsEntry(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN")
+					.containsEntry(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests")
+					.containsEntry(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, "projects/test-project/traces/12345678901234561234567890123456")
+					.containsEntry(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123")
+					.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)
+					.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)
+					.doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
 		}
 		finally {
 			System.setOut(oldOut);
@@ -94,7 +96,6 @@ public class StackdriverJsonLayoutLoggerTests {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			System.setOut(new java.io.PrintStream(out));
 
-
 			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
 			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_ID, "span123");
 			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT, "true");
@@ -104,30 +105,33 @@ public class StackdriverJsonLayoutLoggerTests {
 			logger.warn("test");
 
 			Type stringObjType = new TypeToken<Map<String, Object>>() { }.getType();
-			Map<String, Object> data = new Gson().fromJson(new String(out.toByteArray()), stringObjType);
+			Map<String, String> data = new Gson().fromJson(new String(out.toByteArray()), stringObjType);
 
-			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
-			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
-			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutServiceCtxLoggerTests", data);
-			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/12345678901234561234567890123456", data);
-			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
-			checkData("foo", "bar", data);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
-			assertThat(data).doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT);
-			assertThat(data).doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
-			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE);
-			assertThat(data).containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE);
-			assertThat(data).containsEntry("custom-key", "custom-value");
+			assertThat(data)
+					.isNotNull()
+					.containsEntry(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test")
+					.containsEntry(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN")
+					.containsEntry(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutServiceCtxLoggerTests")
+					.containsEntry(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, "projects/test-project/traces/12345678901234561234567890123456")
+					.containsEntry(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123")
+					.containsEntry("foo", "bar")
+					.containsEntry("custom-key", "custom-value")
+					.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)
+					.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)
+					.containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)
+					.doesNotContainKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)
+					.doesNotContainKey(JsonLayout.TIMESTAMP_ATTR_NAME);
+
 
 			// test service context
-			assertThat(data).containsKey(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
 			Object serviceCtxObject = data.get(StackdriverTraceConstants.SERVICE_CONTEXT_ATTRIBUTE);
 			assertThat(serviceCtxObject).isInstanceOf(Map.class);
 			Map<String, String> serviceContextMap = (Map) serviceCtxObject;
-			assertThat(serviceContextMap).containsEntry("service", "service");
-			assertThat(serviceContextMap).containsEntry("version", "version");
+			assertThat(serviceContextMap)
+					.containsEntry("service", "service")
+					.containsEntry("version", "version");
 		}
 		finally {
 			System.setOut(oldOut);
@@ -147,10 +151,10 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			LOGGER.warn("test");
 
-			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
-
-			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/00000000000000001234567890123456", data);
+			Type stringStringType = new TypeToken<Map<String, String>>() { }.getType();
+			Map<String, String> data = new Gson().fromJson(new String(out.toByteArray()), stringStringType);
+			assertThat(data).containsEntry(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/00000000000000001234567890123456");
 		}
 		finally {
 			System.setOut(oldOut);
@@ -171,10 +175,11 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			LOGGER.warn("test");
 
-			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+			Type stringStringType = new TypeToken<Map<String, String>>() { }.getType();
+			Map<String, String> data = new Gson().fromJson(new String(out.toByteArray()), stringStringType);
 
-			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
-					"projects/test-project/traces/0000000000000000" + traceId, data);
+			assertThat(data).containsEntry(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/0000000000000000" + traceId);
 		}
 		finally {
 			System.setOut(oldOut);
@@ -195,8 +200,9 @@ public class StackdriverJsonLayoutLoggerTests {
 			Marker marker = MarkerFactory.getMarker("testMarker");
 			logger.warn(marker, "test");
 
-			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
-			checkData("marker", "testMarker", data);
+			Type stringObjectType = new TypeToken<Map<String, Object>>() { }.getType();
+			Map<String, String> data = new Gson().fromJson(new String(out.toByteArray()), stringObjectType);
+			assertThat(data).containsEntry("marker", "testMarker");
 		}
 		finally {
 			System.setOut(oldOut);
@@ -214,12 +220,6 @@ public class StackdriverJsonLayoutLoggerTests {
 				.findFirst()
 		).isPresent();
 
-	}
-
-	private void checkData(String attribute, Object value, Map data) {
-		Object actual = data.get(attribute);
-		assertThat(actual).isNotNull();
-		assertThat(actual).isEqualTo(value);
 	}
 
 	static class JsonLayoutTestEnhancer implements JsonLoggingEventEnhancer {
