@@ -16,15 +16,16 @@
 
 package com.google.cloud.spring.autoconfigure.config;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for Config bootstrap configuration.
@@ -36,10 +37,10 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 public class GcpConfigBootstrapConfigurationTest {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class))
+			.withUserConfiguration(TestConfiguration.class);
 
 	@Test
-	@Ignore
 	public void testConfigurationValueDefaultsAreAsExpected() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.config.enabled=true")
 				.run(context -> {
@@ -52,7 +53,6 @@ public class GcpConfigBootstrapConfigurationTest {
 	}
 
 	@Test
-	@Ignore
 	public void testConfigurationValuesAreCorrectlyLoaded() {
 		this.contextRunner.withPropertyValues("spring.application.name=myapp",
 				"spring.profiles.active=prod",
@@ -74,5 +74,13 @@ public class GcpConfigBootstrapConfigurationTest {
 		this.contextRunner.run(context ->
 				assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(() ->
 						context.getBean(GcpConfigProperties.class)));
+	}
+
+	private static class TestConfiguration {
+
+		@Bean
+		public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator() {
+			return mock(GoogleConfigPropertySourceLocator.class);
+		}
 	}
 }
