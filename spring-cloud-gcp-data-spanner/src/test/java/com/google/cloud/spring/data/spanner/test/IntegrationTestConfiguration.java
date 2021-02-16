@@ -179,6 +179,6 @@ public class IntegrationTestConfiguration {
 
 	@Bean
 	String tableNameSuffix() {
-		return this.TABLE_SUFFIX;
+		return TABLE_SUFFIX;
 	}
 }

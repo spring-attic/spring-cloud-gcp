@@ -8,4 +8,5 @@
     <suppress files=".*" checks="LineLength" />
     <suppress checks="Illegal" files=".*RSAKeyGeneratorUtils.java"/>
     <suppress checks="IllegalImport" files=".*KmsTemplate.java"/>
+    <suppress checks="IllegalImport" files=".*SpannerRepositoryIntegrationTests.java"/>
 </suppressions>

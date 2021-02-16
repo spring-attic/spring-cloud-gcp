@@ -458,7 +458,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(this.testEntityRepository.countBySize(1L)).isZero();
 
 		//test saveAll for iterable
-		Iterable<TestEntity> testEntities = () -> this.allTestEntities.iterator();
+		Iterable<TestEntity> testEntities = this.allTestEntities::iterator;
 		this.testEntityRepository.saveAll(testEntities);
 
 		this.millisWaited = Math.max(this.millisWaited,

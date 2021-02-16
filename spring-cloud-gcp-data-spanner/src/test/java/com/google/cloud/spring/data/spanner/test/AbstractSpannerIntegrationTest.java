@@ -16,25 +16,19 @@
 
 package com.google.cloud.spring.data.spanner.test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.cloud.spring.data.spanner.core.SpannerOperations;
 import com.google.cloud.spring.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import com.google.cloud.spring.data.spanner.core.admin.SpannerSchemaUtils;
 import com.google.cloud.spring.data.spanner.core.mapping.SpannerMappingContext;
 import com.google.cloud.spring.data.spanner.test.domain.CommitTimestamps;
 import com.google.cloud.spring.data.spanner.test.domain.Trade;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -66,17 +60,15 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  * @author Chengyuan Zhao
  */
 @ContextConfiguration(classes = { IntegrationTestConfiguration.class })
+@TestExecutionListeners(listeners = SpannerTestExecutionListener.class,
+		mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class AbstractSpannerIntegrationTest {
-
-	private static final Log LOGGER = LogFactory.getLog(AbstractSpannerIntegrationTest.class);
 
 	@Autowired
 	protected SpannerOperations spannerOperations;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
-
-	protected String tableNameSuffix;
 
 	@Autowired
 	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
@@ -87,86 +79,18 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	SpannerMappingContext spannerMappingContext;
 
-	private static boolean setupFailed;
-
-	private static boolean tablesInitialized;
-
-	private static int initializeAttempts;
-
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(System.getProperty("it.spanner"))
-				.as("Spanner integration tests are disabled. "
-						+ "Please use '-Dit.spanner=true' to enable them. ")
+				.as("Spanner integration tests are disabled. Please use '-Dit.spanner=true' to enable them.")
 				.isEqualTo("true");
-	}
-
-	@Before
-	public void setup() {
-		try {
-			initializeAttempts++;
-			if (tablesInitialized) {
-				return;
-			}
-			createDatabaseWithSchema();
-			tablesInitialized = true;
-		}
-		catch (Exception ex) {
-			setupFailed = true;
-			throw ex;
-		}
 	}
 
 	@Test
 	public void tableCreatedTest() {
 		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
-				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName())).isTrue();
+				this.spannerMappingContext.getPersistentEntityOrFail(Trade.class).tableName())).isTrue();
 		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
-				this.spannerMappingContext.getPersistentEntity(CommitTimestamps.class).tableName())).isTrue();
-	}
-
-	protected void createDatabaseWithSchema() {
-		List<String> createStatements = createSchemaStatements();
-
-		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
-			LOGGER.debug(
-					this.getClass() + " - Integration database created with schema: "
-							+ createStatements);
-			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, true);
-		}
-		else {
-			LOGGER.debug(
-					this.getClass() + " - schema created: " + createStatements);
-			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, false);
-		}
-	}
-
-	protected List<String> createSchemaStatements() {
-		List<String> list = new ArrayList<>(this.spannerSchemaUtils
-				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class));
-		list.add(this.spannerSchemaUtils
-				.getCreateTableDdlString(CommitTimestamps.class)
-				.replaceAll("TIMESTAMP", "TIMESTAMP OPTIONS (allow_commit_timestamp = true)"));
-		return list;
-	}
-
-	protected Iterable<String> dropSchemaStatements() {
-		List<String> list = new ArrayList<>(this.spannerSchemaUtils
-				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class));
-		list.add(this.spannerSchemaUtils
-				.getDropTableDdlString(CommitTimestamps.class));
-		return list;
-	}
-
-	@After
-	public void clean() {
-			// this is to reduce duplicated errors reported by surefire plugin
-			if (setupFailed || initializeAttempts > 0) {
-				initializeAttempts--;
-				return;
-			}
-			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
-					false);
-			LOGGER.debug("Integration database cleaned up!");
+				this.spannerMappingContext.getPersistentEntityOrFail(CommitTimestamps.class).tableName())).isTrue();
 	}
 }
