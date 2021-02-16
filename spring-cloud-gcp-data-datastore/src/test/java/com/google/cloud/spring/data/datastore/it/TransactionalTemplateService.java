@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.spring.data.datastore.core.DatastoreTemplate;
+import org.awaitility.Duration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,7 @@ public class TransactionalTemplateService {
 		// Because these saved entities should NOT appear when we subsequently check, we
 		// must wait a period of time that would see a non-transactional save go through.
 		await().pollDelay(waitMillisecondsForConfirmation, TimeUnit.MILLISECONDS)
+				.atMost(Duration.ONE_MINUTE)
 				.untilAsserted(() -> {
 					// Datastore transactions always see the state at the start of the transaction. Even
 					// after waiting these entities should not be found.

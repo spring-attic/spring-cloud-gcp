@@ -127,7 +127,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	private DatastoreReaderWriter datastore;
 
 	private Key keyForMap;
-	private long millisWaited;
 
 	private final TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
 
@@ -137,11 +136,10 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null, new EmbeddedEntity("d"));
 
-	private final List<TestEntity> allTestEntities;
-
-	{
-		this.allTestEntities = Arrays.asList(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
-	}
+	private final List<TestEntity> allTestEntities = Arrays.asList(this.testEntityA,
+			this.testEntityB,
+			this.testEntityC,
+			this.testEntityD);
 
 	/**
 	 * Used to check exception types and messages.
@@ -181,10 +179,9 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	@Before
 	public void saveEntities() {
 		this.testEntityRepository.saveAll(this.allTestEntities);
-
-		this.millisWaited = waitUntilTrue(
-				() -> this.testEntityRepository.countBySize(1L) == 3);
-
+		await().atMost(20, TimeUnit.SECONDS).untilAsserted(() ->
+			assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(3)
+		);
 	}
 
 	@Test
@@ -285,13 +282,12 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testSlice() {
-		List<TestEntity> results = new ArrayList<>();
 		Slice<TestEntity> slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
 				PageRequest.of(0, 1));
 
 		assertThat(slice.hasNext()).isTrue();
 		assertThat(slice).hasSize(1);
-		results.addAll(slice.getContent());
+		List<TestEntity> results = new ArrayList<>(slice.getContent());
 
 		slice = this.testEntityRepository.findEntitiesWithCustomQuerySlice("red",
 				slice.getPageable().next());
@@ -338,7 +334,6 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 	@Test
 	public void testPage() {
-		List<TestEntity> results = new ArrayList<>();
 		Page<TestEntity> page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
 				PageRequest.of(0, 2));
 
@@ -346,7 +341,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(page).hasSize(2);
 		assertThat(page.getTotalPages()).isEqualTo(2);
 		assertThat(page.getTotalElements()).isEqualTo(3);
-		results.addAll(page.getContent());
+		List<TestEntity> results = new ArrayList<>(page.getContent());
 
 		page = this.testEntityRepository.findEntitiesWithCustomQueryPage("red",
 				page.getPageable().next());
@@ -400,25 +395,22 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 	}
 
 	@Test
-	public void testSaveAndDeleteRepository() {
+	public void testFinds() {
 		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("c")).containsExactly(this.testEntityC);
 		assertThat(this.testEntityRepository.findByEmbeddedEntityStringField("d")).containsExactly(this.testEntityD);
 
 		assertThat(this.testEntityRepository.findFirstByColor("blue")).contains(this.testEntityB);
 		assertThat(this.testEntityRepository.findFirstByColor("green")).isNotPresent();
 
-		assertThat(this.testEntityRepository.getByColor("green")).isNull();
 		assertThatThrownBy(() -> this.testEntityRepository.findByColor("green"))
 				.isInstanceOf(EmptyResultDataAccessException.class)
 				.hasMessageMatching("Result must not be null!");
 
-		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
-
-		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
-				.containsExactly(this.testEntityC, this.testEntityD);
-
-		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
-				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
+		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE)
+				.stream()
+				.map(TestEntity::getId)
+				.collect(Collectors.toList()))
+				.contains(4L);
 
 		Slice<TestEntity> red1 = this.testEntityRepository.findByColor("red", PageRequest.of(0, 1));
 		assertThat(red1.hasNext()).isTrue();
@@ -431,8 +423,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 		assertThat(red3.getNumber()).isEqualTo(2);
 
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
-		assertThat(
-				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
 
 		Page<TestEntity> circles = this.testEntityRepository.findByShape(Shape.CIRCLE, PageRequest.of(0, 2));
 		assertThat(circles.getTotalElements()).isEqualTo(3L);
@@ -448,95 +439,117 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
+	}
 
+	@Test
+	public void testGets() {
+		assertThat(this.testEntityRepository.getByColor("green")).isNull();
+		assertThat(this.testEntityRepository.getByColor("blue")).isEqualTo(this.testEntityB);
+		assertThat(this.testEntityRepository.getByColorAndIdGreaterThanEqualOrderById("red", 3L))
+				.containsExactly(this.testEntityC, this.testEntityD);
+
+		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
+				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
+
+		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
+		assertThat(this.testEntityRepository.getSizes(1L)).hasSize(3);
+		assertThat(this.testEntityRepository.getOneSize(2L)).isEqualTo(2);
+		assertThat(this.testEntityRepository.getOneTestEntity(2L)).isNotNull();
+	}
+
+	@Test
+	public void testDeleteSomeButNotAll() {
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(3);
 		assertThat(this.testEntityRepository.countBySize(1L)).isZero();
+	}
 
-		this.testEntityRepository.saveAll(this.allTestEntities);
-
+	@Test
+	public void testDeleteAllBySize() {
 		this.testEntityRepository.deleteBySizeEquals(1L);
 		assertThat(this.testEntityRepository.countBySize(1L)).isZero();
+	}
 
-		//test saveAll for iterable
-		Iterable<TestEntity> testEntities = this.allTestEntities::iterator;
-		this.testEntityRepository.saveAll(testEntities);
+	@Test
+	public void testRemoveByColor() {
+		List<Long> removedId = this.testEntityRepository.removeByColor("red")
+				.stream()
+				.map(TestEntity::getId)
+				.collect(Collectors.toList());
+		assertThat(removedId).containsExactlyInAnyOrder(1L, 3L, 4L);
+	}
 
-		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
-
-		assertThat(
-				this.testEntityRepository.removeByColor("red").stream()
-						.map(TestEntity::getId).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder(1L, 3L, 4L);
-
-		this.testEntityRepository.saveAll(this.allTestEntities);
-		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
+	@Test
+	public void testUpdateBlobFields() {
+		assertThat(this.testEntityRepository.findById(1L))
+				.isPresent()
+				.get()
+				.hasFieldOrPropertyWithValue("blobField", null);
 
 		this.testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
-
 		this.testEntityRepository.save(this.testEntityA);
 
-		assertThat(this.testEntityRepository.findById(1L).get().getBlobField())
-				.isEqualTo(Blob.copyFrom("testValueA".getBytes()));
+		assertThat(this.testEntityRepository.findById(1L))
+				.isPresent()
+				.get()
+				.hasFieldOrPropertyWithValue("blobField", Blob.copyFrom("testValueA".getBytes()));
+	}
 
-		this.millisWaited = Math.max(this.millisWaited, waitUntilTrue(
-				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
-
+	@Test
+	public void testWithCustomQuery() {
 		assertThat(this.testEntityRepository
 				.findEntitiesWithCustomQueryWithId(1L, this.datastoreTemplate.createKey(TestEntity.class, 1L)))
 				.containsOnly(this.testEntityA);
 
-		List<TestEntity> foundByCustomQuery = this.testEntityRepository
-				.findEntitiesWithCustomQuery(1L);
-		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
-				.findEntitiesWithCustomProjectionQuery(1L);
+		List<TestEntity> foundByCustomQuery = this.testEntityRepository.findEntitiesWithCustomQuery(1L);
+		assertThat(foundByCustomQuery).hasSize(3);
+		assertThat(foundByCustomQuery).extracting(te -> te.getId()).containsExactlyInAnyOrder(1L, 3L, 4L);
 
+		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository.findEntitiesWithCustomProjectionQuery(1L);
+		assertThat(foundByCustomProjectionQuery).hasSize(3);
+		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
+		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
+
+		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(3);
+		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
+		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
+	}
+
+	@Test
+	public void testCounting() {
 		assertThat(this.testEntityRepository.countBySizeAndColor(2, "blue")).isEqualTo(1);
 		assertThat(this.testEntityRepository.getBySize(2L).getColor()).isEqualTo("blue");
 		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
-								.containsExactlyInAnyOrder(1L, 3L, 4L);
+				.containsExactlyInAnyOrder(1L, 3L, 4L);
+	}
 
-		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
-				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
-
-		assertThat(foundByCustomQuery).hasSize(3);
-		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(3);
-		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
-		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(100L)).isFalse();
-		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
-
-		assertThat(foundByCustomProjectionQuery).hasSize(3);
-		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
-		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
-
+	@Test
+	public void testClearBlobField() {
 		this.testEntityA.setBlobField(null);
-
-		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
-		assertThat(this.testEntityRepository.getSizes(1L)).hasSize(3);
-		assertThat(this.testEntityRepository.getOneSize(2L)).isEqualTo(2);
-		assertThat(this.testEntityRepository.getOneTestEntity(2L)).isNotNull();
-
 		this.testEntityRepository.save(this.testEntityA);
+		assertThat(this.testEntityRepository.findById(1L))
+				.isPresent()
+				.get()
+				.hasFieldOrPropertyWithValue("blobField", null);
+	}
 
-		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
-
+	@Test
+	public void testDelete() {
 		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L))).hasSize(2);
-
 		this.testEntityRepository.delete(this.testEntityA);
-
 		assertThat(this.testEntityRepository.findById(1L)).isNotPresent();
+	}
 
+	@Test
+	public void testTransactions() {
 		this.testEntityRepository.deleteAll();
 
-		this.transactionalTemplateService.testSaveAndStateConstantInTransaction(
-				this.allTestEntities,
-				this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+		this.transactionalTemplateService.testSaveAndStateConstantInTransaction(this.allTestEntities, 1000);
 
-		this.millisWaited = Math.max(this.millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 3));
+		await().atMost(20, TimeUnit.SECONDS)
+				.untilAsserted(() -> assertThat(this.testEntityRepository.countBySize(1L)).isEqualTo(3));
 
 		this.testEntityRepository.deleteAll();
 
@@ -549,7 +562,7 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		await().pollDelay(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE, TimeUnit.MILLISECONDS)
+		await().pollDelay(Duration.TWO_SECONDS)
 				.timeout(Duration.ONE_MINUTE)
 				.untilAsserted(() -> {
 					assertThat(this.testEntityRepository.count()).isZero();
