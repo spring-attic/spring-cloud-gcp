@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -207,7 +207,7 @@ public class SimpleDatastoreRepository<T, I> implements DatastoreRepository<T, I
 		return pageable instanceof DatastorePageable ?  ((DatastorePageable) pageable).toCursor() : null;
 	}
 
-	private static Long getOrComputeTotalCount(Pageable pageable, Supplier<Long> countCall) {
-		return pageable instanceof DatastorePageable ? ((DatastorePageable) pageable).getTotalCount() : countCall.get();
+	private static Long getOrComputeTotalCount(Pageable pageable, LongSupplier countCall) {
+		return pageable instanceof DatastorePageable ? ((DatastorePageable) pageable).getTotalCount() : countCall.getAsLong();
 	}
 }

@@ -95,7 +95,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
 			SpannerQueryMethod queryMethod, String sql, boolean isDml) {
-		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerTemplate, sql,
+		return new SqlSpannerQuery<>(entityType, queryMethod, this.spannerTemplate, sql,
 				this.evaluationContextProvider, this.expressionParser,
 				this.spannerMappingContext, isDml);
 	}
