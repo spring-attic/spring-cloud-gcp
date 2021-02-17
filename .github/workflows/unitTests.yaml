@@ -29,6 +29,19 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Mvn install # Need this when the directory/pom structure changes
+      id: install1
+      continue-on-error: true
+      run: |
+        ./mvnw \
+          --batch-mode \
+          --show-version \
+          --threads 1.5C \
+          --define maven.test.skip=true \
+          --define maven.javadoc.skip=true \
+          install
+    - name: Retry install on failure
+      id: install2
+      if: steps.install1.outcome == 'failure'
       run: |
         ./mvnw \
           --batch-mode \
@@ -40,15 +53,6 @@ jobs:
     - name: Unit Tests
       id: unitTest1
       continue-on-error: true
-      run: |
-        ./mvnw \
-          --batch-mode \
-          --fail-at-end \
-          --threads 1.5C \
-          test
-    - name: Retry on Failure
-      id: unitTest2
-      if: steps.unitTest1.outcome == 'failure'
       run: |
         ./mvnw \
           --batch-mode \

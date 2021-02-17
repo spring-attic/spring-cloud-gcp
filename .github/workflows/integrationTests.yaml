@@ -58,6 +58,18 @@ jobs:
           gcloud components install pubsub-emulator beta && \
             gcloud components update
       - name: Mvn install # Need this when the directory/pom structure changes
+        id: install1
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+      - name: Retry install on failure
+        id: install2
+        if: steps.install1.outcome == 'failure'
         run: |
           ./mvnw \
             --batch-mode \
