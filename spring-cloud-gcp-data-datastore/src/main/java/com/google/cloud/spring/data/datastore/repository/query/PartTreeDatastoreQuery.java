@@ -128,7 +128,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		List<OrPart> parts = this.tree.get().collect(Collectors.toList());
-		if (parts.size() > 0) {
+		if (!parts.isEmpty()) {
 			if (parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");

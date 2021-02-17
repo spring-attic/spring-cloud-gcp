@@ -190,9 +190,8 @@ public class GcpSpannerAutoConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
-		public DatabaseAdminClient spannerDatabaseAdminClient(
-				Spanner Spanner) {
-			return Spanner.getDatabaseAdminClient();
+		public DatabaseAdminClient spannerDatabaseAdminClient(Spanner spanner) {
+			return spanner.getDatabaseAdminClient();
 		}
 
 		@Bean

@@ -123,12 +123,11 @@ public class GcpFirestoreEmulatorAutoConfiguration {
 		@ConditionalOnMissingBean
 		public FirestoreTemplate firestoreTemplate(FirestoreGrpc.FirestoreStub firestoreStub,
 				FirestoreClassMapper classMapper, FirestoreMappingContext firestoreMappingContext) {
-			FirestoreTemplate template = new FirestoreTemplate(
+			return new FirestoreTemplate(
 					firestoreStub,
 					rootPath + "/documents",
 					classMapper,
 					firestoreMappingContext);
-			return template;
 		}
 
 		@Bean

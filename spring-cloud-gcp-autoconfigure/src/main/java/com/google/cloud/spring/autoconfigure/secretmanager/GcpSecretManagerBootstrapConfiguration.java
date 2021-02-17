@@ -107,8 +107,6 @@ public class GcpSecretManagerBootstrapConfiguration {
 	@ConditionalOnMissingBean
 	public SecretManagerPropertySourceLocator secretManagerPropertySourceLocator(
 			SecretManagerTemplate secretManagerTemplate) {
-		SecretManagerPropertySourceLocator propertySourceLocator =
-				new SecretManagerPropertySourceLocator(secretManagerTemplate, this.gcpProjectIdProvider);
-		return propertySourceLocator;
+		return new SecretManagerPropertySourceLocator(secretManagerTemplate, this.gcpProjectIdProvider);
 	}
 }

@@ -306,7 +306,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 
 		public boolean isReadOnly() {
 			return this.isReadOnly;
-		};
+		}
 
 		public DatabaseClient getDatabaseClient() {
 			return databaseClient;

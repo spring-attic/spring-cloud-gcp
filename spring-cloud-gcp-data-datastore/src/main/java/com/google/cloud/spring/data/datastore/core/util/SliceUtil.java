@@ -37,8 +37,8 @@ public final class SliceUtil {
 	 * @param consumer the consumer to be called on every slice.
 	 */
 	public static <T> void sliceAndExecute(T[] elements, int sliceSize, Consumer<T[]> consumer) {
-		int num_slices = (int) (Math.ceil((double) elements.length / sliceSize));
-		for (int i = 0; i < num_slices; i++) {
+		int numSlices = (int) (Math.ceil((double) elements.length / sliceSize));
+		for (int i = 0; i < numSlices; i++) {
 			int start = i * sliceSize;
 			int end = Math.min(start + sliceSize, elements.length);
 

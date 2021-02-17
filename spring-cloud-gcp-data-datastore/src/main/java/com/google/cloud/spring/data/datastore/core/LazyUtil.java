@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
  */
 final class LazyUtil {
 
-	static private final ObjenesisStd objenesis = new ObjenesisStd();
+	private static final ObjenesisStd objenesis = new ObjenesisStd();
 
 	private LazyUtil() {
 	}

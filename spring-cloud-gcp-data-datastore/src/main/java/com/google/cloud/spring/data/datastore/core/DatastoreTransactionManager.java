@@ -38,7 +38,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @since 1.1
  */
 public class DatastoreTransactionManager extends AbstractPlatformTransactionManager {
-	private final static TransactionOptions READ_ONLY_OPTIONS = TransactionOptions.newBuilder()
+	private static final TransactionOptions READ_ONLY_OPTIONS = TransactionOptions.newBuilder()
 			.setReadOnly(TransactionOptions.ReadOnly.newBuilder().build())
 			.build();
 

@@ -69,8 +69,8 @@ import org.springframework.util.StringUtils;
 public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	// A character that isn't used in SQL
-	private static String ENTITY_CLASS_NAME_BOOKEND = ":";
-	private static Pattern ENTITY_CLASS_NAME_PATTERN = Pattern.compile(
+	private static final String ENTITY_CLASS_NAME_BOOKEND = ":";
+	private static final Pattern ENTITY_CLASS_NAME_PATTERN = Pattern.compile(
 			"\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\" + ENTITY_CLASS_NAME_BOOKEND);
 
 	private final String sql;

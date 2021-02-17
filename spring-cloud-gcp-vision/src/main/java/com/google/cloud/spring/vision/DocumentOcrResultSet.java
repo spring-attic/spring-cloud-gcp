@@ -109,7 +109,7 @@ public class DocumentOcrResultSet {
 
 			private int offset = 0;
 
-			private List<TextAnnotation> currentPageRange = Collections.EMPTY_LIST;
+			private List<TextAnnotation> currentPageRange = Collections.emptyList();
 
 			@Override
 			public boolean hasNext() {

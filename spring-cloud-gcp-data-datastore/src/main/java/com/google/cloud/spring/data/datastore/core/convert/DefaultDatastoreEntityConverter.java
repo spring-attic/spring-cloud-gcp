@@ -115,13 +115,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	}
 
 	@Override
-	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
-			BaseEntity entity) {
+	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType, BaseEntity entity) {
 		if (entity == null) {
 			return null;
 		}
-		Map<T, R> result = new HashMap<>();
-		return readAsMap(entity, ClassTypeInformation.from(result.getClass()));
+		return readAsMap(entity, ClassTypeInformation.from(HashMap.class));
 	}
 
 	@Override
