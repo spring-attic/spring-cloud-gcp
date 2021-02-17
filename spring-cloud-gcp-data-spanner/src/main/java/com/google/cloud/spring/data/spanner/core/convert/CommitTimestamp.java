@@ -54,33 +54,13 @@ public final class CommitTimestamp {
 	 * 	{@link com.google.cloud.Timestamp}, {@link java.sql.Timestamp}, {@link java.time.LocalDateTime},
 	 * 	{@link java.time.Instant}, {@link java.util.Date}.
 	 * @return a value that will be converted to {@link Value#COMMIT_TIMESTAMP} by {@link SpannerConverters}
-	 * @throws IllegalArgumentException when the {@code timestampClass} was not registered
-	 * 	 with the method {@link #register}.
-	 * @see #register
+	 * @throws IllegalArgumentException when the {@code timestampClass} was not registered.
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T of(Class<T> timestampClass) throws IllegalArgumentException {
+	public static <T> T of(Class<T> timestampClass) {
 		return (T) VALUES.computeIfAbsent(timestampClass, key -> {
 			throw new IllegalArgumentException(
 					String.format("\"CommitTimestamp\" is not supported for the type %s", key));
-		});
-	}
-
-	/**
-	 * The method is used to register a custom "commitTimestamp" value within {@link CommitTimestampDecorator} converter.
-	 * @param commitTimestamp the "commitTimestamp" value.
-	 * @param <C> the type of "commitTimestamp".
-	 * @throws IllegalStateException when the "commitTimestamp" withe same type is already registered.
-	 *   It is impossible to overwrite existing registrations because it could affect the core converters
-	 *   of the {@link SpannerConverters} class.
-	 */
-	private static <C> void register(C commitTimestamp) throws IllegalStateException {
-		VALUES.compute(commitTimestamp.getClass(), (key, old) -> {
-			if (old == null) {
-				return commitTimestamp;
-			}
-			throw new IllegalStateException(
-					String.format("The value %s already registered as \"CommitTimestamp\" for the type %s", old, key));
 		});
 	}
 
@@ -89,7 +69,7 @@ public final class CommitTimestamp {
 	 * to support "CommitTimestamp" feature.
 	 * @param <S> a source type of converter.
 	 */
-	public static abstract class CommitTimestampDecorator<S> implements Converter<S, Timestamp> {
+	public abstract static class CommitTimestampDecorator<S> implements Converter<S, Timestamp> {
 
 		final S commitTimestamp;
 		private final Function<S, Timestamp> converter;
@@ -97,7 +77,7 @@ public final class CommitTimestamp {
 		protected CommitTimestampDecorator(S commitTimestamp, Function<S, Timestamp> converter) {
 			this.commitTimestamp = commitTimestamp;
 			this.converter = converter;
-			CommitTimestamp.register(commitTimestamp);
+			register(commitTimestamp);
 		}
 
 		@Nullable
@@ -105,6 +85,23 @@ public final class CommitTimestamp {
 			return commitTimestamp == source ? Value.COMMIT_TIMESTAMP : converter.apply(source);
 		}
 
+		/**
+		 * The method is used to register a custom "commitTimestamp" value within {@link CommitTimestampDecorator} converter.
+		 * @param commitTimestamp the "commitTimestamp" value.
+		 * @param <C> the type of "commitTimestamp".
+		 * @throws IllegalStateException when the "commitTimestamp" withe same type is already registered.
+		 *   It is impossible to overwrite existing registrations because it could affect the core converters
+		 *   of the {@link SpannerConverters} class.
+		 */
+		private static <C> void register(C commitTimestamp) {
+			VALUES.compute(commitTimestamp.getClass(), (key, old) -> {
+				if (old == null) {
+					return commitTimestamp;
+				}
+				throw new IllegalStateException(
+						String.format("The value %s already registered as \"CommitTimestamp\" for the type %s", old, key));
+			});
+		}
 	}
 
 }
