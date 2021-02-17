@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -106,25 +107,26 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
-				public long executeUpdate(Statement statement) {
+				public long executeUpdate(Statement statement, UpdateOption... var2) {
 					throw new IllegalStateException("Spanner transaction cannot execute DML " +
 							"because it is in readonly mode");
 				}
 
 				@Override
-				public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+				public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... var2) {
 					throw new IllegalStateException("Spanner transaction cannot execute DML " +
 							"because it is in readonly mode");
 				}
 
 				@Override
-				public long[] batchUpdate(Iterable<Statement> iterable) {
+				public long[] batchUpdate(Iterable<Statement> iterable, UpdateOption... var2) {
 					throw new IllegalStateException("Spanner transaction cannot execute DML " +
 							"because it is in readonly mode");
 				}
 
 				@Override
-				public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> iterable) {
+				public ApiFuture<long[]> batchUpdateAsync(
+						Iterable<Statement> iterable, UpdateOption... var2) {
 					throw new IllegalStateException("Spanner transaction cannot execute DML " +
 							"because it is in readonly mode");
 				}
