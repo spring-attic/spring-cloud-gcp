@@ -249,7 +249,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 	}
 
 	@Override
-	public FirestoreReactiveOperations withParent(Object id, Class<?> entityClass) {
+	public FirestoreReactiveOperations withParent(String id, Class<?> entityClass) {
 		return withParent(buildResourceName(id, entityClass));
 	}
 
@@ -399,7 +399,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 		return builder.setUpdate(document).build();
 	}
 
-	private <T> String buildResourceName(Object entityId, Class<T> entityClass) {
+	private <T> String buildResourceName(String entityId, Class<T> entityClass) {
 		FirestorePersistentEntity<?> persistentEntity =
 				this.mappingContext.getPersistentEntity(entityClass);
 
@@ -407,7 +407,7 @@ public class FirestoreTemplate implements FirestoreReactiveOperations {
 			throw new IllegalArgumentException(entityClass.toString() + " is not a valid Firestore entity class.");
 		}
 
-		return buildResourceName(persistentEntity, entityId.toString());
+		return buildResourceName(persistentEntity, entityId);
 	}
 
 	private <T> String buildResourceName(T entity) {

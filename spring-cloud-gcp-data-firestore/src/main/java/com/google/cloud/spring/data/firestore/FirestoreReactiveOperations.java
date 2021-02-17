@@ -161,5 +161,5 @@ public interface FirestoreReactiveOperations {
 	 * @return template with a given parent.
 	 * @since 2.0.1
 	 */
-	FirestoreReactiveOperations withParent(Object id, Class<?> entityClass);
+	FirestoreReactiveOperations withParent(String id, Class<?> entityClass);
 }
