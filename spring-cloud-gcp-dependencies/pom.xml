@@ -19,7 +19,7 @@
 		<gcp-libraries-bom.version>16.4.0</gcp-libraries-bom.version>
 		<cloud-sql-socket-factory.version>1.0.16</cloud-sql-socket-factory.version>
 		<guava.version>30.1-jre</guava.version>
-    <!-- The spanner version should not be managed manually; remove after libraries-bom is upgraded to included 4.0.0. -->
+    <!-- The spanner version should not be managed manually; remove when libraries-bom manages spanner > 4.0.0. -->
 		<cloud-spanner-version>4.0.0</cloud-spanner-version>
 	</properties>
 
