@@ -32,7 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.config.ConfigFileApplicationListener;
+import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -58,9 +58,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	private static final String PRIVATE_KEY_DATA_KEY = "PrivateKeyData";
 	private static final String CREDENTIALS_ENCODED_KEY_VALUE = "credentials.encoded-key";
 
-	private int order = ConfigFileApplicationListener.DEFAULT_ORDER - 1;
-
-	private static Map<String, String> sqlPropertyMap;
+	private static final Map<String, String> sqlPropertyMap;
 
 	static {
 		sqlPropertyMap = new ArrayMap<>();
@@ -161,7 +159,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	@Override
 	public int getOrder() {
-		return this.order;
+		return ConfigDataEnvironmentPostProcessor.ORDER - 1;
 	}
 
 	private enum GcpCfService {

@@ -32,7 +32,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * This class configures a Web MVC interceptor to capture trace IDs for log correlation.
@@ -43,7 +43,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author Chengyuan Zhao
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ HandlerInterceptorAdapter.class, LoggingAppender.class, TraceIdExtractor.class })
+@ConditionalOnClass({ HandlerInterceptor.class, LoggingAppender.class, TraceIdExtractor.class })
 @ConditionalOnMissingBean(name = "stackdriverTracingCustomizer")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @ConditionalOnWebApplication(type = Type.SERVLET)

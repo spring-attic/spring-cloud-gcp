@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+
 /**
  * Default implementation of {@link PubSubPublisherOperations}.
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics.
@@ -119,7 +121,7 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 				settableFuture.set(result);
 			}
 
-		});
+		}, directExecutor());
 
 		return settableFuture;
 	}

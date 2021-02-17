@@ -88,13 +88,13 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 		Resource providedLocation = credentialsSupplier.getCredentials().getLocation();
 		String encodedKey = credentialsSupplier.getCredentials().getEncodedKey();
 
-		if (!StringUtils.isEmpty(providedLocation)) {
+		if (providedLocation != null) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							providedLocation.getInputStream())
 							.createScoped(scopes));
 		}
-		else if (!StringUtils.isEmpty(encodedKey)) {
+		else if (StringUtils.hasText(encodedKey)) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider.create(
 					GoogleCredentials.fromStream(
 							new ByteArrayInputStream(Base64.getDecoder().decode(encodedKey)))

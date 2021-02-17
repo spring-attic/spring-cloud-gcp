@@ -74,7 +74,7 @@ public class FirestorePersistentEntityImpl<T>
 		Document document = AnnotationUtils.findAnnotation(typeInformation.getType(), Document.class);
 		String collectionName = (String) AnnotationUtils.getValue(document, "collectionName");
 
-		if (StringUtils.isEmpty(collectionName)) {
+		if (!StringUtils.hasText(collectionName)) {
 			// Infer the collection name as the uncapitalized document name.
 			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
 		}

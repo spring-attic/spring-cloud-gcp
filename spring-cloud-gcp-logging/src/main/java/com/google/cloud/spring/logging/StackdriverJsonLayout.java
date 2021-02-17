@@ -183,7 +183,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 		super.start();
 
 		// If no Project ID set, then attempt to resolve it with the default project ID provider
-		if (StringUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
+		if (!StringUtils.hasText(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
 			GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
 			this.projectId = projectIdProvider.getProjectId();
 		}
@@ -277,8 +277,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (traceId == null) {
 			traceId = TraceIdLoggingEnhancer.getCurrentTraceId();
 		}
-		if (!StringUtils.isEmpty(traceId)
-				&& !StringUtils.isEmpty(this.projectId)
+		if (StringUtils.hasText(traceId)
+				&& StringUtils.hasText(this.projectId)
 				&& !this.projectId.endsWith("_IS_UNDEFINED")) {
 			traceId = StackdriverTraceConstants.composeFullTraceName(
 					this.projectId, formatTraceId(traceId));
