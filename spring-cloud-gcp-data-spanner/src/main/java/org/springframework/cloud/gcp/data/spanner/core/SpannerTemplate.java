@@ -45,7 +45,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -503,7 +502,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		final ResultSet resultSet = options != null && options.getIndex() != null
 				? readContext.readUsingIndex(tableName, options.getIndex(), keys, columns, options.getOptions())
-				: readContext.read(tableName, keys, columns, options == null ? ArrayUtils.toArray() : options.getOptions());
+				: readContext.read(tableName, keys, columns, options == null ? new ReadOption[0] : options.getOptions());
 
 		if (LOGGER.isDebugEnabled()) {
 			StringBuilder logs = logColumns(tableName, keys, columns);
