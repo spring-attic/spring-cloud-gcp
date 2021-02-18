@@ -26,12 +26,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
 import ch.qos.logback.core.util.Loader;
+import com.google.cloud.logging.Severity;
 import com.google.cloud.spring.core.DefaultGcpProjectIdProvider;
 import com.google.cloud.spring.core.GcpProjectIdProvider;
+import com.google.cloud.spring.core.util.MapBuilder;
 import com.google.gson.Gson;
 
 import org.springframework.util.StringUtils;
@@ -52,6 +55,15 @@ public class StackdriverJsonLayout extends JsonLayout {
 			StackdriverTraceConstants.MDC_FIELD_TRACE_ID,
 			StackdriverTraceConstants.MDC_FIELD_SPAN_ID,
 			StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
+
+	private static final Map<Level, String> logbackToSeverityMap =
+			new MapBuilder<Level, String>()
+					.put(Level.TRACE, Severity.DEBUG.name())
+					.put(Level.DEBUG, Severity.DEBUG.name())
+					.put(Level.INFO, Severity.INFO.name())
+					.put(Level.WARN, Severity.WARNING.name())
+					.put(Level.ERROR, Severity.ERROR.name())
+					.build();
 
 	private String projectId;
 
@@ -211,7 +223,11 @@ public class StackdriverJsonLayout extends JsonLayout {
 					TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
 		}
 
-		add(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, this.includeLevel, String.valueOf(event.getLevel()), map);
+		add(StackdriverTraceConstants.SEVERITY_ATTRIBUTE,
+				this.includeLevel,
+				logbackToSeverityMap.getOrDefault(event.getLevel(), Severity.DEFAULT.name()),
+				map);
+
 		add(JsonLayout.THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
 		add(JsonLayout.LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
 
