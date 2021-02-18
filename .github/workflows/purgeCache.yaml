@@ -1,0 +1,84 @@
+name: Purge Caches
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '6 4 1,15 * *' # 04:06 UTC every 1st and 15th of the month
+
+jobs:
+  purgeCache:
+    if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' # Only run on upstream branch
+    name: Purge Cache
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Purge caches
+        run: |
+          rm -rf ~/.m2 && \
+          rm -rf ~/.sonar/cache
+
+      - name: Mvn install
+        id: install1
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+
+      - name: Retry install1 on Failure
+        id: install2
+        if: steps.install1.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+
+      - name: Retry install2 on Failure
+        id: install3
+        if: steps.install2.outcome == 'failure'
+        continue-on-error: true
+        run: |
+          ./mvnw \
+            --batch-mode \
+            --threads 1.5C \
+            --define maven.test.skip=true \
+            --define maven.javadoc.skip=true \
+            install
+
+      - name: Grab Sonar dependencies
+        id: sonar1
+        continue-on-error: true
+        run: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:help
+
+      - name: Retry Sonar dependencies
+        id: sonar2
+        if: steps.sonar1.outcome == 'failure'
+        continue-on-error: true
+        run: ./mvnw org.sonarsource.scanner.maven:sonar-maven-plugin:help
+
