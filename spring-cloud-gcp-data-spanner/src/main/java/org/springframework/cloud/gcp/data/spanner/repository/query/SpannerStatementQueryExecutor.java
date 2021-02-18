@@ -34,7 +34,6 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
-import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -51,6 +50,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
+import org.springframework.util.StringUtils;
 
 /**
  * Executes Cloud Spanner query statements using
@@ -315,10 +315,10 @@ public final class SpannerStatementQueryExecutor {
 	 */
 	private static String combineWithAnd(String cond1, String cond2) {
 		if (StringUtils.isEmpty(cond1)) {
-			return StringUtils.defaultIfEmpty(cond2, StringUtils.EMPTY);
+			return !StringUtils.isEmpty(cond2) ? cond2 : "";
 		}
 		if (StringUtils.isEmpty(cond2)) {
-			return StringUtils.defaultIfEmpty(cond1, StringUtils.EMPTY);
+			return !StringUtils.isEmpty(cond1) ? cond1 : "";
 		}
 		return "(" + cond1 + ") AND (" + cond2 + ")";
 	}
