@@ -9,6 +9,7 @@ image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Unit%20T
 image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Integration%20Tests/badge.svg?branch=main["HEAD Integration Tests", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22Integration+Tests%22"]
 image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/SonarCloud%20Analysis/badge.svg?branch=main["HEAD SonarCloud Analysis", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22SonarCloud+Analysis%22"]
 image:https://github.com/GoogleCloudPlatform/spring-cloud-gcp/workflows/Linkage%20Check/badge.svg?branch=main["HEAD Linkage Check", link="https://github.com/GoogleCloudPlatform/spring-cloud-gcp/actions?query=branch%3Amain+workflow%3A%22Linkage+Check%22"]
+image:https://sonarcloud.io/api/project_badges/measure?project=GoogleCloudPlatform_spring-cloud-gcp&metric=alert_status["Quality Gate Status", link="https://sonarcloud.io/dashboard?id=GoogleCloudPlatform_spring-cloud-gcp"]
 
 == Spring Framework on Google Cloud Platform
 
