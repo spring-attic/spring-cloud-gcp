@@ -32,6 +32,8 @@ public class PubSubConsumerProperties extends PubSubCommonProperties {
 
 	private Integer maxFetchSize = 1;
 
+	private String subscriptionName = null;
+
 	public AckMode getAckMode() {
 		return ackMode;
 	}
@@ -46,5 +48,13 @@ public class PubSubConsumerProperties extends PubSubCommonProperties {
 
 	public void setMaxFetchSize(Integer maxFetchSize) {
 		this.maxFetchSize = maxFetchSize;
+	}
+
+	public String getSubscriptionName() {
+		return subscriptionName;
+	}
+
+	public void setSubscriptionName(String subscriptionName) {
+		this.subscriptionName = subscriptionName;
 	}
 }

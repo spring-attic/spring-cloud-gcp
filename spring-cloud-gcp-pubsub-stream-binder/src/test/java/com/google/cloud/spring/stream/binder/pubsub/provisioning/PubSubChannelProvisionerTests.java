@@ -115,6 +115,17 @@ public class PubSubChannelProvisionerTests {
 	}
 
 	@Test
+	public void testProvisionConsumerDestination_customSubscription() {
+		when(this.properties.getExtension()).thenReturn(this.pubSubConsumerProperties);
+		when(this.pubSubConsumerProperties.getSubscriptionName()).thenReturn("my-custom-subscription");
+
+		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
+				.provisionConsumerDestination("topic_A", "group_A", this.properties);
+
+		assertThat(result.getName()).isEqualTo("my-custom-subscription");
+	}
+
+	@Test
 	public void testProvisionConsumerDestination_noTopicException() {
 		this.expectedEx.expect(ProvisioningException.class);
 		this.expectedEx.expectMessage("Non-existing 'topic_A' topic.");
