@@ -60,7 +60,6 @@ import com.google.cloud.spring.data.spanner.core.mapping.event.BeforeDeleteEvent
 import com.google.cloud.spring.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
 import com.google.cloud.spring.data.spanner.core.mapping.event.BeforeSaveEvent;
 import com.google.cloud.spring.data.spanner.repository.query.SpannerStatementQueryExecutor;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -508,7 +507,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 		ResultSet resultSet;
 		if (options == null) {
-			resultSet = readContext.read(tableName, keys, columns, ArrayUtils.toArray());
+			resultSet = readContext.read(tableName, keys, columns);
 		}
 		else if (options.getIndex() == null) {
 			resultSet = readContext.read(tableName, keys, columns, options.getOptions());
