@@ -201,7 +201,7 @@ public class PubSubChannelProvisionerTests {
 		when(this.pubSubAdminMock.getTopic(eq("already_existing_topic"))).thenReturn(null);
 
 		// Ensure no exceptions occur if topic already exists on create call
-		this.pubSubChannelProvisioner
-				.provisionConsumerDestination("already_existing_topic", "group1", this.properties);
+		assertThat(this.pubSubChannelProvisioner
+				.provisionConsumerDestination("already_existing_topic", "group1", this.properties)).isNotNull();
 	}
 }

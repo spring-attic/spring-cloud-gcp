@@ -125,7 +125,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	@Override
 	public Publisher createPublisher(String topic) {
-		return this.publishers.computeIfAbsent(topic, (key) -> {
+		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
 				Publisher.Builder publisherBuilder =
 						Publisher.newBuilder(PubSubTopicUtils.toTopicName(topic, this.projectId));

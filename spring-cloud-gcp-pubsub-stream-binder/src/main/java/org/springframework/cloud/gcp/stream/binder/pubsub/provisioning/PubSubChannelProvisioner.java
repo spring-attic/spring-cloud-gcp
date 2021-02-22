@@ -61,8 +61,7 @@ public class PubSubChannelProvisioner
 
 	@Override
 	public ProducerDestination provisionProducerDestination(String topic,
-			ExtendedProducerProperties<PubSubProducerProperties> properties)
-			throws ProvisioningException {
+			ExtendedProducerProperties<PubSubProducerProperties> properties) {
 		ensureTopicExists(topic, properties.getExtension().isAutoCreateResources());
 
 		return new PubSubProducerDestination(topic);
@@ -70,8 +69,7 @@ public class PubSubChannelProvisioner
 
 	@Override
 	public ConsumerDestination provisionConsumerDestination(String topicName, String group,
-			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
-			throws ProvisioningException {
+			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
 
 		// topicName may be either the short or fully-qualified version.
 		String topicShortName = TopicName.isParsableFrom(topicName) ? TopicName.parse(topicName).getTopic() : topicName;
