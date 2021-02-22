@@ -22,9 +22,9 @@ on:
     - cron: '41 12 * * 5'
 
 jobs:
-  analyze:
-    name: Analyze
-    runs-on: ubuntu-latest
+  codeQL-analyze:
+    name: CodeQL Analyze
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -35,15 +35,17 @@ jobs:
         # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d' --utc)"
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
     - uses: actions/cache@v2
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

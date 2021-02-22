@@ -35,6 +35,9 @@ jobs:
           - trace
           - vision
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d' --utc)"
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
@@ -42,9 +45,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@master
         with:

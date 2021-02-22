@@ -31,7 +31,7 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}
+        key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-unitTests # Update sonar.yaml if changing this ID.
 
     - name: Mvn install # Need this when the directory/pom structure changes
       id: install1
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}
+          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
 
       - name: releaseCheck
         run: |

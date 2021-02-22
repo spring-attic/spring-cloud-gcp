@@ -20,6 +20,9 @@ jobs:
     if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
     runs-on: ubuntu-20.04
     steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d' --utc)"
     - uses: actions/checkout@v2
     - run: |
         git config user.name github-actions
@@ -32,9 +35,7 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
 
     - name: Mvn install # Need this when the version/directory/pom structure changes
       run: |
