@@ -5,7 +5,7 @@
 
 	<include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml"/>
 
-	<logger name="StackdriverJsonLayoutLoggerTests" level="WARN">
+	<logger name="StackdriverJsonLayoutLoggerTests" level="ALL">
 		<appender-ref ref="CONSOLE_JSON"/>
 	</logger>
 
