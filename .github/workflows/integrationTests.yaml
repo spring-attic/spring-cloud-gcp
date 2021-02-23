@@ -45,7 +45,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
+          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}-${{ matrix.it }}
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@master
         with:
