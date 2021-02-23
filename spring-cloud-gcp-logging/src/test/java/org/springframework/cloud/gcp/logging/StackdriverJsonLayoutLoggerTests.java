@@ -23,9 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
-import ch.qos.logback.core.status.Status;
 import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
