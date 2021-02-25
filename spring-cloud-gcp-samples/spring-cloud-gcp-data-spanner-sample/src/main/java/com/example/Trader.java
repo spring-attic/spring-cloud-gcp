@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.cloud.spring.data.spanner.core.mapping.Column;
+import com.google.cloud.spring.data.spanner.core.mapping.Interleaved;
 import com.google.cloud.spring.data.spanner.core.mapping.PrimaryKey;
 import com.google.cloud.spring.data.spanner.core.mapping.Table;
 
@@ -49,6 +50,9 @@ public class Trader {
 	@Column(name = "MODIFIED_ON")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd HH:mm:ss z")
 	private List<java.sql.Timestamp> modifiedOn;
+
+	@Interleaved(lazy = true)
+	private List<Trade> trades;
 
 	public Trader() {
 	}
@@ -89,6 +93,14 @@ public class Trader {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public List<Trade> getTrades() {
+		return trades;
+	}
+
+	public void setTrades(List<Trade> trades) {
+		this.trades = trades;
 	}
 
 	@Override

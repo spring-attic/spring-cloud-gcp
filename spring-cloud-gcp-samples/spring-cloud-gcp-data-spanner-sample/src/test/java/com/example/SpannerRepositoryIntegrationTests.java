@@ -161,5 +161,7 @@ public class SpannerRepositoryIntegrationTests {
 
 		List<String> buyTradeIds = this.tradeRepository.getTradeIds("BUY");
 		assertThat(buyTradeIds).hasSize(5);
+
+		assertThat(this.traderRepository.findById("demo_trader1").get().getTrades()).hasSize(3);
 	}
 }

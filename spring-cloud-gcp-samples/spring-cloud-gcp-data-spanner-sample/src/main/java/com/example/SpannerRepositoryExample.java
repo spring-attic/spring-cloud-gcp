@@ -104,6 +104,9 @@ public class SpannerRepositoryExample {
 		this.tradeRepository.getTradeIds("BUY").stream()
 				.forEach(x -> LOGGER.info(x));
 
+		LOGGER.info("Lazy-loading collection of trades for 'demo_trader1':");
+		LOGGER.info(this.traderRepository.findById("demo_trader1").get().getTrades());
+
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}
 
