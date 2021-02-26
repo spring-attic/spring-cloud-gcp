@@ -31,9 +31,14 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar-${{ steps.date.outputs.date }}
       - uses: actions/cache@v2
+        id: mvn-cache
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-unitTests
+          key: ${{ runner.os }}-maven-unified-${{ steps.date.outputs.date }}
+      - name: Maven go offline
+        id: mvn-offline
+        if: steps.mvn-cache.outputs.cache-hit != 'true'
+        run: ./mvnw compile dependency:go-offline
       - name: Mvn install w/ coverage # Need this when the directory/pom structure changes
         id: install1
         continue-on-error: true

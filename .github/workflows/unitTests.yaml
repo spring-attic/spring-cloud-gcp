@@ -29,9 +29,15 @@ jobs:
         java-version: ${{ matrix.java }}
 
     - uses: actions/cache@v2
+      id: mvn-cache
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-unitTests # Update sonar.yaml if changing this ID.
+        key: ${{ runner.os }}-maven-unified-${{ steps.date.outputs.date }}
+
+    - name: Maven go offline
+      id: mvn-offline
+      if: steps.mvn-cache.outputs.cache-hit != 'true'
+      run: ./mvnw compile dependency:go-offline
 
     - name: Mvn install # Need this when the directory/pom structure changes
       id: install1
@@ -101,9 +107,15 @@ jobs:
           java-version: 11
 
       - uses: actions/cache@v2
+        id: mvn-cache
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ steps.date.outputs.date }}-${{ github.job }}
+          key: ${{ runner.os }}-maven-unified-${{ steps.date.outputs.date }}
+
+      - name: Maven go offline
+        id: mvn-offline
+        if: steps.mvn-cache.outputs.cache-hit != 'true'
+        run: ./mvnw compile dependency:go-offline
 
       - name: releaseCheck
         run: |
