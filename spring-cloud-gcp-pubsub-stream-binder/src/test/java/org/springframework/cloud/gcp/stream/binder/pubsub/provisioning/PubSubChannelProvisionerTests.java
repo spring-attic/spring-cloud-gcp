@@ -76,7 +76,10 @@ public class PubSubChannelProvisionerTests {
 		doAnswer((invocation) ->
 			Subscription.newBuilder()
 					.setName("projects/test-project/subscriptions/" + invocation.getArgument(0))
-					.setTopic("projects/test-project/topics/" + invocation.getArgument(1)).build()
+					.setTopic(invocation.getArgument(1, String.class).startsWith("projects/") ?
+							invocation.getArgument(1) :
+							"projects/test-project/topics/" + invocation.getArgument(1))
+					.build()
 		).when(this.pubSubAdminMock).createSubscription(any(), any());
 		doAnswer((invocation) ->
 				Topic.newBuilder().setName("projects/test-project/topics/" + invocation.getArgument(0)).build()
@@ -95,6 +98,20 @@ public class PubSubChannelProvisionerTests {
 		assertThat(result.getName()).isEqualTo("topic_A.group_A");
 
 		verify(this.pubSubAdminMock).createSubscription("topic_A.group_A", "topic_A");
+	}
+
+	@Test
+	public void testProvisionConsumerDestination_specifiedGroupTopicInDifferentProject() {
+		String fullTopicName = "projects/differentProject/topics/topic_A";
+		when(this.pubSubAdminMock.getTopic(fullTopicName)).thenReturn(
+				Topic.newBuilder().setName(fullTopicName).build());
+
+		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
+				.provisionConsumerDestination(fullTopicName, "group_A", this.properties);
+
+		assertThat(result.getName()).isEqualTo("topic_A.group_A");
+
+		verify(this.pubSubAdminMock).createSubscription("topic_A.group_A", "projects/differentProject/topics/topic_A");
 	}
 
 	@Test
@@ -184,7 +201,7 @@ public class PubSubChannelProvisionerTests {
 		when(this.pubSubAdminMock.getTopic(eq("already_existing_topic"))).thenReturn(null);
 
 		// Ensure no exceptions occur if topic already exists on create call
-		this.pubSubChannelProvisioner
-				.provisionConsumerDestination("already_existing_topic", "group1", this.properties);
+		assertThat(this.pubSubChannelProvisioner
+				.provisionConsumerDestination("already_existing_topic", "group1", this.properties)).isNotNull();
 	}
 }
