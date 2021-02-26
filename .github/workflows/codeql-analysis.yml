@@ -19,7 +19,7 @@ on:
 #     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '41 12 * * 5'
+    - cron: '41 12 * * 5' # At 12:41 UTC on Friday (arbitrarily picked by GitHub).
 
 jobs:
   codeQL-analyze:

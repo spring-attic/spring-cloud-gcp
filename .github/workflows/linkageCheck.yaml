@@ -3,7 +3,7 @@ name: Linkage Check
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 9 * * *' # 09:30 UTC every day
+    - cron: '00 9 * * *' # 09:00 UTC every day
 
 jobs:
   linkageCheck:
