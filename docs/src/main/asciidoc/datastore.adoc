@@ -75,6 +75,9 @@ The following configuration options are available:
 | `spring.cloud.gcp.datastore.emulator.enabled` | To enable the auto configuration to start a local instance of the Datastore Emulator. | No | `false`
 | `spring.cloud.gcp.datastore.emulator.port` | The local port to use for the Datastore Emulator | No | `8081`
 | `spring.cloud.gcp.datastore.emulator.consistency` | The https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start?#--consistency[consistency] to use for the Datastore Emulator instance | No | `0.9`
+| `spring.cloud.gcp.datastore.emulator.store-on-disk` | Configures whether or not the emulator should persist any data to disk. | No | `true`
+| `spring.cloud.gcp.datastore.emulator.data-dir` | The directory to be used to store/retrieve data/config for an emulator run. | No | The default value is `<USER_CONFIG_DIR>/emulators/datastore`. See the https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start[gcloud documentation] for finding your `USER_CONFIG_DIR`.
+
 |===
 
 ==== Repository settings

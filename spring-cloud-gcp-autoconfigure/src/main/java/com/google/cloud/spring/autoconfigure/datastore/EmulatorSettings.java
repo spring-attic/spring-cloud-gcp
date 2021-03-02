@@ -46,8 +46,8 @@ public class EmulatorSettings {
 	private double consistency = 0.9D;
 
 	/**
-	 * Configures the emulator not to persist any data to disk for the emulator session.
-	 * Correspondent CLI property: --no-store-on-disk. Default: {@code true}
+	 * Configures whether or not the emulator should persist any data to disk for the emulator session.
+	 * Correspondent CLI property: --store-on-disk. Default: {@code true}
 	 */
 	private boolean storeOnDisk = true;
 
