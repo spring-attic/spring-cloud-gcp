@@ -16,8 +16,12 @@
 
 package com.google.cloud.spring.autoconfigure.datastore;
 
+import java.nio.file.Path;
+
 /**
  * Properties for configuring Cloud Datastore Emulator.
+ *
+ * See https://cloud.google.com/sdk/gcloud/reference/beta/emulators/datastore/start for the correspondent properties
  *
  * @author Lucas Soares
  *
@@ -30,14 +34,44 @@ public class EmulatorSettings {
 	private boolean enabled;
 
 	/**
-	 * Is the datastore emulator port. Default: {@code 8081}
+	 * Is the datastore emulator port.
+	 * Correspondent CLI property: --host-port=localhost:{@link EmulatorSettings #port} Default: {@code 8081}
 	 */
 	private int port = 8081;
 
 	/**
-	 * Consistency to use creating the Datastore server instance. Default: {@code 0.9}
+	 * Consistency to use creating the Datastore server instance.
+	 * Correspondent CLI property: --consistency Default: {@code 0.9}
 	 */
 	private double consistency = 0.9D;
+
+	/**
+	 * Configures the emulator not to persist any data to disk for the emulator session.
+	 * Correspondent CLI property: --no-store-on-disk. Default: {@code true}
+	 */
+	private boolean storeOnDisk = true;
+
+	/**
+	 * The directory to be used to store/retrieve data/config for an emulator run.
+	 * Correspondent CLI property: --data-dir. The default value ${USER_CONFIG_DIR}/emulators/datastore is used on null
+	 */
+	private Path dataDir;
+
+	public Path getDataDir() {
+		return dataDir;
+	}
+
+	public void setDataDir(Path dataDir) {
+		this.dataDir = dataDir;
+	}
+
+	public boolean isStoreOnDisk() {
+		return storeOnDisk;
+	}
+
+	public void setStoreOnDisk(boolean storeOnDisk) {
+		this.storeOnDisk = storeOnDisk;
+	}
 
 	public boolean isEnabled() {
 		return enabled;

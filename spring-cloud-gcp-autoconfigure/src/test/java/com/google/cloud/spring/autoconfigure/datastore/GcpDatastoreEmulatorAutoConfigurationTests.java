@@ -16,6 +16,8 @@
 
 package com.google.cloud.spring.autoconfigure.datastore;
 
+import java.nio.file.Paths;
+
 import com.google.cloud.datastore.DatastoreOptions;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
 import org.junit.Test;
@@ -43,12 +45,16 @@ public class GcpDatastoreEmulatorAutoConfigurationTests {
 				.withPropertyValues(
 						"spring.cloud.gcp.datastore.emulator.port=8182",
 						"spring.cloud.gcp.datastore.emulator.enabled=true",
-						"spring.cloud.gcp.datastore.emulator.consistency=0.8")
+						"spring.cloud.gcp.datastore.emulator.consistency=0.8",
+						"spring.cloud.gcp.datastore.emulator.dataDir=/usr/local/datastore",
+						"spring.cloud.gcp.datastore.emulator.storeOnDisk=false")
 				.run(context -> {
 					LocalDatastoreHelper helper = context.getBean(LocalDatastoreHelper.class);
 					DatastoreOptions datastoreOptions = helper.getOptions();
 					assertThat(datastoreOptions.getHost()).isEqualTo("localhost:8182");
 					assertThat(helper.getConsistency()).isEqualTo(0.8D);
+					assertThat(helper.getGcdPath()).isEqualTo(Paths.get("/usr/local/datastore"));
+					assertThat(helper.isStoreOnDisk()).isFalse();
 				});
 	}
 

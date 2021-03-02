@@ -55,8 +55,13 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 			GcpDatastoreProperties datastoreProperties) {
 		EmulatorSettings settings = datastoreProperties.getEmulator();
 
-		this.helper = LocalDatastoreHelper.create(settings.getConsistency(),
-				settings.getPort());
+		this.helper = LocalDatastoreHelper
+				.newBuilder()
+				.setConsistency(settings.getConsistency())
+				.setPort(settings.getPort())
+				.setStoreOnDisk(settings.isStoreOnDisk())
+				.setDataDir(settings.getDataDir())
+				.build();
 
 		return this.helper;
 	}
