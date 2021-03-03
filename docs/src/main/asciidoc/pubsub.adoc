@@ -406,6 +406,13 @@ public Subscription createSubscription(String subscriptionName, String topicName
 public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
 ----
 
+You can also pass a full `Subscription.Builder` for full access to any options or features available in the client library.
+
+[source,java]
+----
+public Subscription createSubscription(Subscription.Builder builder)
+----
+
 ==== Deleting a subscription
 
 `PubSubAdmin` implements a method to delete subscriptions:

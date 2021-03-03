@@ -26,6 +26,8 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.ProjectSubscriptionName;
+import com.google.pubsub.v1.PushConfig;
+import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.TopicName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,9 +37,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -171,12 +170,13 @@ public class PubSubAdminTests {
 	public void testCreateSubscription() {
 		new PubSubAdmin(() -> "test-project", this.mockTopicAdminClient, this.mockSubscriptionAdminClient)
 				.createSubscription("testSubscription", "testTopic");
-		verify(this.mockSubscriptionAdminClient).createSubscription(
-				eq(ProjectSubscriptionName.of("test-project", "testSubscription")),
-				eq(TopicName.of("test-project", "testTopic")),
-				any(),
-				anyInt()
-		);
+
+		Subscription expected = Subscription.newBuilder()
+				.setName("projects/test-project/subscriptions/testSubscription")
+				.setTopic("projects/test-project/topics/testTopic")
+				.setAckDeadlineSeconds(10)
+				.build();
+		verify(this.mockSubscriptionAdminClient).createSubscription(expected);
 	}
 
 	@Test
@@ -190,24 +190,27 @@ public class PubSubAdminTests {
 				() -> psa.createSubscription("a", "b", PubSubAdmin.MAX_ACK_DEADLINE_SECONDS + 1));
 
 		psa.createSubscription("testSubscription", "testTopic", 100);
-		verify(this.mockSubscriptionAdminClient).createSubscription(
-				eq(ProjectSubscriptionName.of("test-project", "testSubscription")),
-				eq(TopicName.of("test-project", "testTopic")),
-				any(),
-				eq(100)
-		);
+
+		Subscription expected = Subscription.newBuilder()
+				.setName("projects/test-project/subscriptions/testSubscription")
+				.setTopic("projects/test-project/topics/testTopic")
+				.setAckDeadlineSeconds(100)
+				.build();
+		verify(this.mockSubscriptionAdminClient).createSubscription(expected);
 	}
 
 	@Test
 	public void testCreateSubscription_pushEndpoint() {
 		new PubSubAdmin(() -> "test-project", this.mockTopicAdminClient, this.mockSubscriptionAdminClient)
 				.createSubscription("testSubscription", "testTopic", "endpoint");
-		verify(this.mockSubscriptionAdminClient).createSubscription(
-				eq(ProjectSubscriptionName.of("test-project", "testSubscription")),
-				eq(TopicName.of("test-project", "testTopic")),
-				argThat(arg -> "endpoint".equals(arg.getPushEndpoint())),
-				anyInt()
-		);
+
+		Subscription expected = Subscription.newBuilder()
+				.setName("projects/test-project/subscriptions/testSubscription")
+				.setTopic("projects/test-project/topics/testTopic")
+				.setPushConfig(PushConfig.newBuilder().setPushEndpoint("endpoint").build())
+				.setAckDeadlineSeconds(10)
+				.build();
+		verify(this.mockSubscriptionAdminClient).createSubscription(expected);
 	}
 
 	@Test

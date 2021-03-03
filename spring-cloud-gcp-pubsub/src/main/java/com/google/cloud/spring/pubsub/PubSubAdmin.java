@@ -70,8 +70,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @param credentialsProvider the credentials provider to use
 	 * @throws PubSubException thrown when there are errors in contacting Google Cloud Pub/Sub
 	 */
-	public PubSubAdmin(GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider) throws PubSubException {
+	public PubSubAdmin(GcpProjectIdProvider projectIdProvider, CredentialsProvider credentialsProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
@@ -235,22 +234,40 @@ public class PubSubAdmin implements AutoCloseable {
 		Assert.hasText(subscriptionName, "No subscription name was specified.");
 		Assert.hasText(topicName, NO_TOPIC_SPECIFIED);
 
-		int finalAckDeadline = this.defaultAckDeadline;
+		Subscription.Builder builder = Subscription.newBuilder()
+				.setName(subscriptionName)
+				.setTopic(topicName);
+
+		builder.setAckDeadlineSeconds(this.defaultAckDeadline);
 		if (ackDeadline != null) {
 			validateAckDeadline(ackDeadline);
-			finalAckDeadline = ackDeadline;
+			builder.setAckDeadlineSeconds(ackDeadline);
 		}
 
 		PushConfig.Builder pushConfigBuilder = PushConfig.newBuilder();
 		if (pushEndpoint != null) {
 			pushConfigBuilder.setPushEndpoint(pushEndpoint);
+			builder.setPushConfig(pushConfigBuilder);
 		}
+		return createSubscription(builder);
+	}
 
-		return this.subscriptionAdminClient.createSubscription(
-				PubSubSubscriptionUtils.toProjectSubscriptionName(subscriptionName, this.projectId),
-				PubSubTopicUtils.toTopicName(topicName, this.projectId),
-				pushConfigBuilder.build(),
-				finalAckDeadline);
+	/**
+	 * Create a new subscription on Google Cloud Pub/Sub.
+	 *
+	 * @param builder a Subscription.Builder straight from the client API library that exposes all available knobs and
+	 * levers
+	 * @return the created subscription
+	 */
+	public Subscription createSubscription(Subscription.Builder builder) {
+		Assert.notNull(builder, "Builder cannot be null");
+		Assert.hasText(builder.getName(), "Subscription name must not be null or empty");
+		Assert.hasText(builder.getTopic(), "Topic name must not be null or empty");
+
+		builder.setName(PubSubSubscriptionUtils.toProjectSubscriptionName(builder.getName(), this.projectId).toString());
+		builder.setTopic(PubSubTopicUtils.toTopicName(builder.getTopic(), this.projectId).toString());
+
+		return this.subscriptionAdminClient.createSubscription(builder.build());
 	}
 
 	/**
