@@ -37,8 +37,9 @@ import com.google.cloud.spanner.Struct;
 public interface SpannerOperations {
 
 	/**
-	 * Execute a DML statement on Cloud Spanner. If this is not performed in a transaction
-	 * then it is done in partitioned-mode.
+	 * Execute a DML statement on Cloud Spanner. This must always be done in a transaction
+	 * and one will be started if needed. See {@link #executePartitionedDmlStatement(Statement)}
+	 * for executing partitioned DML without a transaction.
 	 * @param statement the DML statement to execute.
 	 * @return the number of rows affected.
 	 */
