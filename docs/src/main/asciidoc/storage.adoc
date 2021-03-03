@@ -86,6 +86,13 @@ This type represents a GCS file, which has associated https://cloud.google.com/s
 The `createSignedUrl` method can also be used to obtain https://cloud.google.com/storage/docs/access-control/signed-urls[signed URLs] for GCS objects.
 However, creating signed URLs requires that the resource was created using service account credentials.
 
+[CAUTION]
+====
+As of v2.0.2+, the `GoogleStorageResource.getURL()` method returns the `Bucket` or `Blob` 's `selfLink` value, rather than attempting to convert the `URI` a `URL` object that nearly-always threw a `MalformedURLException`.
+This value is notably different from `GoogleStorageResource.getURI()`, which returns the more commonly used `gs://my-bucket/my-object` identifier.
+Returning a valid URL is necessary to support some features in the Spring ecosystem, such as `spring.resources.static-locations`.
+====
+
 The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the `spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot GCP starter.
 
 ==== Setting the Content Type

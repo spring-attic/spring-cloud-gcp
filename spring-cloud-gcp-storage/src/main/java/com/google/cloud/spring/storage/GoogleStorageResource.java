@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.io.WritableResource;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -113,14 +114,13 @@ public class GoogleStorageResource implements WritableResource {
 		return this.autoCreateFiles;
 	}
 
+	/**
+	 * @throws StorageException if an issue occurs getting the Bucket or Blob.
+	 * @return Returns true if the bucket or object exists.
+	 */
 	@Override
 	public boolean exists() {
-		try {
-			return isBucket() ? getBucket() != null : getBlob() != null;
-		}
-		catch (IOException ex) {
-			return false;
-		}
+		return isBucket() ? getBucket() != null : getBlob() != null;
 	}
 
 	@Override
@@ -134,16 +134,27 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	/**
-	 * Since the gs: protocol will normally not have a URL stream handler registered,
-	 * this method will always throw a {@link java.net.MalformedURLException}.
-	 * @return the URL for the GCS resource, if a URL stream handler is registered for the gs protocol.
+	 * @return the self-link for this GCS resource. Note that this is not a URL to download the contents of the file.
 	 */
 	@Override
+	@NonNull
 	public URL getURL() throws IOException {
-		return getURI().toURL();
+		String url;
+		if (isBucket()) {
+			Bucket bucket = getBucket();
+			Assert.notNull(bucket, "The bucket " + this.getBucketName() + " does not exist.");
+			url = bucket.getSelfLink();
+		}
+		else {
+			Blob b = getBlob();
+			Assert.notNull(b, "The object at " + this.getURI() + " does not exist.");
+			url = getBlob().getSelfLink();
+		}
+		return new URL(url);
 	}
 
 	@Override
+	@NonNull
 	public URI getURI() {
 		return this.location.uri();
 	}
@@ -151,10 +162,10 @@ public class GoogleStorageResource implements WritableResource {
 	/**
 	 * Gets the underlying storage object in Google Cloud Storage.
 	 * @return the storage object, will be null if it does not exist in Google Cloud Storage.
-	 * @throws IOException if an issue occurs getting the Blob
+	 * @throws StorageException if an issue occurs getting the Blob
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
-	public Blob getBlob() throws IOException {
+	public Blob getBlob() {
 		return this.storage.get(getBlobId());
 	}
 
@@ -166,10 +177,10 @@ public class GoogleStorageResource implements WritableResource {
 	 * @param options specifies additional options for signing URLs
 	 * @return the URL if the object exists, and null if it does not.
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
-	 * @throws IOException if there are errors in accessing Google Storage
+	 * @throws StorageException if there are errors in accessing Google Storage
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
-			Storage.SignUrlOption... options) throws IOException {
+			Storage.SignUrlOption... options) {
 		if (LOGGER.isWarnEnabled() && !exists()) {
 			LOGGER.warn("Creating signed URL for non-existing GCS object " + getURI());
 		}
@@ -186,7 +197,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * such as if the blob already exists
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
-	public Blob createBlob() throws StorageException {
+	public Blob createBlob() {
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
@@ -200,7 +211,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 * @since 1.2.2
 	 */
-	public Blob createBlob(byte[] contents) throws StorageException {
+	public Blob createBlob(byte[] contents) {
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build(), contents);
 	}
 
@@ -238,7 +249,8 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	@Override
-	public File getFile() throws IOException {
+	@NonNull
+	public File getFile() {
 		throw new UnsupportedOperationException(
 				getDescription() + " cannot be resolved to absolute file path");
 	}
@@ -260,10 +272,11 @@ public class GoogleStorageResource implements WritableResource {
 	 * <p>Note that this method does not actually create the blob.
 	 * @param relativePath the URL to a Google Cloud Storage file
 	 * @return the {@link GoogleStorageResource} handle for the relative path
-	 * @throws IOException if an issue occurs creating the relative GoogleStorageResource
+	 * @throws StorageException if an issue occurs creating the relative GoogleStorageResource
 	 */
 	@Override
-	public GoogleStorageResource createRelative(String relativePath) throws IOException {
+	@NonNull
+	public GoogleStorageResource createRelative(String relativePath) {
 		return new GoogleStorageResource(
 				this.storage,
 				getURI().resolve(relativePath).toString(),
@@ -276,11 +289,13 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	@Override
+	@NonNull
 	public String getDescription() {
 		return getURI().toString();
 	}
 
 	@Override
+	@NonNull
 	public InputStream getInputStream() throws IOException {
 		if (isBucket()) {
 			throw new IllegalStateException(
@@ -303,6 +318,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @throws IOException if an issue occurs getting the OutputStream
 	 */
 	@Override
+	@NonNull
 	public OutputStream getOutputStream() throws IOException {
 		if (isBucket()) {
 			throw new IllegalStateException(

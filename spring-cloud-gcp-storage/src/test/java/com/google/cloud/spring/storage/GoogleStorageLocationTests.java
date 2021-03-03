@@ -19,11 +19,19 @@ package com.google.cloud.spring.storage;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Daniel Zou
  */
 public class GoogleStorageLocationTests {
+
+	@Test
+	public void testBadInputsToConstructor() {
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new GoogleStorageLocation(null));
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new GoogleStorageLocation(""));
+		assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> new GoogleStorageLocation(" "));
+	}
 
 	@Test
 	public void testCorrectLocationForBucket() {

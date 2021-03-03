@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -42,15 +42,15 @@ public class WebController {
 	@Value("gs://${gcs-resource-test-bucket}/my-file.txt")
 	private Resource gcsFile;
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	@GetMapping("/")
 	public String readGcsFile() throws IOException {
 		return StreamUtils.copyToString(
 				this.gcsFile.getInputStream(),
 				Charset.defaultCharset()) + "\n";
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
-	String writeGcs(@RequestBody String data) throws IOException {
+	@PostMapping("/")
+	public String writeGcs(@RequestBody String data) throws IOException {
 		try (OutputStream os = ((WritableResource) this.gcsFile).getOutputStream()) {
 			os.write(data.getBytes());
 		}

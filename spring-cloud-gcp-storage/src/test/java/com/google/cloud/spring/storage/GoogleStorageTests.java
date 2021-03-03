@@ -19,7 +19,6 @@ package com.google.cloud.spring.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.WriteChannel;
@@ -376,13 +375,6 @@ public class GoogleStorageTests {
 		Storage.SignUrlOption option = Storage.SignUrlOption.httpMethod(HttpMethod.PUT);
 		resource.createSignedUrl(TimeUnit.DAYS, 1L, option);
 		verify(storage, times(1)).signUrl(any(), eq(1L), eq(TimeUnit.DAYS), eq(option));
-	}
-
-	@Test
-	public void getUrlFails() throws IOException {
-		this.expectedEx.expect(MalformedURLException.class);
-		this.expectedEx.expectMessage("unknown protocol: gs");
-		this.remoteResource.getURL();
 	}
 
 	@Test

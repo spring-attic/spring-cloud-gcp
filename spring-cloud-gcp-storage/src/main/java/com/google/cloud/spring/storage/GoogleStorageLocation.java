@@ -46,6 +46,7 @@ public class GoogleStorageLocation {
 	 */
 	public GoogleStorageLocation(String gcsLocationUriString) {
 		try {
+			Assert.hasText(gcsLocationUriString, "A Google Storage URI must not be null or empty");
 			Assert.isTrue(
 					gcsLocationUriString.startsWith("gs://"),
 					"A Google Storage URI must start with gs://");
