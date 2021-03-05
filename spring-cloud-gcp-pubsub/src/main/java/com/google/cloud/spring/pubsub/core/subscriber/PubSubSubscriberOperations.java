@@ -76,7 +76,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @return the list of received messages
 	 */
 	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages, Boolean returnImmediately);
@@ -88,7 +89,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
 	 * received acknowledgeable messages
 	 * @since 1.2.3
@@ -102,7 +104,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @return the list of received acknowledgeable messages
 	 */
 	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
@@ -114,7 +117,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of
 	 * received acknowledgeable messages
 	 * @since 1.2.3
@@ -129,7 +133,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
 	 * @param <T> the type of the payload
 	 * @return the list of received acknowledgeable messages
@@ -146,7 +151,8 @@ public interface PubSubSubscriberOperations {
 	 * @param maxMessages the maximum number of pulled messages. If this value is null then
 	 * up to Integer.MAX_VALUE messages will be requested.
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}.
+	 * Setting this parameter to {@code true} is not recommended as it may result in long delays in message delivery.
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
 	 * @param <T> the type of the payload
 	 * @return the ListenableFuture for the asynchronous execution, returning the list of

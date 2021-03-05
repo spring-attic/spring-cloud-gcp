@@ -219,6 +219,10 @@ h|pullNext | Allows for a single message to be pulled and automatically acknowle
 h|pullAndConvert | Works the same as the `pull` method and, additionally, converts the Pub/Sub binary payload to an object of the desired type, using the converter configured in the template.
 |===
 
+WARNING: We do not recommend setting `returnImmediately` to `true`, as it may result in delayed message delivery.
+"Immediately" really means 1 second, and if Pub/Sub cannot retrieve any messages from the backend in that time, it will return 0 messages, despite having messages queue up on the topic.
+Therefore, we recommend setting `returnImmediately` to `false`, or using `subscribe` methods from the previous section.
+
 ===== Acknowledging messages
 
 There are two ways to acknowledge messages.
