@@ -62,13 +62,13 @@ public class PubSubStreamBinderSampleAppIntegrationTest {
 
 		// Run Source app
 		SpringApplicationBuilder sourceBuilder = new SpringApplicationBuilder(FunctionalSourceApplication.class)
-				.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-source"));
+				.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-functional-sample-source"));
 		sourceBuilder.run();
 
 
 		//Run Sink app
 		SpringApplicationBuilder sinkBuilder = new SpringApplicationBuilder(FunctionalSinkApplication.class)
-			.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink"));
+			.resourceLoader(new PropertyRemovingResourceLoader("spring-cloud-gcp-pubsub-stream-functional-sample-sink"));
 		sinkBuilder.run();
 
 

@@ -49,9 +49,10 @@
 		<module>spring-cloud-gcp-data-jpa-sample</module>
 		<module>spring-cloud-gcp-vision-api-sample</module>
 		<module>spring-cloud-gcp-integration-storage-sample</module>
-		<module>spring-cloud-gcp-pubsub-binder-sample</module>
 		<module>spring-cloud-gcp-pubsub-bus-config-sample</module>
-		<module>spring-cloud-gcp-pubsub-polling-binder-sample</module>
+		<module>spring-cloud-gcp-pubsub-stream-sample</module>
+		<module>spring-cloud-gcp-pubsub-stream-functional-sample</module>
+		<module>spring-cloud-gcp-pubsub-stream-polling-sample</module>
 		<module>spring-cloud-gcp-pubsub-reactive-sample</module>
 		<module>spring-cloud-gcp-integration-pubsub-json-sample</module>
 		<module>spring-cloud-gcp-security-iap-sample</module>
@@ -61,7 +62,6 @@
 		<module>spring-cloud-gcp-data-multi-sample</module>
 		<module>spring-cloud-gcp-data-firestore-sample</module>
 		<module>spring-cloud-gcp-bigquery-sample</module>
-		<module>spring-cloud-gcp-pubsub-stream-binder-functional-sample</module>
 		<module>spring-cloud-gcp-security-firebase-sample</module>
 		<module>spring-cloud-gcp-secretmanager-sample</module>
 		<module>spring-cloud-gcp-kotlin-samples</module>

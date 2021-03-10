@@ -3,27 +3,27 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <!-- Your own application should inherit from spring-boot-starter-parent -->
-    <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample</artifactId>
+    <artifactId>spring-cloud-gcp-pubsub-stream-functional-sample</artifactId>
     <groupId>com.google.cloud</groupId>
     <version>2.0.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</artifactId>
-  <name>Spring Cloud GCP Code Sample - Pub/Sub Stream Binder Sink</name>
+  <artifactId>spring-cloud-gcp-pubsub-stream-functional-sample-source</artifactId>
+  <name>Spring Cloud GCP Code Sample - Pub/Sub Binder for Spring Cloud Stream Functional Source</name>
 
 
   <dependencies>
+
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
     </dependency>
 
-    <!-- JSON deserialization support -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-json</artifactId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
   </dependencies>
+
 </project>

@@ -23,7 +23,7 @@ Uses the https://cloud.google.com/logging/docs/[Stackdriver Logging API] to stor
 - link:spring-cloud-gcp-pubsub-sample[Spring Cloud GCP Pub/Sub Sample]:
 Uses the Spring Cloud GCP Pub/Sub abstraction to exchange messages.
 
-- link:spring-cloud-gcp-pubsub-binder-sample[Spring Cloud GCP Pub/Sub Stream binder]:
+- link:spring-cloud-gcp-pubsub-stream-sample[Spring Cloud GCP Pub/Sub Binder for Spring Cloud Stream]:
 Uses the Spring Cloud Stream Binder for Google Cloud Pub/Sub to exchange messages.
 
 - link:spring-cloud-gcp-sql-mysql-sample[Spring Cloud GCP MySQL Sample]:

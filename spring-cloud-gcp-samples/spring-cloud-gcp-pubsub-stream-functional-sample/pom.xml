@@ -9,14 +9,14 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>spring-cloud-gcp-pubsub-stream-binder-functional-sample</artifactId>
+  <artifactId>spring-cloud-gcp-pubsub-stream-functional-sample</artifactId>
   <packaging>pom</packaging>
-  <name>Spring Cloud GCP Code Sample - Pub/Sub Stream Binder (Functional style)</name>
+  <name>Spring Cloud GCP Code Sample - Pub/Sub Binder for Spring Cloud Stream Functional</name>
 
   <modules>
-    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-source</module>
-    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-sink</module>
-    <module>spring-cloud-gcp-pubsub-stream-binder-functional-sample-test</module>
+    <module>spring-cloud-gcp-pubsub-stream-functional-sample-source</module>
+    <module>spring-cloud-gcp-pubsub-stream-functional-sample-sink</module>
+    <module>spring-cloud-gcp-pubsub-stream-functional-sample-test</module>
   </modules>
 
   <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->

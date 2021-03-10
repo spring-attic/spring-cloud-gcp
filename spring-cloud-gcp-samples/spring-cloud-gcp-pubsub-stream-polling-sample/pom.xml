@@ -10,8 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>spring-cloud-gcp-pubsub-binder-sample</artifactId>
-    <name>Spring Cloud GCP Code Sample - Pub/Sub Stream</name>
+    <artifactId>spring-cloud-gcp-pubsub-stream-polling-sample</artifactId>
+    <name>Spring Cloud GCP Code Sample - Pub/Sub Binder for Spring Cloud Stream Polling</name>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
     <dependencyManagement>
