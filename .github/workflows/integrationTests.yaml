@@ -89,6 +89,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           continue-after-seconds: 1200 # 30 min
+          same-branch-only: false
       - name: Integration Tests
         id: intTest1
         continue-on-error: true
