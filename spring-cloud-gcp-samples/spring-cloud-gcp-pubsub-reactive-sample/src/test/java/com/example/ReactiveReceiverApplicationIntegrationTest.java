@@ -66,16 +66,11 @@ public class ReactiveReceiverApplicationIntegrationTest {
 
 	@Test
 	public void testSample() throws UnsupportedEncodingException {
-		// clear any old messages
-		System.out.println("Cleared " +
-				pubSubTemplate.pullAndAck("exampleSubscription", 1000, true).size() +
-				" old messages");
-
 		webTestClient.post()
 				.uri(uriBuilder -> uriBuilder
 						.path("/postMessage")
 						.queryParam("message", "reactive test msg")
-						.queryParam("count", (ReactiveController.MAX_RESPONSE_ITEMS + 10) + "")
+						.queryParam("count", (ReactiveController.MAX_RESPONSE_ITEMS) + "")
 						.build())
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.exchange();
