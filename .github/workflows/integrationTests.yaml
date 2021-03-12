@@ -9,7 +9,7 @@ on:
 
 jobs:
   integrationTests:
-    if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp'
+    if: github.repository == 'GoogleCloudPlatform/spring-cloud-gcp' && github.actor != 'dependabot'
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
