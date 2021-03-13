@@ -15,7 +15,7 @@
     <name>Spring Cloud GCP Code Sample - Pub/Sub Bus Configuration Management</name>
 
     <properties>
-        <spring-cloud-config.version>3.0.0</spring-cloud-config.version>
+        <spring-cloud-config.version>3.0.1</spring-cloud-config.version>
     </properties>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
