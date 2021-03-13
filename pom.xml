@@ -35,7 +35,7 @@
 	</distributionManagement>
 
 	<properties>
-		<app-engine-maven-plugin.version>2.3.0</app-engine-maven-plugin.version>
+		<app-engine-maven-plugin.version>2.4.0</app-engine-maven-plugin.version>
 		<asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
 		<errorprone.version>2.3.4</errorprone.version>
 		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
