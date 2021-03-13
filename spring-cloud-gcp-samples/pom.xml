@@ -23,7 +23,7 @@
 
 		<!-- Checkstyle version settings. Keep in sync with ../pom.xml -->
 		<spring-cloud-build-tools.version>3.0.1</spring-cloud-build-tools.version>
-		<maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
+		<maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
 		<app-engine-maven-plugin.version>2.4.0</app-engine-maven-plugin.version>
 
 		<skip.surefire.tests>false</skip.surefire.tests>
