@@ -1,6 +1,9 @@
 name: Linkage Check
 
 on:
+  pull_request:
+    branches:
+      - 'dependabot/**'
   workflow_dispatch:
   schedule:
     - cron: '00 9 * * *' # 09:00 UTC every day
