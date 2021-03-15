@@ -118,7 +118,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		super.doStop();
 	}
 
-	@SuppressWarnings("deprecation")
 	private void consumeMessage(ConvertedBasicAcknowledgeablePubsubMessage<?> message) {
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());

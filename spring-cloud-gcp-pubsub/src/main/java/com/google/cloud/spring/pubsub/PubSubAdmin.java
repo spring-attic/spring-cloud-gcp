@@ -256,7 +256,8 @@ public class PubSubAdmin implements AutoCloseable {
 	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param builder a Subscription.Builder straight from the client API library that exposes all available knobs and
-	 * levers
+	 * levers. The name and topic fields will be expanded to fully qualified names (i.e.
+	 * "projects/my-project/topic/my-topic") if they are not already.
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(Subscription.Builder builder) {

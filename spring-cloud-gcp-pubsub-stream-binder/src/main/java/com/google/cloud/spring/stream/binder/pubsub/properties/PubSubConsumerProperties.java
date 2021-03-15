@@ -34,6 +34,8 @@ public class PubSubConsumerProperties extends PubSubCommonProperties {
 
 	private String subscriptionName = null;
 
+	private DeadLetterPolicy deadLetterPolicy = null;
+
 	public AckMode getAckMode() {
 		return ackMode;
 	}
@@ -56,5 +58,35 @@ public class PubSubConsumerProperties extends PubSubCommonProperties {
 
 	public void setSubscriptionName(String subscriptionName) {
 		this.subscriptionName = subscriptionName;
+	}
+
+	public DeadLetterPolicy getDeadLetterPolicy() {
+		return deadLetterPolicy;
+	}
+
+	public void setDeadLetterPolicy(DeadLetterPolicy deadLetterPolicy) {
+		this.deadLetterPolicy = deadLetterPolicy;
+	}
+
+	public static class DeadLetterPolicy {
+		private String deadLetterTopic;
+
+		private Integer maxDeliveryAttempts;
+
+		public String getDeadLetterTopic() {
+			return deadLetterTopic;
+		}
+
+		public void setDeadLetterTopic(String deadLetterTopic) {
+			this.deadLetterTopic = deadLetterTopic;
+		}
+
+		public Integer getMaxDeliveryAttempts() {
+			return maxDeliveryAttempts;
+		}
+
+		public void setMaxDeliveryAttempts(Integer maxDeliveryAttempts) {
+			this.maxDeliveryAttempts = maxDeliveryAttempts;
+		}
 	}
 }
