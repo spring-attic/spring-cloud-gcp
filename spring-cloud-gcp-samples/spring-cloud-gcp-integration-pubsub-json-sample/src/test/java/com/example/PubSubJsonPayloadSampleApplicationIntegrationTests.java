@@ -16,12 +16,12 @@
 
 package com.example;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import com.google.cloud.spring.core.util.MapBuilder;
-import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,7 +73,7 @@ public class PubSubJsonPayloadSampleApplicationIntegrationTests {
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 
-		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+		await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 			ResponseEntity<List<Person>> response = this.testRestTemplate.exchange(
 					"/listPersons",
 					HttpMethod.GET,

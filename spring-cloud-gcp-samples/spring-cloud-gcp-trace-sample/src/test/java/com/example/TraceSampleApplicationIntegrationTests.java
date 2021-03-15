@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -38,7 +39,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import lombok.extern.slf4j.Slf4j;
-import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -139,7 +139,7 @@ public class TraceSampleApplicationIntegrationTests {
 				this.projectIdProvider.getProjectId(), startDateTime.toStringRfc3339());
 
 		await().atMost(4, TimeUnit.MINUTES)
-				.pollInterval(Duration.TWO_SECONDS)
+				.pollInterval(Duration.ofSeconds(2))
 				.ignoreExceptionsMatching(e -> e.getMessage().contains("Requested entity was not found"))
 				.untilAsserted(() -> {
 

@@ -45,7 +45,7 @@ public class ReactiveController {
 	/**
 	 * Max number of messages returned from one call. Requests above this limit will be truncated to this limit.
 	 */
-	public final static int MAX_RESPONSE_ITEMS = 100;
+	public static final int MAX_RESPONSE_ITEMS = 100;
 
 	@Autowired
 	PubSubReactiveFactory reactiveFactory;

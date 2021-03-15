@@ -17,6 +17,7 @@
 package com.google.cloud.spring.bigquery.integration.outbound;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +34,6 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import com.google.cloud.spring.bigquery.core.BigQueryTestConfiguration;
 import com.google.cloud.spring.bigquery.integration.BigQuerySpringMessageHeaders;
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -110,7 +110,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
 
 		// Assert that a BigQuery polling task is scheduled successfully.
-		await().atMost(Duration.FIVE_SECONDS)
+		await().atMost(Duration.ofSeconds(5))
 				.untilAsserted(
 						() -> assertThat(
 								this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1));
@@ -143,7 +143,7 @@ public class BigQueryFileMessageHandlerIntegrationTests {
 				(ListenableFuture<Job>) this.messageHandler.handleRequestMessage(message);
 
 		// Assert that a BigQuery polling task is scheduled successfully.
-		await().atMost(Duration.FIVE_SECONDS)
+		await().atMost(Duration.ofSeconds(5))
 				.untilAsserted(
 						() -> assertThat(
 								this.taskScheduler.getScheduledThreadPoolExecutor().getQueue()).hasSize(1));

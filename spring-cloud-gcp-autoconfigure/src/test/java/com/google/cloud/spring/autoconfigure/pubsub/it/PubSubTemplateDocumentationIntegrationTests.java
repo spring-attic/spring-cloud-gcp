@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.autoconfigure.pubsub.it;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,6 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -82,7 +82,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			pubSubTemplate.publish(topicName, "message", headers).get();
 			//end::publish[]
 
-			await().atMost(new Duration(30, TimeUnit.SECONDS)).untilAsserted(() -> {
+			await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
 				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 				assertThat(pubsubMessage).isNotNull();
@@ -111,16 +111,16 @@ public class PubSubTemplateDocumentationIntegrationTests {
 				//tag::create_topic[]
 				pubSubAdmin.createTopic(topicName);
 				//end::create_topic[]
-				await().atMost(Duration.ONE_MINUTE)
-						.pollInterval(Duration.TWO_SECONDS)
+				await().atMost(Duration.ofMinutes(1))
+						.pollInterval(Duration.ofSeconds(2))
 						.untilAsserted(() -> assertThat(pubSubAdmin.getTopic(topicName)).isNotNull());
 
 				//tag::create_subscription[]
 				pubSubAdmin.createSubscription(subscriptionName, topicName);
 				//end::create_subscription[]
 
-				await().atMost(Duration.ONE_MINUTE)
-						.pollInterval(Duration.TWO_SECONDS)
+				await().atMost(Duration.ofMinutes(1))
+						.pollInterval(Duration.ofSeconds(2))
 						.untilAsserted(() -> assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull());
 
 				pubSubTest.run(context, pubSubTemplate, subscriptionName, topicName);
@@ -183,7 +183,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 			pubSubTemplate.publish(topicName, "message");
 			Logger logger = new Logger();
-			await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+			await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 				// tag::pull[]
 				int maxMessages = 10;
 				boolean returnImmediately = false;
@@ -219,7 +219,7 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			pubSubTemplate.publish(topicName, user);
 			// end::json_publish[]
 
-			await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+			await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 				// tag::json_pull[]
 				int maxMessages = 1;
 				boolean returnImmediately = false;
@@ -256,8 +256,8 @@ public class PubSubTemplateDocumentationIntegrationTests {
 			GenericMessage<String> message = new GenericMessage<>(payload, Collections.singletonMap("sendToTopic", topicName));
 			adapter.handleMessage(message);
 
-			await().atMost(Duration.ONE_MINUTE)
-					.pollInterval(Duration.TWO_SECONDS)
+			await().atMost(Duration.ofMinutes(1))
+					.pollInterval(Duration.ofSeconds(2))
 					.untilAsserted(() -> {
 				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 				assertThat(pubsubMessage).isNotNull();

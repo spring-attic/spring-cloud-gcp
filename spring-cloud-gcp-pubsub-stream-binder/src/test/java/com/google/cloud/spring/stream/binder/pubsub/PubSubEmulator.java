@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.awaitility.Duration;
 import org.junit.rules.ExternalResource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -217,8 +217,8 @@ public class PubSubEmulator extends ExternalResource {
 	 * to fail the test.
 	 */
 	private void createConfig() {
-		await().pollInterval(Duration.ONE_SECOND)
-				.atMost(Duration.FIVE_SECONDS)
+		await().pollInterval(Duration.ofSeconds(1))
+				.atMost(Duration.ofSeconds(5))
 				.untilAsserted(() ->
 					assertThat(EMULATOR_CONFIG_PATH.toFile()).exists()
 				);

@@ -16,8 +16,9 @@
 
 package com.google.cloud.spring.secretmanager.it;
 
+import java.time.Duration;
+
 import com.google.cloud.spring.secretmanager.SecretManagerTemplate;
-import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +56,7 @@ public class SecretManagerTemplateIntegrationTests {
 	public void testReadWriteSecrets() {
 		secretManagerTemplate.createSecret("test-secret-1234", "1234");
 
-		await().atMost(Duration.FIVE_SECONDS).untilAsserted(() -> {
+		await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
 			String secretString = secretManagerTemplate.getSecretString("test-secret-1234");
 			assertThat(secretString).isEqualTo("1234");
 
@@ -72,13 +73,13 @@ public class SecretManagerTemplateIntegrationTests {
 	@Test
 	public void testUpdateSecrets() {
 		secretManagerTemplate.createSecret("test-update-secret", "5555");
-		await().atMost(Duration.FIVE_SECONDS).untilAsserted(() -> {
+		await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
 			String secretString = secretManagerTemplate.getSecretString("test-update-secret");
 			assertThat(secretString).isEqualTo("5555");
 		});
 
 		secretManagerTemplate.createSecret("test-update-secret", "6666");
-		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+		await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 			String secretString = secretManagerTemplate.getSecretString("test-update-secret");
 			assertThat(secretString).isEqualTo("6666");
 

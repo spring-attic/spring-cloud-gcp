@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.data.spanner.test;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,6 @@ import com.google.cloud.spring.data.spanner.test.domain.CommitTimestamps;
 import com.google.cloud.spring.data.spanner.test.domain.Trade;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.awaitility.Duration;
 
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
@@ -86,9 +86,9 @@ public class SpannerTestExecutionListener implements TestExecutionListener {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, false);
 		}
 
-		await().pollDelay(Duration.FIVE_SECONDS)
-				.pollInterval(Duration.TWO_SECONDS)
-				.atMost(Duration.ONE_MINUTE)
+		await().pollDelay(Duration.ofSeconds(5))
+				.pollInterval(Duration.ofSeconds(2))
+				.atMost(Duration.ofMinutes(1))
 				.untilAsserted(() -> assertThat(this.spannerDatabaseAdminTemplate.databaseExists()).isTrue());
 	}
 

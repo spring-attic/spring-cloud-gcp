@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.autoconfigure.pubsub.it;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +49,6 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.awaitility.Awaitility;
-import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -194,9 +194,9 @@ public class PubSubTemplateIntegrationTests {
 			});
 
 			AtomicInteger messagesCount = new AtomicInteger(0);
-			await().pollDelay(Duration.FIVE_SECONDS)
-					.pollInterval(Duration.ONE_HUNDRED_MILLISECONDS)
-					.timeout(Duration.ONE_MINUTE)
+			await().pollDelay(Duration.ofSeconds(5))
+					.pollInterval(Duration.ofMillis(100))
+					.timeout(Duration.ofMinutes(1))
 					.untilAsserted(() -> {
 						List<AcknowledgeablePubsubMessage> newAckableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
 						newAckableMessages.forEach(BasicAcknowledgeablePubsubMessage::ack);
@@ -226,7 +226,7 @@ public class PubSubTemplateIntegrationTests {
 					TestUser user = new TestUser("John", "password");
 					pubSubTemplate.publish(topicName, user);
 
-					await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+					await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
 						List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages =
 								pubSubTemplate.pullAndConvert(
 										subscriptionName, 1, true, TestUser.class);

@@ -17,6 +17,7 @@
 package com.google.cloud.spring.autoconfigure.trace;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +43,6 @@ import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
-import org.awaitility.Duration;
 import org.junit.Test;
 import org.mockito.stubbing.Answer;
 import zipkin2.Call;
@@ -133,7 +133,7 @@ public class StackdriverTraceAutoConfigurationTests {
 			MultipleSpanHandlersConfig.GcpTraceService gcpTraceService
 					= context.getBean(MultipleSpanHandlersConfig.GcpTraceService.class);
 			await().atMost(10, TimeUnit.SECONDS)
-					.pollInterval(Duration.ONE_SECOND)
+					.pollInterval(Duration.ofSeconds(1))
 					.untilAsserted(() -> {
 						assertThat(gcpTraceService.hasSpan(spanId)).isTrue();
 

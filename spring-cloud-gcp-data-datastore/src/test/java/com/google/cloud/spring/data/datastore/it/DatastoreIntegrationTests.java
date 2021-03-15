@@ -16,6 +16,7 @@
 
 package com.google.cloud.spring.data.datastore.it;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +54,6 @@ import com.google.cloud.spring.data.datastore.entities.Store;
 import com.google.cloud.spring.data.datastore.it.TestEntity.Shape;
 import com.google.cloud.spring.data.datastore.repository.DatastoreRepository;
 import com.google.cloud.spring.data.datastore.repository.query.Query;
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -562,8 +562,8 @@ public class DatastoreIntegrationTests extends AbstractDatastoreIntegrationTests
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		await().pollDelay(Duration.TWO_SECONDS)
-				.timeout(Duration.ONE_MINUTE)
+		await().pollDelay(Duration.ofSeconds(2))
+				.timeout(Duration.ofMinutes(1))
 				.untilAsserted(() -> {
 					assertThat(this.testEntityRepository.count()).isZero();
 					assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
