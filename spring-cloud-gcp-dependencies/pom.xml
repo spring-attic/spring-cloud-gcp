@@ -29,7 +29,7 @@
 	</distributionManagement>
 
 	<properties>
-		<gcp-libraries-bom.version>16.2.0</gcp-libraries-bom.version>
+		<gcp-libraries-bom.version>19.0.0</gcp-libraries-bom.version>
 		<cloud-sql-socket-factory.version>1.2.1</cloud-sql-socket-factory.version>
 		<guava.version>30.0-jre</guava.version>
 	</properties>

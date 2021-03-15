@@ -22,7 +22,7 @@ import java.util.Map;
 import com.google.api.gax.rpc.HeaderProvider;
 
 /**
- * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
+ * Provides the user-agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
  * Integration.
  *
  * @author João André Martins
@@ -37,12 +37,12 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 
 	public UserAgentHeaderProvider(Class<?> clazz) {
 		this.userAgent = computeUserAgent(clazz);
-		this.headers = Collections.singletonMap("User-Agent", this.userAgent);
+		this.headers = Collections.singletonMap("user-agent", this.userAgent);
 	}
 
 	/**
-	 * Returns the "User-Agent" header whose value should be added to the google-cloud-java REST API calls.
-	 * e.g., {@code User-Agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 * Returns the "user-agent" header whose value should be added to the google-cloud-java REST API calls.
+	 * e.g., {@code user-agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
 	 */
 	@Override
 	public Map<String, String> getHeaders() {
@@ -50,7 +50,7 @@ public class UserAgentHeaderProvider implements HeaderProvider {
 	}
 
 	/**
-	 * Returns the "User-Agent" header value which should be added to the google-cloud-java REST API calls.
+	 * Returns the "user-agent" header value which should be added to the google-cloud-java REST API calls.
 	 * e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
 	 *
 	 * @return the user agent string.

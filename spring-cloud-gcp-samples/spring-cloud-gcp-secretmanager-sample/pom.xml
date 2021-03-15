@@ -30,6 +30,11 @@
       <artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
     <!-- Test-related dependencies. -->
     <dependency>
       <groupId>junit</groupId>

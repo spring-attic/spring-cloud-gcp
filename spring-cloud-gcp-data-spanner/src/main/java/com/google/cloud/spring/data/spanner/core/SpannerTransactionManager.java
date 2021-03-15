@@ -31,6 +31,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
+import com.google.cloud.spanner.Options.UpdateOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
@@ -110,22 +111,22 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				}
 
 				@Override
-				public long executeUpdate(Statement statement) {
+				public long executeUpdate(Statement statement, UpdateOption... updateOptions) {
 					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
-				public ApiFuture<Long> executeUpdateAsync(Statement statement) {
+				public ApiFuture<Long> executeUpdateAsync(Statement statement, UpdateOption... updateOptions) {
 					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
-				public long[] batchUpdate(Iterable<Statement> iterable) {
+				public long[] batchUpdate(Iterable<Statement> iterable, UpdateOption... updateOptions) {
 					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
 				@Override
-				public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> iterable) {
+				public ApiFuture<long[]> batchUpdateAsync(Iterable<Statement> iterable, UpdateOption... updateOptions) {
 					throw new IllegalStateException(DML_ERROR_MSG);
 				}
 
