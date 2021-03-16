@@ -37,7 +37,7 @@
 	<properties>
 		<app-engine-maven-plugin.version>2.4.0</app-engine-maven-plugin.version>
 		<asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
-		<errorprone.version>2.3.4</errorprone.version>
+		<errorprone.version>2.5.1</errorprone.version>
 		<integration-test.pattern>**/*IntegrationTest*</integration-test.pattern>
 		<java-cfenv.version>2.3.0</java-cfenv.version>
 		<javadoc.failOnError>false</javadoc.failOnError>
@@ -454,7 +454,7 @@
 		<profile>
 			<id>errorprone_java_9_and_up</id>
 			<activation>
-				<jdk>[9,13]</jdk>
+				<jdk>[9,]</jdk>
 			</activation>
 			<build>
 				<pluginManagement>
@@ -469,7 +469,6 @@
 								<compilerArgs>
 									<arg>-XDcompilePolicy=simple</arg>
 									<arg>-Xplugin:ErrorProne</arg>
-									<arg>-parameters</arg>
 								</compilerArgs>
 								<annotationProcessorPaths>
 									<path>
@@ -490,31 +489,22 @@
 			<activation>
 				<jdk>1.8</jdk>
 			</activation>
+			<properties>
+				<javac.version>9+181-r4173-1</javac.version>
+			</properties>
 			<build>
 				<pluginManagement>
 					<plugins>
 						<plugin>
 							<artifactId>maven-compiler-plugin</artifactId>
+							<version>3.8.0</version>
 							<configuration>
-								<compilerId>javac-with-errorprone</compilerId>
-								<forceJavacCompilerUse>true</forceJavacCompilerUse>
-								<compilerArgs>
-									<!-- Enable all warnings -->
-									<compilerArg>-Xlint:all</compilerArg>
-									<!-- Disable options warning because we will have differences between the compiler and source code level-->
-									<compilerArg>-Xlint:-options</compilerArg>
-									<!-- Disable serialversionuid warnings -->
-									<compilerArg>-Xlint:-serial</compilerArg>
-									<!--compilerArg>-Werror</compilerArg-->
-									<arg>-parameters</arg>
+								<fork>true</fork>
+								<compilerArgs combine.children="append">
+									<arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
 								</compilerArgs>
 							</configuration>
 							<dependencies>
-								<dependency>
-									<groupId>org.codehaus.plexus</groupId>
-									<artifactId>plexus-compiler-javac-errorprone</artifactId>
-									<version>2.8.6</version>
-								</dependency>
 								<dependency>
 									<groupId>com.google.errorprone</groupId>
 									<artifactId>error_prone_core</artifactId>

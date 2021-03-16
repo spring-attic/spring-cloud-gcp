@@ -75,6 +75,7 @@ public class SpannerQueryLookupStrategyTests {
 	private SpelExpressionParser spelExpressionParser;
 
 	@Before
+	@SuppressWarnings("BadAnnotationImplementation")
 	public void initMocks() {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.spannerTemplate = mock(SpannerTemplate.class);
