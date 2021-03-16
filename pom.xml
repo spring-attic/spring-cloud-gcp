@@ -449,8 +449,8 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- Error prone; plugin is recommended but only works with Java 9 - 13.
-		Update activation jdk when this issue is fixed: https://github.com/google/error-prone/issues/1106 -->
+
+		<!-- Error prone; JDK 8 requires a different configuration than 9+ -->
 		<profile>
 			<id>errorprone_java_9_and_up</id>
 			<activation>
