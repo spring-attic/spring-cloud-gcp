@@ -64,8 +64,6 @@ jobs:
           install
 
     - name: Unit Tests
-      id: unitTest1
-      continue-on-error: true
       run: |
         ./mvnw \
           --batch-mode \
