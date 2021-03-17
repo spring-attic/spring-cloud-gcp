@@ -43,7 +43,8 @@
 |spring.cloud.gcp.metrics.enabled | true | Auto-configure Google Cloud Monitoring for Micrometer.
 |spring.cloud.gcp.metrics.project-id |  | Overrides the GCP project ID specified in the Core module.
 |spring.cloud.gcp.project-id |  | GCP project ID where services are running.
-|spring.cloud.gcp.pubsub.credentials.encoded-key |  | 
+|spring.cloud.gcp.pubsub.binder.enabled | true | Auto-configure Google Cloud Pub/Sub Stream Binder components.
+|spring.cloud.gcp.pubsub.credentials.encoded-key |  |
 |spring.cloud.gcp.pubsub.credentials.location |  | 
 |spring.cloud.gcp.pubsub.credentials.scopes |  | 
 |spring.cloud.gcp.pubsub.emulator-host |  | The host and port of the local running emulator. If provided, this will setup the client to connect against a running pub/sub emulator.

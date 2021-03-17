@@ -55,6 +55,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.cloud.gcp.pubsub.binder.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Pub/Sub Stream Binder components.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.cloud.gcp.pubsub.reactive.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Pub/Sub Reactive components.",
