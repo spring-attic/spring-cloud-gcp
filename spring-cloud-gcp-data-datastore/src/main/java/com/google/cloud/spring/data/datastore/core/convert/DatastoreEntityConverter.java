@@ -19,6 +19,7 @@ package com.google.cloud.spring.data.datastore.core.convert;
 import java.util.Map;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.spring.data.datastore.core.mapping.DatastorePersistentEntity;
 
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.convert.EntityWriter;
@@ -39,6 +40,15 @@ public interface DatastoreEntityConverter extends
 	 * @return the conversions used.
 	 */
 	ReadWriteConversions getConversions();
+
+	/**
+	 * Provide a {@link DatastorePersistentEntity} with support for discriminator fields.
+	 * @param entityClass the entity class
+	 * @param entity the Datastore entity
+	 * @param <T> the type of the entity
+	 * @return {@link DatastorePersistentEntity} for the entity type with support for discriminator fields.
+	 */
+	<T> DatastorePersistentEntity<T> getDiscriminationPersistentEntity(Class<T> entityClass, BaseEntity<?> entity);
 
 	/**
 	 * Read the entity as a {@link Map}.

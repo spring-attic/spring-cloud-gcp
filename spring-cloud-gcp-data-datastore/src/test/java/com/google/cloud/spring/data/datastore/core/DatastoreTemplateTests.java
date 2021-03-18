@@ -58,6 +58,7 @@ import com.google.cloud.spring.data.datastore.core.convert.ObjectToKeyFactory;
 import com.google.cloud.spring.data.datastore.core.convert.ReadWriteConversions;
 import com.google.cloud.spring.data.datastore.core.mapping.DatastoreDataException;
 import com.google.cloud.spring.data.datastore.core.mapping.DatastoreMappingContext;
+import com.google.cloud.spring.data.datastore.core.mapping.DatastorePersistentEntity;
 import com.google.cloud.spring.data.datastore.core.mapping.Descendants;
 import com.google.cloud.spring.data.datastore.core.mapping.DiscriminatorField;
 import com.google.cloud.spring.data.datastore.core.mapping.DiscriminatorValue;
@@ -237,12 +238,20 @@ public class DatastoreTemplateTests {
 			QueryResults childTestEntityQueryResults, QueryResults testEntityQueryResults) {
 		// mocking the converter to return the final objects corresponding to their
 		// specific entities.
+		DatastorePersistentEntity testEntityPE = new DatastoreMappingContext().getDatastorePersistentEntity(TestEntity.class);
+		DatastorePersistentEntity childEntityPE = new DatastoreMappingContext().getDatastorePersistentEntity(ChildEntity.class);
 		when(this.datastoreEntityConverter.read(TestEntity.class, this.e1))
 				.thenReturn(this.ob1);
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(TestEntity.class, this.e1))
+				.thenReturn(testEntityPE);
 		when(this.datastoreEntityConverter.read(TestEntity.class, this.e2))
 				.thenReturn(this.ob2);
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(TestEntity.class, this.e2))
+				.thenReturn(testEntityPE);
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
 				.thenAnswer(invocationOnMock -> createChildEntity());
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(eq(ChildEntity.class), same(ce1)))
+				.thenReturn(childEntityPE);
 
 		doAnswer(invocation -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
@@ -483,13 +492,21 @@ public class DatastoreTemplateTests {
 		ReferenceTestEntity childEntity = new ReferenceTestEntity();
 		ReferenceTestEntity childEntity2 = new ReferenceTestEntity();
 
+		DatastorePersistentEntity referenceTestEntityPE = new DatastoreMappingContext().getDatastorePersistentEntity(ReferenceTestEntity.class);
+
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(referenceTestDatastoreEntity)))
 				.thenAnswer(invocationOnMock -> referenceTestEntity);
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(eq(ReferenceTestEntity.class), same(referenceTestDatastoreEntity)))
+				.thenReturn(referenceTestEntityPE);
 
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(child)))
 				.thenAnswer(invocationOnMock -> childEntity);
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(eq(ReferenceTestEntity.class), same(child)))
+				.thenReturn(referenceTestEntityPE);
 		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(child2)))
 				.thenAnswer(invocationOnMock -> childEntity2);
+		when(this.datastoreEntityConverter.getDiscriminationPersistentEntity(eq(ReferenceTestEntity.class), same(child2)))
+				.thenReturn(referenceTestEntityPE);
 
 		verifyBeforeAndAfterEvents(null,
 				new AfterFindByKeyEvent(Collections.singletonList(referenceTestEntity),

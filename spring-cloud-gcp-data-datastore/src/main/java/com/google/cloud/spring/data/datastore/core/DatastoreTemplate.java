@@ -611,19 +611,13 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			return Collections.emptyList();
 		}
 
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entityClass);
-
 		return keys.stream()
 				.map(key -> convertEntityResolveDescendantsAndReferences(entityClass,
-				datastorePersistentEntity,
-				key,
-				context)).filter(Objects::nonNull)
+				key, context)).filter(Objects::nonNull)
 				.collect(Collectors.toList());
 	}
 
 	private <T> T convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
-			DatastorePersistentEntity datastorePersistentEntity,
 			BaseKey key, ReadContext context) {
 		T convertedObject;
 		if (context.converted(key)) {
@@ -640,8 +634,10 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 			//raw Datastore entity is no longer needed
 			context.removeReadEntity(key);
 			if (convertedObject != null) {
-				resolveDescendantProperties(datastorePersistentEntity, readEntity, convertedObject, context);
-				resolveReferenceProperties(datastorePersistentEntity, readEntity, convertedObject, context);
+				DatastorePersistentEntity<T> discriminatedEntity = this.datastoreEntityConverter
+						.getDiscriminationPersistentEntity(entityClass, readEntity);
+				resolveDescendantProperties(discriminatedEntity, readEntity, convertedObject, context);
+				resolveReferenceProperties(discriminatedEntity, readEntity, convertedObject, context);
 			}
 		}
 
@@ -737,10 +733,19 @@ public class DatastoreTemplate implements DatastoreOperations, ApplicationEventP
 					Key entityKey = (Key) entity.getKey();
 					Key ancestorKey = KeyUtil.getKeyWithoutAncestors(entityKey);
 
+					DatastorePersistentEntity descendantEntityType = this.datastoreMappingContext
+							.getPersistentEntity(descendantType);
+
+					Filter ancestorFilter = descendantEntityType.getDiscriminationFieldName() != null ?
+							StructuredQuery.CompositeFilter.and(
+									PropertyFilter.eq(descendantEntityType.getDiscriminationFieldName(),
+											descendantEntityType.getDiscriminatorValue()),
+									PropertyFilter.hasAncestor(ancestorKey)
+							) : PropertyFilter.hasAncestor(ancestorKey);
+
 					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
-							.setKind(this.datastoreMappingContext
-									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor(ancestorKey))
+							.setKind(descendantEntityType.kindName())
+							.setFilter(ancestorFilter)
 							.build();
 
 					List entities = convertEntitiesForRead(
