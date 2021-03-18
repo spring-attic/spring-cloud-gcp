@@ -14,7 +14,7 @@
 	<name>Spring Cloud GCP Code Sample - Kotlin App Sample</name>
 
 	<properties>
-		<kotlin.version>1.4.21</kotlin.version>
+		<kotlin.version>1.4.31</kotlin.version>
 	</properties>
 
 	<!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
