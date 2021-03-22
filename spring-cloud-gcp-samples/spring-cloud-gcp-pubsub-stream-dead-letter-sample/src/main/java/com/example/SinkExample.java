@@ -21,7 +21,8 @@ import java.util.function.Consumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,8 +34,9 @@ import org.springframework.messaging.Message;
  * @author Travis Tomsu
  */
 @Configuration
-@Slf4j
 public class SinkExample {
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Bean
 	public Consumer<Message<UserMessage>> logUserMessage() {

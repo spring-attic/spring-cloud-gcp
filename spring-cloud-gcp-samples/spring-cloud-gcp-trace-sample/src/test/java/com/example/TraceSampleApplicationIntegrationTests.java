@@ -38,11 +38,12 @@ import com.google.devtools.cloudtrace.v1.TraceServiceGrpc.TraceServiceBlockingSt
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,10 +66,11 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  * @author Mike Eltsufin
  */
-@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class TraceSampleApplicationIntegrationTests {
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@LocalServerPort
 	private int port;

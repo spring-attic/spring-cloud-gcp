@@ -104,12 +104,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<!-- Nice to have for quick debugging	-->
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-
 	</dependencies>
 
 	<build>

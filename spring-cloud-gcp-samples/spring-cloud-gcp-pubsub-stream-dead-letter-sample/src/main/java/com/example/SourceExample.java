@@ -19,7 +19,8 @@ package com.example;
 import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -36,8 +37,9 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Travis Tomsu
  */
 @RestController
-@Slf4j
 public class SourceExample {
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	private Sinks.Many<UserMessage> postOffice;
