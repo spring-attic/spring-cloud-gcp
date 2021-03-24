@@ -16,55 +16,172 @@
 
 package com.google.cloud.spring.autoconfigure.pubsub.health;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
 import com.google.api.gax.rpc.StatusCode.Code;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
 
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
- * Default implemenation of
+ * Default implementation of
  * {@link org.springframework.boot.actuate.health.HealthIndicator} for Pub/Sub. Validates
- * if connection is successful by looking for a random generated subscription name that
- * won't be found. If no subscription is found we know the client is able to connect to
- * GCP Pub/Sub APIs.
+ * if connection is successful by pulling messages from the pubSubTemplate using
+ * {@link PubSubTemplate#pullAsync(String, Integer, Boolean)}.
+ *
+ * <p>If a custom subscription has been specified, this health indicator will signal "up"
+ * if messages are successfully pulled and (optionally) acknowledged <b>or</b> if a
+ * successful pull is performed but no messages are returned from Pub/Sub.</p>
+ *
+ * <p>If no subscription has been specified, this health indicator will pull messages from a random subscription
+ * that is expected not to exist. It will signal "up" if it is able to connect to GCP Pub/Sub APIs,
+ * i.e. the pull results in a response of {@link StatusCode.Code#NOT_FOUND} or
+ * {@link StatusCode.Code#PERMISSION_DENIED}.</p>
+ *
+ * <p>Note that messages pulled from the subscription will not be acknowledged, unless you
+ * set the {@code acknowledgeMessages} option to "true". However, take care not to configure
+ * a subscription that has a business impact, or leave the custom subscription out completely.
  *
  * @author Vinicius Carvalho
+ * @author Patrik Hörlin
  *
  * @since 1.2.2
  */
 public class PubSubHealthIndicator extends AbstractHealthIndicator {
 
+	/**
+	 * Template used when performing health check calls.
+	 */
 	private final PubSubTemplate pubSubTemplate;
 
-	public PubSubHealthIndicator(PubSubTemplate pubSubTemplate) {
+	/**
+	 * Indicates whether a user subscription has been configured.
+	 */
+	private final boolean specifiedSubscription;
+
+	/**
+	 * Subscription used when health checking.
+	 */
+	private final String subscription;
+
+	/**
+	 * Timeout when performing health check.
+	 */
+	private final long timeoutMillis;
+
+	/**
+	 * Whether pulled messages should be acknowledged.
+	 */
+	private final boolean acknowledgeMessages;
+
+	public PubSubHealthIndicator(PubSubTemplate pubSubTemplate, String healthCheckSubscription, long timeoutMillis, boolean acknowledgeMessages) {
 		super("Failed to connect to Pub/Sub APIs. Check your credentials and verify you have proper access to the service.");
-		Assert.notNull(pubSubTemplate, "PubSubTemplate can't be null");
+		Assert.notNull(pubSubTemplate, "pubSubTemplate can't be null");
 		this.pubSubTemplate = pubSubTemplate;
+		this.specifiedSubscription = StringUtils.hasText(healthCheckSubscription);
+		if (this.specifiedSubscription) {
+			this.subscription = healthCheckSubscription;
+		}
+		else {
+			this.subscription = "spring-cloud-gcp-healthcheck-" + UUID.randomUUID().toString();
+		}
+		this.timeoutMillis = timeoutMillis;
+		this.acknowledgeMessages = acknowledgeMessages;
+	}
+
+	void validateHealthCheck() {
+		doHealthCheck(
+				() -> { },
+				this::validationFailed,
+				this::validationFailed);
 	}
 
 	@Override
 	protected void doHealthCheck(Health.Builder builder) {
+		doHealthCheck(
+				builder::up,
+				builder::down,
+				e -> builder.withException(e).unknown());
+	}
+
+	private void doHealthCheck(Runnable up, Consumer<Throwable> down, Consumer<Throwable> unknown) {
 		try {
-			this.pubSubTemplate.pull("subscription-" + UUID.randomUUID().toString(), 1, true);
+			pullMessage();
+			up.run();
 		}
-		catch (ApiException aex) {
-			Code errorCode = aex.getStatusCode().getCode();
-			if (errorCode == StatusCode.Code.NOT_FOUND || errorCode == Code.PERMISSION_DENIED) {
-				builder.up();
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			unknown.accept(e);
+		}
+		catch (ExecutionException e) {
+			if (isHealthyException(e)) {
+				// ignore expected exceptions
+				up.run();
 			}
 			else {
-				builder.withException(aex).down();
+				down.accept(e);
 			}
 		}
+		catch (TimeoutException e) {
+			unknown.accept(e);
+		}
 		catch (Exception e) {
-			builder.withException(e).down();
+			down.accept(e);
 		}
 	}
 
+	private void pullMessage() throws InterruptedException, ExecutionException, TimeoutException {
+		ListenableFuture<List<AcknowledgeablePubsubMessage>> future = pubSubTemplate.pullAsync(this.subscription, 1, true);
+		List<AcknowledgeablePubsubMessage> messages = future.get(timeoutMillis, TimeUnit.MILLISECONDS);
+		if (this.acknowledgeMessages) {
+			messages.forEach(AcknowledgeablePubsubMessage::ack);
+		}
+	}
+
+	boolean isHealthyException(ExecutionException e) {
+		return !this.specifiedSubscription && isHealthyResponseForUnspecifiedSubscription(e);
+	}
+
+	private boolean isHealthyResponseForUnspecifiedSubscription(ExecutionException e) {
+		Throwable t = e.getCause();
+		if (t instanceof ApiException) {
+			ApiException aex = (ApiException) t;
+			Code errorCode = aex.getStatusCode().getCode();
+			return errorCode == StatusCode.Code.NOT_FOUND || errorCode == Code.PERMISSION_DENIED;
+		}
+		return false;
+	}
+
+	private void validationFailed(Throwable e) {
+		throw new BeanInitializationException("Validation of health indicator failed", e);
+	}
+
+	boolean isSpecifiedSubscription() {
+		return specifiedSubscription;
+	}
+
+	String getSubscription() {
+		return subscription;
+	}
+
+	long getTimeoutMillis() {
+		return timeoutMillis;
+	}
+
+	boolean isAcknowledgeMessages() {
+		return acknowledgeMessages;
+	}
 }

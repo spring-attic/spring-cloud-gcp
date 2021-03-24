@@ -138,6 +138,23 @@ The `pubsub` indicator will then roll up to the overall application status visib
 NOTE: If your application already has actuator and Cloud Pub/Sub starters, this health indicator is enabled by default.
 To disable the Cloud Pub/Sub indicator, set `management.health.pubsub.enabled` to `false`.
 
+The health indicator validates the connection to Pub/Sub by pulling messages from a Pub/Sub subscription.
+
+If no subscription has been specified via `spring.cloud.gcp.pubsub.health.subscription`, it will pull messages from a random subscription that is expected not to exist.
+It will signal "up" if it is able to connect to GCP Pub/Sub APIs, i.e. the pull results in a response of `NOT_FOUND` or `PERMISSION_DENIED`.
+
+If a custom subscription has been specified, this health indicator will signal "up" if messages are successfully pulled and (optionally) acknowledged, or when a successful pull is performed but no messages are returned from Pub/Sub.
+Note that messages pulled from the subscription will not be acknowledged, unless you set the `spring.cloud.gcp.pubsub.health.acknowledge-messages` option to `true`.
+So, take care not to configure a subscription that has a business impact, or instead leave the custom subscription out completely.
+
+|===
+| Name | Description | Required | Default value
+| `management.health.pubsub.enabled` | Whether to enable the Pub/Sub health indicator | No | `true` with Spring Boot Actuator, `false` otherwise
+| `spring.cloud.gcp.pubsub.health.subscription` | Subscription to health check against by pulling a message | No | Random non-existent
+| `spring.cloud.gcp.pubsub.health.timeout-millis` | Milliseconds to wait for response from Pub/Sub before timing out | No | `1000`
+| `spring.cloud.gcp.pubsub.health.acknowledge-messages` | Whether to acknowledge messages pulled from the optionally specified subscription | No | `false`
+|===
+
 === Pub/Sub Operations & Template
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without depending on any Google Cloud Pub/Sub API semantics.

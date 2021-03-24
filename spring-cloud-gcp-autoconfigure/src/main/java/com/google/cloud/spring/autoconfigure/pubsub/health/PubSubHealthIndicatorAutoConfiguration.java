@@ -31,8 +31,10 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 /**
  * {@link HealthContributorAutoConfiguration Auto-configuration} for
@@ -40,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Vinicius Carvalho
  * @author Elena Felder
+ * @author Patrik Hörlin
  *
  * @since 1.2.2
  */
@@ -49,13 +52,31 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnEnabledHealthIndicator("pubsub")
 @AutoConfigureBefore(HealthContributorAutoConfiguration.class)
 @AutoConfigureAfter(GcpPubSubAutoConfiguration.class)
+@EnableConfigurationProperties(PubSubHealthIndicatorProperties.class)
 public class PubSubHealthIndicatorAutoConfiguration extends
 		CompositeHealthContributorConfiguration<PubSubHealthIndicator, PubSubTemplate> {
+
+	private PubSubHealthIndicatorProperties pubSubHealthProperties;
+
+	public PubSubHealthIndicatorAutoConfiguration(PubSubHealthIndicatorProperties pubSubHealthProperties) {
+		this.pubSubHealthProperties = pubSubHealthProperties;
+	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = { "pubSubHealthIndicator", "pubSubHealthContributor"})
 	public HealthContributor pubSubHealthContributor(Map<String, PubSubTemplate> pubSubTemplates) {
+		Assert.notNull(pubSubTemplates, "pubSubTemplates must be provided");
 		return createContributor(pubSubTemplates);
 	}
 
+	@Override
+	protected PubSubHealthIndicator createIndicator(PubSubTemplate pubSubTemplate) {
+		PubSubHealthIndicator indicator = new PubSubHealthIndicator(
+				pubSubTemplate,
+				this.pubSubHealthProperties.getSubscription(),
+				this.pubSubHealthProperties.getTimeoutMillis(),
+				this.pubSubHealthProperties.isAcknowledgeMessages());
+		indicator.validateHealthCheck();
+		return indicator;
+	}
 }
