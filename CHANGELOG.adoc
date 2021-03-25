@@ -5,6 +5,51 @@ https://spring.io/projects/spring-cloud-gcp[Spring Cloud GCP] is a set of integr
 This document provides a high-level overview of the changes introduced in Spring Cloud GCP by release.
 For a detailed view of what has changed, refer to the https://github.com/GoogleCloudPlatform/spring-cloud-gcp/commits/main[commit history] on GitHub.
 
+== 2.0.2 (2021-03-25)
+
+=== General
+
+* Upgraded to Spring Cloud 2020.0.2 and Spring Boot 2.4.4
+* Upgraded to Google Cloud Libraries BOM 19.2.1
+* Added Java 16 support (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/391[#391])
+* Various code quality improvements with the help of SonarCloud.
+
+=== Cloud SQL
+
+* Disabled `CloudSqlEnvironmentPostProcessor` in bootstrap context (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/273[#273])
+** This enables the use of Secrets Manager property placeholders together with Cloud SQL configuration.
+
+=== BigQuery
+
+* Fixed a bug in the `BigQueryFileMessageHandler` where it referenced the wrong variable in the setter (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/270[#270])
+
+=== Datastore
+
+* Added `storeOnDisk` and `dataDir` configuration properties for Datastore Emulator (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/344[#344])
+* Fixed resolution of references and descendants for subclasses (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/377[#377])
+
+=== Firestore
+
+* Modified `Firestore.withParent()` to accept `String` instead of `Object` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/315[#315])
+
+=== Logging
+
+* Fixed the JSON layout logging levels mapping (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/314[#314])
+
+=== Pub/Sub
+
+* In Cloud Stream Pub/Sub Binder, added support for specifying a custom subscription as a consumer endpoint (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/262[#262])
+* Added `PubSubAdmin.createSubscription(Subscription.Builder)` to allow access to all subscription properties (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/343[#343])
+* Added warnings about the use of `returnImmediately=true` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/354[#354])
+* Added Cloud Stream Dead Letter Topic support (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/358[#358])
+* Added support for custom subscription name for Pub/Sub health check (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/330[#330])
+* Added support for message ordering when publishing (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/408[#408])
+** Introduced `spring.cloud.gcp.pubsub.publisher.enable-message-ordering` and `GcpPubSubHeaders.ORDERING_KEY` header
+
+=== Storage
+
+* Fixed: `PathResourceResolver` can't resolve a `GoogleStorageResource` due to no Google Storage `UrlStreamHandler` (https://github.com/GoogleCloudPlatform/spring-cloud-gcp/issues/210[#210])
+
 == 2.0.1 (2021-02-04)
 
 === General
