@@ -157,6 +157,7 @@ public class FirestoreRepositoryIntegrationTests {
 		this.userRepository.saveAll(users).blockLast();
 
 		assertThat(this.userRepository.count().block()).isEqualTo(2);
+		assertThat(this.userRepository.findBy(PageRequest.of(0, 10)).collectList().block()).containsExactly(u1, u2);
 		assertThat(this.userRepository.findByAge(22).collectList().block()).containsExactly(u1);
 		assertThat(this.userRepository.findByAgeNot(22).collectList().block()).containsExactly(u2);
 		assertThat(this.userRepository.findByHomeAddressCountry("USA").collectList().block()).containsExactly(u1);

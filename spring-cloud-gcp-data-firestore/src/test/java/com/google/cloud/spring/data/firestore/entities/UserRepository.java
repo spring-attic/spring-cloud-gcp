@@ -32,6 +32,8 @@ import org.springframework.data.domain.Sort;
  */
 //tag::repository[]
 public interface UserRepository extends FirestoreReactiveRepository<User> {
+	Flux<User> findBy(Pageable pageable);
+
 	Flux<User> findByAge(Integer age);
 
 	Flux<User> findByAgeNot(Integer age);
