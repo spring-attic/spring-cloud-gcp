@@ -61,6 +61,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	private BatchingSettings batchingSettings;
 
+	private Boolean enableMessageOrdering;
+
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
@@ -123,6 +125,14 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		this.batchingSettings = batchingSettings;
 	}
 
+	/**
+	 * Set whether message ordering should be enabled on the publisher.
+	 * @param enableMessageOrdering whether to enable message ordering
+	 */
+	public void setEnableMessageOrdering(Boolean enableMessageOrdering) {
+		this.enableMessageOrdering = enableMessageOrdering;
+	}
+
 	@Override
 	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
@@ -130,29 +140,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 				Publisher.Builder publisherBuilder =
 						Publisher.newBuilder(PubSubTopicUtils.toTopicName(topic, this.projectId));
 
-				if (this.executorProvider != null) {
-					publisherBuilder.setExecutorProvider(this.executorProvider);
-				}
-
-				if (this.channelProvider != null) {
-					publisherBuilder.setChannelProvider(this.channelProvider);
-				}
-
-				if (this.credentialsProvider != null) {
-					publisherBuilder.setCredentialsProvider(this.credentialsProvider);
-				}
-
-				if (this.headerProvider != null) {
-					publisherBuilder.setHeaderProvider(this.headerProvider);
-				}
-
-				if (this.retrySettings != null) {
-					publisherBuilder.setRetrySettings(this.retrySettings);
-				}
-
-				if (this.batchingSettings != null) {
-					publisherBuilder.setBatchingSettings(this.batchingSettings);
-				}
+				applyPublisherSettings(publisherBuilder);
 
 				return publisherBuilder.build();
 			}
@@ -161,6 +149,36 @@ public class DefaultPublisherFactory implements PublisherFactory {
 						"occurred.", ioe);
 			}
 		});
+	}
+
+	void applyPublisherSettings(Publisher.Builder publisherBuilder) {
+		if (this.executorProvider != null) {
+			publisherBuilder.setExecutorProvider(this.executorProvider);
+		}
+
+		if (this.channelProvider != null) {
+			publisherBuilder.setChannelProvider(this.channelProvider);
+		}
+
+		if (this.credentialsProvider != null) {
+			publisherBuilder.setCredentialsProvider(this.credentialsProvider);
+		}
+
+		if (this.headerProvider != null) {
+			publisherBuilder.setHeaderProvider(this.headerProvider);
+		}
+
+		if (this.retrySettings != null) {
+			publisherBuilder.setRetrySettings(this.retrySettings);
+		}
+
+		if (this.batchingSettings != null) {
+			publisherBuilder.setBatchingSettings(this.batchingSettings);
+		}
+
+		if (this.enableMessageOrdering != null) {
+			publisherBuilder.setEnableMessageOrdering(this.enableMessageOrdering);
+		}
 	}
 
 	Map<String, Publisher> getCache() {

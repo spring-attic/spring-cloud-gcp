@@ -45,6 +45,11 @@ public abstract class GcpPubSubHeaders {
 	public static final String ORIGINAL_MESSAGE = PREFIX + "original_message";
 
 	/**
+	 * The Pub/Sub message ordering key.
+	 */
+	public static final String ORDERING_KEY = PREFIX + "ordering_key";
+
+	/**
 	 * A simple utility method for pulling the {@link #ORIGINAL_MESSAGE} header out of a {@link Message}.
 	 *
 	 * @param message The Spring Message that was converted by a

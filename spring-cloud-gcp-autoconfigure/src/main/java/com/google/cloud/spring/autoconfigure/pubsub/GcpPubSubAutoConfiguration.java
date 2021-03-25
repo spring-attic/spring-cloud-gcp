@@ -309,6 +309,7 @@ public class GcpPubSubAutoConfiguration {
 		factory.setChannelProvider(publisherTransportChannelProvider);
 		retrySettings.ifAvailable(factory::setRetrySettings);
 		batchingSettings.ifAvailable(factory::setBatchingSettings);
+		factory.setEnableMessageOrdering(gcpPubSubProperties.getPublisher().getEnableMessageOrdering());
 		return factory;
 	}
 

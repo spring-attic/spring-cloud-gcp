@@ -63,14 +63,7 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 					payload.getClass().getName() + " to byte[] for sending to Pub/Sub.");
 		}
 
-		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
-				.setData(convertedPayload);
-
-		if (headers != null) {
-			pubsubMessageBuilder.putAllAttributes(headers);
-		}
-
-		return pubsubMessageBuilder.build();
+		return byteStringToPubSubMessage(convertedPayload, headers);
 
 	}
 

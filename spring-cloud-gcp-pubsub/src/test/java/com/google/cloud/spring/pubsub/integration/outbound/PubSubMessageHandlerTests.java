@@ -16,6 +16,8 @@
 
 package com.google.cloud.spring.pubsub.integration.outbound;
 
+import java.util.Collections;
+
 import com.google.cloud.spring.core.util.MapBuilder;
 import com.google.cloud.spring.pubsub.core.PubSubOperations;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
@@ -40,7 +42,6 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,7 +87,7 @@ public class PubSubMessageHandlerTests {
 	@Test
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
-		verify(this.pubSubTemplate, times(1))
+		verify(this.pubSubTemplate)
 				.publish(eq("testTopic"), eq("testPayload".getBytes()), anyMap());
 	}
 
@@ -99,7 +100,7 @@ public class PubSubMessageHandlerTests {
 						.put(GcpPubSubHeaders.TOPIC, "dynamicTopic")
 						.build());
 		this.adapter.handleMessage(dynamicMessage);
-		verify(this.pubSubTemplate, times(1))
+		verify(this.pubSubTemplate)
 			.publish(eq("dynamicTopic"), eq("testPayload".getBytes()), anyMap());
 	}
 
@@ -114,7 +115,7 @@ public class PubSubMessageHandlerTests {
 						.put("sendToTopic", "expressionTopic")
 						.build());
 		this.adapter.handleMessage(expressionMessage);
-		verify(this.pubSubTemplate, times(1))
+		verify(this.pubSubTemplate)
 				.publish(eq("expressionTopic"), eq("testPayload".getBytes()), anyMap());
 	}
 
@@ -125,7 +126,7 @@ public class PubSubMessageHandlerTests {
 		this.adapter.setPublishTimeoutExpression(timeout);
 
 		this.adapter.handleMessage(this.message);
-		verify(timeout, times(1)).getValue(isNull(), eq(this.message), eq(Long.class));
+		verify(timeout).getValue(isNull(), eq(this.message), eq(Long.class));
 	}
 
 	@Test
@@ -148,7 +149,7 @@ public class PubSubMessageHandlerTests {
 
 		assertThat(this.adapter.getPublishCallback()).isSameAs(callbackSpy);
 
-		verify(callbackSpy, times(1)).onSuccess("benfica");
+		verify(callbackSpy).onSuccess("benfica");
 	}
 
 	@Test
@@ -227,4 +228,18 @@ public class PubSubMessageHandlerTests {
 
 		this.adapter.setHeaderMapper(null);
 	}
+
+	@Test
+	public void testPublishWithOrderingKey() {
+		this.message = new GenericMessage<byte[]>("testPayload".getBytes(),
+				new MapBuilder<String, Object>()
+						.put(GcpPubSubHeaders.ORDERING_KEY, "key1")
+						.build());
+
+		this.adapter.handleMessage(this.message);
+		verify(this.pubSubTemplate)
+				.publish("testTopic", "testPayload".getBytes(),
+						Collections.singletonMap(GcpPubSubHeaders.ORDERING_KEY, "key1"));
+	}
+
 }

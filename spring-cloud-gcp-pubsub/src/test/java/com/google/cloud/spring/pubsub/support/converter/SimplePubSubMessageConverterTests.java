@@ -18,12 +18,15 @@ package com.google.cloud.spring.pubsub.support.converter;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.cloud.spring.core.util.MapBuilder;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import org.json.JSONException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -144,4 +147,15 @@ public class SimplePubSubMessageConverterTests {
 		assertThat(new String(convertedPubSubMessage.getData().toByteArray())).isEqualTo(TEST_STRING);
 		assertThat(convertedPubSubMessage.getAttributesMap()).isEqualTo(TEST_HEADERS);
 	}
+
+	@Test
+	public void testOrderingKeyHeader() throws JSONException {
+		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
+		PubsubMessage pubsubMessage = converter.toPubSubMessage("test payload",
+				Collections.singletonMap(GcpPubSubHeaders.ORDERING_KEY, "key1"));
+		assertThat(pubsubMessage).isNotNull();
+		assertThat(pubsubMessage.getOrderingKey()).isEqualTo("key1");
+		assertThat(pubsubMessage.getAttributesCount()).isZero();
+	}
+
 }

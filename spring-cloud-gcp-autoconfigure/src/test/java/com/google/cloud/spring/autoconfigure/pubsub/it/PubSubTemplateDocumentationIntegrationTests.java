@@ -34,6 +34,7 @@ import com.google.cloud.spring.pubsub.PubSubAdmin;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.cloud.spring.pubsub.integration.outbound.PubSubMessageHandler;
 import com.google.cloud.spring.pubsub.support.AcknowledgeablePubsubMessage;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import com.google.cloud.spring.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import com.google.cloud.spring.pubsub.support.converter.JacksonPubSubMessageConverter;
 import com.google.cloud.spring.pubsub.support.converter.PubSubMessageConverter;
@@ -65,7 +66,8 @@ import static org.awaitility.Awaitility.await;
 public class PubSubTemplateDocumentationIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
+			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0",
+					"spring.cloud.gcp.pubsub.publisher.enable-message-ordering=true")
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 
@@ -89,6 +91,35 @@ public class PubSubTemplateDocumentationIntegrationTests {
 				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message"));
 				assertThat(pubsubMessage.getAttributesCount()).isEqualTo(1);
 				assertThat(pubsubMessage.getAttributesOrThrow("key1")).isEqualTo("val1");
+			});
+		});
+	}
+
+	@Test
+	public void testCreatePublishPullNextAndDelete_ordering() {
+		pubSubTest((AssertableApplicationContext context, PubSubTemplate pubSubTemplate, String subscriptionName, String topicName) -> {
+			//tag::publish_ordering[]
+			Map<String, String> headers = Collections.singletonMap(GcpPubSubHeaders.ORDERING_KEY, "key1");
+			pubSubTemplate.publish(topicName, "message1", headers).get();
+			pubSubTemplate.publish(topicName, "message2", headers).get();
+			//end::publish_ordering[]
+
+			// message1
+			await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
+
+				assertThat(pubsubMessage).isNotNull();
+				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message1"));
+				assertThat(pubsubMessage.getAttributesCount()).isZero();
+			});
+
+			// message2
+			await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+				PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
+
+				assertThat(pubsubMessage).isNotNull();
+				assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("message2"));
+				assertThat(pubsubMessage.getAttributesCount()).isZero();
 			});
 		});
 	}

@@ -296,8 +296,11 @@ include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/
 
 These channel adapters contain header mappers that allow you to map, or filter out, headers from Spring to Google Cloud Pub/Sub messages, and vice-versa.
 By default, the inbound channel adapter maps every header on the Google Cloud Pub/Sub messages to the Spring messages produced by the adapter.
-The outbound channel adapter maps every header from Spring messages into Google Cloud Pub/Sub ones, except the ones added by Spring, like headers with key `"id"`, `"timestamp"` and `"gcp_pubsub_acknowledgement"`.
+The outbound channel adapter maps every header from Spring messages into Google Cloud Pub/Sub ones, except the ones added by Spring and some special headers, like headers with key `"id"`, `"timestamp"`, `"gcp_pubsub_acknowledgement"`, and `"gcp_pubsub_ordering_key"`.
 In the process, the outbound mapper also converts the value of the headers into string.
+
+Note that you can provide the `GcpPubSubHeaders.ORDERING_KEY` (`"gcp_pubsub_ordering_key"`) header, which will be automatically mapped to `PubsubMessage.orderingKey` property, and excluded from the headers in the published message.
+Remember to set `spring.cloud.gcp.pubsub.publisher.enable-message-ordering` to `true`, if you are publishing messages with this header.
 
 Each adapter declares a `setHeaderMapper()` method to let you further customize which headers you want to map from Spring to Google Cloud Pub/Sub, and vice-versa.
 

@@ -18,6 +18,8 @@ package com.google.cloud.spring.pubsub.support.converter;
 
 import java.util.Map;
 
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
+import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -44,4 +46,20 @@ public interface PubSubMessageConverter {
 	 * @return the object converted from the message's payload
 	 */
 	<T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType);
+
+	default PubsubMessage byteStringToPubSubMessage(ByteString payload, Map<String, String> headers) {
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
+				.setData(payload);
+
+		if (headers != null) {
+			pubsubMessageBuilder.putAllAttributes(headers);
+
+			if (headers.containsKey(GcpPubSubHeaders.ORDERING_KEY)) {
+				pubsubMessageBuilder.removeAttributes(GcpPubSubHeaders.ORDERING_KEY);
+				pubsubMessageBuilder.setOrderingKey(headers.get(GcpPubSubHeaders.ORDERING_KEY));
+			}
+		}
+
+		return pubsubMessageBuilder.build();
+	}
 }

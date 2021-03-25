@@ -16,10 +16,12 @@
 
 package com.google.cloud.spring.pubsub.support.converter;
 
+import java.util.Collections;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 import com.google.pubsub.v1.PubsubMessage;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -74,7 +76,27 @@ public class JacksonPubSubMessageConverterTests {
 	@Test
 	public void testToPubSubMessageWithNullPayload() throws JSONException {
 		PubsubMessage pubsubMessage = this.converter.toPubSubMessage(null, null);
-		Assert.assertNotNull(pubsubMessage);
+		assertThat(pubsubMessage).isNotNull();
+		assertThat(pubsubMessage.getAttributesCount()).isZero();
+	}
+
+	@Test
+	public void testToPubSubMessageWithOrderingKeyHeader() throws JSONException {
+		PubsubMessage pubsubMessage = this.converter.toPubSubMessage(null,
+				Collections.singletonMap(GcpPubSubHeaders.ORDERING_KEY, "key1"));
+		assertThat(pubsubMessage).isNotNull();
+		assertThat(pubsubMessage.getOrderingKey()).isEqualTo("key1");
+		assertThat(pubsubMessage.getAttributesCount()).isZero();
+	}
+
+	@Test
+	public void testToPubSubMessageWitHeader() throws JSONException {
+		PubsubMessage pubsubMessage = this.converter.toPubSubMessage(null,
+				Collections.singletonMap("custom-header", "val1"));
+		assertThat(pubsubMessage).isNotNull();
+		assertThat(pubsubMessage.getOrderingKey()).isEmpty();
+		assertThat(pubsubMessage.getAttributesCount()).isOne();
+		assertThat(pubsubMessage.getAttributesMap()).containsEntry("custom-header", "val1");
 	}
 
 	/**

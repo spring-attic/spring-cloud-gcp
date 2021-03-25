@@ -77,6 +77,8 @@ The delay threshold to use for batching.
 After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent. | No | 1 ms (batching off)
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching. | No | false
+| `spring.cloud.gcp.pubsub.publisher.enable-message-ordering`|
+Enables message ordering. | No | false
 |===
 
 ==== GRPC Connection Settings
@@ -175,6 +177,16 @@ include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/
 ----
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
+
+===== Ordering messages
+
+If you are relying on message converters and would like to provide an ordering key, use the `GcpPubSubHeaders.ORDERING_KEY` header.
+You will also need to make sure to enable message ordering on the publisher via the `spring.cloud.gcp.pubsub.publisher.enable-message-ordering` property.
+
+[source,java,indent=0]
+----
+include::{project-root}/spring-cloud-gcp-autoconfigure/src/test/java/com/google/cloud/spring/autoconfigure/pubsub/it/PubSubTemplateDocumentationIntegrationTests.java[tag=publish_ordering]
+----
 
 ==== Subscribing to a subscription
 

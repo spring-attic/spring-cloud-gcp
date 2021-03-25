@@ -126,6 +126,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private final Batching batching = new Batching();
 
+		/**
+		 * Enable message ordering setting.
+		 */
+		private Boolean enableMessageOrdering;
+
 		public Batching getBatching() {
 			return this.batching;
 		}
@@ -140,6 +145,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
+		}
+
+		public Boolean getEnableMessageOrdering() {
+			return enableMessageOrdering;
+		}
+
+		public void setEnableMessageOrdering(Boolean enableMessageOrdering) {
+			this.enableMessageOrdering = enableMessageOrdering;
 		}
 	}
 

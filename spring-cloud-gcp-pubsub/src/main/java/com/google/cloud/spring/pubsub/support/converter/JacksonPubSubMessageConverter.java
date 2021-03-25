@@ -48,14 +48,8 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	@Override
 	public PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers) {
 		try {
-			PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
-					.setData(ByteString.copyFrom(this.objectMapper.writeValueAsBytes(payload)));
-
-			if (headers != null) {
-				pubsubMessageBuilder.putAllAttributes(headers);
-			}
-
-			return pubsubMessageBuilder.build();
+			return byteStringToPubSubMessage(ByteString.copyFrom(
+					this.objectMapper.writeValueAsBytes(payload)), headers);
 		}
 		catch (JsonProcessingException ex) {
 			throw new PubSubMessageConversionException("JSON serialization of an object of type " +
