@@ -12,7 +12,7 @@ You can check our project website https://spring.io/projects/spring-cloud-gcp[he
 For a deep dive into the project, refer to the Spring Cloud GCP Reference documentation below or the https://googleapis.dev/java/spring-cloud-gcp/latest/index.html[latest Javadocs].
 
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/reference/html/index.html[Spring Cloud GCP Latest]
-* link:https://googlecloudplatform.github.io/spring-cloud-gcp/2.0.1/reference/html/index.html[Spring Cloud GCP 2.0.1]
+* link:https://googlecloudplatform.github.io/spring-cloud-gcp/2.0.2/reference/html/index.html[Spring Cloud GCP 2.0.2]
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.2.x/reference/html/index.html[Spring Cloud GCP 1.2.x]
 * link:https://googlecloudplatform.github.io/spring-cloud-gcp/1.1.x/single/spring-cloud-gcp.html[Spring Cloud GCP 1.1.x]
 
@@ -71,7 +71,7 @@ This will allow you to not specify versions for any of the Maven dependencies an
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -96,7 +96,7 @@ We offer `SNAPSHOT` versions of the project that always reflect the latest code 
 </repositories>
 ----
 
-For example, the version `2.0.2-SNAPSHOT` is available from this repository.
+For example, the version `2.0.3-SNAPSHOT` is available from this repository.
 
 == Spring Boot Starters
 

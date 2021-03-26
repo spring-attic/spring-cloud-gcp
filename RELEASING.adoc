@@ -74,9 +74,9 @@ This might take a while.
 
 . Confirm the reference documentation was published: https://googlecloudplatform.github.io/spring-cloud-gcp/$RELEASE_VERSION/reference/html/index.html. See section below for more information.
 
-. Increment the project base _patch_ version. For example, from `2.0.0-SNAPSHOT` to `2.0.1-SNAPSHOT`, do:
+. Increment the project base _patch_ version. For example, from `2.0.3-SNAPSHOT` to `2.0.4-SNAPSHOT`, do:
 ```
-$ ./mvnw versions:set -DprocessAllModules -DnewVersion=2.0.1-SNAPSHOT
+$ ./mvnw versions:set -DprocessAllModules -DnewVersion=2.0.4-SNAPSHOT
 ```
 
 == Uploading Javadocs
@@ -91,7 +91,7 @@ https://googleapis.dev/java/spring-cloud-gcp/latest/index.html
 2. Add a new Github SCM and fill out the following parameters:
 
     - SCM Name: Set this to `spring-cloud-gcp`
-    - Committish: Set this to the name of the new release branch or tag that you want to publish javadocs for (like `1.2.x` or `v1.2.1.RELEASE`).
+    - Committish: Set this to the name of the new release branch or tag that you want to publish javadocs for (like `1.2.x` or `v2.0.3`).
       Note that you must already have the `.kokoro/` scripts in the branch that you wish to publish javadocs for.
 
 3. Run the job.
@@ -103,7 +103,7 @@ All uploaded javadocs will be published under the following URL:
 https://googleapis.dev/java/spring-cloud-gcp/{BRANCH_VERSION_NAME}/index.html
 ----
 +
-Example: If you published the javadocs for version `2.0.0-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/2.0.0-SNAPSHOT/index.html
+Example: If you published the javadocs for version `2.0.3-SNAPSHOT`, then the URL would be: https://googleapis.dev/java/spring-cloud-gcp/2.0.3-SNAPSHOT/index.html
 
 
 == Updating Spring Documentation
