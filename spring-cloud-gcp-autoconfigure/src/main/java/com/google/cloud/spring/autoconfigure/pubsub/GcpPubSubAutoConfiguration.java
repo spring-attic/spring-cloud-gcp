@@ -310,6 +310,7 @@ public class GcpPubSubAutoConfiguration {
 		retrySettings.ifAvailable(factory::setRetrySettings);
 		batchingSettings.ifAvailable(factory::setBatchingSettings);
 		factory.setEnableMessageOrdering(gcpPubSubProperties.getPublisher().getEnableMessageOrdering());
+		factory.setEndpoint(gcpPubSubProperties.getPublisher().getEndpoint());
 		return factory;
 	}
 

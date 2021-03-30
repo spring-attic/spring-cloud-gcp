@@ -131,6 +131,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private Boolean enableMessageOrdering;
 
+		/**
+		 * Set publisher endpoint. Example: "us-east1-pubsub.googleapis.com:443".
+		 */
+		private String endpoint;
+
 		public Batching getBatching() {
 			return this.batching;
 		}
@@ -153,6 +158,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 		public void setEnableMessageOrdering(Boolean enableMessageOrdering) {
 			this.enableMessageOrdering = enableMessageOrdering;
+		}
+
+		public String getEndpoint() {
+			return endpoint;
+		}
+
+		public void setEndpoint(String endpoint) {
+			this.endpoint = endpoint;
 		}
 	}
 

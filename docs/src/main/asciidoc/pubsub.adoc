@@ -79,6 +79,10 @@ After this amount of time has elapsed (counting from the first element added), t
 Enables batching. | No | false
 | `spring.cloud.gcp.pubsub.publisher.enable-message-ordering`|
 Enables message ordering. | No | false
+| `spring.cloud.gcp.pubsub.publisher.endpoint`|
+The publisher endpoint.
+Example: `"us-east1-pubsub.googleapis.com:443"`.
+This is useful in conjunction with enabling message ordering because sending messages to the same region ensures they are received in order even when multiple publishers are used. | No | pubsub.googleapis.com:443
 |===
 
 ==== GRPC Connection Settings
@@ -182,6 +186,7 @@ By default, the `SimplePubSubMessageConverter` is used to convert payloads of ty
 
 If you are relying on message converters and would like to provide an ordering key, use the `GcpPubSubHeaders.ORDERING_KEY` header.
 You will also need to make sure to enable message ordering on the publisher via the `spring.cloud.gcp.pubsub.publisher.enable-message-ordering` property.
+Additionally, if you are using multiple publishers, you will want to set the `spring.cloud.gcp.pubsub.publisher.endpoint` to a regional endpoint such as `"us-east1-pubsub.googleapis.com:443"` so that messages are sent to the same region and received in order.
 
 [source,java,indent=0]
 ----

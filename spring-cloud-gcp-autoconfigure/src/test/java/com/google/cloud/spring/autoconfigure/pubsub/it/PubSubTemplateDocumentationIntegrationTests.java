@@ -67,7 +67,8 @@ public class PubSubTemplateDocumentationIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0",
-					"spring.cloud.gcp.pubsub.publisher.enable-message-ordering=true")
+					"spring.cloud.gcp.pubsub.publisher.enable-message-ordering=true",
+					"spring.cloud.gcp.pubsub.publisher.endpoint=us-east1-pubsub.googleapis.com:443")
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 

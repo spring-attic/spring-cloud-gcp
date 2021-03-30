@@ -63,6 +63,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	private Boolean enableMessageOrdering;
 
+	private String endpoint;
+
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
@@ -133,6 +135,17 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		this.enableMessageOrdering = enableMessageOrdering;
 	}
 
+	/**
+	 * Set the publisher endpoint. Example: "us-east1-pubsub.googleapis.com:443".
+	 * This is useful in conjunction with enabling message ordering because
+	 * sending messages to the same region ensures they are received in order
+	 * even when multiple publishers are used.
+	 * @param endpoint publisher endpoint
+	 */
+	public void setEndpoint(String endpoint) {
+		this.endpoint = endpoint;
+	}
+
 	@Override
 	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
@@ -178,6 +191,10 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 		if (this.enableMessageOrdering != null) {
 			publisherBuilder.setEnableMessageOrdering(this.enableMessageOrdering);
+		}
+
+		if (this.endpoint != null) {
+			publisherBuilder.setEndpoint(this.endpoint);
 		}
 	}
 
