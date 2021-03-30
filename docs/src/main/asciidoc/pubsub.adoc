@@ -153,7 +153,7 @@ So, take care not to configure a subscription that has a business impact, or ins
 | Name | Description | Required | Default value
 | `management.health.pubsub.enabled` | Whether to enable the Pub/Sub health indicator | No | `true` with Spring Boot Actuator, `false` otherwise
 | `spring.cloud.gcp.pubsub.health.subscription` | Subscription to health check against by pulling a message | No | Random non-existent
-| `spring.cloud.gcp.pubsub.health.timeout-millis` | Milliseconds to wait for response from Pub/Sub before timing out | No | `1000`
+| `spring.cloud.gcp.pubsub.health.timeout-millis` | Milliseconds to wait for response from Pub/Sub before timing out | No | `2000`
 | `spring.cloud.gcp.pubsub.health.acknowledge-messages` | Whether to acknowledge messages pulled from the optionally specified subscription | No | `false`
 |===
 

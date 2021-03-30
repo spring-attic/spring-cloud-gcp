@@ -85,7 +85,7 @@ public class PubSubHealthIndicatorAutoConfigurationTests {
 					PubSubHealthIndicator healthIndicator = ctx.getBean(PubSubHealthIndicator.class);
 					assertThat(healthIndicator).isNotNull();
 					assertThat(healthIndicator.getSubscription()).matches(UUID_PATTERN);
-					assertThat(healthIndicator.getTimeoutMillis()).isEqualTo(1000);
+					assertThat(healthIndicator.getTimeoutMillis()).isEqualTo(2000);
 					assertThat(healthIndicator.isAcknowledgeMessages()).isFalse();
 					assertThat(healthIndicator.isSpecifiedSubscription()).isFalse();
 					verify(mockPubSubTemplate).pullAsync(healthIndicator.getSubscription(), 1, true);

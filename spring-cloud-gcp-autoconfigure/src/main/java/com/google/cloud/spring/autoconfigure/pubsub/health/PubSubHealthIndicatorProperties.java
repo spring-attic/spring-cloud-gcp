@@ -34,7 +34,7 @@ public class PubSubHealthIndicatorProperties {
 	/**
 	 * Milliseconds to wait for response from Pub/Sub before timing out.
 	 */
-	private Long timeoutMillis = 1000L;
+	private Long timeoutMillis = 2000L;
 
 	/**
 	 * Whether to acknowledge messages pulled from {@link #subscription}.
