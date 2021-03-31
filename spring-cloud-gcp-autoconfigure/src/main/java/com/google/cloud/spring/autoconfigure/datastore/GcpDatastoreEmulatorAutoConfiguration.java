@@ -16,6 +16,9 @@
 
 package com.google.cloud.spring.autoconfigure.datastore;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,8 +87,15 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 
 			this.running = false;
 		}
-		catch (Exception e) {
-			LOGGER.warn("Failed to stop datastore instance.", e);
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Interrupted while stopping Datastore emulator.", e);
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("IO error while stopping datastore emulator.", e);
+		}
+		catch (TimeoutException e) {
+			throw new IllegalStateException("Timed out while stopping datastore emulator.", e);
 		}
 	}
 
@@ -118,8 +128,13 @@ public class GcpDatastoreEmulatorAutoConfiguration implements SmartLifecycle {
 
 			this.running = true;
 		}
-		catch (Exception e) {
-			LOGGER.error("Error constructing datastore instance.");
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Interrupted while starting Datastore emulator.", e);
 		}
+		catch (IOException e) {
+			throw new IllegalStateException("IO error while starting datastore emulator.", e);
+		}
+
 	}
 }
