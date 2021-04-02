@@ -46,6 +46,7 @@ jobs:
         run: |
           ./mvnw \
             --activate-profiles linkage-check \
+            --projects spring-cloud-gcp-dependencies \
             --batch-mode \
             --show-version \
             --threads 1.5C \

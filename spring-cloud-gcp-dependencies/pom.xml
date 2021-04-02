@@ -379,6 +379,7 @@
 											implementation="com.google.cloud.tools.dependencies.enforcer.LinkageCheckerRule">
 											<dependencySection>DEPENDENCY_MANAGEMENT</dependencySection>
 											<reportOnlyReachable>true</reportOnlyReachable>
+											<exclusionFile>spring-cloud-gcp-dependencies/linkage-checker-exclusion-rules.xml</exclusionFile>
 										</LinkageCheckerRule>
 									</rules>
 								</configuration>

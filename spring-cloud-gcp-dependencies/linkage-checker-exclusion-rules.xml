@@ -1,0 +1,21 @@
+<LinkageCheckerFilter>
+	<LinkageError>
+		<Source>
+			<Package name="com.google.cloud.spring.autoconfigure"/>
+		</Source>
+		<Reason>
+			Spring's autoconfigure classes work only when certain classes are available.
+		</Reason>
+	</LinkageError>
+	<LinkageError>
+		<Target>
+			<Class name="org.springframework.integration.file.remote.handler.FileTransferringMessageHandler"/>
+		</Target>
+		<Source>
+			<Class name="com.google.cloud.spring.storage.integration.outbound.GcsMessageHandler"/>
+		</Source>
+		<Reason>
+			The source class is used only when the target class is available.
+		</Reason>
+	</LinkageError>
+</LinkageCheckerFilter>
