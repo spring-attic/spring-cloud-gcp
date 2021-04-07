@@ -362,7 +362,7 @@
 							<dependency>
 								<groupId>com.google.cloud.tools</groupId>
 								<artifactId>linkage-checker-enforcer-rules</artifactId>
-								<version>1.5.7</version>
+								<version>1.5.8</version>
 							</dependency>
 						</dependencies>
 						<executions>
