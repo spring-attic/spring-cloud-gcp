@@ -44,4 +44,9 @@ public class GcsPersistentAcceptOnceFileListFilter
 	protected String fileName(BlobInfo blobInfo) {
 		return (blobInfo != null) ? blobInfo.getName() : null;
 	}
+
+	@Override
+	protected boolean isDirectory(BlobInfo blobInfo) {
+		return (blobInfo != null) ? blobInfo.isDirectory() : false;
+	}
 }
