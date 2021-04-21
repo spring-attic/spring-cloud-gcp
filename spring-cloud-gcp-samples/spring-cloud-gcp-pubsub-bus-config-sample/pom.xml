@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spring-cloud-gcp-samples</artifactId>
         <groupId>org.springframework.cloud</groupId>
-        <version>1.2.8.BUILD-SNAPSHOT</version>
+        <version>1.2.8.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
     <name>Spring Cloud GCP Pub/Sub Bus Configuration Management Code Sample</name>
 
     <properties>
-        <spring-cloud-config.version>2.2.3.BUILD-SNAPSHOT</spring-cloud-config.version>
+        <spring-cloud-config.version>2.2.8.RELEASE</spring-cloud-config.version>
     </properties>
 
     <!-- The Spring Cloud GCP BOM will manage spring-cloud-gcp version numbers for you. -->
