@@ -8,6 +8,8 @@ This sample app provides simple login page using https://github.com/firebase/fir
 
 == Pre requisites
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-security-firebase-sample/README.adoc]
+
 1. Create a new firebase project as instructed https://firebase.google.com/docs/web/setup[here]
 2. Once you finish the process make sure you configure the following environment variables before running the app:
     a. FIREBASE_CONFIG_API_KEY: Should be your "apiKey" value (you can find it in Firebase console project settings in "Web API Key" field)
@@ -22,15 +24,17 @@ This app uses default login and will rely on that to extract the `projectId` usi
 
 `Make sure you executed steps 2 & 3 from prerequisites section`
 
-----
-$ ./mvnw clean spring-boot:run
-----
+. Run `$ mvn clean install` from the root directory of this project.
 
-Open your browser at http://localhost:8080
+. Run `$ mvn clean spring-boot:run` in the same directory as this
+sample (spring-cloud-gcp-samples/spring-cloud-gcp-security-firebase-sample)
 
-There's a single page app with an `ask` button, if you try to click it you should get an error message.
+. Open your browser at http://localhost:8080 or use the `Web Preview` button in Cloud Shell to preview the app
+on port 8080.
 
-Also try to access the secure endpoint via curl:
+. There's a single page app with an `ask` button, if you try to click it you should get an error message.
+
+. Also try to access the secure endpoint via curl:
 
 ----
 curl http://localhost:8080/answer
@@ -38,13 +42,14 @@ curl http://localhost:8080/answer
 
 You should get a 403 error.
 
-Now login using the button at the top right corner. You can choose between using a valid Google credential, or a user you have added via the Firebase authentication users menu.
+[start = 6]
+. Now login using the button at the top right corner. You can choose between using a valid Google credential, or a user you have added via the Firebase authentication users menu.
 
-Once you are logged in, you should see a panel with the `curl` command.
+. Once you are logged in, you should see a panel with the `curl` command.
 
-Try clicking the button again.
+. Try clicking the button again.
 
-You can also copy the `curl` command and execute it now on your console and you should be able to access the endpoint.
+. You can also copy the `curl` command and execute it now on your console and you should be able to access the endpoint.
 
 
 

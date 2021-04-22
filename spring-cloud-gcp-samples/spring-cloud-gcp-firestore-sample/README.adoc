@@ -4,6 +4,7 @@ This code sample demonstrates how to read from and write to Google Cloud Firesto
 
 == Running the example
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-firestore-sample/README.adoc]
 
 . https://firebase.google.com/docs/firestore/quickstart[Create a new Cloud Firestore database in your GCP project] if this has not already been done to allow Firestore to create and store entities.
 
@@ -15,7 +16,9 @@ Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create
 +
 Then, uncomment the `spring.cloud.gcp.firestore.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
-. Run the `FirestoreSampleApp` with
+. Run `$ mvn clean install` from the root directory of the project.
+
+. In the same directory as this sample's `pom.xml`, execute the following command to run the `FirestoreSampleApp`
 ```
 mvn spring-boot:run
 ```

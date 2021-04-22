@@ -10,11 +10,15 @@ If you would like to implement load balancing with multiple subscribers reading 
 
 == Setup & Configuration
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-functional-sample/README.adoc]
+
 1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
 
 2. Set your project ID using the `spring.cloud.gcp.project-id` property in link:src/main/resources/application.properties[application.properties] or use the `gcloud config set project [PROJECT_ID]` Cloud SDK command.
+
+3. Run `$ mvn clean install` from the root directory of the project.
 
 == Running the code sample
 
@@ -23,7 +27,8 @@ The topic and subscription will be created in your account if they do not alread
 
 1. In separate terminal windows, start the `spring-cloud-gcp-pubsub-stream-functional-sample-source` and `spring-cloud-gcp-pubsub-stream-functional-sample-sink` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-2. Browse to the source application at `http://localhost:8080`, type in a message and a user name, and press the `Post it!` button.
+2. Browse to the source application at `http://localhost:8080` or use the `Web Preview` feature in Cloud Shell to
+preview the app on port 8080, type in a message and a user name, and press the `Post it!` button.
 
 3. Verify in the `spring-cloud-gcp-pubsub-stream-functional-sample-sink` app's logs that the message was received:
 +

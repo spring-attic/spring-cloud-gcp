@@ -14,6 +14,8 @@ The sample uses the `PubSubAdmin` class to perform administrative tasks like cre
 
 == Setup
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample/README.adoc]
+
 To run this code sample, you must have a Google Cloud Platform project with billing and the Google
 Cloud Pub/Sub API enabled.
 
@@ -28,9 +30,11 @@ Alternatively, create a new service account from the https://console.cloud.googl
 Download the service account private key.
 In the `src/main/resources/application.properties` file, set the `spring.cloud.gcp.project-id` value to your project ID and `spring.cloud.gcp.credentials.location` to the local file system path of the private key you downloaded.
 
+Run `$ mvn clean install` from the root directory of the project.
+
 == Running the code
 
-Open a terminal window and change directories to the root of the app, where the `pom.xml` file is located.
+Open a terminal window and change directories to the root of this app (spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample).
 
 Run the following command from that directory:
 
@@ -38,7 +42,8 @@ Run the following command from that directory:
 $ mvn spring-boot:run
 ----
 
-This will launch a local web server listening on port 8080.
+This will launch a local web server listening on port 8080. Go to http://localhost:8080 or use the `Web Preview` button
+in Cloud Shell to preview the app on port 8080.
 
 One flow you can follow is to:
 

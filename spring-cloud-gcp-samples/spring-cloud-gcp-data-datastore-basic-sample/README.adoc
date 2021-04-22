@@ -4,6 +4,8 @@ This code sample demonstrates how to read and write POJOs from Google Cloud Data
 
 == Running the example
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample/README.adoc]
+
 . Create a new Cloud Datastore database in your GCP project if this has not already been done to allow Cloud Datastore to create and store entities.
 
 . https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If you are authenticated in the Cloud SDK], your credentials will be automatically found by the Spring Boot Starter for Google Cloud Datastore.
@@ -12,9 +14,12 @@ Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create
 +
 Then, uncomment the `spring.cloud.gcp.datastore.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
-. Run the `DatastoreBookshelfExample` Spring Boot console app:
+. Run `$ mvn clean install` from the root directory of the project.
+
+. In the same directory as this sample's `pom.xml`, execute the following command to run the
+`DatastoreBookshelfExample` Spring Boot console app:
 +
-`mvn spring-boot:run`
+`$ mvn spring-boot:run`
 
 . Use shell to create, find and remove books.
 Available commands:

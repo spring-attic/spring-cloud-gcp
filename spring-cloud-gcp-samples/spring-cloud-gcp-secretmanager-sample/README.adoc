@@ -5,6 +5,8 @@ The sample demonstrates how one can access Secret Manager secrets through a `@Co
 
 == Running the Sample
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-secretmanager-sample/README.adoc]
+
 1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
 
 2. Enable the Secret Manager API from the "APIs & Services" menu of the Google Cloud Console.
@@ -25,10 +27,13 @@ Such as: `spring.cloud.gcp.secretmanager.credentials.location=file:/path/to/cred
 4. Using the https://console.cloud.google.com/security/secret-manager[Secret Manager UI in Cloud Console], create a new secret named `application-secret` and set it to any value.
 Instructions for using the Secret Manager UI can be found in the https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets#secretmanager-create-secret-web[Secret Manager documentation].
 
-5. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+5. Run `$ mvn clean install` from the root directory of the project.
 
-6. Go to http://localhost:8080 in your browser.
-Your secret value is injected into your application through the `WebController` and you will see it displayed.
+6. Run `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+7. Go to http://localhost:8080 in your browser or use the `Web Preview` button in Cloud Shell to preview the app
+on port 8080. Your secret value is injected into your application through the `WebController` and you will see it
+displayed.
 +
 ```
 applicationSecret: Hello world.

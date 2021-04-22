@@ -5,6 +5,8 @@ Data Cloud Datastore module link:../../spring-cloud-gcp-starters/spring-cloud-gc
 
 == Running the example
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/README.adoc]
+
 . Create a new Cloud Datastore database in your GCP project if this has not already been done to allow
 Cloud Datastore to create and store entities.
 [start=2]
@@ -15,6 +17,9 @@ Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create
 +
 Then, uncomment the `spring.cloud.gcp.datastore.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
-. Run the `DatastoreRepositoryExample` Spring Boot console app.
+. Run `$ mvn clean install` from the root directory of the project.
+
+. Run the `DatastoreRepositoryExample` Spring Boot console app by running `$ mvn spring-boot:run` in the same directory
+as this sample's `pom.xml`.
 This causes the app to generate sample `Singer` objects filled with some demo data and persists them to Cloud Datastore.
 These POJOs are then retrieved and their contents are printed in the output.

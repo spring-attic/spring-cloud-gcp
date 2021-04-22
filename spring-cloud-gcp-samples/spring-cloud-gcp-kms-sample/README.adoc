@@ -4,6 +4,8 @@ This code sample demonstrates how to use the Spring Cloud GCP Key Management Ser
 
 == Running the Sample
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-kms-sample/README.adoc]
+
 1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
 
 2. Enable the Cloud Key Management Service from the "APIs & Services" menu of the Google Cloud Console.
@@ -13,6 +15,7 @@ This can be done using the `gcloud` command line tool:
 gcloud services enable cloudkms.googleapis.com
 ```
 
+[start=3]
 3. Authenticate in one of two ways:
 
 a. Use the Google Cloud SDK to https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[authenticate with application default credentials].
@@ -23,15 +26,18 @@ Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
 4. Using the https://console.cloud.google.com/security/kms[Key Management Service in Cloud Console], create a new `global` key ring named `spring-cloud-gcp`, and create a key named `key-id`.
 Instructions for using the Key Management Service UI can be found in the https://cloud.google.com/kms/docs[Key Management Service documentation].
 
-5. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+5. Run `$ mvn clean install` in the root directory of the project.
 
-6. Go to http://localhost:8080 in your browser.
+6. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+7. Go to http://localhost:8080 in your browser or use the `Web Preview` feature in Cloud Shell
+to preview the app on port 8080.
 
 a. Put `spring-cloud-gcp/key-id` as the `Key Id`, add some text and press to `Encrypt Text`.
 
 b. You should see the text you submitted encrypted with the encryption key used in Base64 format
 
-7. Copy the encrypted text generated previously.
+8. Copy the encrypted text generated previously.
 
 a. Place the encrypted text on the `Encrypted Text` field of the `Decrypt Text` section.
 

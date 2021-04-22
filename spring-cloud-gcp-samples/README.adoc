@@ -2,6 +2,8 @@
 
 Each code sample in this folder exemplifies how to use one Spring Cloud GCP integration.
 
+image::http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples%2FREADME.adoc]
+
 - link:spring-cloud-gcp-config-sample[Spring Cloud GCP Config Sample]:
 Uses Spring Cloud Config to set the value of the app's parameters.
 Values are stored by the https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Google Runtime Configuration API].

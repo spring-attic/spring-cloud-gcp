@@ -2,7 +2,7 @@
 
 This sample application demonstrates using link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Spring Cloud GCP IAP Authentication Starter] to extract user identity from a pre-authenticated header injected by https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)].
 
-If you run the sample locally, the following pages will be available:
+If you run the sample locally or on Cloud Shell, the following pages will be available:
 
 |===
 |URL |Description
@@ -20,12 +20,15 @@ Prints IAP identity details if authentication passes.
 
 
 == Setup & Configuration
+
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample/README.adoc]
+
 1. Create a Google Cloud Platform Project.
 2. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials] (you can run the sample locally without logging in, but you'll need the credentials to deploy).
-
+3. Run `$ mvn clean install` from the root directory of the project.
 
 == Running the Sample Locally
-Run with Maven from the root of this code sample:
+Run with Maven from the root of this code sample (spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample):
 
 ----
 $ mvn clean spring-boot:run

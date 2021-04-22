@@ -5,6 +5,8 @@ The demo showcases usage of Firestore with Spring Data Reactive Repositories and
 
 == Running the example
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-data-firestore-sample/README.adoc]
+
 . https://firebase.google.com/docs/firestore/quickstart[Create a new Cloud Firestore database in your GCP project] if you have not done so already.
 +
 NOTE: If your GCP Project is already configured to use Datastore, you must create a new GCP Project to use Firestore.
@@ -16,10 +18,13 @@ Boot Starter for Google Cloud Firestore.
 Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create a service account from the Google Cloud Console] and download its private key.
 Then, uncomment the `spring.cloud.gcp.firestore.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
-. Run the `FirestoreSampleApplication` with
+. Run `$ mvn clean install` from the root directory of the project.
+
+. In the same directory as this sample's `pom.xml`, run
 ```
 mvn spring-boot:run
 ```
 
 Now, you may visit http://localhost:8080.
+If you're running this sample on Cloud Shell, you can use the `Web Preview` feature to view the app on port 8080.
 Using the application, you will be able to create and read `User` entities in your Firestore instance.

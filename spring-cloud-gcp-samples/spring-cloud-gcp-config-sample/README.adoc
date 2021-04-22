@@ -5,9 +5,14 @@ This sample application demonstrates using the link:../../spring-cloud-gcp-start
 The same content is also available in the https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[Dynamic configuration for Spring Boot applications] codelab.
 
 == Setup & Configuration
-1. Checkout the code of this sample.
-2. Enable the Google https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime Configuration API].
-3. Create a configuration using the https://cloud.google.com/sdk/[Google Cloud SDK].
+
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-config-sample/README.adoc]
+
+1. Run `$ mvn clean install` from the root directory of the project.
+2. Move to the GCP config sample directory by running `$ cd spring-cloud-gcp-samples/spring-cloud-gcp-config-sample`
+3. Checkout the code of this sample.
+4. Enable the Google https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime Configuration API].
+5. Create a configuration using the https://cloud.google.com/sdk/[Google Cloud SDK].
 +
 ....
 $ gcloud beta runtime-config configs create myapp_prod
@@ -25,7 +30,7 @@ $ gcloud beta runtime-config configs variables set \
   --config-name myapp_prod
 ....
 
-4.  Update link:src/main/resources/bootstrap.properties[]:
+6.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
 spring.cloud.gcp.config.enabled=true
@@ -34,15 +39,15 @@ spring.cloud.gcp.config.name=myapp
 #default profile = default
 spring.cloud.gcp.config.profile=prod
 ....
-5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java] uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
+7.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java] uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
 
-6. Note that in order to expose /actuator/refresh endpoint, link:src/resources/application.properties[application.properties] file includes the following property:
+8. Note that in order to expose /actuator/refresh endpoint, link:src/resources/application.properties[application.properties] file includes the following property:
 +
 ....
 management.endpoints.web.exposure.include=refresh
 ....
-7.  Run the application using the `$ mvn spring-boot:run` command and verify the values are set appropriately at http://localhost:8080/
-8.  Update a property with `gcloud`:
+9.  Run the application using the `$ mvn spring-boot:run` command and verify the values are set appropriately at http://localhost:8080/ or use the `Web Preview` button in Cloud Shell to preview the app on port 8080.
+10.  Update a property with `gcloud`:
 +
 ....
 $ gcloud beta runtime-config configs variables set \
@@ -53,9 +58,9 @@ $ gcloud beta runtime-config configs variables set \
   myapp.feature-x-enabled false \
   --config-name myapp_prod
 ....
-9.  Send a POST request to the refresh endpoint:
+11.  Send a POST request to the refresh endpoint:
 +
 ....
 $ curl -XPOST http://localhost:8080/actuator/refresh
 ....
-10. Verify the values are updated at http://localhost:8080/
+12. Verify the values are updated at http://localhost:8080/ or Cloud Shell `Web Preview`.

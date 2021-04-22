@@ -8,6 +8,8 @@ You can also explore the GCP MySQL Starter in the https://codelabs.developers.go
 
 == Setup
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample/README.adoc]
+
 1. Follow https://cloud.google.com/sql/docs/mysql/quickstart[these instructions] to set up a Google Cloud Project with billing enabled.
 
 2. Create a Google Cloud MySQL instance from the https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
@@ -26,13 +28,16 @@ If you would like to use a different user, set the `spring.datasource.username` 
 Alternatively, https://console.cloud.google.com/iam-admin/serviceaccounts[create a service account from the Google Cloud Console] and download its private key.
 Then, uncomment the `spring.cloud.gcp.sql.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
+6. Run `$ mvn clean install` from the root directory of the project.
 
 == Running the application
 
-You can run the `SqlApplication` Spring Boot app using the following command:
+You can run the `SqlApplication` Spring Boot app by running the following command in the root directory of this sample
+app (spring-cloud-gcp-samples/spring-cloud-gcp-sql-mysql-sample):
 
 `$ mvn spring-boot:run`
 
 The database will be populated based on the link:src/main/resources/schema.sql[schema.sql] and link:src/main/resources/data.sql[data.sql] files.
 
-When the application is up, navigate to http://localhost:8080/getTuples in your browser to print the contents of the `users` table.
+When the application is up, navigate to http://localhost:8080/getTuples in your browser, or use the `Web Preview`
+button in Cloud Shell to preview the app on port 8080. This will print the contents of the `users` table.

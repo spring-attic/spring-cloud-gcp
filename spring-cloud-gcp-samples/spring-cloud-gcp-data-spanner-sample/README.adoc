@@ -6,6 +6,9 @@ Data Cloud Spanner module link:../../spring-cloud-gcp-starters/spring-cloud-gcp-
 == Running the example
 
 === Running on GCP
+
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample/README.adoc]
+
 Create a new Cloud Spanner instance named "spring-demo".
 The example application will create the database and tables if they do not already exist.
 
@@ -29,6 +32,8 @@ $ export SPANNER_EMULATOR_HOST=localhost:9010
 ----
 
 === Running the application
+Run `$ mvn clean install` from the root directory of the project.
+
 Run the `SpannerRepositoryExample` or the `SpannerTemplateExample` Spring Boot console apps.
 This causes the app to generate sample `Trade` objects filled with some demo data and persists them to the Cloud Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.

@@ -19,6 +19,8 @@ This is why every time configuration is updated, the server will print "Received
 
 == Setup
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample/README.adoc]
+
 1. Configure your GCP project ID and credentials by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
@@ -26,6 +28,9 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 2. Make sure that GCP Cloud Pub/Sub API is enabled, either through link:https://console.cloud.google.com/apis/api/pubsub.googleapis.com[Google Cloud Console] or with the following `gcloud` command:
 
   gcloud services enable pubsub.googleapis.com
+
+3. Run `$ mvn clean install` from the root directory of the project.
+
 
 == Demo with local filesystem
 
@@ -50,7 +55,8 @@ image::bus_sample_local.png[]
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
   mvn spring-boot:run -pl spring-cloud-gcp-pubsub-bus-config-sample-client
 
-3. Visit the http://localhost:8080/message client endpoint in a browser; observe the default value of `none` printed on the page.
+3. Visit the http://localhost:8080/message client endpoint in a browser, or use the `Web Preview` feature in
+Cloud Shell; observe the default value of `none` printed on the page.
 This happens because there is no configuration available for config server yet.
 
 4. Write a file named `application.properties` containing `example.message` property value:
@@ -64,7 +70,8 @@ echo 'example.message = message from the local filesystem' > /tmp/config/applica
 In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
 The config _server_ terminal will print `Received remote refresh request. Keys refreshed []` because while it is subscribed to the bus events, config servers suppress context refresh by default.
 
-6. Refresh http://localhost:8080/message client endpoint; observe the value now matches the value updated in the file system.
+6. Refresh http://localhost:8080/message or Cloud Shell `Web Preview` client endpoint;
+observe the value now matches the value updated in the file system.
 The client application log will also reflect the change: `Received remote refresh request. Keys refreshed [example.message]`.
 
 == Demo with GitHub
@@ -101,7 +108,8 @@ CAUTION: Never commit any passwords or passphrases into source control.
   cd spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-bus-config-sample
   mvn spring-boot:run -f spring-cloud-gcp-pubsub-bus-config-sample-client
 
-4. Visit http://localhost:8080/message client in a browser; observe the correct value, `message from GitHub`, printed on the page.
+4. Visit http://localhost:8080/message client in a browser or use the `Web Preview` feature in Cloud Shell;
+observe the correct value, `message from GitHub`, printed on the page.
 
 5. Push an update to configuration stored in GitHub, setting the message to a new value.
 
@@ -118,4 +126,5 @@ The config _server_ terminal will also print `Received remote refresh request. K
 +
 In the config _client_ terminal, observe the refresh-scoped property updating: `Received remote refresh request. Keys refreshed [example.message]`.
 
-8. Refresh http://localhost:8080/message client endpoint in a browser again; observe the value was updated.
+8. Refresh http://localhost:8080/message or Cloud Shell `Web Preview` client endpoint in a browser again;
+observe the value was updated.

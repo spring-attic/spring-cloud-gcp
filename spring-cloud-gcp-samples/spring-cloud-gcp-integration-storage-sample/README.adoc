@@ -5,6 +5,8 @@ We will use the Inbound and Outbound Channel Adapters to periodically probe for 
 
 == Running the code sample
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-integration-storage-sample/README.adoc]
+
 1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
@@ -13,12 +15,14 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 3. In the link:src/main/resources/applications.properties[application.properties] file, change the value of the `gcs-read-bucket` constant to the input bucket name and `gcs-write-bucket` to the output bucket name.
 +
-In the same file, set the `gcs-local-directory` constant to a folder in your local file system where the non-streaming Inbound Channel Adapter will save files to.
+In the same file, set the `gcs-local-directory` constant to a folder in your local file system or Cloud Shell
+where the non-streaming Inbound Channel Adapter will save files to.
 
-4. Run the application by running the `mvn spring-boot:run` goal in the sample's root folder.
+4. Run the application by running the `$ mvn spring-boot:run` goal in the
+sample's root folder (spring-cloud-gcp-samples/spring-cloud-gcp-integration-storage-sample).
 
 5. Copy a file to the input bucket, using the Google Cloud Console or the `gsutil` command line interface and wait at least 5 seconds.
 
-6. Verify that the file was copied to your local file system and to the output bucket.
+6. Verify that the file was copied to your local file system or Cloud Shell, and to the output bucket.
 
 7. Stop your app and clean up the created files, if you wish.

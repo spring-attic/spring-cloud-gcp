@@ -7,6 +7,8 @@ This content is also available in the https://codelabs.developers.google.com/cod
 
 == Running the example
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/README.adoc]
+
 1. Make sure that you have the Cloud SDK configured by following https://cloud.google.com/sdk/docs/[these instructions].
 
 2. Create a new bucket in Google Cloud Storage.
@@ -23,17 +25,22 @@ $ gsutil makebucket gs://$BUCKET
 $ gsutil copy my-file.txt gs://$BUCKET
 ```
 
-4. Edit the `src/main/resources/application.properties` and set the `gcs-resource-test-bucket` property to the name of your bucket that you created in Step 2.
+4. Run `$ mvn clean install` from the root directory of the project.
 
-5. Start the `GcsApplication` Spring Boot app.
+5. In the same directory as this sample (spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample), edit the
+`src/main/resources/application.properties` and set the `gcs-resource-test-bucket` property to the name of your bucket
+that you created in Step 2.
+
+6. Start the `GcsApplication` Spring Boot app.
 +
 ```
 $ mvn spring-boot:run
 ```
 
-6. Navigate to http://localhost:8080/ in your browser to print the contents of the file you uploaded in 3.
+7. Navigate to http://localhost:8080/ in your browser to print the contents of the file you uploaded in 3. You can also
+use the `Web Preview` button in Cloud Shell to preview the app on port 8080.
 
-7. To update the file contents, send a POST request to the same endpoint using `curl`:
+8. To update the file contents, send a POST request to the same endpoint using `curl`:
 +
 ```
 $ curl -d 'new message' -H 'Content-Type: text/plain' localhost:8080
@@ -41,4 +48,4 @@ $ curl -d 'new message' -H 'Content-Type: text/plain' localhost:8080
 +
 You should see a confirmation that the contents of the file were updated.
 +
-However, let's verify by going to http://localhost:8080/.
+However, let's verify by going to http://localhost:8080/ or the `Web Preview` URL.

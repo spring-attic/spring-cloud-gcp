@@ -46,6 +46,8 @@ This will be a common pattern in your code when using Cloud Vision to process yo
 
 == Running the Demo
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-vision-ocr-demo/README.adoc]
+
 This section describes how to run the demo and use it to extract text from some documents.
 
 === 1. Setting up your GCP Project
@@ -77,14 +79,17 @@ b. In the `resources/application.properties` file in this directory, set the `ap
 
 === 3. Running the App
 
-a. Run the `$ mvn spring-boot:run` command from the same directory as this demo's `pom.xml` file.
+a. Run `$ mvn clean install` from the root directory of the project.
+
+b. Run the `$ mvn spring-boot:run` command from the same directory as this demo's `pom.xml` file.
 Make sure that you set your bucket name in the application.properties file from the previous step.
 +
 Alternatively, you may pass the name of your bucket directly through command line by running:
 +
 `$ mvn spring-boot:run -Dapplication.ocr-bucket=YOUR_GCS_BUCKET_NAME`
 
-b. Go to http://localhost:8080 in your browser, and specify the URL of a PDF or TIFF document to process.
+c. Go to http://localhost:8080 in your browser, or use the `Web Preview` button in Cloud Shell to preview the app
+on port 8080, and specify the URL of a PDF or TIFF document to process.
 +
 The application allows you to specify the URL of documents in several ways:
 
@@ -108,5 +113,5 @@ Specify its path relative to the `resources/` directory.
 +
 Example: `classpath:test_pdfs/test.pdf` references the sample pdf provided at `resources/test_pdfs/test.pdf`.
 
-c. When you submit the document through the application, it will be uploaded to your Google Storage bucket, and OCR analysis will be run on it.
-After a few minutes, you will be able to view the text extracted from each page of the document on the status page at http://localhost:8080/status.
+d. When you submit the document through the application, it will be uploaded to your Google Storage bucket, and OCR analysis will be run on it.
+After a few minutes, you will be able to view the text extracted from each page of the document on the status page at http://localhost:8080/status or your `Web Preview` URL.

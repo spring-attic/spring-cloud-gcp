@@ -11,6 +11,8 @@ If the topics for the sink, source, and dead letter topic do not exist, the bind
 
 == Running the code sample
 
+image:http://gstatic.com/cloudssh/images/open-btn.svg[link=https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fspring-cloud-gcp&cloudshell_open_in_editor=spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-dead-letter-sample/README.adoc]
+
 1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
@@ -20,11 +22,15 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. In the link:src/main/resources/application.properties[application.properties] file, a topic and a dead letter topic are already preconfigured for you.
 The topics will be created in your account if they do not already exist.
 
-4. Run the `mvn clean spring-boot:run` in the root of the code sample to get the app running.
+4. Run `$ mvn clean install` from the root directory of the project.
 
-5. Browse `localhost:8080`, type in a message, a user name, and press the `Post it!` button.
+5. Run `$ mvn clean spring-boot:run` in the root of the code sample
+(spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-dead-letter-sample) to get the app running.
 
-6. Verify in your app's logs that a similar message was posted:
+6. Browse to `localhost:8080` or use the `Web Preview` button in Cloud Shell to preview the app on port 8080,
+and type in a message, a user name, and press the `Post it!` button.
+
+7. Verify in your app's logs that a similar message was posted:
 +
 ```
 Publishing message from batman
