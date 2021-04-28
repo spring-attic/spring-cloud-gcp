@@ -24,7 +24,7 @@ For GA releases this should be configured under the `central` Maven profile.
 
 . Make sure that the release tag was automatically added by the release process.
 
-. Make sure that the link:https://github.com/spring-io/initializr/blob/master/initializr-service/src/main/resources/application.yml[Spring Boot Initializr] is updated to support the new version of Spring Cloud GCP.
+. Make sure that the link:https://github.com/spring-io/initializr/blob/main/initializr-service/src/main/resources/application.yml[Spring Boot Initializr] is updated to support the new version of Spring Cloud GCP.
 
 == Uploading Javadocs
 

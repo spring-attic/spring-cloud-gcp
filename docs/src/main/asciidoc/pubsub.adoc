@@ -142,7 +142,7 @@ To disable the Cloud Pub/Sub indicator, set `management.health.pubsub.enabled` t
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without depending on any Google Cloud Pub/Sub API semantics.
 It provides the common set of operations needed to interact with Google Cloud Pub/Sub.
-`PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub] to interact with Google Cloud Pub/Sub.
+`PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the https://github.com/GoogleCloudPlatform/google-cloud-java/tree/main/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub] to interact with Google Cloud Pub/Sub.
 
 ==== Publishing to a topic
 
@@ -264,7 +264,7 @@ include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/autocon
 ----
 
 
-Please refer to our https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
+Please refer to our https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
 
 === Reactive Stream Subscription
 
@@ -442,4 +442,4 @@ include::{project-root}/docs/src/test/java/org/springframework/cloud/gcp/autocon
 
 === Sample
 
-Sample applications for https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[using the template] and https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample[using a subscription-backed reactive stream] are available.
+Sample applications for https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[using the template] and https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-reactive-sample[using a subscription-backed reactive stream] are available.

@@ -2,7 +2,7 @@
 
 Spring Cloud GCP provides a https://cloud.spring.io/spring-cloud-stream/[Spring Cloud Stream] binder to Google Cloud Pub/Sub.
 
-The provided binder relies on the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub/src/main/java/org/springframework/cloud/gcp/pubsub/integration[Spring Integration Channel Adapters for Google Cloud Pub/Sub].
+The provided binder relies on the https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-pubsub/src/main/java/org/springframework/cloud/gcp/pubsub/integration[Spring Integration Channel Adapters for Google Cloud Pub/Sub].
 
 Maven coordinates, using <<getting-started.adoc#_bill_of_materials, Spring Cloud GCP BOM>>:
 
@@ -195,6 +195,6 @@ public class SinkExample {
 
 Sample applications are available:
 
-* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input, annotation-based].
-* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-binder-functional-sample[streaming input, functional style].
-* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample[polled input].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input, annotation-based].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-stream-binder-functional-sample[streaming input, functional style].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample[polled input].

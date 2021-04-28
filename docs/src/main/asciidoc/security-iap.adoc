@@ -89,4 +89,4 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/main/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.

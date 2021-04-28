@@ -84,7 +84,7 @@ To automatically fix the headers in uncommitted files, run the following script 
 +
 To update already-committed files, pass a commit hash or a branch name to use as a baseline:
 
- $ bash util/update-license-year.sh master
+ $ bash util/update-license-year.sh main
 
 1. Create a pull request with the proposed code change.
 It will be approved and merged by a committer.
