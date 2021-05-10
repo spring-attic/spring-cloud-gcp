@@ -57,7 +57,7 @@
 		<zipkin-gcp.version>1.0.2</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>2.4.0</app-engine-maven-plugin.version>
 		<kotlin.version>1.3.31</kotlin.version>
-		<errorprone.version>2.4.0</errorprone.version>
+		<errorprone.version>2.6.0</errorprone.version>
 		<java-cfenv.version>2.2.2.RELEASE</java-cfenv.version>
 	</properties>
 
@@ -392,12 +392,37 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- Error prone; plugin is recommended but only works with Java 9 and newer.
-		Remove the two profiles and pull the pluginManagement contents up into the main config when the project moves off Java 8. -->
+
+		<!-- JDK 16+ configuration -->
+		<profile>
+			<id>jdk_16_and_up</id>
+			<activation>
+				<jdk>[16,]</jdk>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-plugin</artifactId>
+							<configuration>
+								<!-- illegal-access=permit is needed to make GCLIB proxying work, used in Datastore -->
+								<argLine>-Xms512m -Xmx512m --illegal-access=permit</argLine>
+								<skip>${skip.surefire.tests}</skip>
+								<excludes>
+									<exclude>${integration-test.pattern}</exclude>
+								</excludes>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+		<!-- Error prone; JDK 8 requires a different configuration than 9+ -->
 		<profile>
 			<id>errorprone_java_9_and_up</id>
 			<activation>
-				<jdk>[9,)</jdk>
+				<jdk>[9,]</jdk>
 			</activation>
 			<build>
 				<pluginManagement>
@@ -405,13 +430,27 @@
 						<plugin>
 							<groupId>org.apache.maven.plugins</groupId>
 							<artifactId>maven-compiler-plugin</artifactId>
-							<version>3.8.0</version>
+							<version>3.8.1</version>
 							<configuration>
 								<source>${maven.compiler.source}</source>
 								<target>${maven.compiler.target}</target>
+								<encoding>UTF-8</encoding>
+								<fork>true</fork>
 								<compilerArgs>
 									<arg>-XDcompilePolicy=simple</arg>
 									<arg>-Xplugin:ErrorProne</arg>
+									<!-- See: https://github.com/GoogleCloudPlatform/spring-cloud-gcp/pull/92 -->
+									<arg>-parameters</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+									<arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+									<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+									<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
 								</compilerArgs>
 								<annotationProcessorPaths>
 									<path>
@@ -431,35 +470,28 @@
 			<activation>
 				<jdk>1.8</jdk>
 			</activation>
+			<properties>
+				<javac.version>9+181-r4173-1</javac.version>
+			</properties>
 			<build>
 				<pluginManagement>
 					<plugins>
 						<plugin>
 							<artifactId>maven-compiler-plugin</artifactId>
+							<version>3.8.0</version>
 							<configuration>
-								<compilerId>javac-with-errorprone</compilerId>
-								<forceJavacCompilerUse>true</forceJavacCompilerUse>
-								<compilerArgs>
-									<!-- Enable all warnings -->
-									<compilerArg>-Xlint:all</compilerArg>
-									<!-- Disable options warning because we will have differences between the compiler and source code level-->
-									<compilerArg>-Xlint:-options</compilerArg>
-									<!-- Disable serialversionuid warnings -->
-									<compilerArg>-Xlint:-serial</compilerArg>
-									<!--compilerArg>-Werror</compilerArg-->
+								<fork>true</fork>
+								<compilerArgs combine.children="append">
+									<arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
+									<!-- See: https://github.com/GoogleCloudPlatform/spring-cloud-gcp/pull/92 -->
+									<arg>-parameters</arg>
 								</compilerArgs>
 							</configuration>
 							<dependencies>
 								<dependency>
-									<groupId>org.codehaus.plexus</groupId>
-									<artifactId>plexus-compiler-javac-errorprone</artifactId>
-									<version>2.8.6</version>
-								</dependency>
-								<dependency>
 									<groupId>com.google.errorprone</groupId>
 									<artifactId>error_prone_core</artifactId>
-									<!-- Overriding version for Java 8 compatibility. See gh/2624 -->
-									<version>2.3.4</version>
+									<version>${errorprone.version}</version>
 								</dependency>
 							</dependencies>
 						</plugin>
