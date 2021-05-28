@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.google.cloud.spring.pubsub.core.publisher.PubSubPublisherOperations;
+import com.google.cloud.spring.pubsub.core.publisher.PubSubPublisherTemplate;
 import com.google.cloud.spring.pubsub.integration.PubSubHeaderMapper;
 import com.google.cloud.spring.pubsub.support.GcpPubSubHeaders;
 
@@ -65,6 +66,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
 
 	private ListenableFutureCallback<String> publishCallback;
+
+	private PublishCallback enhancedCallback;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
@@ -135,6 +138,10 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		this.publishCallback = publishCallback;
 	}
 
+	public void setEnhancedCallback(PublishCallback cb) {
+		this.enhancedCallback = cb;
+	}
+
 	public Expression getTopicExpression() {
 		return this.topicExpression;
 	}
@@ -193,6 +200,20 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 			pubsubFuture.addCallback(this.publishCallback);
 		}
 
+		if (this.enhancedCallback != null) {
+			pubsubFuture.addCallback(new ListenableFutureCallback<String>() {
+				@Override
+				public void onFailure(Throwable throwable) {
+					PubSubMessageHandler.this.enhancedCallback.onFailure(throwable, payload, headers);
+				}
+
+				@Override
+				public void onSuccess(String messageId) {
+					PubSubMessageHandler.this.enhancedCallback.onSuccess(messageId, payload, headers);
+				}
+			});
+		}
+
 		if (this.sync) {
 			Long timeout = this.publishTimeoutExpression.getValue(this.evaluationContext, message, Long.class);
 			try {
@@ -222,4 +243,11 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}
 
+	public static interface PublishCallback {
+
+		void onSuccess(String ackId, Object payload, Map<String, String> headers);
+
+		void onFailure(Throwable cause, Object payload, Map<String, String> headers);
+
+	}
 }

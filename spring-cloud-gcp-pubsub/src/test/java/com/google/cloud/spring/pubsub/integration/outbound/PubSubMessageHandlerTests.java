@@ -17,6 +17,9 @@
 package com.google.cloud.spring.pubsub.integration.outbound;
 
 import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.cloud.spring.core.util.MapBuilder;
 import com.google.cloud.spring.pubsub.core.PubSubOperations;
@@ -241,5 +244,39 @@ public class PubSubMessageHandlerTests {
 				.publish("testTopic", "testPayload".getBytes(),
 						Collections.singletonMap(GcpPubSubHeaders.ORDERING_KEY, "key1"));
 	}
+
+	@Test
+	public void publishEnhancedCallbackSuccess() throws Exception {
+
+		this.message = new GenericMessage<byte[]>("testPayload".getBytes(),
+				new MapBuilder<String, Object>()
+						.put("message_id", "123")
+						.build());
+
+		AtomicReference<String> successfulId = new AtomicReference<>();
+		AtomicReference<String> failedId = new AtomicReference<>();
+		CountDownLatch latch = new CountDownLatch(1);
+		this.adapter.setEnhancedCallback(new PubSubMessageHandler.PublishCallback() {
+
+			@Override
+			public void onSuccess(String ackId, Object payload, Map<String, String> headers) {
+				successfulId.set(headers.get("message_id"));
+				latch.countDown();
+			}
+
+			@Override
+			public void onFailure(Throwable cause, Object payload, Map<String, String> headers) {
+				failedId.set(headers.get("message_id"));
+				latch.countDown();
+			}
+		});
+
+		this.adapter.handleMessage(this.message);
+		latch.await();
+
+		assertThat(successfulId).hasValue("123");
+		assertThat(failedId).hasValue(null);
+	}
+
 
 }
