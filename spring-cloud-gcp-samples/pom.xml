@@ -59,6 +59,15 @@
 		<module>spring-cloud-gcp-metrics-sample</module>
 	</modules>
 
+	<dependencies>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<pluginManagement>
 			<plugins>
