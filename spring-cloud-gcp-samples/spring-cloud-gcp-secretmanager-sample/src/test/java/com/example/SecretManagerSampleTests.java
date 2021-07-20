@@ -36,7 +36,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Application secret named "application-secret" must exist and have a value of "Hello world."
+ * Application secret named "application-secret" must exist and have a value of "Hello world.".
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
