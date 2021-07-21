@@ -64,7 +64,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
+            <version>2.7</version>
             <scope>test</scope>
         </dependency>
         <!-- Stackdriver Trace read operations are only available in its v1 API. Use it to validate data was written during integration tests. -->
