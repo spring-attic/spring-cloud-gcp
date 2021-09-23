@@ -50,7 +50,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Executes Cloud Spanner query statements using
@@ -283,7 +283,7 @@ public final class SpannerStatementQueryExecutor {
 		String keyClause = orParts.stream().map(s -> "(" + s + ")").collect(Collectors.joining(" OR "));
 		String condition = combineWithAnd(keyClause, whereClause);
 		String sb = "SELECT " + getColumnsStringForSelect(persistentEntity, mappingContext, true) + " FROM "
-				+ (StringUtils.isEmpty(index) ? persistentEntity.tableName() : String.format("%s@{FORCE_INDEX=%s}", persistentEntity.tableName(), index))
+				+ (ObjectUtils.isEmpty(index) ? persistentEntity.tableName() : String.format("%s@{FORCE_INDEX=%s}", persistentEntity.tableName(), index))
 				+ (condition.isEmpty() ? "" : " WHERE " + condition);
 		return buildStatementFromSqlWithArgs(sb, tags, null, writeConverter,
 				keyParts.toArray(), null);
@@ -314,11 +314,11 @@ public final class SpannerStatementQueryExecutor {
 	 * @return the combination of SQL conditions joined by {@code AND}.
 	 */
 	private static String combineWithAnd(String cond1, String cond2) {
-		if (StringUtils.isEmpty(cond1)) {
-			return !StringUtils.isEmpty(cond2) ? cond2 : "";
+		if (ObjectUtils.isEmpty(cond1)) {
+			return !ObjectUtils.isEmpty(cond2) ? cond2 : "";
 		}
-		if (StringUtils.isEmpty(cond2)) {
-			return !StringUtils.isEmpty(cond1) ? cond1 : "";
+		if (ObjectUtils.isEmpty(cond2)) {
+			return !ObjectUtils.isEmpty(cond1) ? cond1 : "";
 		}
 		return "(" + cond1 + ") AND (" + cond2 + ")";
 	}

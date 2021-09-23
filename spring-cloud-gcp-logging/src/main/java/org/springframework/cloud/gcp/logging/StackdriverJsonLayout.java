@@ -33,7 +33,7 @@ import com.google.gson.Gson;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.util.MapBuilder;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 /**
  * This class provides a JSON layout for a Logback appender compatible to the Stackdriver
@@ -175,7 +175,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 		super.start();
 
 		// If no Project ID set, then attempt to resolve it with the default project ID provider
-		if (StringUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
+		if (ObjectUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
 			GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
 			this.projectId = projectIdProvider.getProjectId();
 		}
@@ -263,8 +263,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (traceId == null) {
 			traceId = TraceIdLoggingEnhancer.getCurrentTraceId();
 		}
-		if (!StringUtils.isEmpty(traceId)
-				&& !StringUtils.isEmpty(this.projectId)
+		if (!ObjectUtils.isEmpty(traceId)
+				&& !ObjectUtils.isEmpty(this.projectId)
 				&& !this.projectId.endsWith("_IS_UNDEFINED")) {
 			traceId = StackdriverTraceConstants.composeFullTraceName(
 					this.projectId, formatTraceId(traceId));

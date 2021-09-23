@@ -21,6 +21,7 @@ import org.springframework.cloud.gcp.data.firestore.FirestoreDataException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -65,7 +66,7 @@ public class FirestorePersistentEntityImpl<T>
 		Document document = AnnotationUtils.findAnnotation(typeInformation.getType(), Document.class);
 		String collectionName = (String) AnnotationUtils.getValue(document, "collectionName");
 
-		if (StringUtils.isEmpty(collectionName)) {
+		if (ObjectUtils.isEmpty(collectionName)) {
 			// Infer the collection name as the uncapitalized document name.
 			return StringUtils.uncapitalize(typeInformation.getType().getSimpleName());
 		}

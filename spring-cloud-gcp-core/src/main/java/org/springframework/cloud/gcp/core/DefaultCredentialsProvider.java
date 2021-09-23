@@ -40,7 +40,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.io.Resource;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * A {@link CredentialsProvider} implementation that wraps credentials based on
@@ -88,13 +87,13 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 		Resource providedLocation = credentialsSupplier.getCredentials().getLocation();
 		String encodedKey = credentialsSupplier.getCredentials().getEncodedKey();
 
-		if (!StringUtils.isEmpty(providedLocation)) {
+		if (!ObjectUtils.isEmpty(providedLocation)) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							providedLocation.getInputStream())
 							.createScoped(scopes));
 		}
-		else if (!StringUtils.isEmpty(encodedKey)) {
+		else if (!ObjectUtils.isEmpty(encodedKey)) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider.create(
 					GoogleCredentials.fromStream(
 							new ByteArrayInputStream(Base64.getDecoder().decode(encodedKey)))

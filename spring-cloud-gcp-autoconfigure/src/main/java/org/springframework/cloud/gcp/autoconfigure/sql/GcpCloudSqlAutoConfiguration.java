@@ -49,6 +49,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -62,14 +63,14 @@ import org.springframework.util.StringUtils;
  * @author Eddú Meléndez
  */
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
+@ConditionalOnClass({DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class})
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
-@EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
+@EnableConfigurationProperties({GcpCloudSqlProperties.class, DataSourceProperties.class})
 @AutoConfigureBefore({
 		DataSourceAutoConfiguration.class,
 		JndiDataSourceAutoConfiguration.class,
-		XADataSourceAutoConfiguration.class })
+		XADataSourceAutoConfiguration.class})
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
@@ -149,12 +150,12 @@ public class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a clas
 				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider,
 				ConfigurableEnvironment configurableEnvironment) {
 
-			if (StringUtils.isEmpty(properties.getUsername())) {
+			if (ObjectUtils.isEmpty(properties.getUsername())) {
 				properties.setUsername("root");
 				LOGGER.warn("spring.datasource.username is not specified. "
 						+ "Setting default username.");
 			}
-			if (StringUtils.isEmpty(properties.getDriverClassName())) {
+			if (ObjectUtils.isEmpty(properties.getDriverClassName())) {
 				properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
 			}
 			else {
