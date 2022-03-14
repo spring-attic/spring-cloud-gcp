@@ -16,16 +16,21 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
+import org.springframework.cloud.gcp.test.EmulatorRule;
+import org.springframework.cloud.gcp.test.pubsub.PubSubEmulator;
 import org.springframework.cloud.stream.binder.AbstractBinderTests;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
+
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * Integration tests that require the Pub/Sub emulator to be installed.
@@ -37,12 +42,19 @@ import org.springframework.cloud.stream.binder.Spy;
 public class PubSubMessageChannelBinderEmulatorTests extends
 		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
 				ExtendedProducerProperties<PubSubProducerProperties>> {
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(System.getProperty("it.pubsub-emulator"))
+				.as("PubSub emulator tests are disabled. "
+						+ "Please use '-Dit.pubsub-emulator=true' to enable them. ")
+				.isEqualTo("true");
+	}
 
 	/**
 	 * The emulator instance, shared across tests.
 	 */
 	@ClassRule
-	public static PubSubEmulator emulator = new PubSubEmulator();
+	public static EmulatorRule emulator = new EmulatorRule(new PubSubEmulator());
 
 	@Override
 	protected PubSubTestBinder getBinder() {
@@ -72,8 +84,6 @@ public class PubSubMessageChannelBinderEmulatorTests extends
 	@Test
 	@Ignore("Looks like there is no Kryo support in SCSt")
 	public void testSendPojoReceivePojoKryoWithStreamListener() {
-
 	}
-
 
 }

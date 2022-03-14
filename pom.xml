@@ -45,6 +45,7 @@
 		<module>spring-cloud-gcp-bigquery</module>
 		<module>spring-cloud-gcp-security-firebase</module>
 		<module>spring-cloud-gcp-secretmanager</module>
+		<module>spring-cloud-gcp-test</module>
 	</modules>
 
 	<properties>

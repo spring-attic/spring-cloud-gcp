@@ -205,7 +205,11 @@
 				<artifactId>spring-cloud-gcp-starter-secretmanager</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<!-- spring-cloud-gcp-starter-sql -->
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>

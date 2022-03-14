@@ -1,0 +1,82 @@
+== Emulators support
+Our tools simplify starting and stopping Cloud Pub/Sub and Cloud Spanner emulators when you test your applications locally.
+
+In order to use it, you need to add this dependency into your `pom.xml` file:
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-gcp-test</artifactId>
+	<scope>test</scope>
+</dependency>
+----
+
+Also, you need to have `gcloud` CLI and the emulators installed and configured, as described later.
+
+=== JUnit 4 Class Rule
+The rule starts the emulator process before the tests run and stops it afterwards.
+You just need to add a rule into your test class to enable it.
+
+[source,java]
+----
+import org.springframework.cloud.gcp.test.EmulatorRule;
+import org.springframework.cloud.gcp.test.pubsub.PubSubEmulator;
+
+public class PubSubTests {
+	@ClassRule
+	public static EmulatorRule emulator = new EmulatorRule(new PubSubEmulator());
+
+		//your tests
+}
+----
+
+NOTE: The class rule doesn't work for `SpannerEmulator`.
+See <<Spring Configuration>> section instead.
+
+=== Utility class
+If you prefer controlling the emulator manually, you can use the `EmulatorDriver`.
+
+[source,java]
+----
+	EmulatorDriver emulatorDriver = new EmulatorDriver(new PubSubEmulator());
+
+	emulatorDriver.startEmulator();
+
+	//your code
+
+	emulatorDriver.shutdownEmulator();
+----
+
+=== Cloud Pub/Sub Emulator
+In order to use our Cloud Pub/Sub Emulator helper tools, you would need to install the emulator first.
+Follow the https://cloud.google.com/pubsub/docs/emulator[installation instructions].
+
+Use `new PubSubEmulator()` as an argument to `EmulatorDriver` and `EmulatorRule`.
+
+=== Cloud Spanner Emulator
+In order to use our Cloud Spanner Emulator helper tools, you would need to install the emulator first.
+Follow the https://cloud.google.com/spanner/docs/emulator[installation instructions].
+Make sure you also create an https://cloud.google.com/spanner/docs/emulator#using_the_gcloud_cli_with_the_emulator[emulator configuration] and call it `emulator`.
+
+Use `new SpannerEmulator()` as an argument to `EmulatorDriver`.
+
+==== Spanner Emulator Spring Configuration
+If you are testing your Spring application, you can use our configuration class.
+It provides a bean of type `Spanner`, which starts the emulator before creating a client.
+This configuration also stops the emulator when the Spring context is shut down.
+
+In order to use it, you need to add the `SpannerEmulatorSpringConfiguration.class` to your configuration classes list in `@ContextConfiguration`.
+
+[source,java]
+----
+import org.junit.runner.RunWith;
+
+import org.springframework.cloud.gcp.test.SpannerEmulatorSpringConfiguration;
+
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = {SpannerEmulatorSpringConfiguration.class, YourSpringConfiguration.class})
+public class SpannerTemplateEmulatorTests {
+		//your tests
+}
+----
