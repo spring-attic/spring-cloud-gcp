@@ -34,6 +34,8 @@ import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.integration.core.MessageProducer;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.ErrorMessage;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 /**
  * Message channel binder for Pub/Sub.
@@ -74,6 +76,21 @@ public class PubSubMessageChannelBinder
 		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 		messageHandler.setBeanFactory(getBeanFactory());
 		messageHandler.setSync(producerProperties.getExtension().isSync());
+		if (errorChannel != null) {
+			messageHandler.setPublishCallback(new ListenableFutureCallback<String>() {
+				@Override
+				public void onFailure(Throwable throwable) {
+					System.out.println("Sending throwable to error channel: " + throwable);
+					errorChannel.send(new ErrorMessage(throwable));
+				}
+
+				@Override
+				public void onSuccess(String messageId) {
+					// no-op
+					System.out.println("Successfully published message " + messageId);
+				}
+			});
+		}
 		return messageHandler;
 	}
 
